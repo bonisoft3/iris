@@ -1,0 +1,41 @@
+CREATE TABLE UserIris (
+    id UUID PRIMARY KEY,
+    ts TIMESTAMP WITH TIME ZONE,
+    phoneNumber TEXT,
+    homeAddress TEXT,
+    firebaseId TEXT,
+    addressComplement TEXT
+);
+
+CREATE TABLE NewsItem (
+    id UUID PRIMARY KEY,
+    savedOn TIMESTAMP,
+    urlToImage TEXT,
+    title TEXT,
+    sourceName TEXT,
+    description TEXT,
+    url TEXT,
+    newsItemDate TIMESTAMP
+);
+
+CREATE TABLE DisposalPlace (
+    id UUID PRIMARY KEY,
+    createdOn TIMESTAMP,
+    materialType TEXT,
+    userId TEXT,
+    latlng JSONB,
+    imgUrl TEXT
+);
+
+CREATE TABLE TrashItemTranslations (
+    id UUID PRIMARY KEY,
+    item_id UUID REFERENCES TrashItemPb(id),
+    language TEXT,
+    translations JSONB
+);
+
+CREATE TABLE Donates (
+    id UUID PRIMARY KEY,
+    userId TEXT,
+    itemId TEXT
+);

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Default logback configuration. -->
+<configuration debug="true">
+  <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <!-- Borrowed from https://dropwizard.github.io/dropwizard/manual/core.html#log-format -->
+      <pattern>%-6level [%d{HH:mm:ss.SSS}] [%t] %logger - %X{code} %msg %n</pattern>
+    </encoder>
+  </appender>
+  <root level="info">
+    <appender-ref ref="stdout"/>
+  </root>
+</configuration>

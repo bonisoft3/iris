@@ -1,0 +1,4 @@
+dependencies: openjdk.org@21.0
+env:
+  - SAY_SCOOP_BUCKET_ADD: java
+  - SAY_SCOOP_INSTALL: openjdk@21.0

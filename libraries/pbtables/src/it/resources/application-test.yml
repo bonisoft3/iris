@@ -1,0 +1,36 @@
+datasources:
+  default:
+    # url: jdbc:h2:mem:devDb;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE; #MODE=PostgreSQL;DATABASE_TO_LOWER=FALSE;INIT=RUNSCRIPT FROM 'classpath:init.sql'
+    # driverClassName: org.h2.Driver
+    url: jdbc:tc:postgis:14-3.2:///postgres
+    driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
+    username: test
+    password: test
+    dialect: POSTGRES
+
+test-resources:
+  containers:
+    postgresql:
+      image-name: postgis/postgis:14-3.2-alpine
+
+testcontainers:
+  reuse:
+    enable: false
+
+flyway:
+  datasources:
+    default:
+      enabled: true
+      # Super tricky syntax here, no spaces after colon for each location or you will have a hard time
+      locations:
+        - classpath:com/trash/libraries/pbtables/db/migration
+        - classpath:db/pbpostgres
+        - classpath:db/iris
+      placeholders:
+        iris-password: dummypassword
+openai:
+  api:
+    url: "https://api.openai.com/v1"
+    key: ${OPENAI_API_KEY}
+  endpoint:
+    completions: "/completions"

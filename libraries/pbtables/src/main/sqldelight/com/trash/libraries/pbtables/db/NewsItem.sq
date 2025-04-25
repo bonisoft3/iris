@@ -1,0 +1,11 @@
+selectById:
+SELECT * FROM NewsItem WHERE id = ?;
+
+insert:
+INSERT INTO NewsItem (id,savedOn,urlToImage, title, sourceName, description, url, newsItemDate) VALUES (?,?,?,?,?,?,?,?);
+
+selectAll:
+SELECT * FROM NewsItem;
+
+delete:
+DELETE FROM NewsItem WHERE id = ?;

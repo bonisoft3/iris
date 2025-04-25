@@ -1,0 +1,12 @@
+version: v1
+managed:
+  enabled: true
+plugins:
+  - plugin: buf.build/grpc/kotlin:v1.3.0
+    out: kotlin
+  - plugin: buf.build/protocolbuffers/kotlin
+    out: kotlin
+  - plugin: buf.build/grpc/java
+    out: java
+  - plugin: buf.build/protocolbuffers/java:v24.3
+    out: java

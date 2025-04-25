@@ -1,0 +1,61 @@
+{
+	"target": {
+		"services_tracker": {
+			"cache-from": [
+				"type=gha,scope=ci-Linux-X64-devserver",
+				"type=gha,scope=ci-Linux-X64-services-tracker-integrate"
+			],
+			"cache-to": [
+				"type=gha,scope=ci-Linux-X64-services-tracker-integrate"
+			],
+			"output": [
+				"type=docker"
+			],
+			"contexts": {
+				"devserver": "target:plugins_devserver"
+			}
+		},
+		"services_tracker_tx": {
+			"cache-from": [
+				"type=gha,scope=ci-Linux-X64-devserver",
+				"type=gha,scope=ci-Linux-X64-services-tracker-tx-integrate"
+			],
+			"cache-to": [
+				"type=gha,scope=ci-Linux-X64-services-tracker-tx-integrate"
+			],
+			"output": [
+				"type=docker"
+			],
+			"contexts": {
+				"devserver": "target:plugins_devserver"
+			}
+		},
+		"guis_web": {
+			"cache-from": [
+				"type=gha,scope=ci-Linux-X64-devserver",
+				"type=gha,scope=ci-Linux-X64-guis-web-integrate"
+			],
+			"cache-to": [
+				"type=gha,scope=ci-Linux-X64-guis-web-integrate"
+			],
+			"output": [
+				"type=docker"
+			],
+			"contexts": {
+				"devserver": "target:plugins_devserver"
+			}
+		},
+		"services_shelfie": {
+			"cache-from": [
+				"type=gha,scope=ci-Linux-X64-devserver",
+				"type=gha,scope=ci-Linux-X64-services-shelfie-integrate"
+			],
+			"cache-to": [
+				"type=gha,scope=ci-Linux-X64-services-shelfie-integrate"
+			],
+			"output": [
+				"type=docker"
+			]
+		}
+	}
+}

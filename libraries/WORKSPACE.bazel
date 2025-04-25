@@ -1,0 +1,153 @@
+# Check https://github.com/sgammon/elide-app for inspiration
+
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+# ======================================================================================================================
+# java
+
+http_archive(
+    name = "rules_java",
+    urls = [
+        "https://github.com/bazelbuild/rules_java/releases/download/5.4.1/rules_java-5.4.1.tar.gz",
+    ],
+    sha256 = "a1f82b730b9c6395d3653032bd7e3a660f9d5ddb1099f427c1e1fe768f92e395",
+)
+load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
+rules_java_dependencies()
+rules_java_toolchains()
+
+# ======================================================================================================================
+# kotlin
+
+IO_BAZEL_KOTLIN_RULES_TAG = "v1.7.1"
+IO_BAZEL_KOTLIN_RULES_SHA = "fd92a98bd8a8f0e1cdcb490b93f5acef1f1727ed992571232d33de42395ca9b3"
+http_archive(
+    name = "io_bazel_rules_kotlin",
+    sha256 = IO_BAZEL_KOTLIN_RULES_SHA,
+    url = "https://github.com/bazelbuild/rules_kotlin/releases/download/{}/rules_kotlin_release.tgz".format(IO_BAZEL_KOTLIN_RULES_TAG),
+)
+
+load("@io_bazel_rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
+kotlin_repositories() # if you want the default. Otherwise see custom kotlinc distribution below
+load("@io_bazel_rules_kotlin//kotlin:core.bzl", "kt_register_toolchains")
+kt_register_toolchains() # to use the default toolchain, otherwise see toolchains below
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+# ======================================================================================================================
+# proto
+IO_GRPC_JAVA_EXTERNAL_TAG = "1.51.1"
+IO_GRPC_JAVA_SHA = "75e5994ca18ae3ffaf67a2f08d0274215916b0ff56d62e9e5b447095e622714b"
+
+http_archive(
+    name = "io_grpc_grpc_java",
+    sha256 = IO_GRPC_JAVA_SHA,
+    strip_prefix = "grpc-java-%s" % IO_GRPC_JAVA_EXTERNAL_TAG,
+    url = "https://github.com/grpc/grpc-java/archive/v%s.zip" % IO_GRPC_JAVA_EXTERNAL_TAG,
+)
+
+load("@io_grpc_grpc_java//:repositories.bzl", "grpc_java_repositories")
+grpc_java_repositories()
+
+RULES_GRPC_KOTLIN_TAG = "1.3.0"
+RULES_GRPC_KOTLIN_SHA = "7d06ab8a87d4d6683ce2dea7770f1c816731eb2a172a7cbb92d113ea9f08e5a7"
+
+http_archive(
+    name = "com_github_grpc_grpc_kotlin",
+    sha256 = RULES_GRPC_KOTLIN_SHA,
+    strip_prefix = "grpc-kotlin-%s" % RULES_GRPC_KOTLIN_TAG,
+    url = "https://github.com/grpc/grpc-kotlin/archive/v%s.zip" % RULES_GRPC_KOTLIN_TAG,
+)
+
+load("@com_github_grpc_grpc_kotlin//:repositories.bzl", "IO_GRPC_GRPC_KOTLIN_ARTIFACTS")
+load("@com_github_grpc_grpc_kotlin//:repositories.bzl", "IO_GRPC_GRPC_KOTLIN_OVERRIDE_TARGETS")
+load("@io_grpc_grpc_java//:repositories.bzl", "IO_GRPC_GRPC_JAVA_ARTIFACTS")
+load("@io_grpc_grpc_java//:repositories.bzl", "IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS")
+
+load("@com_github_grpc_grpc_kotlin//:repositories.bzl", "io_grpc_grpc_java")
+io_grpc_grpc_java()
+load("@com_github_grpc_grpc_kotlin//:repositories.bzl", "grpc_kt_repositories")
+grpc_kt_repositories()
+
+
+
+
+# ======================================================================================================================
+# rules_jvm_external - for maven dependencies
+RULES_JVM_EXTERNAL_TAG = "5.1"
+RULES_JVM_EXTERNAL_SHA ="8c3b207722e5f97f1c83311582a6c11df99226e65e2471086e296561e57cc954"
+http_archive(
+    name = "rules_jvm_external",
+    strip_prefix = "rules_jvm_external-%s" % RULES_JVM_EXTERNAL_TAG,
+    sha256 = RULES_JVM_EXTERNAL_SHA,
+    url = "https://github.com/bazelbuild/rules_jvm_external/releases/download/%s/rules_jvm_external-%s.tar.gz" % (RULES_JVM_EXTERNAL_TAG, RULES_JVM_EXTERNAL_TAG)
+)
+
+load("@rules_jvm_external//:repositories.bzl", "rules_jvm_external_deps")
+rules_jvm_external_deps()
+load("@rules_jvm_external//:setup.bzl", "rules_jvm_external_setup")
+rules_jvm_external_setup()
+
+load("@io_grpc_grpc_java//:repositories.bzl", "IO_GRPC_GRPC_JAVA_ARTIFACTS")
+load("@io_grpc_grpc_java//:repositories.bzl", "IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS")
+load("@com_google_protobuf//:protobuf_deps.bzl", "PROTOBUF_MAVEN_ARTIFACTS")
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+protobuf_deps()
+
+load("@com_google_googleapis//:repository_rules.bzl", "switched_rules_by_language")
+switched_rules_by_language(name = "com_google_googleapis_imports", java = True, cc = False)
+
+load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps")
+grpc_deps()
+
+load("@rules_jvm_external//:defs.bzl", "maven_install")
+maven_install(
+    artifacts = [
+        "io.kotest:kotest-runner-junit5-jvm:5.5.5",
+        "io.kotest:kotest-extensions-htmlreporter-jvm:5.5.5",
+        "io.kotest:kotest-extensions-junitxml-jvm:5.5.5",
+        "io.micronaut.test:micronaut-test-kotest5:4.0.0-M2",
+        "io.micronaut.data:micronaut-data-tx:4.0.0-M3",
+        "jakarta.inject:jakarta.inject-api:2.0.1",
+        "app.cash.sqldelight:jdbc-driver:2.0.0-alpha04",
+        "app.cash.sqldelight:coroutines-extensions:2.0.0-alpha04",
+        "app.cash.sqldelight:postgresql-dialect:2.0.0-alpha04",
+        "app.cash.sqldelight:hsql-dialect:2.0.0-alpha04",
+        "org.postgresql:postgresql:42.3.2",
+        "org.logcapture:logcapture-kotest:1.2.2",
+        "com.google.protobuf:protobuf-kotlin:3.22.2",
+        "com.google.protobuf:protobuf-java-util:3.23.1",
+    ] + IO_GRPC_GRPC_KOTLIN_ARTIFACTS + IO_GRPC_GRPC_JAVA_ARTIFACTS + PROTOBUF_MAVEN_ARTIFACTS,
+    generate_compat_repositories = True,
+    override_targets =  dict(
+        IO_GRPC_GRPC_KOTLIN_OVERRIDE_TARGETS.items() +
+        IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS.items()),
+    repositories = [
+        "https://repo.maven.apache.org/maven2/",
+    ],
+)
+
+load("@maven//:compat.bzl", "compat_repositories")
+compat_repositories()
+
+# ======================================================================================================================
+# bazel_skylib - starlark functions
+
+BAZEL_SKYLIB_TAG = "1.4.1"
+BAZEL_SKYLIB_SHA = "b8a1527901774180afc798aeb28c4634bdccf19c4d98e7bdd1ce79d1fe9aaad7"
+http_archive(
+    name = "bazel_skylib",
+    sha256 = BAZEL_SKYLIB_SHA,
+    url = "https://github.com/bazelbuild/bazel-skylib/releases/download/{}/bazel-skylib-{}.tar.gz".format(BAZEL_SKYLIB_TAG, BAZEL_SKYLIB_TAG),
+)
+
+# ======================================================================================================================
+# From https://github.com/JetBrains/bazel-bsp/blob/master/WORKSPACE#L157
+# junit5
+
+load("//:junit5.bzl", "junit_jupiter_java_repositories", "junit_platform_java_repositories")
+JUNIT_JUPITER_VERSION = "5.8.2"
+JUNIT_PLATFORM_VERSION = "1.7.2"
+junit_jupiter_java_repositories(version = JUNIT_JUPITER_VERSION)
+junit_platform_java_repositories(version = JUNIT_PLATFORM_VERSION)

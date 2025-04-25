@@ -1,0 +1,16 @@
+version: v1
+managed:
+  enabled: true
+plugins:
+  - plugin: buf.build/community/neoeinstein-prost:v0.2.3
+    out: placeholder/bufbuild/src
+    opt:
+      - bytes=.
+      - compile_well_known_types
+  - plugin: buf.build/community/neoeinstein-prost-serde:v0.2.3
+    out: placeholder/bufbuild/src
+  - plugin: buf.build/community/neoeinstein-tonic:v0.3.0
+    out: placeholder/bufbuild/src
+    opt:
+      - compile_well_known_types
+

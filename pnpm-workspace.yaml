@@ -1,0 +1,4 @@
+packages:
+  - libraries/xproto/
+  - guis/web/
+  - guis/shelfie/

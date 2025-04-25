@@ -1,0 +1,34 @@
+{
+  "name": "bonisoft",
+  "private": true,
+  "scripts": {
+    "assemble": "turbo run assemble",
+    "test": "turbo run test",
+    "test:int": "turbo run test:int",
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "dockerfile-deps": "dockerfile-deps.mjs"
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "@tensorflow/tfjs-core": "4.15.0",
+        "@tensorflow/tfjs-backend-webgl": "4.15.0"
+      }
+    },
+    "overrides": {
+      "nuxt": "^3.8.2",
+      "@nuxt/kit": "^3.8.2"
+    },
+    "patchedDependencies": {
+      "nuxt-logrocket@2.0.14": "patches/nuxt-logrocket@2.0.14.patch"
+    }
+  },
+  "dependencies": {
+    "turbo": "^1.12.4"
+  },
+  "devDependencies": {
+    "re2": "1.21.3"
+  },
+  "packageManager": "pnpm@9.15.2"
+}

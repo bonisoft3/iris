@@ -1,0 +1,31 @@
+load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_test")
+load("//:junit5.bzl", "kt_junit5_test")
+
+kt_jvm_library(
+    name = "com.trash.libraries.pbtables",
+    srcs = glob(["src/main/**/*.kt"]),
+    deps = [
+        "//xproto:trash_kotlin_proto",
+        "@maven//:com_google_protobuf_protobuf_java_util",
+        "@maven//:jakarta_inject_jakarta_inject_api",
+        "@maven//:io_micronaut_data_micronaut_data_tx",
+        "@maven//:app_cash_sqldelight_jdbc_driver",
+        "@maven//:app_cash_sqldelight_coroutines_extensions",
+        "@maven//:app_cash_sqldelight_postgresql_dialect",
+    ],
+)
+
+kt_junit5_test(
+    name = "PbtablesTest",
+    size = "small",
+    srcs = glob(["src/test/**/*.kt"]),
+    test_package = "com.trash.libraries.pbtables",
+    deps = [
+        "@maven//:io_kotest_kotest_extensions_htmlreporter_jvm",
+        "@maven//:io_kotest_kotest_extensions_junitxml_jvm",
+        "@maven//:io_micronaut_test_micronaut_test_kotest5",
+        "@maven//:org_postgresql_postgresql",
+        "@maven//:org_logcapture_logcapture_kotest",
+    ],
+)

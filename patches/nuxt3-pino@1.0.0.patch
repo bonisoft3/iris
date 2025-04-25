@@ -1,0 +1,18 @@
+diff --git a/dist/runtime/pino.client.mjs b/dist/runtime/pino.client.mjs
+index 8b7e5135f7dc114724735ba7ac04b91af0017af0..e338f85cccfc66231e7afa21c6c076cc30829970 100644
+--- a/dist/runtime/pino.client.mjs
++++ b/dist/runtime/pino.client.mjs
+@@ -1,3 +1,4 @@
++import { defineNuxtPlugin } from '#app'
+ import pino from "pino";
+ export default defineNuxtPlugin((nuxtApp) => {
+   const { client } = nuxtApp.$config.public.nuxt3Pino;
+diff --git a/dist/runtime/pino.server.mjs b/dist/runtime/pino.server.mjs
+index cad55d9f5204cde72946640f850e2a9326dd0aa3..3c1fddeb07f07f1a26344f19e1f47bb1f3957551 100644
+--- a/dist/runtime/pino.server.mjs
++++ b/dist/runtime/pino.server.mjs
+@@ -1,3 +1,4 @@
++import { defineNuxtPlugin } from '#app'
+ import pino from "pino";
+ export default defineNuxtPlugin((nuxtApp) => {
+   const { server } = nuxtApp.$config.public.nuxt3Pino;

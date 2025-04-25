@@ -1,0 +1,13 @@
+**/build
+**/dist
+**/node_modules
+**/target
+**/.git
+**/.venv
+**/.idea
+**/.pyprojectx
+**/.output
+**/.nuxt
+**/.gradle
+**/.turbo
+**/.pnpm-store

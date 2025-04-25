@@ -1,0 +1,43 @@
+services:
+  services_tracker:
+    command: "true"
+    build:
+      context: .
+      network: host
+      dockerfile: services/tracker/Dockerfile
+      target: integrate
+      secrets:
+        - uninception.sh
+  guis_web:
+    command: "true"
+    build:
+      context: .
+      network: host
+      dockerfile: guis/web/Dockerfile
+      target: integrate
+      secrets:
+        - uninception.sh
+  services_shelfie:
+    command: "true"
+    build:
+      context: .
+      network: host
+      dockerfile: services/shelfie/Dockerfile
+      target: integrate
+      secrets:
+        - uninception.sh
+  services_tracker_tx:
+    command: "true"
+    build:
+      context: .
+      network: host
+      dockerfile: services/tracker-tx/Dockerfile
+      target: integrate
+      secrets:
+        - uninception.sh
+
+secrets:
+  uninception.sh:
+    # This is a patched version of ./plugins/devserver/uninception.sh
+    # that only exists within devserver after its entrypoint, inception.sh, is ran.
+    file: /usr/local/bin/uninception.sh

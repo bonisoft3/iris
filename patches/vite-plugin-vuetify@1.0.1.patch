@@ -1,0 +1,13 @@
+diff --git a/dist/importPlugin.js b/dist/importPlugin.js
+index 4c064aca019d07e3b5b0e711afaa9c0b9c82c7fb..7db281a7ac263a43ac0bb4632c8a7bb9cdc7fbb3 100644
+--- a/dist/importPlugin.js
++++ b/dist/importPlugin.js
+@@ -5,7 +5,7 @@ const path_1 = require("path");
+ const loader_shared_1 = require("@vuetify/loader-shared");
+ const url_1 = require("url");
+ function parseId(id) {
+-    const { query, pathname } = (0, url_1.parse)(id);
++    const { query, pathname } = url_1.parse(id.replace("^(virtual:nuxt:)([a-zA-Z]:)", "$1/$2"));
+     return {
+         query: query ? Object.fromEntries(new url_1.URLSearchParams(query)) : null,
+         path: pathname !== null && pathname !== void 0 ? pathname : id

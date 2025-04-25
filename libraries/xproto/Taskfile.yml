@@ -1,0 +1,14 @@
+version: '3'
+
+tasks:
+  descriptor:
+    cmds:
+      - buf mod update
+      - mkdir -p out/
+      - buf build --as-file-descriptor-set --exclude-source-info  -o 'out/xproto.desc.pb#format=binpb' .
+    sources:
+      - ../../buf.workspace.yaml
+      - buf.yaml
+      - trash/**/*.proto
+    generates:
+      - out/xproto.desc.pb

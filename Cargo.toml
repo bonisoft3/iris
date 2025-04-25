@@ -1,0 +1,15 @@
+[workspace]
+resolver = "2"
+
+members = [
+    "libraries/xproto",
+    "services/boxer"
+]
+
+[workspace.dependencies]
+tonic = "0.10.2"
+prost = { version = "0.12.0", features = [  "prost-derive" ] }
+tokio = { version = "1.25.1", features = ["macros", "rt-multi-thread"] }
+serde = "1.0.188"
+pbjson-types = "0.6.0"
+pbjson = "0.6.0"

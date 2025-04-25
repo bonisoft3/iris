@@ -1,0 +1,11 @@
+selectById:
+SELECT * FROM TrashItemTranslations WHERE id = ?;
+
+selectTranslation:
+SELECT * FROM TrashItemTranslations WHERE item_id = ? AND language = ?;
+
+insert:
+INSERT INTO TrashItemTranslations (id, item_id, language, translations) VALUES (?,?,?,CAST(? AS JSONB));
+
+selectAll:
+SELECT * FROM TrashItemTranslations;
