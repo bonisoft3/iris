@@ -1,0 +1,43 @@
+diff --git a/install.js b/install.js
+index 0dfc3bbc50987bf60528edb9e8f8cd6f4b9cd88c..356b7b1596143255bbbb5ec8f41aa9eb2dc12e77 100644
+--- a/install.js
++++ b/install.js
+@@ -16,6 +16,7 @@ const ARCH_MAPPING = {
+ const PLATFORM_MAPPING = {
+     darwin: "darwin",
+     linux: "linux",
++    win32: "windows",	
+ };
+ 
+ const getPlatform = () => {
+@@ -55,9 +56,19 @@ function runInstallScript(path, version, platform) {
+         version = "latest";
+     }
+     process.env["ATLAS_VERSION"] =  version;
+-    const args = ["--no-install", "--output", binPath, "--platform", platform, "-y", "--user-agent", "atlas-npm"];
++    let execBinPath = binPath;
++    if (platform.includes("windows")) {
++       execBinPath = binPath + ".exe";
++    }
++    const args = ["--no-install", "--output", execBinPath, "--platform", platform, "-y", "--user-agent", "atlas-npm"];
++    let execPath = path
++    let execArgs = args
++    if (platform.includes("windows")) {
++        execPath = "bash"
++        execArgs = [ path, ...args ]
++    }
+     return new Promise((resolve) => {
+-        execFile(path, args, (error, stdout, stderr) => {
++        execFile(execPath, execArgs, (error, stdout, stderr) => {
+             if (error) {
+                 console.warn(error);
+             }
+@@ -65,7 +76,7 @@ function runInstallScript(path, version, platform) {
+             resolve(stdout? stdout : stderr);
+             console.log("Installed Atlas successfully");
+             // make the binary executable
+-            fs.chmodSync(binPath, 0o744);
++            fs.chmodSync(execBinPath, 0o744);
+         });
+     });
+ }

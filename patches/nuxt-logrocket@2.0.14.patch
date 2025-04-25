@@ -1,0 +1,11 @@
+diff --git a/dist/runtime/plugin.client.mjs b/dist/runtime/plugin.client.mjs
+index e309eebc51bdf94d44f52fa365a4789e6bb5269f..7bb1368b7c8a4bd6e6c9aa30f2c27f72c06eb607 100644
+--- a/dist/runtime/plugin.client.mjs
++++ b/dist/runtime/plugin.client.mjs
+@@ -1,4 +1,5 @@
+-import LogRocket from "#imports";
++import LogRocket from "logrocket";
++import { defineNuxtPlugin, useRuntimeConfig } from "#imports";
+ export default defineNuxtPlugin(({ pinia }) => {
+   const opts = useRuntimeConfig()?.public?.logRocket;
+   if (!opts?.id || !opts?.dev && !(process.env.NODE_ENV === "production")) {

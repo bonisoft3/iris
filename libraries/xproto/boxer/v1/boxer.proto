@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package boxer.v1;
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "xproto/gen/books/v1";
+
+// Inspired by https://github.com/googleapis/googleapis/blob/master/google/longrunning/operations.proto
+// and https://developers.google.com/gmail/api/guides/batch?hl=pt-br
+
+service BoxerService {
+  // A fire and forget call, like https://developer.mozilla.org/en-US/docs/Web/API/Beacon_API
+  rpc Beacon(BeaconRequest) returns (BeaconResponse) {}
+  // A cacheable request
+  rpc Get(GetRequest) returns (GetResponse) {}
+  // A mutating request
+  rpc Post(PostRequest) returns (PostResponse) {}
+
+  /* rpc Poll(FireAndForgetRequest) returns (FireAndForgetResponse) {} */
+  /* rpc LongPoll(FireAndForgetRequest) returns (FireAndForgetResponse) {} */
+  /* rpc Webhook(FireAndForgetRequest) returns (FireAndForgetResponse) {} */
+  /* rpc Websocket(FireAndForgetRequest) returns (FireAndForgetResponse) {} */
+}
+
+
+message TheRequest {
+  string uri = 1;
+  string body = 2;
+  string idempotency_key = 3;
+  google.protobuf.Duration timeout = 4;  // the sync timeout
+  google.protobuf.Duration lifetime = 5;  // the async timeout
+  string hook = 6;
+  string socket = 7;
+}
+
+message TheResponse {
+  string status = 1;
+  string body = 2;
+  string idempotency_key = 3;
+}
+
+message BeaconRequest {
+  TheRequest req = 1;
+}
+
+message BeaconResponse {
+  google.protobuf.Empty res = 1;
+}
+
+message GetRequest {
+  TheRequest req = 1;
+}
+
+message GetResponse {
+  TheResponse res = 1;
+}
+
+message PostRequest {
+  TheRequest req = 1;
+}
+
+message PostResponse {
+  TheResponse res = 1;
+}
+

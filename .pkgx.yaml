@@ -1,0 +1,3 @@
+dependencies: github.com/nektos/act@0.2.65
+env:
+  SAY_SCOOP_INSTALL: act@0.2.65

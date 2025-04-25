@@ -1,0 +1,16 @@
+selectById:
+SELECT * FROM TrashItemPb WHERE id = ?;
+
+insert:
+INSERT INTO TrashItemPb (id, pbjson) VALUES (?, CAST(? AS JSONB));
+
+selectAll:
+SELECT * FROM TrashItemPb;
+
+dropout:
+DELETE FROM TrashItemPb WHERE pbjson->>'userId' = ?;
+
+update:
+UPDATE TrashItemPb
+SET pbjson = CAST(? AS JSONB), picture = ?, ts = ?
+WHERE id = ?;

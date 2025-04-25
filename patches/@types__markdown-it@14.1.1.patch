@@ -1,0 +1,13 @@
+diff --git a/dist/index.cjs.d.ts b/dist/index.cjs.d.ts
+index 3937a618c13b3bfb017ab163cb613020bf670d40..a149fa7f935837a3ca6c3fd758b6e1281ba44bff 100644
+--- a/dist/index.cjs.d.ts
++++ b/dist/index.cjs.d.ts
+@@ -979,7 +979,7 @@ interface MarkdownIt {
+      * Used by [linkify](https://github.com/markdown-it/markdown-it/blob/master/lib/rules_core/linkify.js)
+      * rule.
+      */
+-    readonly linkify: LinkifyIt;
++    readonly linkify: typeof LinkifyIt;
+ 
+     /**
+      * Link validation function. CommonMark allows too much in links. By default

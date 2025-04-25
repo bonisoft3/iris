@@ -1,0 +1,8 @@
+insert:
+INSERT INTO UserIris (id, ts, firebaseId, phoneNumber, homeAddress, addressComplement) VALUES (?,?,?,?,?,?);
+
+selectById:
+SELECT phoneNumber, homeAddress, addressComplement FROM UserIris WHERE firebaseId = ?;
+
+updateById:
+UPDATE UserIris SET phoneNumber = ?, homeAddress = ?, addressComplement = ? WHERE firebaseId = ?;

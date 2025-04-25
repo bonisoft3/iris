@@ -1,0 +1,5 @@
+insert:
+INSERT INTO Donates (id, userId, itemId) VALUES (?,?,?);
+
+selectById:
+SELECT * FROM Donates WHERE userId = ?;

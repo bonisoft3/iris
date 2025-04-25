@@ -1,0 +1,127 @@
+syntax = "proto3";
+option go_package = "xproto/gen/books/v1";
+import "google/protobuf/empty.proto";
+
+service BookService {
+	rpc SaveBook(SaveBookRequest) returns (BookSavedResponse) {}
+	rpc SearchBook(FindBookRequest) returns (BookFoundResponse) {}
+	rpc InsertUser(InsertUserRequest) returns (InsertUserResponse);
+	rpc GetUser(GetUserRequest) returns (GetUserResponse);
+	rpc InsertUserBook(InsertUserBookRequest) returns (google.protobuf.Empty);
+	rpc GetUserBooksByStatus(GetUserBooksByStatusRequest) returns (GetUserBooksByStatusResponse);
+	rpc DeleteUserAndBooks(DeleteUserAndBooksRequest) returns (google.protobuf.Empty) {}
+	rpc GetAllBooks(google.protobuf.Empty) returns (AllBooksResponse) {}
+	rpc FrontSaveBook(FrontSaveBookRequest) returns (FrontSaveBookResponse) {}
+	rpc DeleteBook(DeleteBookByIdRequest) returns (google.protobuf.Empty) {}
+	rpc UpdateBook(UpdateBookRequest) returns (UpdateBookResponse) {}
+}
+
+message DeleteBookByIdRequest {
+	string id = 1;
+}
+
+message AllBooksResponse {
+	repeated BookInfo books = 1;
+}
+
+message SaveBookRequest {
+	string base64 = 1;
+}
+
+message BookSavedResponse {
+	string id = 1;
+}
+
+message FindBookRequest {
+	string id = 1;
+}
+
+message BookFoundResponse {
+	string	author = 1;
+	string	title = 2;
+	string	isbn_10 = 3;
+	string	isbn_13 = 4;
+	int32	number_of_pages = 5;
+	string  image_url = 6;
+	string  id = 7;
+}
+
+message BookPic {
+	string base64 = 1;
+}
+
+message BookInfo {
+	string	author = 1;
+	string	title = 2;
+	string	isbn_10 = 3;
+	string	isbn_13 = 4;
+	int32	number_of_pages = 5;
+	string  image_url = 6;
+	string  id = 7;
+}
+
+message InsertUserRequest {
+	string firebase_id = 1;
+	string username = 2;
+	string email = 3;
+}
+
+message InsertUserResponse {
+	string id = 1;
+}
+
+message GetUserRequest {
+	string id = 1;
+}
+
+message GetUserResponse {
+	string id = 1;
+	string username = 2;
+	string email = 3;
+}
+
+message InsertUserBookRequest {
+	string user_id = 1;
+	string book_id = 2;
+	string status = 3;
+}
+
+message GetUserBooksByStatusRequest {
+	string user_id = 1;
+	string status = 2;
+}
+
+message GetUserBooksByStatusResponse {
+	repeated BookInfo books = 1;
+}
+
+message DeleteUserAndBooksRequest {
+	string user_id = 1;
+}
+
+message FrontSaveBookRequest {
+	string	author = 1;
+	string	title = 2;
+	string	isbn_10 = 3;
+	string	isbn_13 = 4;
+	int32	number_of_pages = 5;
+	string	image_url = 6;
+}
+
+message FrontSaveBookResponse {
+	string id = 1;
+}
+
+message UpdateBookRequest {
+	string id = 1;
+	string author = 2;
+	string title = 3;
+	string isbn_10 = 4;
+	string isbn_13 = 5;
+	int32 number_of_pages = 6;
+	string image_url = 7;
+}
+
+message UpdateBookResponse {
+	string id = 1;
+}

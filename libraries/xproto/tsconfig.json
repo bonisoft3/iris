@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "declaration": true,
+    "outDir": "./dist",
+	  "baseUrl": "."
+  },
+  "include": [
+	  ".turbo/bufbuild/index.ts",
+	  ".turbo/bufbuild/**/*.ts"
+  ]
+}

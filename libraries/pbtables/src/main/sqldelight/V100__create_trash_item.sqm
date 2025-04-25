@@ -1,0 +1,7 @@
+CREATE TABLE TrashItemPb (
+    pbjson JSONB,
+    id UUID PRIMARY KEY,
+    description TEXT,
+    picture BYTEA,
+    ts TIMESTAMP WITH TIME ZONE
+);

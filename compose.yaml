@@ -1,0 +1,41 @@
+services:
+  services_tracker:
+    build:
+      context: .
+      network: host
+      dockerfile: ./services/tracker/Dockerfile
+      target: integrate
+      secrets:
+        - host.env
+  guis_web:
+    build:
+      context: .
+      network: host
+      dockerfile: ./guis/web/Dockerfile
+      target: integrate
+      secrets:
+        - host.env
+  services_shelfie:
+    build:
+      context: .
+      network: host
+      dockerfile: ./services/shelfie/Dockerfile
+      target: integrate
+      secrets:
+        - host.env
+  services_tracker_tx:
+    build:
+      context: .
+      network: host
+      dockerfile: ./services/tracker-tx/Dockerfile
+      target: integrate
+      secrets:
+        - host.env
+  plugins_devserver:
+    build:
+      context: .
+      network: host
+      dockerfile: ./plugins/devserver/Dockerfile
+      target: integrate
+      secrets:
+        - host.env

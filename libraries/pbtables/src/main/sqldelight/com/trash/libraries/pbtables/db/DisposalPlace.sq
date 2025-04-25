@@ -1,0 +1,11 @@
+selectById:
+SELECT * FROM DisposalPlace WHERE id = ?;
+
+insert:
+INSERT INTO DisposalPlace (id, createdOn, materialType, userId, imgUrl, latlng) VALUES (?,?,?,?,?, CAST(? AS JSONB));
+
+selectAll:
+SELECT * FROM DisposalPlace;
+
+delete:
+DELETE FROM DisposalPlace WHERE id = ?;
