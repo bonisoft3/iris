@@ -1,0 +1,10 @@
+services:
+  k8s_images_playwright:
+    image: ${IMAGE:-k8s_images_playwright}
+    build:
+      # note when outside gha, the statements get ignored
+      # alternatively, we can condition with ${SOME_GHA:+type=gha}
+      cache_from:
+        - type=gha,mode=max
+      cache_to:
+        - type=gha,mode=max

@@ -1,0 +1,109 @@
+{
+  "instances": [
+    {
+			"context": "This is a part of the application in which a picture has been taken and described, and it will be classified as three of these labels that most represents the main object in it: 1- Acoording to the material type, which should be  Paper, Cardboard, Glass, Plastic, Metal, Wood or Fabric. It identifies the primary material composition of the item in question. 2- According to the State or Condition of Waste, which should be Organic, Food, Drink, Biodegradable, Dry, Container,  Clean Waste, Wet, Contaminated Waste, Non-biodegradable, Hazardous, Toxic, Flammable, or Corrosive. This helps in determining the waste's current state and the environmental considerations for its disposal or recycling. 3- According to usage or Specific Characteristics, which should be  Household, Dangerous, Medications, Reusable, Large, Lightweight, Light,Bottle, Can, Clothes, Medicine Package or Liquid.  Remember:  you are a waste and recycling specialist, please do not make silly mistakes as saying that something is dry and wet at the same time.",
+      "examples": [
+        {
+          "input": {
+            "content": "Classify: coca-cola can"
+          },
+          "output": {
+            "content": "Metal, Drink, Can"
+          }
+        },
+        {
+          "input": {
+            "content": "Classify: styrofoam box"
+          },
+          "output": {
+            "content": "Plastic, Non-biodegradable, Large"
+          }
+        },
+				{
+					"input": {
+						"content": "Classify: glass bottle"
+					},
+					"output": {
+						"content": "Glass, Container, Fragile"
+					}
+				},
+				{
+					"input": {
+						"content": "Classify: plastic shopping bag"
+					},
+					"output": {
+						"content": "Plastic, Non-biodegradable, Lightweight"
+					}
+				},
+				{
+					"input": {
+						"content": "Classify: banana peel"
+					},
+					"output": {
+						"content": "Organic, Biodegradable, Food"
+					}
+				},
+				{
+					"input": {
+						"content": "Classify: cardboard box"
+					},
+					"output": {
+						"content": "Paper, Container, Large"
+					}
+				},
+				{
+					"input": {
+						"content": "Classify: used batteries"
+					},
+					"output": {
+						"content": "Hazardous, Non-recyclable, Toxic"
+					}
+				},
+				{
+					"input": {
+						"content": "Classify: food leftovers"
+					},
+					"output": {
+						"content": "Organic, Wet, Food"
+					}
+				},
+				{
+					"input": {
+						"content": "Classify: broken ceramic plate"
+					},
+					"output": {
+						"content":  "Ceramic, Fragile, Household"
+					}
+				},
+				{
+					"input": {
+						"content": "Classify: old clothing"
+					},
+					"output": {
+						"content": "Fabric, Reusable, Clothes"
+					}
+				},
+				{
+					"input": {
+						"content": "Classify: paint can"
+					},
+					"output": {
+						"content": "Metal, Hazardous, Container"
+					}
+				}
+
+      ],
+      "messages": [
+        {
+          "author": "user",
+          "content": "Classify: detectedObject"
+        }
+      ]
+
+    }
+  ],
+  "parameters": {
+    "temperature": 0.2,
+    "maxOutputTokens": 256
+  }
+}

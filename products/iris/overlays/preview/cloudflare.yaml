@@ -1,0 +1,41 @@
+---
+# Fake implementations of cloudflare
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflare-dpl
+  labels:
+    app: cloudflare-dpl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloudflare-pod
+  template:
+    metadata:
+      labels:
+        app: cloudflare-pod
+    spec:
+      containers:
+      - name: cloudflare-server
+        image: gcr.io/trash-362115/nginx
+        ports:
+          - containerPort: 3380
+        env:
+          - name: UPSTREAM_URL
+            value: http://fake-gcs-svc:4443/
+          - name: LISTEN_PORT
+            value: "3380"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloudflare-svc
+spec:
+  selector:
+    app: cloudflare-pod
+  type: NodePort
+  ports:
+    - port: 3380
+      targetPort : 3380

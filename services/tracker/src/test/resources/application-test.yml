@@ -1,0 +1,83 @@
+micronaut:
+  application:
+    name: tracker
+  object-storage:
+    local:
+      default:
+        enabled: true
+
+datasources:
+  default:
+    # url: jdbc:h2:mem:devDb;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE; #MODE=PostgreSQL;DATABASE_TO_LOWER=FALSE;INIT=RUNSCRIPT FROM 'classpath:init.sql'
+    # driverClassName: org.h2.Driver
+    url: jdbc:tc:postgis:14-3.2:///postgres?TC_REUSABLE=true&TC_DAEMON=true
+    driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
+    username: test
+    password: test
+    dialect: POSTGRES
+
+test-resources:
+  containers:
+    postgresql:
+      image-name: postgis/postgis:14-3.2-alpine
+    mockserver:
+      image-name: mockserver/mockserver
+      hostnames:
+        mockserver.host
+      exposed-ports:
+        mockserver.port: 1080
+    grpcui:
+      image-name: fullstorydev/grpcui:v1.4.1@sha256:eed2cc4969edda33fdc39a7cab2046534835f3f8744f99410fb995335b2205c9
+      exposed-ports:
+        grpcui.port: 8080
+
+iris:
+  google-api-url: "https://us-central1-aiplatform.googleapis.com"
+  google-caption-api-endpoint: "/v1/projects/trash-362115/locations/us-central1/publishers/google/models/imagetext:predict"
+  google-vertex-palm-api-endpoint: "/v1/projects/trash-362115/locations/us-central1/publishers/google/models/chat-bison:predict"
+  storage-location: "/tmp/local-storage/"
+  storage-url: "file://${iris.storage-location}"
+  google-vision-api-url: "https://vision.googleapis.com"
+  google-annotate-endpoint: "/v1/images:annotate"
+  google-translation-url: "https://translation.googleapis.com"
+  google-translation-api-endpoint: "/language/translate/v2"
+
+testcontainers:
+  reuse:
+    enable: true
+
+
+flyway:
+  datasources:
+    default:
+      enabled: true
+      # Super tricky syntax here, no spaces after colon for each location or you will have a hard time
+      locations:
+        - classpath:com/trash/libraries/pbtables/db/migration
+        - classpath:db/pbpostgres
+        - classpath:db/iris
+      placeholders:
+        iris-password: dummypassword
+grpc:
+  server:
+    port: ${random.port}
+
+openai:
+  api:
+    url: http://localhost:11434/
+    key: ${OPENAI_KEY}
+  endpoint:
+    chat-completions: api/chat
+
+google:
+  places:
+    key: ${GOOGLE_PLACES_KEY}
+
+gemini:
+  api:
+    url: "https://generativelanguage.googleapis.com"
+    key: ${GEMINI_API_KEY}
+  endpoint:
+    generate-content: "/v1/models/gemini-2.0-flash:generateContent"
+
+prompt-path-prefix: "classpath:prompts/open_ai_"

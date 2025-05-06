@@ -1,0 +1,21 @@
+{
+  "model": "gpt-4o",
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "This is the picture of a disposal place. What material types can be thrown in it? Answer in one phrase"
+        },
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": "BASE64_IMAGE"
+          }
+        }
+      ]
+    }
+  ],
+  "max_tokens": 300
+}

@@ -1,0 +1,13 @@
+{
+  "model": "llama3.2:1b",
+  "messages": [
+    {
+      "role": "user",
+      "content": "In as few words as possible, identify the material the main object is made of and nothing else, for example, plastic, metal, electronic, organic, glass...",
+      "images": [
+        "BASE64_IMAGE"
+      ]
+    }
+  ],
+  "stream": false
+}

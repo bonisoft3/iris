@@ -1,0 +1,18 @@
+{
+  "model": "llama3.2:1b",
+  "stream": false,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Give me instructions on how to dispose a bottle of water in the most sustainable way possible, the answer should be an ordered list format."
+    },
+    {
+      "role": "assistant",
+      "content": "1. Recycle: Look for recycling bins or centers in your area that accept plastic bottles. Clean and separate the bottle from other materials, remove the cap if required, and place it in the appropriate recycling bin.\n\n2. Refill: Instead of disposing of plastic water bottles, consider investing in a refillable water bottle. This reduces waste and eliminates the need for single-use bottles. Refill your bottle with tap water or use water refill stations available in many public places.\n\n3. Upcycle: Get creative and find ways to upcycle your empty water bottles. Consider using them for arts and crafts projects, such as creating flower vases, pen holders, or even building vertical gardens. Many DIY ideas are available online for inspiration.\n\n4. Donate: If the water bottle is still in good condition and suitable for use, consider donating it. Many organizations, schools, or community centers may have uses for water bottles, especially in areas where access to clean drinking water is limited.\n\n5. Participate in Bottle Return Programs: In some regions, bottle return programs exist where you can return empty bottles and receive a small deposit refund. Check if such programs are available in your area and participate to ensure proper recycling and resource recovery.\n\nRemember, the goal is to minimize waste and promote sustainability by reducing, reusing, and recycling whenever possible."
+    },
+    {
+      "role": "user",
+      "content": "Give me instructions on how to dispose PLACEHOLDER in the most sustainable way possible, the answer should be an ordered list format and should have no other text, only the list."
+    }
+  ]
+}

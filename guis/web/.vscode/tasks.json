@@ -1,0 +1,60 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "install",
+			"type": "shell",
+			"command": "pnpm install --frozen-lockfile"
+		},
+
+		{
+			"label": "build",
+			"type": "shell",
+			"command": "pnpm turbo --filter ./guis/web assemble",
+      "options": { "cwd": "${workspaceFolder}/../.." },
+			"problemMatcher": [ "$tsc" ],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"dependsOn": [ "install" ]
+		},
+		{
+			"label": "test",
+			"type": "shell",
+			"command": "pnpm",
+			"args": [  "turbo", "--filter", "./guis/web", "test" ],
+      "options": { "cwd": "${workspaceFolder}/../.." },
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
+			"problemMatcher": [ "$tsc" ],
+			"dependsOn": [ "install" ]
+		},
+		{
+			"label": "docker-build",
+      "type": "docker-build",
+      "platform": "node",
+			"dockerBuild": {
+				"context": "${workspaceFolder}/../..",
+				"dockerfile": "${workspaceFolder}/Dockerfile",
+				"target": "debug"
+			}
+		},
+		{
+			"label": "docker-run: debug",
+			"dependsOn": ["docker-build"],
+			"type": "docker-run",
+			"node": {
+        "enableDebugging": true
+			},
+			"dockerRun": {
+				"command": "pnpm dev",
+				"env": {
+           "NODE_OPTIONS": "--inspect"
+				}
+			}
+    }
+	]
+}

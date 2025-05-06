@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Test</title>
+</head>
+<body>
+    <button id="getLocation">Get Location</button>
+    <p id="locationResult">Not acquired</p>
+
+    <script>
+        document.getElementById('getLocation').addEventListener('click', function() {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                document.getElementById('locationResult').textContent = `Latitude: ${position.coords.latitude}, Longitude: ${position.coords.longitude}`;
+            }, function(error) {
+                document.getElementById('locationResult').textContent = 'Failed to acquire location';
+            });
+        });
+    </script>
+</body>
+</html>
+

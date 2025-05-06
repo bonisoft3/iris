@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: firefox-svc
+spec:
+  selector:
+    app: firefox-pod
+  type: NodePort
+  ports:
+    - port: 5800
+      targetPort : 5800
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: firefox-dpl
+  labels:
+    app: firefox-dpl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: firefox-pod
+  template:
+    metadata:
+      labels:
+        app: firefox-pod
+    spec:
+      containers:
+      - name: firefox-cnt
+        image: jlesage/firefox:v24.11.1@sha256:ea3ef3febbfadb876955c2eaff5dde4772f70676cd318e0e3706c5ddc0fd9e68
+        ports:
+          - containerPort: 5800
+        env:
+          - name: FF_OPEN_URL
+            value: "http://localhost/"
+          - name: FF_PREF_DOH_OFF
+            value: network.trr.mode=5
+          - name: FF_PREF_MEDIA_FAKE
+            value: media.navigator.streams.fake=true
+          - name: FF_PREF_MEDIA_ALLOW
+            value: media.navigator.permission.disabled=true
+          - name: FF_PREF_CAMERA_ALLOW
+            value: permissions.default.geo=true
+          - name: FF_PREF_GEO_ALLOW
+            value: permissions.default.camera=true
+      # We need a reverse proxy to expose guis-web-svc as localhost
+      # and have it be a trusted origin
+      - name: ngnix-cnt
+        image: gcr.io/trash-362115/nginx
+        env:
+          - name: UPSTREAM_URL
+            value: http://guis-web-svc:8080/
+          - name: LISTEN_PORT
+            value: "80"
+      - name: ngnix-tracker-cnt
+        image: gcr.io/trash-362115/nginx
+        env:
+          - name: UPSTREAM_URL
+            value: http://services-tracker-svc:18080/
+          - name: LISTEN_PORT
+            value: "18080"
+      - name: ngnix-pgrst-cnt
+        image: gcr.io/trash-362115/nginx
+        env:
+          - name: UPSTREAM_URL
+            value: http://pgrst-svc:28080/
+          - name: LISTEN_PORT
+            value: "28080"
+      - name: ngnix-mockserver-cnt
+        image: gcr.io/trash-362115/nginx
+        env:
+          - name: UPSTREAM_URL
+            value: http://services-tracker-svc:38080/
+          - name: LISTEN_PORT
+            value: "38080"

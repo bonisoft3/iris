@@ -1,0 +1,101 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: services-tracker-dpl
+  labels:
+    app: services-tracker-dpl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: services-tracker-pod
+  template:
+    metadata:
+      labels:
+        app: services-tracker-pod
+    spec:
+      containers:
+      - name: services-tracker-mockserver
+        image: gcr.io/trash-362115/mockserver
+        ports:
+          - containerPort: 38080
+      - name: services-tracker-grpcui
+        imagePullPolicy: IfNotPresent
+        image: fullstorydev/grpcui:v1.4.1@sha256:eed2cc4969edda33fdc39a7cab2046534835f3f8744f99410fb995335b2205c9
+        ports:
+          - containerPort: 8080
+        args: [ "--connect-fail-fast=false", "--connect-timeout=60", "--plaintext", "localhost:50051" ]
+      - name: ollama-container
+        image: gcr.io/trash-362115/ollama
+        ports:
+          - containerPort: 11434
+      - name: services-tracker-tx
+        image: gcr.io/trash-362115/services.tracker-tx-gcp
+        imagePullPolicy: Never
+        ports:
+          - containerPort: 18080
+        env:
+          - name: GRPC_TRACKER_SERVICE
+            value: "trash.tracker.v1.TrackerService"
+          - name: GRPC_NEWS_SERVICE
+            value: "trash.tracker.v1.NewsService"
+          - name: GRPC_OBJECT_MATERIAL_SERVICE
+            value: "trash.tracker.v1.ObjectMaterialService"
+          - name: GRPC_DISPOSAL_PLACE_SERVICE
+            value: "trash.tracker.v1.DisposalPlaceService"
+          - name: GRPC_ADDRESS
+            value: "127.0.0.1"
+          - name: GRPC_PORT
+            value: "50051"
+          - name: CLOUD_TLS
+            value: "false"
+      - name: services-tracker-cnt
+        image: gcr.io/trash-362115/services.tracker
+        imagePullPolicy: Never
+        ports:
+          - containerPort: 50051
+            name: grpc
+          - containerPort: 9090
+            name: http
+        env:
+          - name: POSTGRES_JDBC_URL
+            value: "jdbc:postgresql://postgres-service:5432/tracker?loglevel=2"
+          - name: OPENAI_KEY
+            value: mockapikey
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgres-credentials
+                key: password
+        envFrom:
+          - configMapRef:
+              name: postgres-configuration
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: services-tracker-svc
+spec:
+  selector:
+    app: services-tracker-pod
+  type: NodePort
+  ports:
+    - port: 50051
+      targetPort : 50051
+      name: grpc
+    - port: 9090
+      targetPort : 9090
+      name: http
+    - port: 50081
+      targetPort : 8080
+      name: grpcui
+    - port: 18080
+      targetPort : 18080
+      name: tx
+    - port: 38080
+      targetPort : 1080
+      name: mockserver
+    - port: 11434
+      targetPort : 11434
+      name: ollama

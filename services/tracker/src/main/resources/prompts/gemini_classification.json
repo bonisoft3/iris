@@ -1,0 +1,125 @@
+{
+	"contents": [
+	  {
+		"parts": [
+		  {
+			"text": "Your role is to analyze an object and classify it into one of the following categories: organic, recyclable, non_recyclable, trash, eletronic."
+		  },
+		  {
+			"text": "Definitions:"
+		  },
+		  {
+			"text": "*   **organic:** Items derived from living things, such as food scraps, yard waste, and untreated wood."
+		  },
+		  {
+			"text": "*   **recyclable:** Items that can be processed and reused as new materials. This includes common materials like paper, cardboard, plastic bottles (depending on local recycling programs), aluminum cans, and glass."
+		  },
+		  {
+			"text": "*   **non_recyclable:** Items that cannot be recycled, typically due to their material composition or contamination. This includes things like certain types of plastic, styrofoam, and multi-layered materials."
+		  },
+		  {
+			"text": "*   **trash:** Items that are generally considered unusable due to contamination, damage, or other factors, and should go to a landfill. This includes items that might be made of recyclable materials but are no longer suitable for recycling (e.g., a heavily soiled pizza box, broken glass)."
+		  },
+		  {
+			"text": "*   **eletronic:** Items containing eletronic components, including circuit boards, batteries, and wires. This category includes devices like smartphones, computers, appliances, and batteries themselves."
+		  },
+		  {
+			"text": "The item to be classified will be provided in the format: 'Classify: [item description]'"
+		  },
+		  {
+			"text": "Your response MUST be ONLY ONE of these words (organic, recyclable, non_recyclable, trash, eletronic), with no extra text, punctuation, explanation, or formatting. Returning anything else will be considered an error."
+		  },
+		  {
+			"text": "If an item could fall into multiple categories (e.g., a broken eletronic device), prioritize the following order: eletronic > trash > non_recyclable > recyclable > organic. This means if an item is both eletronic and trash, your response should be 'eletronic'."
+		  },
+		  {
+			"text": "If the item does not fit into any of the above categories, classify it as 'non_recyclable'."
+		  },
+		  {
+			"text": "Examples:"
+		  },
+		  {
+			"text": "Classify: guarana soda plastic bottle"
+		  },
+		  {
+			"text": "recyclable"
+		  },
+		  {
+			"text": "Classify: coca-cola can"
+		  },
+		  {
+			"text": "recyclable"
+		  },
+		  {
+			"text": "Classify: styrofoam box"
+		  },
+		  {
+			"text": "non_recyclable"
+		  },
+		  {
+			"text": "Classify: a dirty pizza box"
+		  },
+		  {
+			"text": "trash"
+		  },
+		  {
+			"text": "Classify: a smartphone"
+		  },
+		  {
+			"text": "eletronic"
+		  },
+		  {
+			"text": "Classify: a cardboard box"
+		  },
+		  {
+			"text": "recyclable"
+		  },
+		  {
+			"text": "Classify: a banana peel"
+		  },
+		  {
+			"text": "organic"
+		  },
+		  {
+			"text": "Classify: a plant"
+		  },
+		  {
+			"text": "organic"
+		  },
+		  {
+			"text": "Classify: a broken cell phone"
+		  },
+		  {
+			"text": "eletronic"
+		  },
+		  {
+			"text": "Classify: a used alkaline battery"
+		  },
+		  {
+			"text": "eletronic"
+		  },
+		  {
+			"text": "Classify: a light bulb (incandescent)"
+		  },
+		  {
+			"text": "trash"
+		  },
+		  {
+			"text": "Classify: a broken ceramic plate"
+		  },
+		  {
+			"text": "non_recyclable"
+		  },
+		  {
+			"text": "Classify: an unknown object"
+		  },
+		  {
+			"text": "non_recyclable"
+		  },
+		  {
+			"text": "Classify: PLACEHOLDER"
+		  }
+		]
+	  }
+	]
+}

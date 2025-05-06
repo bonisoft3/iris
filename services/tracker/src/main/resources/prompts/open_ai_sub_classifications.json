@@ -1,0 +1,14 @@
+{
+  "model": "gpt-4o",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a recycling specialist"
+    },
+    {
+      "role": "user",
+      "content": "give me the labels that best represents a PLACEHOLDER as three of these labels that most represents the main object in it: 1- Acoording to the material type, which should be  Paper, Cardboard, Glass, Plastic, Metal, Wood or Fabric. It identifies the primary material composition of the item in question. 2- According to the State or Condition of Waste, which should be Organic, Food, Drink, Biodegradable, Dry, Container,  Clean Waste, Wet, Contaminated Waste, Non-biodegradable, Hazardous, Toxic, Flammable, or Corrosive. This helps in determining the waste's current state and the environmental considerations for its disposal or recycling. 3- According to usage or Specific Characteristics, which should be  Household, Dangerous, Medications, Reusable, Large, Lightweight, Light,Bottle, Can, Clothes, Medicine Package or Liquid. Please give just the three classifications (1,2,3) in one word each, separated by commas and in one line.I don't want numbers. Just the three words separated by commas."
+    }
+
+  ]
+}

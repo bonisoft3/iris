@@ -1,0 +1,97 @@
+[
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/computeMetadata/v1/instance/service-accounts/default/token"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "values": ["application/json"]
+        }
+      ],
+      "body": {
+        "type": "json",
+        "json": "{ \"access_token\": \"mocked_access_token\", \"expires_in\": 3600, \"token_type\": \"Bearer\" }"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/geolocation"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "values": ["application/json"]
+        }
+      ],
+      "body": {
+        "type": "json",
+				"json": "{ \"country\":\"BR\",\"region\":\"sp\",\"city\":\"sao paulo\"}"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/v1/projects/trash-362115/locations/us-central1/publishers/google/models/imagetext:predict"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "values": ["application/json"]
+        }
+      ],
+      "body": {
+        "type": "json",
+        "json": "{ \"deployedModelId\": \"modelId\", \"predictions\": [\"cardboard box\"] }"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/v1/projects/trash-362115/locations/us-central1/publishers/google/models/chat-bison:predict"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "values": ["application/json"]
+        }
+      ],
+      "body": {
+        "type": "json",
+        "json": "{ \"metadata\": {}, \"predictions\": [{ \"safetyAttributes\": {}, \"citationMetadata\": {}, \"candidates\": [{  \"author\": \"me\", \"content\": \"the content\"  }] }] }"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/language/translate/v2"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "values": ["application/json"]
+        }
+      ],
+      "body": {
+        "type": "json",
+        "json": "{ \"data\": { \"translations\": [ { \"translatedText\": \"Mocked translation\" } ] } }"
+      }
+    }
+  }
+]

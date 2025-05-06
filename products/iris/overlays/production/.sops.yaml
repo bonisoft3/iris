@@ -1,0 +1,3 @@
+creation_rules:
+  - unencrypted_regex: "^(apiVersion|metadata|kind|type)$"
+    gcp_kms: projects/trash-362115/locations/global/keyRings/sops/cryptoKeys/sops-key

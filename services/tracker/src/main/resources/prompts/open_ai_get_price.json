@@ -1,0 +1,25 @@
+
+{
+  "model": "gpt-4o",
+  "response_format": {
+    "type": "json_object"
+  },
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "You will receive an image of an item that is about to be discarded. Considering that it's a used item, analyze it and estimate its price in dollars. After performing the analysis, provide the estimated price in a JSON format ONLY, without any additional information or text. The JSON should follow this exact structure: { \"price\": ESTIMATED_VALUE }. This is the format I expect for your response."
+        },
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": "BASE64_IMAGE"
+          }
+        }
+      ]
+    }
+  ],
+  "max_tokens": 300
+}

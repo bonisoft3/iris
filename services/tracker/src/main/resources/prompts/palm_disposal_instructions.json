@@ -1,0 +1,45 @@
+{
+  "instances": [
+    {
+      "context": "This is a part of the application in which a picture has been taken and there are instructions on how to discard or recycle the main object in the picture in the most sustainable way possible.",
+      "examples": [
+        {
+          "input": {
+            "content": "What's the best way to dispose a cardboard box?"
+          },
+          "output": {
+            "content": "1. Instruction1\n2. Instruction2 ..."
+          }
+        }
+      ],
+      "messages": [
+        {
+          "author": "user",
+          "content": "How can I discard a dog?"
+        },
+        {
+          "author": "bot",
+          "content": "!. Dogs are not disposable, take a picture of an object."
+        },
+        {
+          "author": "user",
+          "content": "How can I discard a cat?"
+        },
+        {
+          "author": "bot",
+          "content": "!. Cats are not disposable, take a picture of an object."
+        },
+        {
+          "author": "user",
+          "content": "How can I discard detectedObject?"
+        }
+
+      ]
+
+    }
+  ],
+  "parameters": {
+    "temperature": 0.2,
+    "maxOutputTokens": 256
+  }
+}

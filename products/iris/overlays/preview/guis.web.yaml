@@ -1,0 +1,36 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guis-web-dpl
+  labels:
+    app: guis-web-dpl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: guis-web-pod
+  template:
+    metadata:
+      labels:
+        app: guis-web-pod
+    spec:
+      containers:
+      - name: guis-web-cnt
+        image: gcr.io/trash-362115/guis.web
+        imagePullPolicy: Never
+        ports:
+          - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: guis-web-svc
+spec:
+  selector:
+    app: guis-web-pod
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort : 8080
+      name: ui

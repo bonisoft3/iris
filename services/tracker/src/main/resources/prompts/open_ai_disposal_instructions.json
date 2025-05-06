@@ -1,0 +1,37 @@
+{
+  "model": "gpt-4o",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a recycling specialist."
+    },
+    {
+      "role": "user",
+      "content": "Hello, I want you to give me ways to dispose PLACEHOLDER in the most sustainable way possible. The instructions should be in an ordered list format with a maximum of 4 items and nothing else."
+    },
+    {
+      "role": "assistant",
+      "content": "1. Separate the materials to ensure proper disposal.\n2. Remove any contaminants before disposal.\n3. Place it in the appropriate disposal bin or drop-off location.\n4. Consider reusing or repurposing if possible."
+    },
+    {
+      "role": "user",
+      "content": "Great! Now I also want you to apply a strict rule: If the item is an animal, you must ALWAYS respond with the exact phrase: 'Animals shouldn't be disposed, please take a picture of an object.'"
+    },
+    {
+      "role": "assistant",
+      "content": "Understood! I will always respond with that phrase when the item is an animal."
+    },
+    {
+      "role": "user",
+      "content": "Now, I want you to remember: When classifying an object for disposal, your response MUST follow this logic:\n\n1. If it's an animal, respond ONLY with: 'Animals shouldn't be disposed, please take a picture of an object.'\n2. If it's an object, list ONLY 4 steps to dispose of it sustainably, without extra details, explanations, or references to local regulations.\n3. The list must be in a universal format, applicable in any location.\n\nIf you understand these rules, please confirm."
+    },
+    {
+      "role": "assistant",
+      "content": "Understood! I will follow these rules exactly as specified."
+    },
+    {
+      "role": "user",
+      "content": "Perfect! Now, answer this: How should I dispose of PLACEHOLDER in the most sustainable way possible?"
+    }
+  ]
+}

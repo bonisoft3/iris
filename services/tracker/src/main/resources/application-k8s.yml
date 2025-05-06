@@ -1,0 +1,88 @@
+micronaut:
+  server:
+    port: 9090
+  application:
+    name: tracker
+  object-storage:
+    gcp:
+      default:
+        bucket: "trash-362115-jpg-bytes"
+  control-panel:
+    allowed-environments: k8s
+    enabled: true
+
+# Fill gcp data with fake data so we can point object storage to fake-gcs
+gcp:
+  project-id: fake-project-id
+  credentials:
+    # This is a fake key, only the metadata is correct. It was created by
+    # creating a temporary real service account, downloading its json,
+    # anonymizing the data by hand and base64 encoding the json.
+    # After that the temporary service account was deleted.
+    encoded-key: "ewogICJ0eXBlIjogInNlcnZpY2VfYWNjb3VudCIsCiAgInByb2plY3RfaWQiOiAiZmFrZS1wcm9qZWN0IiwKICAicHJpdmF0ZV9rZXlfaWQiOiAiMGQ0OWE3MWVjMjUwYjZiNDJlMDY4M2ZlNzMyMDQwNzQ5MDFiYTYyMiIsCiAgInByaXZhdGVfa2V5IjogIi0tLS0tQkVHSU4gUFJJVkFURSBLRVktLS0tLVxuTUlJRXZRSUJBREFOQmdrcWhraUc5dzBCQVFFRkFBU0NCS2N3Z2dTakFnRUFBb0lCQVFDVTdjWGcxVi9zWHF4MVxuYjZpVzBZREdxTzIrcGNSZjl1SHIyZktUNThMdkk5d2JRdmNzL0ZZU1FxQ01zTm9LcGtUWFljUlhVQ3BOVWR2RFxuZEFjRlBsMWlPTDhqUk00L0JtQ01WUVEyeXFtQkp0a0VNdlVpdTlHWGdYQk1nSExjZGlsdzZYalArdWhSZlBnZ1xuWDJmbllBNkgwY0dpdDhKNVRCTGVqbFY2NlVzdjV5bTFtcm9xKzA1NEo1QW9mZDlKOUJSeTEySTVtcXN0Mk5ZUlxuUXljd3J4aVRkQVIxdGhwWGlzdmhNYnFpZVZOTktrUkg1dHQ1MUZIalFPbnpTL25WVlJwclkxaTFTYUI5REFLZVxuQ3ZVaXJBWVAwTXFJb3NPaEtYekNwYXNldlBtalZsWk5mblN1czN6OEc1SzRjbmRXUTdoODNOSHA5cC9JY3JEcFxuTy9YcXRCeWRBZ01CQUFFQ2dnRUFQTmpJdUF0MW5ZVXd3T3BWM3dqSnJHRG9nYlFJZjR6RzBTM0N4bHN5Y2JJZFxuQTZaZ2hxaXlJZFBHOUxSczRWejlVMkpHYmNYN0Fvd25WYnZhQW5Kd2hPamFidloxclpwVmFBQjBNRTZzNG0rVVxueXZwbTNVSVBaKzhpaXA4UVRyS1lTK0dYMHFHWXVYSnRqZ3hzejBPWHJEWXUvdVJGT0htMFcrbWJVeFJ0KzZ1K1xuMkNuZDBjTU9lRDVnWnY2ZVZFNUxwMW5WaGFTSEhESVRLU2ZNZW15YWVHclZUZDlaY1hha0NUNjNVcjBlQXk4bFxuMVdHZC85UjV2aGs1eVQ4YitSS3RjMFNLenhFRkduWll0RnlaS0l4eHlFSFBlSWRaVWd6WWd6MkJwS0pucTEwbVxuSnc4ajJwSGVQYlhMSzB0N0M2VXpLbFpwUGpneGlrQ1M1NjQvSk40aW9RS0JnUURMUmVqdzd4S09VaWZSK3hPRVxudTU3R0JkblRtU21yZ1JaTVk5d25RVXhpWmZrZTdUaTUwWVcwVSsveEhQT1BnaU5EdmQzRzUrYWJad2Z6bEorVFxuR3VkZVZlQUc2MnFQd3JUaDhkdFNrZzFiUVlydUJnS0hjZkZvZ2xKM0ovNWRUMnlTbEtnSTQ5N0grMVJ1QzA4UFxuTSsrMjM1Yzc2N1plamI4NXBoRS9kdjNzSndLQmdRQzdqek00YVJxeHFUUU5yQUtDd29kN1dJUWdhakZrb1VhUFxuT3QrM3lZTzArM3ZXRTM5ZlNyMzd5YzdTbkFzbVlaUnFiZmhmdmdtZGhxdzZmdDJienQwSld0MzVhWW5SMHFGS1xuQnA1cE9qYU1BMldIZ3ZGeUs2UklhZ2R2Uy96N2Y0cHlyc1JyUFpVUUJxRDMyRW9mOEhUb0poZEhBOUlkM29QRFxuK2M0czVsQjNtd0tCZ0JrTWlHUUlVZlVQMHJCaGpFb3pCS0hLWHNsZ2VtNFQvamR6cHRGL2puWWhzczFJMWxDdlxuclJaSHNhMjRyNXJqb296YWZOWGlCZHpvbVdZK3psdEdXWFNhaUh6UnpkUGhYb0RwV09tWDdlVnM4ajNhcDcwaFxuSVdxTGhMWUNTNm9iKzNra3NJQkg5RkFZZkpNQytiOFoyMVJod1RVMUdzZ1VGNWgzQ25FVHJMN0pBb0dBS0FkNFxuOUFvaWcxWk1ZTHFjVXBIMzNsQlc2cUFmYUkydkJIU1pPSjFPZWJyT2hETG5GVXhiWGJpRlpwZWRIWlRuMndzYlxuWGp1dHk2dnBhQmFaYjE1bitFNG5YOHF4ZWxHTTBNSzIzbGhwT2RxanVaY3R0cU12emJDclk0cUJOSi9VeVlNWlxuTXBZVEVUZUk5VHg1SFhYeFRYYUxzMEZTZjhOMHRjZkR3L3Rub3c4Q2dZRUFybldGU3J5cmNxMm05L3ZBUXJZSFxuUjJBUHRkb0V1cXlMMlVGWWYyMGU2bllTeDBBbVVqcWZEYXcxTW9BVmdvNGpqbVVHTzZpSkxCVHYrcXNZZFk1L1xuQlJGWXhyVTVtSXJndFN4WDFYMmxvQVNHM080UVlZc3MvRnlnWFQ4WEdJckYxcDdhbFZISHVXTk50MlM5RzVXdFxuUTdDWDlMQ0NDQS9GeDQxY0h1b2pmMEE9XG4tLS0tLUVORCBQUklWQVRFIEtFWS0tLS0tXG4iLAogICJjbGllbnRfZW1haWwiOiAiZmFrZS1mb3ItZGV2QGZha2UtcHJvamVjdC5pYW0uZ3NlcnZpY2VhY2NvdW50LmNvbSIsCiAgImNsaWVudF9pZCI6ICIxMjU2MTQ0Njk2Nzg0ODU3OTQ0MzYiLAogICJhdXRoX3VyaSI6ICJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20vby9vYXV0aDIvYXV0aCIsCiAgInRva2VuX3VyaSI6ICJodHRwczovL29hdXRoMi5nb29nbGVhcGlzLmNvbS90b2tlbiIsCiAgImF1dGhfcHJvdmlkZXJfeDUwOV9jZXJ0X3VybCI6ICJodHRwczovL3d3dy5nb29nbGVhcGlzLmNvbS9vYXV0aDIvdjEvY2VydHMiLAogICJjbGllbnRfeDUwOV9jZXJ0X3VybCI6ICJodHRwczovL3d3dy5nb29nbGVhcGlzLmNvbS9yb2JvdC92MS9tZXRhZGF0YS94NTA5L2Zha2UtZm9yLWRldiU0MGZha2UtcHJvamVjdC5pYW0uZ3NlcnZpY2VhY2NvdW50LmNvbSIsCiAgInVuaXZlcnNlX2RvbWFpbiI6ICJnb29nbGVhcGlzLmNvbSIKfQ=="
+
+grpc:
+  server:
+    address: 0.0.0.0
+    port: 50051
+    add-listen-address: 0.0.0.0
+    max-inbound-message-size: 20480000  # 20mb
+
+iris:
+  google-api-url: "http://localhost:1080"
+  cloud-compute-metadata-url: "http://localhost:1080/computeMetadata"
+  cloud-compute-metadata-endpoint: "/v1/instance/service-accounts/default/token"
+  google-caption-api-endpoint: "/v1/projects/trash-362115/locations/us-central1/publishers/google/models/imagetext:predict"
+  google-vertex-palm-api-endpoint: "/v1/projects/trash-362115/locations/us-central1/publishers/google/models/chat-bison:predict"
+  storage-url: "http://fake-gcs-svc:4443/trash-362115-jpg-bytes/"
+  disposal-place-storage-url: "https://fake-gcs-svc:4443/trash-362115-disposal-place-pics/"
+  fake-gcs-host: "http://fake-gcs-svc:4443"
+  google-annotate-endpoint: "/v1/images:annotate"
+  google-vision-api-url: "https://vision.googleapis.com"
+  google-translation-url: "http://localhost:1080"
+  google-translation-api-endpoint: "/language/translate/v2"
+  google-maps-api-url: "http://localhost:1080"
+
+
+datasources:
+  default:
+    url: ${POSTGRES_JDBC_URL:`jdbc:postgresql://localhost:5432/tracker?loglevel=2`}
+    driverClassName: org.postgresql.Driver
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:postgres}
+    schema-generate: CREATE_DROP
+    dialect: POSTGRES
+
+flyway:
+  datasources:
+    default:
+      enabled: true
+      create-schemas: true
+      # Super tricky syntax here, no spaces after colon for each location or you will have a hard time
+      locations:
+        - classpath:com/trash/libraries/pbtables/db/migration
+        - classpath:db/pbpostgres
+        - classpath:db/k8ssetup  # tables need to exist before granting permissions
+        - classpath:db/iris
+      placeholders:
+        iris-password: ${POSTGRES_PASSWORD:postgres}
+
+openai:
+  api:
+    url: http://localhost:11434/
+    key: ${OPENAI_KEY}
+  endpoint:
+    chat-completions: api/chat
+
+google:
+  places:
+    key: ${GOOGLE_PLACES_KEY}
+
+gemini:
+  api:
+    url: "https://generativelanguage.googleapis.com"
+    key: ${GEMINI_API_KEY}
+  endpoint:
+    generate-content: "/v1/models/gemini-2.0-flash:generateContent"
+
+prompt-path-prefix: "classpath:prompts/open_ai_"

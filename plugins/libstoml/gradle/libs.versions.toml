@@ -1,0 +1,12 @@
+[versions]
+## SDK Versions
+java = "21"
+androidjava = "11"
+kotlin = "1.9.21"
+
+[libraries]
+
+gradle-kotlin-jvm = { module = "org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin", version.ref = "kotlin" }
+apache-commons-compress = { module = "org.apache.commons:commons-compress", version = "1.21" }  # required by mpp
+adarshr-test-logger-plugin = { module = "com.adarshr:gradle-test-logger-plugin", version = "3.2.0" }
+tasktree-plugin = { module ="com.dorongold.plugins:task-tree", version = "2.1.0" }

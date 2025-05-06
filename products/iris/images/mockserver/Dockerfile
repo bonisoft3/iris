@@ -1,0 +1,5 @@
+FROM mockserver/mockserver:mockserver-5.15.0@sha256:0f9ef78c94894ac3e70135d156193b25e23872575d58e2228344964273b4af6b AS service
+
+COPY initializerJson.json /config/initializerJson.json
+ENV MOCKSERVER_INITIALIZATION_JSON_PATH /config/initializerJson.json
+ENV MOCKSERVER_LOG_LEVEL ERROR

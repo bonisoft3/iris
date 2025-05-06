@@ -1,0 +1,34 @@
+volumes:
+  root-dot-docker-cache-mount: {}
+services:
+  develop:
+    volumes:
+      - ${DIND:+/root/.dcm}${DIND:-root-dot-docker-cache-mount}:/root/.dcm
+      - //var/run/docker.sock:/var/run/docker.sock
+      - ${HOME:-~}/.skaffold/cache:/root/.skaffold/cache
+    entrypoint: [ "../../plugins/devserver/dind.sh" ]
+    secrets:
+      - host.env
+    command: [ "./gradlew", "dev", "-t" ]
+    ports:
+      - "8080:8080"
+    network_mode: host
+    build:
+      secrets:
+        - host.env
+      network: host
+      context: ../..
+      dockerfile: services/tracker/Dockerfile
+      target: debug
+  integrate:
+    command: "true"
+    build:
+      secrets:
+        - host.env
+      network: host
+      context: ../..
+      dockerfile: services/tracker/Dockerfile
+      target: integrate
+secrets:
+  host.env:
+    environment: HOST_ENV

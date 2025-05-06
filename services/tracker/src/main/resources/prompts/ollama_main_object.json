@@ -1,0 +1,13 @@
+{
+  "model": "llama3.2:1b",
+  "stream": false,
+  "messages": [
+    {
+      "role": "user",
+      "content": "In as few words as possible, identify just the main object in the image and the material it is made of and nothing else, for example, green retractable plastic pen or empty glass cup or banana.",
+      "images": [
+        "BASE64_IMAGE"
+      ]
+    }
+  ]
+}

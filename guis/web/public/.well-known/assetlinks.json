@@ -1,0 +1,11 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.trash.tracker",
+      "sha256_cert_fingerprints":
+        ["4A:66:FF:BE:77:E3:FA:3E:D5:B4:01:FC:C0:EA:55:31:AD:FE:6F:42:3B:D5:8B:86:45:D5:9A:0B:6A:F1:BF:06"]
+    }
+  }
+]

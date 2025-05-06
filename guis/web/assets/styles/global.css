@@ -1,0 +1,140 @@
+/* Import statements */
+@import url('default-form.css');
+@import url('animations.css');
+@import url('modal-styles.css');
+@import url('variables.css');
+
+/* Global styles */
+html {
+  background: linear-gradient(0deg, rgba(0, 107, 86, 0.05), rgba(0, 107, 86, 0.05)), var(--secundary-color);
+}
+
+body, *{
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+}
+
+.v-main {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.v-card{
+  border: none !important;
+  overflow: inherit !important;
+}
+
+.v-card--variant-elevated{
+  box-shadow: none !important;
+}
+.main-dark {
+  background-color: gray;
+}
+
+.primary-bg{
+  background: linear-gradient(0deg, rgba(0, 107, 86, 0.05), rgba(0, 107, 86, 0.05)), var(--secundary-color) !important;
+}
+
+.secundary-bg{
+  background-color: var(--bg-color-green);
+}
+
+/* Layout-specific styles */
+.app-content{
+  background: linear-gradient(0deg, rgba(0, 107, 86, 0.05), rgba(0, 107, 86, 0.05)), var(--secundary-color);
+  margin-bottom: 62px;
+}
+
+.v-application__wrap{
+  background: linear-gradient(0deg, rgba(0, 107, 86, 0.05), rgba(0, 107, 86, 0.05)), var(--secundary-color);
+}
+
+/* Component-specific styles */
+
+/* Colors */
+.primary-text{
+  color: var(--text-primary-color);
+}
+
+.secundary-text{
+  color: var(--text-secundary-color);
+}
+
+/* Font weights */
+.font-weight-400 {
+  font-weight: 400;
+}
+
+.font-weight-500 {
+  font-weight: 500;
+}
+
+.font-weight-700 {
+  font-weight: 700;
+}
+
+/* Headings */
+.text-sm {
+  font-size: 14px !important;
+}
+
+.text-sm-1xl {
+  font-size: 18px !important;
+}
+
+.text-base {
+  font-size: 22px;
+}
+
+.text-1xl {
+  font-size: 24px;
+}
+
+.text-2xl {
+  font-size: 32px;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--button-primary-color);
+  padding: 10px 20px;
+  border-radius: 100px;
+  cursor: pointer;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.btn-primary svg{
+  color: #006B56;
+  width: 20px;
+}
+
+.btn-primary span{
+  color: var(--text-gray-primary);;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.btn-empty {
+  padding: 10px 20px;
+  border-radius: 100px;
+  cursor: pointer;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  width: 100%;
+  color: var(--text-gray-primary) !important;
+}
+
+.btn-user {
+  cursor: pointer;
+}
+
+.btn-user svg{
+  color: var(--text-primary-color);
+  width: 30px;
+}

@@ -1,0 +1,37 @@
+---
+# Fake implementations of gcp services
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fake-gcs-dpl
+  labels:
+    app: fake-gcs-dpl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fake-gcs-pod
+  template:
+    metadata:
+      labels:
+        app: fake-gcs-pod
+    spec:
+      containers:
+      - name: fake-gcs-server
+        image: gcr.io/trash-362115/fake-gcs-server
+        ports:
+          - containerPort: 4443
+        args: [ "-scheme", "http" ]
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fake-gcs-svc
+spec:
+  selector:
+    app: fake-gcs-pod
+  type: NodePort
+  ports:
+    - port: 4443
+      targetPort : 4443

@@ -1,0 +1,23 @@
+
+resources:
+- services.tracker.yaml
+- guis.web.yaml
+- postgres.yaml
+- pgrst.yaml
+- gcp.yaml
+- firefox.yaml
+- cloudflare.yaml
+- electric.yaml
+
+configMapGenerator:
+- literals:
+  - POSTGRES_USER=iris
+  - POSTGRES_DB=tracker
+  name: postgres-configuration
+
+secretGenerator:
+- literals:
+  - password=postgres
+  name: postgres-credentials
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization

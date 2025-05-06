@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cdc-svc
+spec:
+  selector:
+    app: cdc-pod
+  type: NodePort
+  ports:
+    - port: 58080
+      targetPort : 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cdc-dpl
+  labels:
+    app: cdc-dpl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cdc-pod
+  template:
+    metadata:
+      labels:
+        app: cdc-pod
+    spec:
+      containers:
+      - name: debezium-cnt
+        image:  debezium/server
+        ports:
+          - containerPort: 8080
+        envFrom:
+          - configMapRef:
+              name: postgres-configuration
+        volumeMounts:        
+        - name: debezium-config-volume
+          mountPath: "/debezium/conf"
+      - name: pulsar-cnt
+        image:  apachepulsar/pulsar
+        ports:
+          - containerPort: 6650
+        args: [ "bin/pulsar", "standalone" ]    
+      volumes:
+      - name: debezium-config-volume
+        configMap:  
+          name: debezium-config-map
+          items:
+          - key: "debezium.conf"
+            path: "application.properties"    
+---            
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: debezium-config-map
+data:
+  debezium.conf: |
+    debezium.sink.type=pulsar
+    debezium.sink.pulsar.client.serviceUrl=pulsar://pulsar:6650
+    debezium.source.connector.class=io.debezium.connector.postgresql.PostgresConnector
+    debezium.source.database.hostname=postgres-service
+    debezium.source.database.user=postgres
+    debezium.source.database.password=postgres
+    debezium.source.database.dbname=postgres
+    debezium.source.schema.whitelist=inventory
+    debezium.source.plugin.name=pgoutput

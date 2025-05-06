@@ -1,0 +1,13 @@
+{
+  "model": "llama3.2:1b",
+  "stream": false,
+  "messages": [
+    {
+      "role": "user",
+      "content": "You will receive an image of an item that is about to be discarded. Considering that it's a used item, analyze it and estimate its price in dollars. After performing the analysis, give me only the number corresponding the estimated price, shouldn't have any additional text or characters.",
+      "images": [
+        "BASE64_IMAGE"
+      ]
+    }
+  ]
+}

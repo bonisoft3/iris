@@ -1,0 +1,74 @@
+micronaut:
+  application:
+    name: tracker
+  object-storage:
+    local:
+      default:
+        enabled: true
+  control-panel:
+    enabled: true
+
+iris:
+  storage-url: "https://storage.googleapis.com/trash-362115-jpg-bytes/"
+  google-vision-api-url: "https://vision.googleapis.com"
+  google-translation-url: "https://translation.googleapis.com"
+  google-translation-api-endpoint: "/language/translate/v2"
+  disposal-place-storage-url: "https://fake-gcs-svc:4443/trash-362115-disposal-place-pics/"
+  google-api-url: "https://us-central1-aiplatform.googleapis.com"
+  google-maps-api-url: "https://maps.googleapis.com"
+  google-caption-api-endpoint: "/v1/projects/trash-362115/locations/us-central1/publishers/google/models/imagetext:predict"
+  google-vertex-palm-api-endpoint: "/v1/projects/trash-362115/locations/us-central1/publishers/google/models/chat-bison:predict"
+  cloud-compute-metadata-url: "http://localhost:1080/computeMetadata"
+  cloud-compute-metadata-endpoint: "/v1/instance/service-accounts/default/token"
+  google-annotate-endpoint: "/v1/images:annotate"
+
+datasources:
+  default:
+    # url: jdbc:h2:mem:devDb;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE; #MODE=PostgreSQL;DATABASE_TO_LOWER=FALSE;INIT=RUNSCRIPT FROM 'classpath:init.sql'
+    # driverClassName: org.h2.Driver
+    url: jdbc:tc:postgis:14-3.2:///postgres?TC_REUSABLE=true&TC_DAEMON=true
+    driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
+    username: test
+    password: test
+    dialect: POSTGRES
+
+test-resources:
+  containers:
+    postgresql:
+      image-name: postgis/postgis:14-3.2-alpine
+
+grpc:
+  server:
+    port: ${random.port}
+
+flyway:
+  datasources:
+    default:
+      enabled: true
+      create-schemas: true
+      locations:
+        - classpath:com/trash/libraries/pbtables/db/migration
+        - classpath:db/pbpostgres
+        - classpath:db/iris
+      placeholders:
+        iris-password: ${POSTGRES_PASSWORD:postgres}
+
+openai:
+  api:
+    url: "https://api.openai.com/v1"
+    key: ${OPENAI_KEY:mockvalue}
+  endpoint:
+    chat-completions: "/chat/completions"
+
+google:
+  places:
+    key: ${GOOGLE_PLACES_KEY}
+
+gemini:
+  api:
+    url: "https://generativelanguage.googleapis.com"
+    key: ${GEMINI_API_KEY}
+  endpoint:
+    generate-content: "/v1/models/gemini-2.0-flash:generateContent"
+
+prompt-path-prefix: "classpath:prompts/open_ai_"

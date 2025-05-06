@@ -1,0 +1,22 @@
+
+{
+  "model": "gpt-4o",
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "Identify the main object in the image. If this object is identified as a trash can, recycling bin, or any other place you can dispose of trash, answer yes. If not, answer no."
+        },
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": "BASE64_IMAGE"
+          }
+        }
+      ]
+    }
+  ],
+  "max_tokens": 300
+}

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TensorFlow.js GPU Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"> </script>
+</head>
+<body>
+    <script>
+        async function testGPUBackend() {
+            // Set the backend to 'webgl' to use GPU
+            await tf.setBackend('webgl');
+
+            // Check if the current backend is 'webgl'
+            const isWebGL = tf.getBackend() === 'webgl';
+
+            // Create a simple tensor and perform an operation
+            const a = tf.tensor([1, 2, 3, 4]);
+            const b = a.square();
+
+            // Output the results
+            document.body.innerHTML = isWebGL ? `Using WebGL (GPU) backend. Result: ${b}` : 'Not using WebGL backend.';
+        }
+
+        testGPUBackend();
+    </script>
+</body>
+</html>
+

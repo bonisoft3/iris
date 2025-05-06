@@ -1,0 +1,28 @@
+x-watch: &watch
+  watch:
+    - action: sync
+      path: ./pages
+      target: /monorepo/guis/web/pages
+    - action: rebuild
+      path: package.json
+      ignore:
+        - node_modules/
+        - ./pages
+    - action: sync
+      path: ./tests
+      target: /monorepo/guis/web/tests
+
+
+services:
+  develop:
+    build: { "dockerfile": "guis/web/Dockerfile" }
+    develop: 
+      <<: *watch
+  integrate:
+    "build": { "dockerfile": "guis/web/Dockerfile" }
+    develop: 
+      <<: *watch
+
+  build: { "build": { "dockerfile": "guis/web/Dockerfile" } }
+  test: { "build": { "dockerfile": "guis/web/Dockerfile" } }
+  preview: { "build": { "dockerfile": "guis/web/Dockerfile" } }

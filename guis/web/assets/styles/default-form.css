@@ -1,0 +1,41 @@
+.form-container__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.form-container {
+  width: 100%;
+}
+
+.defalut-input {
+  margin-top: 15px;
+}
+
+.default-btn {
+  width: 100px;
+}
+.default-btn .v-btn__loader {
+  color: white !important;
+}
+.default-btn .v-field__overlay {
+  background-color: transparent !important;
+}
+.default-btn .v-btn__content {
+  text-transform: capitalize !important;
+  color: white !important;
+}
+
+.defalut-input .v-input__control {
+  height: 48px !important;
+}
+
+.defalut-input .v-input__control input {
+  height: 48px !important;
+  min-height: 48px !important;
+  padding-top: 20px !important;
+}
+
+.defalut-input .v-field-label {
+  top: 14px !important;
+}

@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: electric
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: electric
+  template:
+    metadata:
+      labels:
+        app: electric
+    spec:
+      containers:
+      - name: electric
+        image: electricsql/electric:0.9.2
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: postgres-configuration
+              key: POSTGRES_USER
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: postgres-configuration
+              key: POSTGRES_DB
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: password
+        - name: DATABASE_URL
+          value: postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgres-service:5432/$(POSTGRES_DB)?sslmode=disable
+        ports:
+        - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: electric-service
+spec:
+  selector:
+    app: electric
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000

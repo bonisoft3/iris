@@ -1,0 +1,3 @@
+dependencies: skaffold@2.13.2 getsops.io@3.9.1 viaduct.ai/ksops@4.3.2 kubectl@1.31.2
+env:
+  - SAY_SCOOP_INSTALL: skaffold@2.13.2 sops@3.9.1 kubectl@1.31.2

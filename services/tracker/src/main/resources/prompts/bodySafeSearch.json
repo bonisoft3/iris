@@ -1,0 +1,14 @@
+{
+	"requests": [
+		{
+			"image": {
+				"content": "base64"
+			},
+			"features": [
+				{
+					"type": "SAFE_SEARCH_DETECTION"
+				}
+			]
+		}
+	]
+}

@@ -1,0 +1,6 @@
+# python, make and npm are required when re2 needs to be built
+dependencies:
+  - nodejs.org@22.14.0
+  - pnpm.io@9.15.2
+env:
+  SAY_SCOOP_INSTALL: nodejs@22.14.0 pnpm@9.15.2

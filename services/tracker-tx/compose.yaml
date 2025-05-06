@@ -1,0 +1,34 @@
+volumes:
+  root-dot-docker-cache-mount: {}
+
+services:
+  develop:
+    volumes:
+      - //var/run/docker.sock:/var/run/docker.sock
+      - ${DIND:+/root/.dcm}${DIND:-root-dot-docker-cache-mount}:/root/.dcm
+    command: "sh -c 'task build && envoy -c <(envsubst < transcoding.yaml | yq -o json)'"
+    healthcheck:
+      test: curl http://localhost:18080/
+      interval: 40s
+      timeout: 30s
+      retries: 3
+      start_period: 60s
+    ports:
+      - "8080"
+    build:
+      context: ../..
+      dockerfile: services/tracker-tx/Dockerfile
+      target: debug
+
+  integrate:   
+    build:
+      context: ../..
+      dockerfile: services/tracker-tx/Dockerfile
+      network: host
+      target: integrate
+      secrets:
+        - host.env
+
+secrets:
+  host.env:
+    environment: HOST_ENV

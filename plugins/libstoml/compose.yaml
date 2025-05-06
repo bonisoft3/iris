@@ -1,0 +1,34 @@
+volumes:
+  root-dot-docker-cache-mount: {}
+services:
+  develop:
+    command: gradle run
+    ports: []
+    build:
+      network: host
+      context: ../..
+      dockerfile: plugins/libstoml/Dockerfile
+      secrets:
+        - host.env
+      target: debug
+    volumes:
+      - ${DIND:+/root/.dcm}${DIND:-root-dot-docker-cache-mount}:/root/.dcm
+      - //var/run/docker.sock:/var/run/docker.sock
+      - ${HOME:-~}/.skaffold/cache:/root/.skaffold/cache
+    entrypoint:
+      - /monorepo/plugins/devserver/dind.sh
+    secrets:
+      - host.env
+    network_mode: host
+  integrate:
+    command: "true"
+    build:
+      network: host
+      context: ../..
+      dockerfile: plugins/libstoml/Dockerfile
+      secrets:
+        - host.env
+      target: integrate
+secrets:
+  host.env:
+    environment: HOST_ENV

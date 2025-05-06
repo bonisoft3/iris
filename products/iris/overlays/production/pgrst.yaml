@@ -1,0 +1,56 @@
+apiVersion: run.cnrm.cloud.google.com/v1beta1
+kind: RunService
+metadata:
+  name: services-pgrst
+spec:
+  ingress: "INGRESS_TRAFFIC_ALL"
+  location: "us-central1"
+  projectRef:
+    external: projects/trash-362115
+  template:
+    timeout: "600s"
+    containers:
+      - image: gcr.io/trash-362115/postgrest
+        ports:
+        - name: http1
+          containerPort: 3000
+        env:
+          - name: POSTGRES_PASSWORD
+            valueSource:
+                secretKeyRef:
+                  secretRef:
+                    external: projects/646949889529/secrets/trash-cloudsql
+                  versionRef:
+                    external: latest
+          - name: POSTGRES_USER
+            valueSource:
+                secretKeyRef:
+                  secretRef:
+                    external: projects/646949889529/secrets/IRIS_DATABASE_USER
+                  versionRef:
+                    external: latest
+          - name: PGRST_DB_ANON_ROLE
+            value: "anon"
+        volumeMounts:
+        - mountPath: "/cloudsql"
+          name: cloudsql
+
+    volumes:
+    - cloudSqlInstance:
+        instances:
+        - external: trash-362115:us-central1:trash-newpostgres
+      name: cloudsql
+---
+# https://github.com/GoogleCloudPlatform/k8s-config-connector/issues/793
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPartialPolicy
+metadata:
+  name: allow-all-users-to-invoke-pgrst
+spec:
+  resourceRef:
+    kind: RunService
+    name: services-pgrst
+  bindings:
+    - members:
+      - member: allUsers
+      role: roles/run.invoker

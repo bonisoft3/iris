@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TensorFlow.js CPU Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"> </script>
+</head>
+<body>
+    <script>
+        async function testCPUBackend() {
+            // Set the backend to 'cpu' to use CPU
+            await tf.setBackend('cpu');
+
+            // Check if the current backend is 'cpu'
+            const isWebGL = tf.getBackend() === 'cpu';
+
+            // Create a simple tensor and perform an operation
+            const a = tf.tensor([1, 2, 3, 4]);
+            const b = a.square();
+
+            // Output the results
+            document.body.innerHTML = isWebGL ? `Using CPU backend. Result: ${b}` : 'Not using WebGL backend.';
+        }
+
+        testCPUBackend();
+    </script>
+</body>
+</html>
+

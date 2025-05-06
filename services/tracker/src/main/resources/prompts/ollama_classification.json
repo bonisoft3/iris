@@ -1,0 +1,78 @@
+{
+  "model": "llama3.2:1b",
+	"stream": false,
+  "messages": [
+    {
+      "role": "system",
+      "content": "This is a part of the application in which a picture has been taken and your job is to classify it as one of these labels:organic,recyclable,non_recyclable,trash,eletronic.Answer with ONE word only"
+    },
+    {
+      "role": "user",
+      "content": "Classify: guarana soda plastic bottle"
+    },
+    {
+      "role": "assistant",
+      "content": "recyclable"
+    },
+    {
+      "role": "user",
+      "content": "Classify: coca-cola can"
+    },
+    {
+      "role": "assistant",
+      "content": "recyclable"
+    },
+    {
+      "role": "user",
+      "content": "Classify: styrofoam box"
+    },
+    {
+      "role": "assistant",
+      "content": "non_recyclable"
+    },
+    {
+      "role": "user",
+      "content": "Classify: a dirty pizza box"
+    },
+    {
+      "role": "assistant",
+      "content": "trash"
+    },
+    {
+      "role": "user",
+      "content": "Classify: a smartphone"
+    },
+    {
+      "role": "assistant",
+      "content": "eletronic"
+    },
+    {
+      "role": "user",
+      "content": "Classify: a cardboard box"
+    },
+    {
+      "role": "assistant",
+      "content": "recyclable"
+    },
+    {
+      "role": "user",
+      "content": "Classify: a banana"
+    },
+    {
+      "role": "assistant",
+      "content": "organic"
+    },
+    {
+      "role": "user",
+      "content": "Classify: a plant"
+    },
+    {
+      "role": "assistant",
+      "content": "organic"
+    },
+    {
+      "role": "user",
+      "content": "Classify: PLACEHOLDER"
+    }
+  ]
+}

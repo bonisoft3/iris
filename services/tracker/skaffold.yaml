@@ -1,0 +1,28 @@
+apiVersion: skaffold/v4beta11
+kind: Config
+metadata:
+  name: services_tracker
+build:
+  local:
+    push: false
+    tryImportMissing: false
+    useBuildkit: true
+    concurrency: 64
+  artifacts:
+    - image: gcr.io/trash-362115/services.tracker
+      context: ../..
+      docker:
+        dockerfile: services/tracker/Dockerfile
+        target: release
+
+profiles:
+- name: production
+  build:
+    platforms: ["linux/amd64"]
+    local:
+      push: true
+
+test:
+  - image: gcr.io/trash-362115/services.tracker
+    custom:
+    - command: just integrate

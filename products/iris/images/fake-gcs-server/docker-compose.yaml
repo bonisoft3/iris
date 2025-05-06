@@ -1,0 +1,10 @@
+services:
+  k8s_images_fake_gcs_server:
+    image: ${IMAGE:-k8s_images_fake_gcs_server}
+    build:
+      # note when outside gha, the statements get ignored
+      # alternatively, we can condition with ${SOME_GHA:+type=gha}
+      cache_from:
+        - type=gha,mode=max
+      cache_to:
+        - type=gha,mode=max

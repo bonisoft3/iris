@@ -1,0 +1,16 @@
+{
+    "target": {
+      "integrate": {
+        "cache-from": [
+          "type=gha,scope=ci-Linux-X64-devserver",
+          "type=gha,scope=ci-Linux-X64-services-tracker-tx-integrate"
+        ],
+        "cache-to": [
+          "type=gha,scope=ci-Linux-X64-services-tracker-tx-integrate"
+        ],
+        "output": [
+          "type=docker"
+        ]
+      }
+   }
+}

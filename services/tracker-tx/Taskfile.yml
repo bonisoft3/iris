@@ -1,0 +1,19 @@
+version: '3'
+
+includes:
+  xproto:
+    taskfile: ../../libraries/xproto
+    dir: ../../libraries/xproto
+
+
+tasks:
+  build:
+    deps: [ xproto:descriptor ]
+    cmds:
+      - mkdir -p out
+      - cat transcoding.yaml cloud_run_tls.yaml > out/transcoding.yaml.gcp.tpl
+      - cat transcoding.yaml > out/transcoding.yaml.tpl
+  test:
+    deps: [ build ]
+    cmds:
+      - yq . < out/transcoding.yaml.gcp.tpl

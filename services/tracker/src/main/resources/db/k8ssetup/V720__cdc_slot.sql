@@ -1,0 +1,5 @@
+SELECT PG_CREATE_LOGICAL_REPLICATION_SLOT('gcpcdcslot', 'pgoutput');
+-- CREATE USER datastream WITH REPLICATION IN ROLE cloudsqlsuperuser LOGIN PASSWORD 'datastream123';
+-- GRANT SELECT ON ALL TABLES IN SCHEMA public TO datastream;
+-- GRANT USAGE ON SCHEMA public TO datastream;
+-- ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO datastream;

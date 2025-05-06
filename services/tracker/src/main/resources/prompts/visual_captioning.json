@@ -1,0 +1,13 @@
+{
+  "instances": [
+    {
+      "image": {
+        "bytesBase64Encoded": "base64"
+      }
+    }
+  ],
+  "parameters": {
+    "sampleCount": 1,
+    "language": "en"
+  }
+}

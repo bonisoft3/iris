@@ -1,0 +1,135 @@
+apiVersion: skaffold/v4beta11
+kind: Config
+requires:
+  - configs: [ "services_tracker" ]
+    path: ../../services/tracker/skaffold.yaml
+  - configs: [ "services_tracker-tx" ]
+    path: ../../services/tracker-tx/skaffold.yaml
+  - configs: [ "guis_web" ]
+    path: ../../guis/web/skaffold.yaml
+metadata:
+  name: trash
+
+portForward:
+- resourceType: service
+  resourceName: services-tracker-svc
+  port: 50051  # grpc
+  address: 0.0.0.0
+- resourceType: service
+  resourceName: services-tracker-svc
+  port: 50081  # grpcui
+  address: 0.0.0.0
+- resourceType: service
+  resourceName: services-tracker-svc
+  port: 9090  # tracker admin
+  address: 0.0.0.0
+- resourceType: service
+  resourceName: services-tracker-svc
+  port: 11434  # ollama
+  address: 0.0.0.0
+- resourceType: service
+  resourceName: services-tracker-svc
+  port: 18080  # transcoded api
+  address: 0.0.0.0
+- resourceType: service
+  resourceName: pgrst-svc
+  port: 28080  # postgREST api
+  address: 0.0.0.0
+- resourceType: service
+  resourceName: postgres-service
+  port: 5432  # postgres
+  address: 0.0.0.0
+- resourceType: service
+  resourceName: guis-web-svc
+  port: 8080  # ui
+  address: 0.0.0.0
+- resourceType: service
+  resourceName: firefox-svc
+  port: 5800  # browser
+  address: 0.0.0.0
+- resourceType: service
+  resourceName: electric-service
+  port: 3000  # browser
+  address: 0.0.0.0
+
+profiles:
+- name: preview
+  activation:
+  - command: dev
+  - command: debug
+  manifests:
+    kustomize:
+      paths:
+      - overlays/preview/
+  deploy:
+    kubeContext: kind-iris  # create with `kind create cluster -n iris`
+    kubectl:
+      defaultNamespace: default
+  build:
+    local:
+      push: false
+      # on mac using buildkit and dependent image args which are not multiarch
+      # can yield misleading messages, flip this to diagnose when needed
+      useBuildkit: true
+      useDockerCLI: true
+      concurrency: 64
+    artifacts:
+      - image: gcr.io/trash-362115/ollama
+        context: images/ollama
+        docker:
+          target: release
+
+      - image: gcr.io/trash-362115/fake-gcs-server
+        context: images/fake-gcs-server
+        docker: {}
+
+      - image: gcr.io/trash-362115/nginx
+        context: ../../k8s/images/nginx
+        docker: {}
+
+      - image: gcr.io/trash-362115/mockserver
+        context: images/mockserver
+        docker: {}
+
+      - image: gcr.io/trash-362115/playwright
+        context: images/playwright
+        docker: {}
+  verify:
+  - name: browse-preview-e2e
+    container:
+      name: playwright
+      image: gcr.io/trash-362115/playwright
+    executionMode:
+      kubernetesCluster: {}
+
+- name: production
+  manifests:
+    kustomize:
+      paths:
+      - overlays/production/
+      buildArgs: [--enable-alpha-plugins, --enable-exec]
+  deploy:
+    # We keep the config controller down to not spend money on it, but if you want
+    # to update production, just bring it up with the command below and delete it
+    # afterwards. It is only necessary for doing changes, once the system is stable
+    # the config controller can be brought down.
+    # gcloud anthos config controller create trash-kcc --location=us-central1 --full-management
+    # Because of https://github.com/GoogleCloudPlatform/k8s-config-connector/issues/832
+    # we must delete by hand the cloud run services before running skaffold.
+    # Otherwise the cluster gets spoiled and we need to create a new one (and
+    # it happened almost ten times already).
+    kubeContext: gke_trash-362115_us-central1_krmapihost-trash-kcc
+    kubectl:
+      defaultNamespace: config-control
+  build:
+    platforms: ["linux/amd64"]
+    # https://github.com/GoogleContainerTools/skaffold/issues/5334, https://github.com/GoogleContainerTools/skaffold/issues/6078
+    local:
+      push: true
+      useDockerCLI: true
+      useBuildkit: true
+      concurrency: 64
+    artifacts:
+      - image: gcr.io/trash-362115/postgrest
+        context: images/postgrest
+        docker: {}

@@ -1,0 +1,22 @@
+
+{
+  "model": "gpt-4o",
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "In as few words as possible, identify the material the main object is made of and nothing else, for example, plastic, metal, electronic, organic, glass..."
+        },
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": "BASE64_IMAGE"
+          }
+        }
+      ]
+    }
+  ],
+  "max_tokens": 300
+}

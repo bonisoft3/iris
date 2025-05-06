@@ -1,0 +1,100 @@
+micronaut:
+  application:
+    name: tracker
+  object-storage:
+    gcp:
+      default:
+        bucket: "trash-362115-jpg-bytes"
+  #  https://github.com/micronaut-projects/micronaut-core/issues/8113
+  http:
+    client:
+      event-loop-group: other
+      read-timeout: 90s
+      pool:
+        enabled: false
+  netty:
+    event-loops:
+      other:
+        num-threads: 10
+        prefer-native-transport: true
+
+gcp:
+  project-id: trash-362115
+  http:
+    client:
+      auth:
+        patterns:
+          - /**
+        services:
+          default:
+            audience: ${AUDIENCE_KEY}
+
+grpc:
+  server:
+    address: 0.0.0.0
+    port: 50051
+    add-listen-address: 0.0.0.0
+    max-inbound-message-size: 20480000  # 20mb
+
+iris:
+  google-api-url: "https://us-central1-aiplatform.googleapis.com"
+  google-caption-api-endpoint: "/v1/projects/trash-362115/locations/us-central1/publishers/google/models/imagetext:predict"
+  google-vertex-palm-api-endpoint: "/v1/projects/trash-362115/locations/us-central1/publishers/google/models/chat-bison:predict"
+  cloud-compute-metadata-url: "http://metadata.google.internal/computeMetadata"
+  cloud-compute-metadata-endpoint: "/v1/instance/service-accounts/default/token"
+  storage-url: "https://storage.googleapis.com/trash-362115-jpg-bytes/"
+  disposal-place-storage-url: "https://storage.googleapis.com/trash-362115-disposal-place-pics/"
+  google-vision-api-url: "https://vision.googleapis.com"
+  google-annotate-endpoint: "/v1/images:annotate"
+  google-translation-url: "https://translation.googleapis.com"
+  google-translation-api-endpoint: "/language/translate/v2"
+  google-maps-api-url: "https://maps.googleapis.com"
+
+datasources:
+  default:
+    url: jdbc:postgresql:///trash-tracker-db?cloudSqlInstance=trash-362115:us-central1:trash-newpostgres&socketFactory=com.google.cloud.sql.postgres.SocketFactory&user=iris&password=${POSTGRES_PASSWORD}&connectTimeout=600&connectionTimeout=600
+    driverClassName: org.postgresql.Driver
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    schema-generate: CREATE_DROP
+    dialect: POSTGRES
+    # Trying flags to be robust to cloudsql slow initialization
+    login-timeout: 250
+    initialization-fail-fast: false
+    initialization-fail-timeout: 300000
+    connection-timeout: 300000  # 5m in milliseconds
+
+
+flyway:
+  datasources:
+    default:
+      enabled: true
+      create-schemas: true
+      # Super tricky syntax here, no spaces after colon for each location or you will have a hard time
+      locations:
+        - classpath:com/trash/libraries/pbtables/db/migration
+        - classpath:db/pbpostgres
+        - classpath:db/k8ssetup  # tables need to exist before granting permissions
+        - classpath:db/iris
+      placeholders:
+        iris-password: ${POSTGRES_PASSWORD:postgres}
+
+openai:
+  api:
+    url: "https://api.openai.com/v1"
+    key: ${OPENAI_KEY}
+  endpoint:
+    chat-completions: "/chat/completions"
+
+google:
+  places:
+    key: ${GOOGLE_PLACES_KEY}
+
+gemini:
+  api:
+    url: "https://generativelanguage.googleapis.com"
+    key: ${GEMINI_API_KEY}
+  endpoint:
+    generate-content: "/v1/models/gemini-2.0-flash:generateContent"
+
+prompt-path-prefix: "classpath:prompts/open_ai_"
