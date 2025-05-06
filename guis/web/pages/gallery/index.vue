@@ -39,52 +39,50 @@ onMounted(() => {
 </script>
 
 <template>
-	<Transition name="slide-right" mode="out-in">
-		<div v-if="show">
-			<div class="app-content slide-right">
-				<div class="gallery primary-bg">
-					<div class="heading-wrapper">
-						<div class="d-flex pt-1">
-							<div class="w-50 text-center font-weight-medium" :class="{ highlight: isUserGallery }"
-								@click="switchGallery">
-								<p class="gallery-text pt-3" :class="{ 'selected-gallery': isUserGallery }">
-									{{ t("your_pics") }}
-								</p>
-								<div class="mb-2">
-									<VSkeletonLoader v-if="isPending" class="mx-auto" elevation="2" min-width="50px" width="20px"
-										height="20px" />
-									<p v-else class="pictures-count font-weight-regular mb-2">{{ userTrashItems.length }}</p>
-								</div>
+	<div v-if="show">
+		<div class="app-content slide-right">
+			<div class="gallery primary-bg">
+				<div class="heading-wrapper">
+					<div class="d-flex pt-1">
+						<div class="w-50 text-center font-weight-medium" :class="{ highlight: isUserGallery }"
+							@click="switchGallery">
+							<p class="gallery-text pt-3" :class="{ 'selected-gallery': isUserGallery }">
+								{{ t("your_pics") }}
+							</p>
+							<div class="mb-2">
+								<VSkeletonLoader v-if="isPending" class="mx-auto" elevation="2" min-width="50px" width="20px"
+									height="20px" />
+								<p v-else class="pictures-count font-weight-regular mb-2">{{ userTrashItems.length }}</p>
 							</div>
-							<div class="w-50 text-center font-weight-medium" :class="{ highlight: isGlobalGallery }"
-								@click="switchGallery">
-								<p class="gallery-text pt-3" :class="{ 'selected-gallery': isGlobalGallery }">
-									IRIS Global
-								</p>
-								<div class="mb-2">
-									<VSkeletonLoader v-if="isPending" class="mx-auto" elevation="2" min-width="50px" width="20px"
-										height="20px" />
-									<p v-else class="pictures-count font-weight-regular mb-2">{{ globalTrashItems.length }}</p>
-								</div>
+						</div>
+						<div class="w-50 text-center font-weight-medium" :class="{ highlight: isGlobalGallery }"
+							@click="switchGallery">
+							<p class="gallery-text pt-3" :class="{ 'selected-gallery': isGlobalGallery }">
+								IRIS Global
+							</p>
+							<div class="mb-2">
+								<VSkeletonLoader v-if="isPending" class="mx-auto" elevation="2" min-width="50px" width="20px"
+									height="20px" />
+								<p v-else class="pictures-count font-weight-regular mb-2">{{ globalTrashItems.length }}</p>
 							</div>
 						</div>
 					</div>
-					<div class="mr-0 mt-2">
-						<v-row v-if="isPending" no-gutters>
-							<v-col v-for="_ in 8" :key="_" cols="6" class="pa-1">
-								<VSkeletonLoader :loading="true" class="mx-auto" elevation="2" min-width="50px" height="100%" type="image" />
-							</v-col>
-						</v-row>
-						<KeepAlive v-else class="mr-0 mt-2">
-							<component v-if="isGlobalGallery" :is="GlobalGalleryComponent" :trashItems="globalTrashItems" />
-							<component v-else :is="UserGalleryComponent" :trashItems="userTrashItems"
-								:logged-as-guest="loggedAsGuest" />
-						</KeepAlive>
-					</div>
+				</div>
+				<div class="mr-0 mt-2">
+					<v-row v-if="isPending" no-gutters>
+						<v-col v-for="_ in 8" :key="_" cols="6" class="pa-1">
+							<VSkeletonLoader :loading="true" class="mx-auto" elevation="2" min-width="50px" height="100%" type="image" />
+						</v-col>
+					</v-row>
+					<KeepAlive v-else class="mr-0 mt-2">
+						<component v-if="isGlobalGallery" :is="GlobalGalleryComponent" :trashItems="globalTrashItems" />
+						<component v-else :is="UserGalleryComponent" :trashItems="userTrashItems"
+							:logged-as-guest="loggedAsGuest" />
+					</KeepAlive>
 				</div>
 			</div>
 		</div>
-	</Transition>
+	</div>
 </template>
 
 <style scoped>
