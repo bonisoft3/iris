@@ -75,9 +75,9 @@ google:
 
 gemini:
   api:
-    url: "https://generativelanguage.googleapis.com"
+    url: http://localhost:11434/
     key: ${GEMINI_API_KEY}
   endpoint:
-    generate-content: "/v1/models/gemini-2.0-flash:generateContent"
+    chat-completions: api/chat
 
 prompt-path-prefix: "classpath:prompts/open_ai_"

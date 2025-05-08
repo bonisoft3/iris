@@ -76,13 +76,16 @@ openai:
 
 google:
   places:
-    key: ${GOOGLE_PLACES_KEY}
+    key: ${GOOGLE_PLACES_KEY:mockvalue}
+
+chat:
+  env: test
 
 gemini:
   api:
-    url: "https://generativelanguage.googleapis.com"
+    url: http://localhost:11434/
     key: ${GEMINI_API_KEY}
   endpoint:
-    generate-content: "/v1/models/gemini-2.0-flash:generateContent"
+    generate-content: api/chat
 
-prompt-path-prefix: "classpath:prompts/open_ai_"
+prompt-path-prefix: "classpath:prompts/ollama_"

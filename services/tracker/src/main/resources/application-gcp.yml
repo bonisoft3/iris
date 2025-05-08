@@ -90,6 +90,9 @@ google:
   places:
     key: ${GOOGLE_PLACES_KEY}
 
+chat:
+  env: production
+
 gemini:
   api:
     url: "https://generativelanguage.googleapis.com"

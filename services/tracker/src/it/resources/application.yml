@@ -62,7 +62,10 @@ openai:
 
 google:
   places:
-    key: ${GOOGLE_PLACES_KEY}
+    key: ${GOOGLE_PLACES_KEY:mockvalue}
+
+chat:
+  env: test
 
 gemini:
   api:
