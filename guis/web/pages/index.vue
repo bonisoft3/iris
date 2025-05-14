@@ -140,9 +140,9 @@ function getCenterForDisposalPlace(disposalPlaces: DisposalPlace[]): { lat: numb
 }
 
 onMounted(async () => {
+  show.value = true
   const predominantDiscardingTypes = await getPredominantDiscardingTypes()
   logger.info('Welcome to Iris!')
-  show.value = true
   LogRocket.init('v8rkrf/iris')
   const userData = useCurrentUser()
   if (userData.value) {
@@ -163,7 +163,6 @@ onMounted(async () => {
   const url = config.public.SERVICES_PGRST_URL_PREFIX + path
   disposalPlaces.value = await getDisposalPlacesFromUser(url)
   center.value = getCenterForDisposalPlace(disposalPlaces.value as DisposalPlace[])
-  show.value = true
 })
 </script>
 
