@@ -29,7 +29,7 @@ interface Label {
 }
 
 interface WasteCategoryInterface {
-	icon: string
+  icon: string
   style: string
   title: string
   description: string
@@ -42,6 +42,7 @@ interface Post {
 }
 
 const { t, tm } = useI18n()
+const contentReady = ref(false)
 const show = ref(false)
 const prefix = ref('')
 const curiosity = ref('')
@@ -163,59 +164,61 @@ onMounted(async () => {
   const url = config.public.SERVICES_PGRST_URL_PREFIX + path
   disposalPlaces.value = await getDisposalPlacesFromUser(url)
   center.value = getCenterForDisposalPlace(disposalPlaces.value as DisposalPlace[])
+
+  contentReady.value = true
 })
 </script>
 
 <template>
-	<div v-if="show" class="d-flex flex-column w-100 align-center">
-		<div class="w-100" style="max-width: 800px">
-			<div class="header">
-				<div class="secundary-bg pa-3 pb-8 w-100 bg-image-logo" style="position: relative;">
-					<h1 class="white--text font-weight-400 text-base ml-4 mr-1 mb-4">
-						{{ curiosity }}
-					</h1>
-					<div class="d-flex justify-end pr-6 mb-2">
-						<NuxtLink :to="localePath({ name: 'posts' })">
-							<v-icon class="mr-2 mt-1 text-sm">
-								mdi-arrow-right
-							</v-icon>
-							<span class="white--text text-sm">{{ t('learn_more') }}</span>
-						</NuxtLink>
-					</div>
-					<div v-if="wasteCategoriesLength > 0" class="waste-categories-wrapper py-5">
-						<WasteCategory v-for="(wasteCategory, index) in wasteCategories" :key="index" :waste-category="wasteCategory" />
-						<div class="d-flex px-4 mt-2 flex-column" style="color: #003C71BF">
-							<p class="my-4">
-								Your disposal places
-							</p>
-							<div v-if="!disposalPlaces" class="empty-box d-flex w-100 pa-10 flex-column justify-center">
-								<p class="text-center">
-									{{ t('ops_empty') }}
-								</p>
-								<p class="text-center">
-									{{ t('you_can_keep_a_record') }}
-								</p>
-							</div>
-							<NuxtLink v-if="disposalPlaces" :to="localePath('your_disposal_places')">
-								<GoogleMap
-									:zoom="16"
-									:center="center"
-									:disable-default-ui="true"
-									style="width: 100%; height: 25vh;"
-									:api-key="config.public.GOOGLE_MAPS_API_KEY"
-								>
-									<Marker :options="{ position: center }" />
-								</GoogleMap>
-							</NuxtLink>
-						</div>
-					</div>
-					<div v-else class="waste-categories-wrapper py-5 d-flex justify-center flex-column">
-						<EmptyGallery :use-title-for-empty-gallery="false" />
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+  <div v-if="show" class="d-flex flex-column w-100 align-center">
+    <div class="w-100" style="max-width: 800px">
+      <div class="header">
+        <div class="secundary-bg pa-3 pb-8 w-100 bg-image-logo" style="position: relative;">
+          <h1 class="white--text font-weight-400 text-base ml-4 mr-1 mb-4">
+            {{ curiosity }}
+          </h1>
+          <div class="d-flex justify-end pr-6 mb-2">
+            <NuxtLink :to="localePath({ name: 'posts' })">
+              <v-icon class="mr-2 mt-1 text-sm">
+                mdi-arrow-right
+              </v-icon>
+              <span class="white--text text-sm">{{ t('learn_more') }}</span>
+            </NuxtLink>
+          </div>
+          <div v-show="contentReady" class="waste-categories-wrapper py-5">
+            <WasteCategory v-for="(wasteCategory, index) in wasteCategories" :key="index" :waste-category="wasteCategory" />
+            <div class="d-flex px-4 mt-2 flex-column" style="color: #003C71BF">
+              <p class="my-4">
+                Your disposal places
+              </p>
+              <div v-if="!disposalPlaces" class="empty-box d-flex w-100 pa-10 flex-column justify-center">
+                <p class="text-center">
+                  {{ t('ops_empty') }}
+                </p>
+                <p class="text-center">
+                  {{ t('you_can_keep_a_record') }}
+                </p>
+              </div>
+              <NuxtLink v-if="disposalPlaces" :to="localePath('your_disposal_places')">
+                <GoogleMap
+                  :zoom="16"
+                  :center="center"
+                  :disable-default-ui="true"
+                  style="width: 100%; height: 25vh;"
+                  :api-key="config.public.GOOGLE_MAPS_API_KEY"
+                >
+                  <Marker :options="{ position: center }" />
+                </GoogleMap>
+              </NuxtLink>
+            </div>
+          </div>
+          <div v-if="!contentReady" class="waste-categories-wrapper py-5 d-flex justify-center align-items-center">
+            <v-progress-circular indeterminate color="primary" size="32"></v-progress-circular>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
