@@ -22,21 +22,21 @@ spec:
           valueSource:
             secretKeyRef:
               secretRef:
-                external: projects/646949889529/secrets/IRIS_DATABASE_USER
+                external: projects/646949889529/secrets/neon-database-user
               versionRef:
                 external: latest
         - name: POSTGRES_PASSWORD
           valueSource:
             secretKeyRef:
               secretRef:
-                external: "trash-cloudsql"
+                external: projects/646949889529/secrets/neon-database-password
               versionRef:
-                external: "1"
+                external: latest
         - name: POSTGRES_JDBC_URL
           valueSource:
             secretKeyRef:
               secretRef:
-                external: projects/646949889529/secrets/postgres-jdbc-url
+                external: projects/646949889529/secrets/neon-jdbc-url
               versionRef:
                 external: latest
         - name: OPENAI_KEY
@@ -69,16 +69,8 @@ spec:
                 external: latest
         - name: MICRONAUT_ENVIRONMENTS
           value: gcp
-        volumeMounts:
-        - mountPath: "/cloudsql"
-          name: cloudsql
     scaling:
       maxInstanceCount: 2
-    volumes:
-    - cloudSqlInstance:
-        instances:
-        - external: trash-362115:us-central1:trash-newpostgres
-      name: cloudsql
 ---
 # https://github.com/GoogleCloudPlatform/k8s-config-connector/issues/793
 apiVersion: iam.cnrm.cloud.google.com/v1beta1

@@ -15,31 +15,15 @@ spec:
         - name: http1
           containerPort: 3000
         env:
-          - name: POSTGRES_PASSWORD
+          - name: PGRST_DB_URI
             valueSource:
-                secretKeyRef:
-                  secretRef:
-                    external: projects/646949889529/secrets/trash-cloudsql
-                  versionRef:
-                    external: latest
-          - name: POSTGRES_USER
-            valueSource:
-                secretKeyRef:
-                  secretRef:
-                    external: projects/646949889529/secrets/IRIS_DATABASE_USER
-                  versionRef:
-                    external: latest
+              secretKeyRef:
+                secretRef:
+                  external: projects/646949889529/secrets/neon-database-url
+                versionRef:
+                  external: latest
           - name: PGRST_DB_ANON_ROLE
             value: "anon"
-        volumeMounts:
-        - mountPath: "/cloudsql"
-          name: cloudsql
-
-    volumes:
-    - cloudSqlInstance:
-        instances:
-        - external: trash-362115:us-central1:trash-newpostgres
-      name: cloudsql
 ---
 # https://github.com/GoogleCloudPlatform/k8s-config-connector/issues/793
 apiVersion: iam.cnrm.cloud.google.com/v1beta1

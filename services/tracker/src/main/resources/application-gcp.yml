@@ -52,7 +52,7 @@ iris:
 
 datasources:
   default:
-    url: jdbc:postgresql:///trash-tracker-db?cloudSqlInstance=trash-362115:us-central1:trash-newpostgres&socketFactory=com.google.cloud.sql.postgres.SocketFactory&user=iris&password=${POSTGRES_PASSWORD}&connectTimeout=600&connectionTimeout=600
+    url: ${POSTGRES_JDBC_URL}
     driverClassName: org.postgresql.Driver
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
