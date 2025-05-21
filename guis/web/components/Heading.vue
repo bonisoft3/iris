@@ -12,7 +12,13 @@ const user = ref<User | null>(null)
 const photo = ref('')
 const version = ref(config.public.IRIS_VERSION)
 const anonymousUser = ref(false)
-
+const menuItems = [
+  { name: 'log_out', href: '/logout' },
+  { name: 'support', link: 'support' },
+  { name: 'profile', link: 'profile' },
+  { name: 'settings', link: 'settings', line: true },
+  { name: 'delete_account', link: 'dropout', line: true, condition: '!anonymousUser' },
+];
 function userMenu() {
   if (showLang.value)
     showLang.value = !showLang.value
@@ -55,65 +61,35 @@ onMounted(async () => {
         </div>
         <div v-click-outside="closeMenu" class="d-flex w-100">
           <div class="pr-1 py-2 mb-1 button">
-            <v-btn
-              class="pa-2"
-              :ripple="false"
-              size="x-medium"
-              variant="text"
-              color="#0000"
-              @click="langSwitcher"
-              @touch="langSwitcher"
-            >
+            <v-btn class="pa-2" :ripple="false" size="x-medium" variant="text" color="#0000" @click="langSwitcher"
+              @touch="langSwitcher">
               <v-icon style="color: white;" icon="mdi-web" size="x-large" />
             </v-btn>
-            <v-btn
-              class="btn-user mx-auto pa-2"
-              :ripple="false"
-              size="x-medium"
-              variant="text"
-              color="#0000"
-              @click="userMenu"
-              @touch="langSwitcher"
-            >
+            <v-btn class="btn-user mx-auto pa-2" :ripple="false" size="x-medium" variant="text" color="#0000"
+              @click="userMenu" @touch="langSwitcher">
               <v-avatar v-if="photo" :image="photo" />
               <v-icon v-else style="color: white;" icon="mdi-account-circle-outline" size="x-large" />
             </v-btn>
           </div>
-          <div v-show="showMenu" class="user-menu">
-            <div class="pl-4 py-3 pb-5">
-              <a href="/logout" @click="closeMenu"><button><p class="text">{{ t('log_out') }}</p></button></a>
-            </div>
-            <div class="pl-4 py-3 pb-5">
-              <NuxtLink :to="localePath({ name: 'support' })" @click="closeMenu">
-                <p class="font-weight-regular" style="color: #003C71;">
-                  {{ t('support') }}
+          <div v-show="showMenu" class="user-menu px-0 py-2">
+            <div v-for="item in menuItems" :key="item.name" :class="{ 'line': item.line }">
+              <NuxtLink v-if="item.link" :to="localePath({ name: item.link })" @click="closeMenu">
+                <p class="menu-item" style="color: #003C71;">
+                  {{ t(item.name) }}
                 </p>
               </NuxtLink>
+              <a v-else class="menu-item" :href="item.href" @click="closeMenu">
+                <button>
+                  <p style="color: #003C71;">{{ t(item.name) }}</p>
+                </button>
+              </a>
             </div>
-            <div class="pl-4 py-3 pb-5">
-              <NuxtLink :to="localePath({ name: 'profile' })" @click="closeMenu">
-                <p class="font-weight-regular" style="color: #003C71;">
-                  {{ t('profile') }}
-                </p>
-              </NuxtLink>
-            </div>
-            <div class="pl-4 py-3 pb-5 line">
-              <NuxtLink :to="localePath({ name: 'settings' })" @click="closeMenu">
-                <p class="font-weight-regular" style="color: #003C71;">
-                  {{ t('settings') }}
-                </p>
-              </NuxtLink>
-            </div>
-            <div v-if="!anonymousUser" class="pl-4 py-3 pb-5 line">
-              <NuxtLink :to="localePath({ name: 'dropout' })" @click="closeMenu">
-                <p class="font-weight-regular" style="color: #003C71;">
-                  {{ t('delete_account') }}
-                </p>
-              </NuxtLink>
-            </div>
-            <div class="pl-4 py-4">
+            <div class="pl-2 py-1">
               <span class="text-caption">{{ version }}</span>
             </div>
+          </div>
+          <div v-show="showLang" class="user-menu px-0 py-2">
+            <LangSwitcher @close="closeMenu" />
           </div>
           <div v-show="showLang" class="user-menu px-0 py-2">
             <LangSwitcher @close="closeMenu" />
@@ -161,6 +137,20 @@ header {
   border-color: #bfc9c3;
 }
 
+.menu-item {
+  padding: 8px;
+  display: block;
+  color: #8FACC0;
+  font-weight: 400;
+  text-decoration: none;
+}
+
+.menu-item:hover {
+  background-color: #DBE5DF;
+  color: #003C71;
+  font-weight: 700;
+}
+
 .user-menu {
   position: absolute;
   display: flex;
@@ -175,10 +165,10 @@ header {
   right: 0;
   top: 50px;
   box-shadow: 0px 2px 6px 2px #00000026,
-  0px 1px 2px 0px #0000004D;
+    0px 1px 2px 0px #0000004D;
 }
 
-.user-menu a{
+.user-menu a {
   color: #8FACC0;
   font-weight: 400;
   text-decoration: none;
