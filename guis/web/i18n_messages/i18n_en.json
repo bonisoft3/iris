@@ -1,7 +1,9 @@
 {
   "profile": "Profile",
+  "ia_model": "IA Model",
   "save_info": "Save Info",
   "edit_info": "Edit Info",
+  "save_settings": "Save Settings",
   "update_profile": "Update your profile information",
   "latest_photos": "Latest photos",
   "photos": "photos",

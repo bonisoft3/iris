@@ -189,7 +189,7 @@ onMounted(async () => {
             <WasteCategory v-for="(wasteCategory, index) in wasteCategories" :key="index" :waste-category="wasteCategory" />
             <div class="d-flex px-4 mt-2 flex-column" style="color: #003C71BF">
               <p class="my-4">
-                Your disposal places
+                {{ t('your_disposal_places_txt') }}
               </p>
               <div v-if="!disposalPlaces" class="empty-box d-flex w-100 pa-10 flex-column justify-center">
                 <p class="text-center">

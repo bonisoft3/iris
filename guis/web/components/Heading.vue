@@ -5,7 +5,6 @@ import LangSwitcher from './LangSwitcher.vue'
 
 const { t } = useI18n()
 const localePath = useLocalePath()
-
 const config = useRuntimeConfig()
 const showMenu = ref(false)
 const showLang = ref(false)

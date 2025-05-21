@@ -1,7 +1,9 @@
 {
   "profile": "Perfil",
+  "ia_model": "Modelo de IA",
   "save_info": "Salvar Info",
   "edit_info": "Editar Info",
+  "save_settings": "Salvar Configurações",
   "update_profile": "Atualize seu perfil",
   "latest_photos": "Últimas fotos",
   "photos": "fotos",

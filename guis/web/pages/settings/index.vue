@@ -17,19 +17,19 @@ function saveSettings() {
 </script>
 
 <template>
-  <v-container class="settings-container">
-    <v-card class="pa-4">
-      <v-card-title>{{ t("change_ai_model") }}</v-card-title>
-      <v-card-text>
+  <v-container class="app-content" style="max-width: 800px; padding: 65px 0 0 0; height: 100vh;">
+    <v-card class="d-flex align-center">
+      <v-card-title class="disclaimer font-weight-medium pt-4">{{ t("change_ai_model") }}</v-card-title>
+      <v-card-text class="modal">
         <v-select
           v-model="selectedModel"
           :items="aiModels"
           item-title="label"
           item-value="value"
-          label="AI MODELS"
+          :label="t('ia_model')"
         />
-        <v-btn class="mt-4" color="#0CA385" @click="saveSettings">
-          {{ t('Save Settings') }}
+        <v-btn color="#0CA385" @click="saveSettings">
+          {{ t("save_settings") }}
         </v-btn>
       </v-card-text>
     </v-card>
@@ -37,9 +37,85 @@ function saveSettings() {
 </template>
 
 <style scoped>
-.settings-container {
-  max-width: 600px;
-  margin: auto;
-  padding: 2rem;
+
+.disclaimer {
+	text-align: center;
+	color: #003C71BF;
+	font-size: 20px;
+}
+
+.app-content {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 20px;
+	box-sizing: border-box;
+}
+
+.align-center {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 100%;
+}
+
+.modal {
+	min-height: 100vh;
+	overflow-y: auto;
+	top: 50;
+	left: 50;
+	width: 80%;
+
+	justify-content: center;
+	align-items: center;
+}
+
+:deep(#page-wrapper) {
+	width: inherit !important;
+}
+
+:deep(#page) {
+	width: inherit !important;
+}
+
+:deep(.details) {
+	width: inherit !important;
+}
+
+.modal-content {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+.modal-title {
+	margin-top: 0%;
+	font-size: 22px;
+	color: #fff;
+	font-weight: 400;
+}
+
+.modal-title i {
+	color: #fff;
+	text-decoration: none;
+	font-size: 22px;
+	align-self: center;
+}
+
+.modal-content img {
+	min-height: 10%;
+	object-fit: contain;
+	border-radius: 3%;
+}
+
+.modal-button-right v-icon {
+	margin-right: 5px;
+}
+
+@media only screen and (min-width: 768px) {
+	.modal-content {
+		width: 350px;
+	}
 }
 </style>
