@@ -9,6 +9,8 @@ import type { Map, MapN } from '../interfaces/Map'
 import logger from '../utils/logger'
 import type { DisposalPlace } from '../interfaces/disposalPlace'
 import getDisposalPlacesFromUser from '../utils/getDisposalPlacesFromUser'
+import { useQuery } from '@tanstack/vue-query'
+
 
 export default {
   beforeRouteEnter(_: any, from: any) {
@@ -42,19 +44,13 @@ interface Post {
 }
 
 const { t, tm } = useI18n()
-const contentReady = ref(false)
 const show = ref(false)
-const prefix = ref('')
 const curiosity = ref('')
 const curiosities: Post[] = tm('posts')
 const curiositiesLength = curiosities.length
 const userData = await getCurrentUser()
 const config = useRuntimeConfig()
-const wasteCategories: Ref<Array<WasteCategoryInterface>> = ref([])
-const wasteCategoriesLength = ref(0)
-const wasteCategoriesText = ref('')
-const disposalPlaces = ref<Array<DisposalPlace> | null>(null)
-const center = ref<{ lat: number, lng: number }>({ lat: 0, lng: 0 })
+
 
 function getWasteCategoryFromLabel(label: string) {
   const icon: Map = {
@@ -120,7 +116,9 @@ async function getPredominantDiscardingTypes() {
     return b[keyB] - a[keyA]
   })
 
-  return predominantDiscardingTypes.slice(0, 3).map(a => Object.keys(a)).flat()
+  const topDiscardingKeys = predominantDiscardingTypes.slice(0, 3).map(a => Object.keys(a)).flat()
+
+	return topDiscardingKeys.map(discardingType => getWasteCategoryFromLabel(discardingType))
 }
 
 function randomizeCuriosity() {
@@ -140,33 +138,54 @@ function getCenterForDisposalPlace(disposalPlaces: DisposalPlace[]): { lat: numb
   return { lat, lng: long }
 }
 
-onMounted(async () => {
-  show.value = true
-  const predominantDiscardingTypes = await getPredominantDiscardingTypes()
-  logger.info('Welcome to Iris!')
-  LogRocket.init('v8rkrf/iris')
-  const userData = useCurrentUser()
-  if (userData.value) {
-    LogRocket.identify(userData.value.uid, {
-      name: userData.value.displayName ?? 'ERR_GETTING_USER',
-      email: userData.value.email ?? 'ERR_GETTING_EMAIL',
-    })
-  }
-  curiosity.value = randomizeCuriosity()
-  if (!userData.value?.isAnonymous && userData.value?.displayName)
-    curiosity.value = curiosity.value.charAt(0).toLowerCase() + curiosity.value.substring(1)
-  userData.value?.isAnonymous || !userData.value?.displayName ? prefix.value = '' : prefix.value = `Hey, ${userData.value?.displayName}, `
-  curiosity.value = prefix.value + curiosity.value
-  wasteCategories.value = predominantDiscardingTypes.map(discardingType => getWasteCategoryFromLabel(discardingType))
-  wasteCategoriesLength.value = wasteCategories.value.length
-  wasteCategoriesText.value = `${t('your_top')}${wasteCategoriesLength.value}${t('waste_categories')}`
-  const path = `disposalplace?userid=eq.${userData.value?.uid}`
-  const url = config.public.SERVICES_PGRST_URL_PREFIX + path
-  disposalPlaces.value = await getDisposalPlacesFromUser(url)
-  center.value = getCenterForDisposalPlace(disposalPlaces.value as DisposalPlace[])
-
-  contentReady.value = true
+const { isPending: isPendingPredominantTypes, data: predominantTypesData } = useQuery({
+	queryKey: ['predominantDiscardingTypes'],
+	queryFn: getPredominantDiscardingTypes,
+	enabled: !!userData,
+	staleTime: 0
 })
+
+const {
+	isPending: isPendingDisposalPlaces,
+	data: disposalPlacesData
+} = useQuery({
+	queryKey: ['disposalPlaces'],
+	queryFn: async () => {
+		const path = `disposalplace?userid=eq.${userData.uid}`
+		const url = config.public.SERVICES_PGRST_URL_PREFIX + path
+		return getDisposalPlacesFromUser(url)
+	},
+	enabled: !!userData,
+	staleTime: 0
+})
+
+const wasteCategories = computed(() => predominantTypesData.value || [])
+const centerDisposalPlaces = computed(() => getCenterForDisposalPlace(disposalPlacesData.value as DisposalPlace[]))
+
+function generatePersonalizedCuriosity(userData : any) {
+	const randomCuriosity = randomizeCuriosity()
+	if (!userData || userData.isAnonymous || !userData.displayName) return randomCuriosity
+	const formattedCuriosity = randomCuriosity.charAt(0).toLowerCase() + randomCuriosity.substring(1)
+	return `Hey, ${userData.displayName}, ${formattedCuriosity}`
+}
+
+function initLogRocket() {
+	LogRocket.init('v8rkrf/iris')
+	if (userData) {
+		LogRocket.identify(userData.uid, {
+			name: userData.displayName ?? 'ERR_GETTING_USER',
+			email: userData.email ?? 'ERR_GETTING_EMAIL',
+		})
+	}
+}
+
+onMounted(() => {
+  show.value = true
+	logger.info('Welcome to Iris!')
+	initLogRocket()
+	curiosity.value = generatePersonalizedCuriosity(userData)
+})
+
 </script>
 
 <template>
@@ -185,13 +204,13 @@ onMounted(async () => {
               <span class="white--text text-sm">{{ t('learn_more') }}</span>
             </NuxtLink>
           </div>
-          <div v-show="contentReady" class="waste-categories-wrapper py-5">
+          <div v-show="predominantTypesData" class="waste-categories-wrapper py-5">
             <WasteCategory v-for="(wasteCategory, index) in wasteCategories" :key="index" :waste-category="wasteCategory" />
             <div class="d-flex px-4 mt-2 flex-column" style="color: #003C71BF">
               <p class="my-4">
                 {{ t('your_disposal_places_txt') }}
               </p>
-              <div v-if="!disposalPlaces" class="empty-box d-flex w-100 pa-10 flex-column justify-center">
+              <div v-if="!disposalPlacesData" class="empty-box d-flex w-100 pa-10 flex-column justify-center">
                 <p class="text-center">
                   {{ t('ops_empty') }}
                 </p>
@@ -199,21 +218,21 @@ onMounted(async () => {
                   {{ t('you_can_keep_a_record') }}
                 </p>
               </div>
-              <NuxtLink v-if="disposalPlaces" :to="localePath('your_disposal_places')">
+              <NuxtLink v-if="disposalPlacesData" :to="localePath('your_disposal_places')">
                 <GoogleMap
                   :zoom="16"
-                  :center="center"
+                  :center="centerDisposalPlaces"
                   :disable-default-ui="true"
                   style="width: 100%; height: 25vh;"
                   :api-key="config.public.GOOGLE_MAPS_API_KEY"
                 >
-                  <Marker :options="{ position: center }" />
+                  <Marker :options="{ position: centerDisposalPlaces }" />
                 </GoogleMap>
               </NuxtLink>
+							<div v-else class="waste-categories-wrapper py-5 d-flex justify-center flex-column">
+								<EmptyGallery :use-title-for-empty-gallery="false" />
+							</div>
             </div>
-          </div>
-          <div v-if="!contentReady" class="waste-categories-wrapper py-5 d-flex justify-center align-items-center">
-            <v-progress-circular indeterminate color="primary" size="32"></v-progress-circular>
           </div>
         </div>
       </div>
