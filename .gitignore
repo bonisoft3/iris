@@ -256,4 +256,7 @@ Cargo.lock
 libs/xproto/golang
 **/.venv
 **/.pyprojectx
+
 .aider*
+!.aider.conf.yml
+!.aiderignore

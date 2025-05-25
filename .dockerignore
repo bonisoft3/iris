@@ -11,3 +11,4 @@
 **/.gradle
 **/.turbo
 **/.pnpm-store
+**/.aider.*
