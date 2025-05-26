@@ -357,7 +357,7 @@ onBeforeMount(async () => {
             </template>
           </p>
         </div>
-        <v-icon :icon="icon" class="mr-2" @click="clipboard" />
+        <v-icon v-if="splittedSubclassifications.length" :icon="icon" class="mr-2" @click="clipboard" />
       </div>
       <div v-if="splittedSubclassifications.length" class="d-flex ml-2 text-base">
         <img :src="imageCategories.icon || 'default-icon.png'" height="30" width="40" />
