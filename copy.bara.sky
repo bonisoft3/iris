@@ -21,6 +21,7 @@ core.workflow(
 		"libraries/**",
 		"patches/**",
 		"plugins/**",
+		"whatsapp-butler/**",
     ], exclude = ["guis/web/.env",
                 "guis/web/.env.preview",
                 "guis/web/.env.production",
