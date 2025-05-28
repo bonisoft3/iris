@@ -1,0 +1,106 @@
+apiVersion: cloudrun.gcp.upbound.io/v1beta2
+kind: Service
+metadata:
+  annotations:
+    meta.upbound.io/example-id: cloudrun/v1beta2/service
+  labels:
+    testing.upbound.io/example-name: services-tracker
+  name: services-tracker
+spec:
+  forProvider:
+    location: us-central1
+    metadata:
+      annotations:
+        run.googleapis.com/ingress: all
+        run.googleapis.com/ingress-status: all
+        run.googleapis.com/client-name: cloud-console
+    project: trash-362115
+    template:
+      spec:
+        containers:
+          - name: main
+            image: gcr.io/trash-362115/services.tracker
+            ports:
+            - name: h2c
+              containerPort: 50051
+            env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: neon-database-user
+                  key: latest
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: neon-database-password
+                  key: latest
+            - name: POSTGRES_JDBC_URL
+              valueFrom:
+                secretKeyRef:
+                  name: neon-jdbc-url
+                  key: latest
+            - name: OPENAI_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: OPENAI_API_KEY
+                  key: latest
+            - name: AUDIENCE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: AUDIENCE_KEY
+                  key: latest
+            - name: GOOGLE_PLACES_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: GOOGLE_PLACES_KEY
+                  key: latest
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: GEMINI_API_KEY
+                  key: latest
+            - name: MICRONAUT_ENVIRONMENTS
+              value: gcp
+    traffic:
+    - latestRevision: true
+      percent: 100
+---
+apiVersion: cloudrun.gcp.upbound.io/v1beta2
+kind: Service
+metadata:
+  annotations:
+    meta.upbound.io/example-id: cloudrun/v1beta2/service
+  labels:
+    testing.upbound.io/example-name: services-tracker-tx
+  name: services-tracker-tx
+spec:
+  forProvider:
+    location: us-central1
+    metadata:
+      annotations:
+        run.googleapis.com/ingress: all
+        run.googleapis.com/ingress-status: all
+        run.googleapis.com/client-name: cloud-console
+        nrm.cloud.google.com/deletion-policy: abandon
+    project: trash-362115
+    template:
+      metadata:
+        annotations:
+          autoscaling.knative.dev/maxScale: '2'
+      spec:
+        containers:
+          - name: main
+            image: gcr.io/trash-362115/services.tracker-tx-gcp
+            ports:
+            - name: http1
+              containerPort: 18080
+            env:
+            - name: GRPC_ADDRESS
+              value: services-tracker-646949889529.us-central1.run.app
+            - name: GRPC_PORT
+              value: "443"
+            - name: CLOUD_TLS
+              value: "true"
+    traffic:
+    - latestRevision: true
+      percent: 100

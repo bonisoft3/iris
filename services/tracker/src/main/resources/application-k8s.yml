@@ -84,7 +84,7 @@ chat:
 gemini:
   api:
     url: http://localhost:11434/
-    key: ${GEMINI_API_KEY}
+    key: ${GEMINI_API_KEY:mockvalue}
   endpoint:
     generate-content: api/chat
 

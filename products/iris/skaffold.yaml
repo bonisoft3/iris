@@ -5,8 +5,9 @@ requires:
     path: ../../services/tracker/skaffold.yaml
   - configs: [ "services_tracker-tx" ]
     path: ../../services/tracker-tx/skaffold.yaml
-  - configs: [ "guis_web" ]
-    path: ../../guis/web/skaffold.yaml
+  # - configs: [ "guis_web" ]
+  #   path: ../../guis/web/skaffold.yaml
+  #only uncomment this when in development mode
 metadata:
   name: trash
 
@@ -101,29 +102,82 @@ profiles:
       image: gcr.io/trash-362115/playwright
     executionMode:
       kubernetesCluster: {}
-
 - name: production
+  resourceSelector:
+    allow:
+      - groupKind: "Service.cloudrun.gcp.upbound.io"
+        image: [".*"]
   manifests:
     kustomize:
       paths:
       - overlays/production/
       buildArgs: [--enable-alpha-plugins, --enable-exec]
   deploy:
-    # We keep the config controller down to not spend money on it, but if you want
-    # to update production, just bring it up with the command below and delete it
-    # afterwards. It is only necessary for doing changes, once the system is stable
-    # the config controller can be brought down.
-    # gcloud anthos config controller create trash-kcc --location=us-central1 --full-management
-    # Because of https://github.com/GoogleCloudPlatform/k8s-config-connector/issues/832
-    # we must delete by hand the cloud run services before running skaffold.
-    # Otherwise the cluster gets spoiled and we need to create a new one (and
-    # it happened almost ten times already).
-    kubeContext: gke_trash-362115_us-central1_krmapihost-trash-kcc
+    helm:
+      releases:
+        - name: crossplane
+          repo: https://charts.crossplane.io/stable
+          remoteChart: crossplane
+          namespace: crossplane-system
+          createNamespace: true
+          wait: true
     kubectl:
-      defaultNamespace: config-control
+      defaultNamespace: crossplane-system
+      hooks:
+        before:
+          - host:
+              command:
+                - kubectl
+                - apply
+                - -f
+                - ./overlays/production/gcp-provider.yaml
+          - host:
+              command:
+                - kubectl
+                - wait
+                - --for=condition=Healthy
+                - provider.pkg.crossplane.io/provider-gcp-cloudrun
+                - --timeout=180s
+          - host:
+              command:
+                - kubectl
+                - scale
+                - -n
+                - crossplane-system
+                - --replicas=1
+                - deployment/crossplane
+                - deployment/crossplane-contrib-provider-family-gcp-adf0fabd8271
+                - deployment/crossplane-rbac-manager
+                - deployment/provider-gcp-cloudrun-7c1e8149a6df
+          - host:
+              command:
+                - kubectl
+                - wait
+                - --for=condition=Available
+                - --timeout=180s
+                - -n
+                - crossplane-system
+                - deployment/crossplane
+                - deployment/crossplane-contrib-provider-family-gcp-adf0fabd8271
+                - deployment/crossplane-rbac-manager
+                - deployment/provider-gcp-cloudrun-7c1e8149a6df
+        after:
+        - host:
+              command:
+                - kubectl
+                - scale
+                - -n
+                - crossplane-system
+                - --replicas=0
+                - deployment/crossplane
+                - deployment/crossplane-contrib-provider-family-gcp-adf0fabd8271
+                - deployment/crossplane-rbac-manager
+                - deployment/provider-gcp-cloudrun-7c1e8149a6df
+    kubeContext: gke_trash-362115_us-central1_trash-cluster
   build:
+    tagPolicy:
+      sha256: {}
     platforms: ["linux/amd64"]
-    # https://github.com/GoogleContainerTools/skaffold/issues/5334, https://github.com/GoogleContainerTools/skaffold/issues/6078
     local:
       push: true
       useDockerCLI: true

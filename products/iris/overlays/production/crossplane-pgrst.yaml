@@ -1,0 +1,37 @@
+apiVersion: cloudrun.gcp.upbound.io/v1beta2
+kind: Service
+metadata:
+  annotations:
+    meta.upbound.io/example-id: cloudrun/v1beta2/service
+  labels:
+    testing.upbound.io/example-name: services-pgrst
+  name: services-pgrst
+spec:
+  forProvider:
+    location: us-central1
+    metadata:
+      annotations:
+        run.googleapis.com/ingress: all
+        run.googleapis.com/ingress-status: all
+        run.googleapis.com/client-name: cloud-console
+    project: trash-362115
+    template:
+      spec:
+        containers:
+          - name: main
+            image: gcr.io/trash-362115/postgrest
+            ports:
+            - name: http1
+              containerPort: 3000
+            env:
+            - name: PGRST_DB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: neon-database-url
+                  key: latest
+            - name: PGRST_DB_ANON_ROLE
+              value: anon
+    traffic:
+    - latestRevision: true
+      percent: 100
+
