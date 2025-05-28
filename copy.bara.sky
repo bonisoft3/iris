@@ -21,7 +21,6 @@ core.workflow(
 		"libraries/**",
 		"patches/**",
 		"plugins/**",
-		"whatsapp-butler/**",
     ], exclude = ["guis/web/.env",
                 "guis/web/.env.preview",
                 "guis/web/.env.production",
@@ -30,4 +29,24 @@ core.workflow(
 				]),
     destination_files = glob(["**"]),
     authoring = authoring.pass_thru("Default Author <default@example.com>"),
+)
+
+core.workflow(
+    name = "butler",
+    origin = git.origin(
+        url = "git@github.com:worldsense/trash.git",
+        ref = "main",
+		submodules = "RECURSIVE",
+    ),
+    destination = git.destination(
+        url = "git@github.com:bonisoft3/butler.git",
+        fetch = "main",
+        push = "main",
+    ),
+    origin_files = glob([
+        "butler/**",
+    ]),
+    destination_files = glob(["**"]),
+    authoring = authoring.pass_thru("Default Author <default@example.com>"),
+
 )
