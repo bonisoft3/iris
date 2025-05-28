@@ -5,9 +5,9 @@ requires:
     path: ../../services/tracker/skaffold.yaml
   - configs: [ "services_tracker-tx" ]
     path: ../../services/tracker-tx/skaffold.yaml
-  # - configs: [ "guis_web" ]
-  #   path: ../../guis/web/skaffold.yaml
-  #only uncomment this when in development mode
+  - configs: [ "guis_web" ]
+    path: ../../guis/web/skaffold.yaml
+  #only uncomment guis/web when in development mode
 metadata:
   name: trash
 
