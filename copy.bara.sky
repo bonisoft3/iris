@@ -44,9 +44,11 @@ core.workflow(
         push = "main",
     ),
     origin_files = glob([
-        "butler/**",
+        "services/butler/**",
     ]),
     destination_files = glob(["**"]),
     authoring = authoring.pass_thru("Default Author <default@example.com>"),
-
+    transformations = [
+        core.move("services/butler", "")
+    ],
 )

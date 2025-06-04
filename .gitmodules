@@ -1,3 +1,3 @@
-[submodule "butler"]
-	path = butler
+[submodule "services/butler"]
+	path = services/butler
 	url = https://github.com/andrepaim/whatsapp-butler.git
