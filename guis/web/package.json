@@ -11,7 +11,7 @@
     "//0": "we need the rm due to https://github.com/vercel/turbo/issues/6823#issuecomment-1951582987 triggered by nuxt/image and firebase",
     "build": "shx rm -rf .output && nuxt build",
     "start": "nuxt start",
-    "clean": "nuxt clean",
+    "clean": "nuxt cleanup",
     "test": "vitest -c vitest.unit.config.ts --run",
     "test:int": "vitest -c vitest.integration.config.ts",
     "test:e2e": "playwright test",
@@ -22,9 +22,11 @@
     "//2": "preview should use nuxt preview as below, but until https://github.com/unjs/nitro/issues/749 it is too cumbersome",
     "//3": "cross-env-shell cross-env dotenv -e .env.preview -v NITRO_SSL_CERT=$HOME/.vite-plugin-mkcert/cert.pem NITRO_SSL_KEY=$HOME/.vite-plugin-mkcert/dev.pem nuxt build\" && dotenv -e .env.preview \"cross-env-shell cross-env NITRO_SSL_CERT=$HOME/.vite-plugin-mkcert/cert.pem NITRO_SSL_KEY=$HOME/.vite-plugin-mkcert/dev.pem nuxt preview\"",
     "preview": "cross-env-shell \"dotenv -e .env.preview \\\"nuxt dev --https --ssl-cert $HOME/.vite-plugin-mkcert/cert.pem --ssl-key  $HOME/.vite-plugin-mkcert/dev.pem --port 443\\\"\"",
-    "production": "pnpm install --frozen-lockfile && dotenv -e .env.production nuxt build && firebase deploy"
+    "production": "pnpm install --frozen-lockfile && dotenv -e .env.production nuxt build && firebase --version && firebase deploy",
+    "generate-pwa-assets": "pwa-assets-generator"
   },
   "dependencies": {
+    "@electric-sql/client": "0.7.1",
     "@google-cloud/functions-framework": "^3.3.0",
     "@maruware/blob-to-base64": "^0.0.8",
     "@mdi/font": "^7.4.47",
@@ -57,19 +59,19 @@
     "vue-use-places-autocomplete": "^0.2.2",
     "vue3-google-map": "^0.21.0",
     "vuefire": "^3.1.23",
-    "vuetify": "^3.5.17",
-    "@electric-sql/client": "0.7.1"
+    "vuetify": "^3.5.17"
   },
   "devDependencies": {
     "@antfu/eslint-config": "2.16.0",
     "@eslint/js": "^9.2.0",
-    "@kevinmarrec/nuxt-pwa": "^0.17.0",
     "@nuxt/test-utils": "^3.12.1",
     "@nuxtjs/i18n": "8.0.0-rc.4",
     "@playwright/test": "^1.46.0",
     "@types/node": "^20.12.7",
     "@typescript-eslint/eslint-plugin": "^7.7.1",
     "@typescript-eslint/parser": "^7.7.1",
+    "@vite-pwa/assets-generator": "^1.0.0",
+    "@vite-pwa/nuxt": "^1.0.0",
     "@zadigetvoltaire/nuxt-gtm": "^0.0.13",
     "cross-env": "^7.0.3",
     "dotenv-cli": "^7.4.1",
@@ -77,7 +79,7 @@
     "eslint-plugin-vue": "^9.26.0",
     "firebase-admin": "^11.10.1",
     "firebase-functions": "^4.4.1",
-    "firebase-tools": "^12.5.4",
+    "firebase-tools": "^13.29.1",
     "globals": "^15.2.0",
     "nuxt": "^3.11.2",
     "shx": "^0.3.4",

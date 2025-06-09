@@ -50,6 +50,7 @@ COPY guis/web/plugins plugins
 COPY guis/web/public public
 COPY guis/web/server server
 COPY guis/web/utils utils
+COPY guis/web/types types
 COPY guis/web/app.vue guis/web/nuxt.config.ts guis/web/tsconfig.json guis/web/app.config.ts guis/web/.nuxtignore guis/web/.env guis/web/.npmrc ./
 RUN  mkdir /usr/src && ln -s . /usr/src/app
 COPY guis/web/interfaces interfaces
@@ -83,6 +84,7 @@ COPY guis/web/plugins plugins
 COPY guis/web/public public
 COPY guis/web/server server
 COPY guis/web/utils utils
+COPY guis/web/types types
 COPY guis/web/app.vue guis/web/nuxt.config.ts guis/web/tsconfig.json guis/web/app.config.ts guis/web/.nuxtignore guis/web/.env guis/web/.npmrc ./
 RUN --mount=type=cache,target=/root/.dcm/ mkdir /usr/src && ln -s . /usr/src/app
 COPY guis/web/interfaces interfaces

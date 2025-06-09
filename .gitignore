@@ -260,3 +260,4 @@ libs/xproto/golang
 .aider*
 !.aider.conf.yml
 !.aiderignore
+
