@@ -12,6 +12,7 @@ import type { TrashItem } from '#build/interfaces/trashItem'
 import type { DisposalInstructions } from '#build/interfaces/disposalInstructionsInterface'
 import type { DisposalPlace } from '#build/interfaces/disposalPlace'
 import type UserIris from '#build/interfaces/UserIris'
+import { useShape } from "../../../composables/useShape";
 
 const props = defineProps<{
   trashItem: TrashItem | null
@@ -76,7 +77,30 @@ const infoLoading = ref(true)
 const checkingDonability = ref(true)
 const itemAvailable = ref(false)
 window.sessionStorage.setItem('previousUrl', window.location.href)
+
 async function fetchTranslatedTrashItem(language: string): Promise<string[] | null> {
+  const config = useRuntimeConfig();
+  const urlPath = config.public.ELECTRIC_SQL_URL + "v1/shape";
+  const options = {
+    url: urlPath,
+    table: "trashitemtranslations",
+  };
+  const existingTranslations = useShape(options);
+  if (existingTranslations.value?.data) {
+    const foundTranslation = existingTranslations.value.data.find(
+      (translation: any) =>
+        translation.item_id === route.params.id &&
+        translation.language === language
+    );
+    if (foundTranslation?.translations && typeof foundTranslation.translations === 'object' && 'caption' in foundTranslation.translations && 'disposalInstructions' in foundTranslation.translations)
+    {
+      return [
+        String(foundTranslation.translations.caption ?? ''),
+        String(foundTranslation.translations.disposalInstructions ?? '')
+      ];
+    }
+  }
+  
   const apiPath = 'trash.tracker.v1.TrackerService/TranslateOnDemand'
   const apiUrl = config.public.SERVICES_TRACKER_URL_PREFIX + apiPath
   const response: any = await $fetch(apiUrl, {
