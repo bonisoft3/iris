@@ -118,7 +118,7 @@ async function getPredominantDiscardingTypes() {
 
   const topDiscardingKeys = predominantDiscardingTypes.slice(0, 3).map(a => Object.keys(a)).flat()
 
-	return topDiscardingKeys.map(discardingType => getWasteCategoryFromLabel(discardingType))
+  return topDiscardingKeys.map(discardingType => getWasteCategoryFromLabel(discardingType))
 }
 
 function randomizeCuriosity() {
@@ -139,51 +139,51 @@ function getCenterForDisposalPlace(disposalPlaces: DisposalPlace[]): { lat: numb
 }
 
 const { isPending: isPendingPredominantTypes, data: predominantTypesData } = useQuery({
-	queryKey: ['predominantDiscardingTypes'],
-	queryFn: getPredominantDiscardingTypes,
-	enabled: !!userData,
-	staleTime: 0
+  queryKey: ['predominantDiscardingTypes'],
+  queryFn: getPredominantDiscardingTypes,
+  enabled: !!userData,
+  staleTime: 0
 })
 
 const {
-	isPending: isPendingDisposalPlaces,
-	data: disposalPlacesData
+  isPending: isPendingDisposalPlaces,
+  data: disposalPlacesData
 } = useQuery({
-	queryKey: ['disposalPlaces'],
-	queryFn: async () => {
-		const path = `disposalplace?userid=eq.${userData.uid}`
-		const url = config.public.SERVICES_PGRST_URL_PREFIX + path
-		return getDisposalPlacesFromUser(url)
-	},
-	enabled: !!userData,
-	staleTime: 0
+  queryKey: ['disposalPlaces'],
+  queryFn: async () => {
+    const path = `disposalplace?userid=eq.${userData.uid}`
+    const url = config.public.SERVICES_PGRST_URL_PREFIX + path
+    return getDisposalPlacesFromUser(url)
+  },
+  enabled: !!userData,
+  staleTime: 0
 })
 
 const wasteCategories = computed(() => predominantTypesData.value || [])
 const centerDisposalPlaces = computed(() => getCenterForDisposalPlace(disposalPlacesData.value as DisposalPlace[]))
 
 function generatePersonalizedCuriosity(userData : any) {
-	const randomCuriosity = randomizeCuriosity()
-	if (!userData || userData.isAnonymous || !userData.displayName) return randomCuriosity
-	const formattedCuriosity = randomCuriosity.charAt(0).toLowerCase() + randomCuriosity.substring(1)
-	return `Hey, ${userData.displayName}, ${formattedCuriosity}`
+  const randomCuriosity = randomizeCuriosity()
+  if (!userData || userData.isAnonymous || !userData.displayName) return randomCuriosity
+  const formattedCuriosity = randomCuriosity.charAt(0).toLowerCase() + randomCuriosity.substring(1)
+  return `Hey, ${userData.displayName}, ${formattedCuriosity}`
 }
 
 function initLogRocket() {
-	LogRocket.init('v8rkrf/iris')
-	if (userData) {
-		LogRocket.identify(userData.uid, {
-			name: userData.displayName ?? 'ERR_GETTING_USER',
-			email: userData.email ?? 'ERR_GETTING_EMAIL',
-		})
-	}
+  LogRocket.init('v8rkrf/iris')
+  if (userData) {
+    LogRocket.identify(userData.uid, {
+      name: userData.displayName ?? 'ERR_GETTING_USER',
+      email: userData.email ?? 'ERR_GETTING_EMAIL',
+    })
+  }
 }
 
 onMounted(() => {
   show.value = true
-	logger.info('Welcome to Iris!')
-	initLogRocket()
-	curiosity.value = generatePersonalizedCuriosity(userData)
+  logger.info('Welcome to Iris!')
+  initLogRocket()
+  curiosity.value = generatePersonalizedCuriosity(userData)
 })
 
 </script>
@@ -204,35 +204,33 @@ onMounted(() => {
               <span class="white--text text-sm">{{ t('learn_more') }}</span>
             </NuxtLink>
           </div>
-          <div v-show="predominantTypesData" class="waste-categories-wrapper py-5">
+          <div v-if="wasteCategories.length > 0" class="waste-categories-wrapper py-5">
             <WasteCategory v-for="(wasteCategory, index) in wasteCategories" :key="index" :waste-category="wasteCategory" />
-            <div class="d-flex px-4 mt-2 flex-column" style="color: #003C71BF">
-              <p class="my-4">
-                {{ t('your_disposal_places_txt') }}
+            <NuxtLink v-if="centerDisposalPlaces.lat != 0 && centerDisposalPlaces.lng != 0" :to="localePath('your_disposal_places')">
+              <GoogleMap
+                :zoom="16"
+                :center="centerDisposalPlaces"
+                :disable-default-ui="true"
+                style="width: 100%; height: 25vh;"
+                :api-key="config.public.GOOGLE_MAPS_API_KEY"
+              >
+                <Marker :options="{ position: centerDisposalPlaces }" />
+              </GoogleMap>
+            </NuxtLink>
+            <div v-else class="empty-box d-flex w-100 pa-10 flex-column justify-center">
+              <span class="empty-icon">
+                <v-icon>mdi-trash-can-outline</v-icon>
+              </span>
+              <h2 class="primary-text text-center font-weight-400 text-base mb-2">
+                {{ t('ops_empty') }}
+              </h2>
+              <p class="text-center">
+                {{ t('you_can_keep_a_record') }}
               </p>
-              <div v-if="!disposalPlacesData" class="empty-box d-flex w-100 pa-10 flex-column justify-center">
-                <p class="text-center">
-                  {{ t('ops_empty') }}
-                </p>
-                <p class="text-center">
-                  {{ t('you_can_keep_a_record') }}
-                </p>
-              </div>
-              <NuxtLink v-if="disposalPlacesData" :to="localePath('your_disposal_places')">
-                <GoogleMap
-                  :zoom="16"
-                  :center="centerDisposalPlaces"
-                  :disable-default-ui="true"
-                  style="width: 100%; height: 25vh;"
-                  :api-key="config.public.GOOGLE_MAPS_API_KEY"
-                >
-                  <Marker :options="{ position: centerDisposalPlaces }" />
-                </GoogleMap>
-              </NuxtLink>
-							<div v-else class="waste-categories-wrapper py-5 d-flex justify-center flex-column">
-								<EmptyGallery :use-title-for-empty-gallery="false" />
-							</div>
             </div>
+          </div>
+          <div v-else class="waste-categories-wrapper py-5 d-flex justify-center flex-column">
+            <EmptyGallery :use-title-for-empty-gallery="false" />
           </div>
         </div>
       </div>
@@ -248,8 +246,42 @@ onMounted(() => {
 }
 
 .empty-box {
-  background-color: #003C711A;
-  height: 145px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%);
+  color: #222;
+  min-height: 145px;
+  border-radius: 18px;
+  box-shadow: 0 4px 16px #0002;
+  border: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  transition: box-shadow 0.2s;
+}
+
+.empty-box:hover {
+  box-shadow: 0 8px 24px #0003;
+}
+
+.empty-box .empty-icon {
+  font-size: 2.5rem;
+  color: #90caf9;
+  margin-bottom: 0.5rem;
+}
+
+.empty-box p {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+.empty-box p:last-child {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #666;
 }
 
 .header a {
