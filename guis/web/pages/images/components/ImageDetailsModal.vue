@@ -100,7 +100,7 @@ async function fetchTranslatedTrashItem(language: string): Promise<string[] | nu
       ];
     }
   }
-  
+
   const apiPath = 'trash.tracker.v1.TrackerService/TranslateOnDemand'
   const apiUrl = config.public.SERVICES_TRACKER_URL_PREFIX + apiPath
   const response: any = await $fetch(apiUrl, {
@@ -451,6 +451,9 @@ onBeforeMount(async () => {
           :text="'...'"
           disabled
         />
+      </div>
+        <div v-else-if="!caption || !splittedSubclassifications.length" style="margin-top: 30px; margin-bottom: 8px;">
+        <VSkeletonLoader :loading="true" elevation="2" min-width="100px" height="100%" type="text" />
       </div>
 
       <div v-else-if="!userRegistered && !props.trashItem?.pbjson?.isDisposalPlace">
