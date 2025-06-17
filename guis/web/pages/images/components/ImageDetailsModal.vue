@@ -442,9 +442,6 @@ onBeforeMount(async () => {
         </button>
       </div>
       <div v-if="infoLoading || !props.trashItem?.pbjson?.disposalInstructions">
-        <div class="text-center text-subtitle-2 mt-2 py-1 px-3">
-          {{ t('checking_item') }}
-        </div>
         <v-btn
           class="mx-2 mb-2 text-white"
           style="width: 95%; color: #00382c; border-radius: 10px; border: solid #006b56; background-color: #0ca385"
