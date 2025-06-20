@@ -26,7 +26,7 @@ class DisposalPlaceEndpoint(@field:Inject private val dataSource: DataSource,
     val epochSecond = Instant.now().epochSecond
     val disposalPlaceId = uuidGenerator.generate()
     val savedOnTimestamp = LocalDateTime.ofEpochSecond(epochSecond, 0, ZoneOffset.UTC)
-    val promptPath = "classpath:prompts/open_ai_classify_disposal_place.json"
+    val promptPath = "classify_disposal_place.json"
     val replacements = mapOf("BASE64_IMAGE" to request.disposalPlace.imgUrl)
     val materialType = openAIClient.getChatCompletion(promptPath, replacements)
 
