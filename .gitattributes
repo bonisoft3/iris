@@ -9,3 +9,5 @@
 *.bin binary
 *.webp binary
 *.jar binary
+*.ico binary
+
