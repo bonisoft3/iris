@@ -330,22 +330,25 @@ onBeforeMount(async () => {
   userRegistered.value = JSON.parse(localStorage.getItem('userRegistered') ?? 'false');
   seeingOwnPicture.value = props.trashItem?.pbjson.userId === user?.uid
   userAlreadyAskedForDonation.value = await alreadyAskedForDonation(user?.uid)
-  infoLoading.value = false
   if (locale.value !== 'en' && props.trashItem && props.trashItem.pbjson?.disposalInstructions) {
-    translateLoading.value = true
-    const translations = await fetchTranslatedTrashItem(locale.value)
-    if (props.trashItem) {
-      caption.value = translations?.[0] ?? ''
-      disposalInstructions.value = translations?.[1] ?? ''
-    }
-    translateLoading.value = false
+  translateLoading.value = true
+  const translations = await fetchTranslatedTrashItem(locale.value)
+  if (props.trashItem) {
+    caption.value = translations?.[0] ?? ''
+    disposalInstructions.value = translations?.[1] ?? ''
+  }
+  translateLoading.value = false
   }
   splittedDisposalInstructions.value = splitDisposalInstructions(disposalInstructions.value)
   splittedSubclassifications.value = props.trashItem?.pbjson.subClassifications?.split(',') || []
   if (splittedSubclassifications.value && splittedSubclassifications.value?.length > 3)
     splittedSubclassifications.value = splittedSubclassifications.value?.slice(0, 3)
-  const disposalPlacesRegisteredByUser: Array<DisposalPlace> = await getDisposalPlacesRegisteredByUser(user?.uid)
-
+  const disposalPlacesRegisteredByUser: Array<DisposalPlace> = await getDisposalPlacesRegisteredByUser(await user?.uid)
+  if(user?.uid && props.trashItem?.pbjson.picture ){
+  placeAlreadyRegistered.value = disposalPlacesRegisteredByUser.some((disposalPlace) => {
+    return disposalPlace.imgurl === props.trashItem?.pbjson.picture;
+  });}
+  infoLoading.value = false
   if (latlngAvailable) {
     const latitude = props.trashItem?.pbjson.latlng?.latitude || 0
     const longitude = props.trashItem?.pbjson.latlng?.longitude || 0
@@ -358,9 +361,6 @@ onBeforeMount(async () => {
     }
     mapPosition.value = `https://www.google.com/maps/embed/v1/place?q=${latitude},${longitude}&key=${config.public.MAPS_EMBED_API_KEY}`
     userDisposalPlaces.value = await getNearbyUserDiposalPlaces(user?.uid)
-    disposalPlacesRegisteredByUser.forEach((disposalPlace) => {
-      if (disposalPlace.imgurl === props.trashItem?.pbjson.picture) placeAlreadyRegistered.value = true
-    })
   }
 })
 </script>
@@ -420,12 +420,12 @@ onBeforeMount(async () => {
         <v-divider class="my-2 border-opacity-100" thickness="1px" color="#BFC9C3" />
       </div>
 
-      <Transition name="slide-right">
+      <div>
         <div v-if="placeAlreadyRegistered" class="ml-2 mb-2">
           <v-icon icon="mdi-check" />
           {{ t('registered_as_disposal_place') }}
         </div>
-      </Transition>
+      </div>
       <div class="px-2 image-container" :class="{ expanded: data.isExpanded }">
         <NuxtImg
           class="image-thumb"
@@ -470,8 +470,7 @@ onBeforeMount(async () => {
           !userAlreadyAskedForDonation &&
           !props.trashItem?.pbjson?.isDisposalPlace &&
           !seeingOwnPicture &&
-          userRegistered &&
-          relevantUnitValue
+          userRegistered
         "
       >
         <div class="text-center text-subtitle-2 mt-2 py-1 px-3">
@@ -513,7 +512,7 @@ onBeforeMount(async () => {
             props.trashItem?.pbjson?.isDisposalPlace &&
             user?.uid === props.trashItem?.pbjson?.userId &&
             !placeAlreadyRegistered &&
-            show
+            !infoLoading
           "
           class="add-disposal-place-card mx-2 py-5 px-2 mb-2 text-white"
         >
