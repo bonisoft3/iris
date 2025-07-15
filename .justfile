@@ -52,7 +52,9 @@ publish:
 [no-cd]
 observe:
   just sayt observe
-
+[no-cd]
+setup-butler:
+  just sayt setup-butler
 
 [private]
 [no-cd]

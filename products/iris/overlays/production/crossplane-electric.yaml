@@ -1,0 +1,49 @@
+apiVersion: cloudrun.gcp.upbound.io/v1beta2
+kind: V2Service
+metadata:
+  name: services-electric
+  annotations:
+    meta.upbound.io/example-id: cloudrun/v1beta2/v2service
+  labels:
+    testing.upbound.io/example-name: services-electric
+spec:
+  forProvider:
+    location: us-central1
+    ingress: INGRESS_TRAFFIC_ALL
+    project: trash-362115
+    template:
+      containers:
+        - name: main
+          image: electricsql/electric:1.0.4
+          ports:
+            containerPort: 3000
+          env:
+            - name: ELECTRIC_INSECURE
+              value: "true"
+            - name: DATABASE_URL
+              valueSource:
+                secretKeyRef:
+                  secret: electric-database-url
+                  version: latest
+          volumeMounts:
+            - mountPath: /app/persistent
+              name: shared-data
+      volumes:
+        - name: shared-data
+          gcs:
+            bucket: trash-362115-electric-shared-data
+            readOnly: false
+      timeout: 300s
+      scaling:
+        minInstanceCount: 0
+        maxInstanceCount: 1
+---
+apiVersion: storage.gcp.upbound.io/v1beta1
+kind: Bucket
+metadata:
+  name: trash-362115-electric-shared-data
+spec:
+  forProvider:
+    location: us-central1
+    project: trash-362115
+    uniformBucketLevelAccess: true

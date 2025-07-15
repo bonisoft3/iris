@@ -141,14 +141,22 @@ profiles:
           - host:
               command:
                 - kubectl
+                - wait
+                - --for=condition=Healthy
+                - provider.pkg.crossplane.io/provider-gcp-storage
+                - --timeout=180s
+          - host:
+              command:
+                - kubectl
                 - scale
                 - -n
                 - crossplane-system
                 - --replicas=1
                 - deployment/crossplane
-                - deployment/crossplane-contrib-provider-family-gcp-adf0fabd8271
                 - deployment/crossplane-rbac-manager
-                - deployment/provider-gcp-cloudrun-7c1e8149a6df
+                - deployment/provider-gcp-cloudrun-a368a8b37079
+                - deployment/provider-gcp-storage-0f0d65054512
+                - deployment/upbound-provider-family-gcp-cc226acde028
           - host:
               command:
                 - kubectl
@@ -158,10 +166,21 @@ profiles:
                 - -n
                 - crossplane-system
                 - deployment/crossplane
-                - deployment/crossplane-contrib-provider-family-gcp-adf0fabd8271
                 - deployment/crossplane-rbac-manager
-                - deployment/provider-gcp-cloudrun-7c1e8149a6df
+                - deployment/provider-gcp-cloudrun-a368a8b37079
+                - deployment/provider-gcp-storage-0f0d65054512
+                - deployment/upbound-provider-family-gcp-cc226acde028
         after:
+        - host:
+              command:
+                - kubectl
+                - wait
+                - --for=condition=Ready
+                - --all
+                - bucket.storage.gcp.upbound.io
+                - --timeout=180s
+                - -n
+                - crossplane-system
         - host:
               command:
                 - kubectl
@@ -170,10 +189,11 @@ profiles:
                 - crossplane-system
                 - --replicas=0
                 - deployment/crossplane
-                - deployment/crossplane-contrib-provider-family-gcp-adf0fabd8271
                 - deployment/crossplane-rbac-manager
-                - deployment/provider-gcp-cloudrun-7c1e8149a6df
-    kubeContext: gke_trash-362115_us-central1_trash-cluster
+                - deployment/provider-gcp-cloudrun-a368a8b37079
+                - deployment/provider-gcp-storage-0f0d65054512
+                - deployment/upbound-provider-family-gcp-cc226acde028
+    kubeContext: gke_trash-362115_us-central1_trash-cluster2
   build:
     tagPolicy:
       sha256: {}

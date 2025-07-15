@@ -6,3 +6,4 @@ resources:
 - gcp-provider-config.yaml
 - crossplane-pgrst.yaml
 - crossplane-services.yaml
+- crossplane-electric.yaml
