@@ -23,7 +23,7 @@ const localePath = useLocalePath()
       class="item"
       :style="{ gridRowEnd: `span ${(index % 2) + 1}` }"
     >
-      <ImageComponent :image-bucket-url="item.pbjson.picture" :label="String(item.pbjson.label)" />
+      <ImageComponent :image-bucket-url="item.pbjson.picture" :label="String(item.pbjson.label)"  v-ripple="{  class: 'text-grey'  }"/>
     </NuxtLink>
   </div>
 </template>

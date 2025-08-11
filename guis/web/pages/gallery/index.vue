@@ -45,7 +45,7 @@ onMounted(() => {
 				<div class="heading-wrapper">
 					<div class="d-flex pt-1">
 						<div class="w-50 text-center font-weight-medium" :class="{ highlight: isUserGallery }"
-							@click="switchGallery">
+							@click="switchGallery" v-ripple>
 							<p class="gallery-text pt-3" :class="{ 'selected-gallery': isUserGallery }">
 								{{ t("your_pics") }}
 							</p>
@@ -56,7 +56,7 @@ onMounted(() => {
 							</div>
 						</div>
 						<div class="w-50 text-center font-weight-medium" :class="{ highlight: isGlobalGallery }"
-							@click="switchGallery">
+							@click="switchGallery" v-ripple>
 							<p class="gallery-text pt-3" :class="{ 'selected-gallery': isGlobalGallery }">
 								IRIS Global
 							</p>

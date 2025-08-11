@@ -12,7 +12,7 @@ function isActive(route: string) {
     <nav class="footer__nav">
       <v-container class="d-flex pa-0 justify-space-evenly align-center">
         <NuxtLink id="home-gtm" :to="localePath({ name: 'index' })" class="footer__nav-item pr-3">
-          <div class="footer__nav-item-container">
+          <div class="footer__nav-item-container" v-ripple>
             <div class="footer__nav-item-image">
               <v-icon :icon="isActive(localePath({ name: 'index' })) ? 'mdi-home-variant' : 'mdi-home-variant-outline'" size="x-large" />
             </div>
@@ -21,13 +21,13 @@ function isActive(route: string) {
         </NuxtLink>
         <NuxtLink :to="localePath({ name: 'tips' })" class="footer__nav-item">
           <button alt="Scan" elevation="0" stacked variant="text" class="footer__nav-item-camera-container">
-            <div class="footer__nav-item-image pl-1">
+            <div class="footer__nav-item-image pl-1" v-ripple>
               <v-icon icon="mdi-camera" color="#fff" size="x-large" />
             </div>
           </button>
         </NuxtLink>
         <NuxtLink id="gallery-gtm" :to="localePath({ name: 'gallery' })" class="footer__nav-item pl-2">
-          <div class="footer__nav-item-container">
+          <div class="footer__nav-item-container" v-ripple>
             <div class="footer__nav-item-image">
               <v-icon :icon="isActive(localePath({ name: 'gallery' })) ? 'mdi-image-multiple' : 'mdi-image-multiple-outline'" size="x-large" />
             </div>

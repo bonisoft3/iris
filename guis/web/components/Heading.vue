@@ -52,7 +52,7 @@ onMounted(async () => {
   <ClientOnly>
     <div class="header-container d-flex">
       <header class="pl-4 d-flex" style="position: relative;">
-        <div class="logo">
+        <div class="logo" v-ripple>
           <NuxtLink :to="localePath('index')">
             <picture>
               <img :src="logo" height="26" width="45" alt="Logo">
@@ -63,11 +63,11 @@ onMounted(async () => {
           <div class="pr-1 py-2 mb-1 button">
             <v-btn class="pa-2" :ripple="false" size="x-medium" variant="text" color="#0000" @click="langSwitcher"
               @touch="langSwitcher">
-              <v-icon style="color: white;" icon="mdi-web" size="x-large" />
+              <v-icon style="color: white;" icon="mdi-web" size="x-large" v-ripple/>
             </v-btn>
             <v-btn class="btn-user mx-auto pa-2" :ripple="false" size="x-medium" variant="text" color="#0000"
               @click="userMenu" @touch="langSwitcher">
-              <v-avatar v-if="photo" :image="photo" />
+              <v-avatar v-if="photo" :image="photo"  v-ripple/>
               <v-icon v-else style="color: white;" icon="mdi-account-circle-outline" size="x-large" />
             </v-btn>
           </div>

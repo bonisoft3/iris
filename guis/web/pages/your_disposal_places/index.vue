@@ -35,7 +35,7 @@ onMounted(async () => {
         {{ t('your_disposal_places_txt') }}
       </div>
       <v-col v-for="(disposalPlace, idx) in disposalPlaces" :key="disposalPlace.id" class="ma-0 pa-1 d-flex" cols="12">
-        <ImageComponent class="img-component mr-2 w-50" :image-bucket-url="disposalPlace.imgurl" props-height="180px" :label="null" @click="openTrashCanDetails(idx)" />
+        <ImageComponent class="img-component mr-2 w-50" :image-bucket-url="disposalPlace.imgurl" props-height="180px" :label="null" @click="openTrashCanDetails(idx)" v-ripple/>
         <iframe
           :src="`https://www.google.com/maps/embed/v1/place?q=${disposalPlace.latlng.latitude},${disposalPlace.latlng.longitude}&key=${config.public.MAPS_EMBED_API_KEY}`"
           width="50%"

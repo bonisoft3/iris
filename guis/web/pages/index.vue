@@ -213,7 +213,7 @@ onMounted(() => {
                 :disable-default-ui="true"
                 style="width: 100%; height: 25vh;"
                 :api-key="config.public.GOOGLE_MAPS_API_KEY"
-              >
+               v-ripple>
                 <Marker :options="{ position: centerDisposalPlaces }" />
               </GoogleMap>
             </NuxtLink>
