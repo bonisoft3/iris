@@ -67,7 +67,7 @@ onMounted(async () => {
       {{ t('phone') }}: {{ props.recyclingCenter?.phoneNumber }}
     </p>
   </div>
-  <div class="mb-2">
+  <div class="mb-2" v-ripple>
     <a :href="link" target="_blank" class="text-left text-decoration-none ml-4">
       <v-icon class="mr-3" icon="mdi-arrow-top-right" color="#FFFFFF" size="small" />
       <span class="address-maps text-white text-decoration-none text-caption">{{ t('address_on_maps') }}</span>

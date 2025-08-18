@@ -68,7 +68,7 @@ onMounted(async () => {
             <v-btn class="btn-user mx-auto pa-2" :ripple="false" size="x-medium" variant="text" color="#0000"
               @click="userMenu" @touch="langSwitcher">
               <v-avatar v-if="photo" :image="photo"  v-ripple/>
-              <v-icon v-else style="color: white;" icon="mdi-account-circle-outline" size="x-large" />
+              <v-icon v-else style="color: white;" icon="mdi-account-circle-outline" size="x-large"  v-ripple/>
             </v-btn>
           </div>
           <div v-show="showMenu" class="user-menu px-0 py-2">

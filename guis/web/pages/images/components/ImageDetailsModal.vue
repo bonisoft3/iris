@@ -370,7 +370,7 @@ onBeforeMount(async () => {
       <div class="primary-bg d-flex align-center justify-space-between mb-5 mt-5">
         <div class="d-flex">
           <button class="ml-3 mr-2 modal-title text-left" @click="hideImageModal">
-            <v-icon icon="mdi-arrow-left" color="#003C71" size="large" />
+            <v-icon icon="mdi-arrow-left" color="#003C71" size="large" v-ripple/>
           </button>
           <p class="font-weight-medium text-subtitle-1" style="color: #003c71">
             <template v-if="caption && splittedSubclassifications.length">
@@ -436,7 +436,7 @@ onBeforeMount(async () => {
           :src="imageSrc || props.trashItem?.pbjson?.picture"
           placeholder
         />
-        <button class="image-button" :class="{ expanded: data.isExpanded }" @click="expandImage">
+        <button class="image-button" :class="{ expanded: data.isExpanded }" @click="expandImage" v-ripple>
           <img v-if="data.isExpanded" src="../../../assets/images/close-24px.svg" alt="close" />
           <img v-else src="../../../assets/images/arrow-expand-all.svg" alt="expand" />
         </button>

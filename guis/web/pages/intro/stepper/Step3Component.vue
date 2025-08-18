@@ -31,7 +31,7 @@ onMounted(() => {
         </p>
       </div>
       <div class="flex flex-col justify-center text-center px-8 pb-6 intro buttons-intro">
-        <button id="finish-intro-gtm" class="bg-white btn-empty" @click="startIris">
+        <button id="finish-intro-gtm" class="bg-white btn-empty" @click="startIris" v-ripple>
           {{ t('start_iris') }}
         </button>
       </div>

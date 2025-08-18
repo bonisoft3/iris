@@ -32,10 +32,10 @@ onMounted(() => {
         </p>
       </div>
       <div class="flex flex-col justify-center text-center pt-2 px-8 pb-6 intro buttons-intro">
-        <button class="bg-white btn-empty" @click="$emit('next')">
+        <button class="bg-white btn-empty" @click="$emit('next')" v-ripple>
           {{ t('next') }}
         </button>
-        <button id="skip-intro-gtm" class="btn-empty" @click="startIris">
+        <button id="skip-intro-gtm" class="btn-empty" @click="startIris" v-ripple>
           {{ t('skip') }}
         </button>
       </div>

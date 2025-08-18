@@ -1,6 +1,6 @@
 <template>
   <div class="XButton">
-    <button>
+    <button v-ripple>
       <img src="../assets/images/close-24px.svg">
     </button>
   </div>
@@ -12,4 +12,10 @@
   left: 20px;
   top: 20px;
 }
+
+.XButton button {
+  height: 24px;
+  width: 24px;
+}
+
 </style>

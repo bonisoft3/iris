@@ -24,7 +24,7 @@ function openCamera() {
         <p class="text-sm primary-text text-center font-weight-400 w-100 mb-8 mx-auto">
           {{ t('well_lit_empty_gallery') }}
         </p>
-        <button class="d-flex align-center btn-primary mx-auto" @click="openCamera">
+        <button class="d-flex align-center btn-primary mx-auto" @click="openCamera" v-ripple>
           <v-icon icon="mdi-camera" color="#fff" size="large" />
           <p class="ml-2 font-weight-700 text-white">
             {{ t('start_here') }}

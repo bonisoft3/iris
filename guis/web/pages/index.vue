@@ -197,8 +197,8 @@ onMounted(() => {
             {{ curiosity }}
           </h1>
           <div class="d-flex justify-end pr-6 mb-2">
-            <NuxtLink :to="localePath({ name: 'posts' })">
-              <v-icon class="mr-2 mt-1 text-sm">
+            <NuxtLink :to="localePath({ name: 'posts' })" v-ripple>
+              <v-icon class="mr-2 text-sm">
                 mdi-arrow-right
               </v-icon>
               <span class="white--text text-sm">{{ t('learn_more') }}</span>
