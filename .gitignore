@@ -261,3 +261,4 @@ libs/xproto/golang
 !.aider.conf.yml
 !.aiderignore
 
+CLAUDE.md
