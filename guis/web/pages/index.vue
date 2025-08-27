@@ -1,6 +1,6 @@
 <script lang="ts">
 import { onMounted } from 'vue'
-import LogRocket from 'logrocket'
+
 import { GoogleMap, Marker } from 'vue3-google-map'
 import WasteCategory from '../components/WasteCategory.vue'
 import EmptyGallery from '../components/EmptyGallery.vue'
@@ -10,7 +10,7 @@ import logger from '../utils/logger'
 import type { DisposalPlace } from '../interfaces/disposalPlace'
 import getDisposalPlacesFromUser from '../utils/getDisposalPlacesFromUser'
 import { useQuery } from '@tanstack/vue-query'
-
+import { initLogRocket } from '../composables/useLogRocket';
 
 export default {
   beforeRouteEnter(_: any, from: any) {
@@ -123,7 +123,8 @@ async function getPredominantDiscardingTypes() {
 
 function randomizeCuriosity() {
   const curiosity = curiosities[Math.floor(Math.random() * curiositiesLength)]
-  return `${curiosity.title}`
+
+  return `${curiosity.title?.body?.static ?? curiosity.title ?? ''}`
 }
 
 function getCenterForDisposalPlace(disposalPlaces: DisposalPlace[]): { lat: number, lng: number } {
@@ -167,16 +168,6 @@ function generatePersonalizedCuriosity(userData : any) {
   if (!userData || userData.isAnonymous || !userData.displayName) return randomCuriosity
   const formattedCuriosity = randomCuriosity.charAt(0).toLowerCase() + randomCuriosity.substring(1)
   return `Hey, ${userData.displayName}, ${formattedCuriosity}`
-}
-
-function initLogRocket() {
-  LogRocket.init('v8rkrf/iris')
-  if (userData) {
-    LogRocket.identify(userData.uid, {
-      name: userData.displayName ?? 'ERR_GETTING_USER',
-      email: userData.email ?? 'ERR_GETTING_EMAIL',
-    })
-  }
 }
 
 onMounted(() => {

@@ -16,7 +16,7 @@ const localePath = useLocalePath()
       :key="index"
       :to="
         localePath({
-          name: 'images',
+          name: 'images-id',
           params: { id: item.id }
         })
       "

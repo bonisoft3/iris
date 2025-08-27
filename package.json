@@ -17,11 +17,8 @@
       }
     },
     "overrides": {
-      "nuxt": "^3.8.2",
-      "@nuxt/kit": "^3.8.2"
-    },
-    "patchedDependencies": {
-      "nuxt-logrocket@2.0.14": "patches/nuxt-logrocket@2.0.14.patch"
+      "nuxt": "^4.0.3",
+      "@nuxt/kit": "^4.0.3"
     }
   },
   "dependencies": {

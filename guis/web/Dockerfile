@@ -54,7 +54,7 @@ COPY guis/web/types types
 COPY guis/web/app.vue guis/web/nuxt.config.ts guis/web/tsconfig.json guis/web/app.config.ts guis/web/.nuxtignore guis/web/.env guis/web/.npmrc ./
 RUN  mkdir /usr/src && ln -s . /usr/src/app
 COPY guis/web/interfaces interfaces
-COPY guis/web/i18n_messages i18n_messages
+COPY guis/web/i18n/i18n_messages i18n/i18n_messages
 COPY guis/web/i18n.config.ts guis/web/decs.d.ts guis/web/eslint.config.js ./
 COPY guis/web/tests tests
 COPY guis/web/vitest.* ./
@@ -88,7 +88,7 @@ COPY guis/web/types types
 COPY guis/web/app.vue guis/web/nuxt.config.ts guis/web/tsconfig.json guis/web/app.config.ts guis/web/.nuxtignore guis/web/.env guis/web/.npmrc ./
 RUN --mount=type=cache,target=/root/.dcm/ mkdir /usr/src && ln -s . /usr/src/app
 COPY guis/web/interfaces interfaces
-COPY guis/web/i18n_messages i18n_messages
+COPY guis/web/i18n/i18n_messages i18n/i18n_messages
 COPY guis/web/i18n.config.ts guis/web/decs.d.ts guis/web/eslint.config.js ./
 RUN --mount=type=cache,target=/root/.dcm/ [ ! -e .vscode/tasks.json ] || eval "$(pkgx dev)" && just build
 COPY guis/web/tests tests

@@ -10,7 +10,7 @@ const services_pgrst_url_prefix = process.env.SERVICES_PGRST_URL_PREFIX || 'http
 const geolocation_url_prefix = process.env.GEOLOCATION_URL_PREFIX || 'http://localhost:38080/'
 
 export default defineNuxtConfig({
-  compatibilityDate: '2024-11-03',
+  compatibilityDate: '2025-08-17',
   app: {
     head: {
       link: [
@@ -68,7 +68,7 @@ export default defineNuxtConfig({
     '/pt/imagens/**': { ssr: false },
   },
   typescript: {
-    shim: false,
+    shim: false
   },
   css: [
     'vuetify/styles', // vuetify ships precompiled css, no need to import sass
@@ -91,6 +91,10 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
+      logRocket: {
+        id: 'v8rkrf/iris',
+        dev: false,
+      },
       IRIS_VERSION: pkg.version + ((process.env.APP_ENV !== 'production') ? ' ' : (`-${process.env.APP_ENV}`)),
       FIREBASE_API_KEY: process.env.FIREBASE_API_KEY,
       ELECTRIC_SQL_URL: process.env.ELECTRIC_SQL_URL,
@@ -112,14 +116,12 @@ export default defineNuxtConfig({
     //   ))
     // },
     // '@nuxtjs/google-adsense',
-    '@zadigetvoltaire/nuxt-gtm',
+    'nuxt-gtag',
     'nuxt-vuefire',
     '@nuxtjs/google-fonts',
     '@nuxt/test-utils/module',
     '@nuxtjs/i18n',
     '@vite-pwa/nuxt',
-    // logrocket generates too much noise on debugging
-    ...(process.env.NODE_ENV !== 'development' ? ['nuxt-logrocket'] : []),
     '@nuxt/image',
   ],
   googleFonts: {
@@ -161,11 +163,7 @@ export default defineNuxtConfig({
     //    ),
     // }
   },
-  logRocket: {
-    id: 'v8rkrf/iris',
-    dev: false,
-  },
-  gtm: {
+  gtag: {
     id: 'GTM-PV65H75F',
   },
   pwa: {
@@ -266,17 +264,22 @@ export default defineNuxtConfig({
       {
         code: 'en',
         name: 'English',
+        file: 'i18n_en.json'
       },
       {
         code: 'es',
         name: 'Español',
+        file: 'i18n_es.json'
       },
       {
         code: 'pt',
         name: 'Português',
+        file: 'i18n_pt.json'
       },
     ],
     defaultLocale: 'en',
+    langDir: 'i18n_messages',
+    lazy: true,
     vueI18n: './i18n.config.ts',
     strategy: 'prefix_except_default',
     customRoutes: 'config',
@@ -291,7 +294,7 @@ export default defineNuxtConfig({
         es: '/galeria',
         pt: '/galeria',
       },
-        'profile/index': {
+      'profile/index': {
         en: '/profile',
         es: '/perfil',
         pt: '/perfil',
