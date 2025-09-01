@@ -155,7 +155,7 @@ profiles:
                 - deployment/crossplane
                 - deployment/crossplane-rbac-manager
                 - deployment/provider-gcp-cloudrun-a368a8b37079
-                - deployment/provider-gcp-storage-fa83b31592ae
+                - deployment/provider-gcp-storage-0f0d65054512
                 - deployment/upbound-provider-family-gcp-cc226acde028
           - host:
               command:
@@ -168,7 +168,7 @@ profiles:
                 - deployment/crossplane
                 - deployment/crossplane-rbac-manager
                 - deployment/provider-gcp-cloudrun-a368a8b37079
-                - deployment/provider-gcp-storage-fa83b31592ae
+                - deployment/provider-gcp-storage-0f0d65054512
                 - deployment/upbound-provider-family-gcp-cc226acde028
         after:
         - host:
@@ -191,7 +191,7 @@ profiles:
                 - deployment/crossplane
                 - deployment/crossplane-rbac-manager
                 - deployment/provider-gcp-cloudrun-a368a8b37079
-                - deployment/provider-gcp-storage-fa83b31592ae
+                - deployment/provider-gcp-storage-0f0d65054512
                 - deployment/upbound-provider-family-gcp-cc226acde028
     kubeContext: gke_trash-362115_us-central1_trash-cluster2
   build:
