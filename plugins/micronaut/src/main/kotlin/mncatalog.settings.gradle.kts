@@ -1,4 +1,4 @@
-val micronautPlatformVersion = "4.5.1"
+val micronautPlatformVersion = "4.9.3"
 
 dependencyResolutionManagement {
     versionCatalogs {

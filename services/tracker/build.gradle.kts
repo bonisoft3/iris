@@ -4,7 +4,7 @@ plugins {
     application
     id("jvm-project-conventions")
     id("com.google.devtools.ksp") version "1.9.21-1.0.15"
-    id("io.micronaut.minimal.library") version "4.3.5"
+    id("io.micronaut.minimal.library") version "4.5.4"
     kotlin("plugin.serialization") version "1.9.21"
     id("com.google.cloud.tools.jib") version "3.3.2"
 }

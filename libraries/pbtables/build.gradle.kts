@@ -4,7 +4,7 @@ plugins {
     `java-library`
     id("jvm-project-conventions")
     id("com.google.devtools.ksp") version "1.9.21-1.0.15"
-    id("io.micronaut.minimal.library") version "4.3.5"
+    id("io.micronaut.minimal.library") version "4.5.4"
     id("app.cash.sqldelight") version "2.0.1"
 }
 

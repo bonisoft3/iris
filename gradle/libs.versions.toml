@@ -1,9 +1,9 @@
 [versions]
 ## SDK Versions
 java = "21"
-kotlin = "1.9.21"
-micronaut = "4.5.1"   # keep in sync with gradle.properties
-micronautPlugins = "4.4.2"
+kotlin = "2.2.10"
+micronaut = "4.9.3"   # keep in sync with gradle.properties
+micronautPlugins = "4.5.4"
 firebase = "32.6.0"   # keep in sync with gradle.properties
 kotest = "5.8.1"
 testcontainers = "1.18.1"
