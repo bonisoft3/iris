@@ -13,7 +13,9 @@ export default defineNuxtPlugin((nuxtApp) => {
   // initializing, setting 'onlineManager.setOnline(true)' by default, this cause
   // issues in offline scenarios, where mutations might fail due to network
   // unavailability, but TanStack Query still behaves as if the network is available.
-  if (!navigator.onLine) onlineManager.setOnline(false);
+  if (!navigator.onLine) {
+    onlineManager.setOnline(false)
+  }
 
   const queryClient = new QueryClient({
     defaultOptions: {

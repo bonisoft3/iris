@@ -22,7 +22,8 @@
     "//2": "preview should use nuxt preview as below, but until https://github.com/unjs/nitro/issues/749 it is too cumbersome",
     "//3": "cross-env-shell cross-env dotenv -e .env.preview -v NITRO_SSL_CERT=$HOME/.vite-plugin-mkcert/cert.pem NITRO_SSL_KEY=$HOME/.vite-plugin-mkcert/dev.pem nuxt build\" && dotenv -e .env.preview \"cross-env-shell cross-env NITRO_SSL_CERT=$HOME/.vite-plugin-mkcert/cert.pem NITRO_SSL_KEY=$HOME/.vite-plugin-mkcert/dev.pem nuxt preview\"",
     "preview": "cross-env-shell \"dotenv -e .env.preview \\\"nuxt dev --https --ssl-cert $HOME/.vite-plugin-mkcert/cert.pem --ssl-key  $HOME/.vite-plugin-mkcert/dev.pem --port 443\\\"\"",
-    "production": "pnpm install --frozen-lockfile && dotenv -e .env.production nuxt build && firebase --version && firebase deploy",
+    "decrypt-creds": "sops -d --output service-account.json service-account.enc.json",
+    "production": "pnpm decrypt-creds && pnpm install --frozen-lockfile && dotenv -e .env.production nuxt build && firebase --version && firebase deploy",
     "generate-pwa-assets": "pwa-assets-generator"
   },
   "dependencies": {

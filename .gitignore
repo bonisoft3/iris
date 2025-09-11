@@ -262,3 +262,5 @@ libs/xproto/golang
 !.aiderignore
 
 CLAUDE.md
+
+service-account.json

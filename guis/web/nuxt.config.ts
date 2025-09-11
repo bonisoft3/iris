@@ -63,9 +63,6 @@ export default defineNuxtConfig({
     '/profile': { ssr: false },
     '/es/perfil': { ssr: false },
     '/pt/perfil': { ssr: false },
-    '/images/**': { ssr: false },
-    '/es/imagenes/**': { ssr: false },
-    '/pt/imagens/**': { ssr: false },
   },
   typescript: {
     shim: false
