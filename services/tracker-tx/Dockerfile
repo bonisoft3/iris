@@ -1,5 +1,5 @@
 # copy and paste from ./plugins/devserver/Dockerfile
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:a9547b680d3d322b14c2e46963b04d7afe71d927a3fa701a839559041989debe AS devserver
+FROM cgr.dev/chainguard/wolfi-base:latest@sha256:deba562a90aa3278104455cf1c34ffa6c6edc6bea20d6b6d731a350e99ddd32a AS devserver
 WORKDIR /monorepo/./plugins/devserver/
 ENV DOCKER_CACHE_MOUNT='/root/.dcm'
 ENV PKGX_DIR='/root/.dcm/pkgx'
@@ -28,7 +28,7 @@ COPY services/tracker-tx/.pkgx.yaml .
 RUN --mount=type=cache,sharing=locked,target=/root/.cache/,id=root-dot-cache \
 	--mount=type=cache,sharing=locked,target=/root/.pkgx/,id=root-dot-pkgx \
 	just setup
-RUN apk add envoy=1.30.4-r0 wget
+RUN apk add envoy=1.35.3-r0 wget
 # envsubst has no aarch64 release, but the x86_64 works on aarch64
 RUN echo https://github.com/a8m/envsubst/releases/download/v1.2.0/envsubst-`uname -s`-`uname -m` | sed -e 's/aarch64/x86_64/' | xargs wget -O /usr/local/bin/envsubst
 RUN chmod +x /usr/local/bin/envsubst

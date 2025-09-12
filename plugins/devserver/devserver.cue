@@ -3,7 +3,7 @@ package devserver
 import "bonisoft.org/plugins/sayt:docker"
 
 #devserver: docker.#image & {
-	from: "cgr.dev/chainguard/wolfi-base:latest@sha256:a9547b680d3d322b14c2e46963b04d7afe71d927a3fa701a839559041989debe"
+	from: "cgr.dev/chainguard/wolfi-base:latest@sha256:deba562a90aa3278104455cf1c34ffa6c6edc6bea20d6b6d731a350e99ddd32a"
 	as: "devserver"
 	mount: [
 		"type=cache,target=/root/.dcm/"

@@ -1,7 +1,7 @@
 ARG DEVSERVER=devserver
 ARG ROOT_BUF=root_buf
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:a9547b680d3d322b14c2e46963b04d7afe71d927a3fa701a839559041989debe AS devserver
+FROM cgr.dev/chainguard/wolfi-base:latest@sha256:deba562a90aa3278104455cf1c34ffa6c6edc6bea20d6b6d731a350e99ddd32a AS devserver
 WORKDIR /monorepo/./plugins/devserver/
 ENV DOCKER_CACHE_MOUNT='/root/.dcm'
 ENV PKGX_DIR='/root/.dcm/pkgx'
@@ -23,7 +23,7 @@ FROM scratch AS root_buf
 WORKDIR /monorepo/./
 COPY ./buf.work.yaml ./
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:a9547b680d3d322b14c2e46963b04d7afe71d927a3fa701a839559041989debe AS sources
+FROM cgr.dev/chainguard/wolfi-base:latest@sha256:deba562a90aa3278104455cf1c34ffa6c6edc6bea20d6b6d731a350e99ddd32a AS sources
 WORKDIR /monorepo/libraries/xproto/
 COPY --from=root_buf /monorepo /monorepo
 COPY libraries/xproto/. .

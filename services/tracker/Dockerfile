@@ -9,7 +9,7 @@ ARG LIBRARIES_LOGS_SOURCES=libraries_logs_sources
 ARG LIBRARIES_XPROTO_SOURCES=libraries_xproto_sources
 ARG LIBRARIES_PBTABLES_SOURCES=libraries_pbtables_sources
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:a9547b680d3d322b14c2e46963b04d7afe71d927a3fa701a839559041989debe AS devserver
+FROM cgr.dev/chainguard/wolfi-base:latest@sha256:deba562a90aa3278104455cf1c34ffa6c6edc6bea20d6b6d731a350e99ddd32a AS devserver
 WORKDIR /monorepo/./plugins/devserver/
 ENV DOCKER_CACHE_MOUNT='/root/.dcm'
 ENV PKGX_DIR='/root/.dcm/pkgx'
@@ -38,7 +38,7 @@ COPY ./gradle gradle
 COPY --chmod=0755 ./gradlew ./
 COPY ./gradlew.bat ./gradle.properties ./settings.gradle.kts ./build.gradle.kts ./
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:a9547b680d3d322b14c2e46963b04d7afe71d927a3fa701a839559041989debe AS plugins_libstoml_sources
+FROM cgr.dev/chainguard/wolfi-base:latest@sha256:deba562a90aa3278104455cf1c34ffa6c6edc6bea20d6b6d731a350e99ddd32a AS plugins_libstoml_sources
 WORKDIR /monorepo/plugins/libstoml/
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_gradle /monorepo /monorepo
@@ -51,7 +51,7 @@ COPY plugins/libstoml/.vscode .vscode
 COPY plugins/libstoml/src/test src/test
 COPY plugins/libstoml/Dockerfile plugins/libstoml/compose.yaml ./
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:a9547b680d3d322b14c2e46963b04d7afe71d927a3fa701a839559041989debe AS plugins_jvm_sources
+FROM cgr.dev/chainguard/wolfi-base:latest@sha256:deba562a90aa3278104455cf1c34ffa6c6edc6bea20d6b6d731a350e99ddd32a AS plugins_jvm_sources
 WORKDIR /monorepo/plugins/jvm/
 COPY --from=plugins_libstoml_sources /monorepo /monorepo
 COPY plugins/jvm/. .
@@ -60,13 +60,13 @@ FROM scratch AS root_buf
 WORKDIR /monorepo/./
 COPY ./buf.work.yaml ./
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:a9547b680d3d322b14c2e46963b04d7afe71d927a3fa701a839559041989debe AS plugins_micronaut_sources
+FROM cgr.dev/chainguard/wolfi-base:latest@sha256:deba562a90aa3278104455cf1c34ffa6c6edc6bea20d6b6d731a350e99ddd32a AS plugins_micronaut_sources
 WORKDIR /monorepo/plugins/micronaut/
 COPY --from=plugins_libstoml_sources /monorepo /monorepo
 COPY --from=plugins_jvm_sources /monorepo /monorepo
 COPY plugins/micronaut/. .
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:a9547b680d3d322b14c2e46963b04d7afe71d927a3fa701a839559041989debe AS libraries_logs_sources
+FROM cgr.dev/chainguard/wolfi-base:latest@sha256:deba562a90aa3278104455cf1c34ffa6c6edc6bea20d6b6d731a350e99ddd32a AS libraries_logs_sources
 WORKDIR /monorepo/libraries/logs/
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_gradle /monorepo /monorepo
@@ -81,12 +81,12 @@ COPY libraries/logs/.vscode .vscode
 COPY libraries/logs/src/test src/test
 COPY libraries/logs/Dockerfile ./
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:a9547b680d3d322b14c2e46963b04d7afe71d927a3fa701a839559041989debe AS libraries_xproto_sources
+FROM cgr.dev/chainguard/wolfi-base:latest@sha256:deba562a90aa3278104455cf1c34ffa6c6edc6bea20d6b6d731a350e99ddd32a AS libraries_xproto_sources
 WORKDIR /monorepo/libraries/xproto/
 COPY --from=root_buf /monorepo /monorepo
 COPY libraries/xproto/. .
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:a9547b680d3d322b14c2e46963b04d7afe71d927a3fa701a839559041989debe AS libraries_pbtables_sources
+FROM cgr.dev/chainguard/wolfi-base:latest@sha256:deba562a90aa3278104455cf1c34ffa6c6edc6bea20d6b6d731a350e99ddd32a AS libraries_pbtables_sources
 WORKDIR /monorepo/libraries/pbtables/
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_gradle /monorepo /monorepo
@@ -104,7 +104,7 @@ COPY libraries/pbtables/.vscode .vscode
 COPY libraries/pbtables/src/test src/test
 COPY libraries/pbtables/Dockerfile ./
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:a9547b680d3d322b14c2e46963b04d7afe71d927a3fa701a839559041989debe AS sources
+FROM cgr.dev/chainguard/wolfi-base:latest@sha256:deba562a90aa3278104455cf1c34ffa6c6edc6bea20d6b6d731a350e99ddd32a AS sources
 WORKDIR /monorepo/services/tracker/
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_gradle /monorepo /monorepo
