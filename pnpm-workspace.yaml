@@ -2,3 +2,4 @@ packages:
   - libraries/xproto/
   - guis/web/
   - guis/shelfie/
+  - guis/flashcards/
