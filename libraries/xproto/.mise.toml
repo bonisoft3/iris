@@ -1,0 +1,3 @@
+[tools]
+"aqua:go-task/task" = "3.45.4"
+"github:bufbuild/buf" = "1.34.0"

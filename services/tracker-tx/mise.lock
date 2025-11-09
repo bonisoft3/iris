@@ -1,0 +1,97 @@
+[[tools."aqua:go-task/task"]]
+version = "3.38.0"
+backend = "aqua:go-task/task"
+
+[tools."aqua:go-task/task".platforms.linux-x64]
+checksum = "sha256:a6241c9fbcc49bdffef907e4d6325adb074295fd094f2bfa6a2e32282c2ed06e"
+size = 4731485
+url = "https://github.com/go-task/task/releases/download/v3.38.0/task_linux_amd64.tar.gz"
+
+[tools."aqua:go-task/task".platforms.linux-amd64]
+checksum = "sha256:a6241c9fbcc49bdffef907e4d6325adb074295fd094f2bfa6a2e32282c2ed06e"
+size = 4731485
+url = "https://github.com/go-task/task/releases/download/v3.38.0/task_linux_amd64.tar.gz"
+
+[tools."aqua:go-task/task".platforms.linux-arm64]
+checksum = "sha256:30d3c727a434ee3bf69fb69e5d1aa84c3ab401fc2343a2760b4c7808acc689b8"
+size = 4374136
+url = "https://github.com/go-task/task/releases/download/v3.38.0/task_linux_arm64.tar.gz"
+
+[tools."aqua:go-task/task".platforms.darwin-amd64]
+checksum = "sha256:a2aefff4f3cb2851ce133c13a20502f1dfa8a6bc34d3f4e01c67cf3278f4f73d"
+size = 4890483
+url = "https://github.com/go-task/task/releases/download/v3.38.0/task_darwin_amd64.tar.gz"
+
+[tools."aqua:go-task/task".platforms.darwin-arm64]
+checksum = "sha256:a575c9e10591bb35d1bb678bdde2fa221330d207a787b0a5979d4287ee7f4c0f"
+size = 4700916
+url = "https://github.com/go-task/task/releases/download/v3.38.0/task_darwin_arm64.tar.gz"
+
+[tools."aqua:go-task/task".platforms.windows-amd64]
+checksum = "sha256:6586105949b4359b37f770b7604542c23f064e055c6521791cd8d5916ec287fb"
+size = 4883722
+url = "https://github.com/go-task/task/releases/download/v3.38.0/task_windows_amd64.zip"
+
+[[tools."aqua:mikefarah/yq"]]
+version = "v4.44.2"
+backend = "aqua:mikefarah/yq"
+
+[tools."aqua:mikefarah/yq".platforms.linux-x64]
+checksum = "blake3:aed456f2b781d93c62a7c5a6b2228b51e6ff95ffc18e57f211eb95ef7d94baed"
+size = 9961624
+url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_amd64"
+
+[tools."aqua:mikefarah/yq".platforms.linux-amd64]
+checksum = "sha256:e4c2570249e3993e33ffa44e592b5eee8545bd807bfbeb596c2986d86cb6c85c"
+size = 4087934
+url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_amd64.tar.gz"
+
+[tools."aqua:mikefarah/yq".platforms.linux-arm64]
+checksum = "sha256:79c22d98b2ff517cb8b1c20499350cbc1e8c753483c8f72a37a299e6e9872a98"
+size = 3775812
+url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_arm64.tar.gz"
+
+[tools."aqua:mikefarah/yq".platforms.darwin-amd64]
+checksum = "sha256:7e02afc024868ab298cb44fe9b1cf56ffb2e083cd5a426cc6616c08c1aad3e7a"
+size = 4149869
+url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_darwin_amd64.tar.gz"
+
+[tools."aqua:mikefarah/yq".platforms.darwin-arm64]
+checksum = "sha256:86f172cd7b8d84f178b20b02df12c772aacb5ffefeecba33af93727b0d3000f2"
+size = 3914114
+url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_darwin_arm64.tar.gz"
+
+[tools."aqua:mikefarah/yq".platforms.windows-amd64]
+checksum = "sha256:690b85576122647ae8f7edf46af1a8046119d4603c426213cd1b0e031a42007c"
+size = 4175247
+url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_windows_amd64.zip"
+
+[[tools."github:bufbuild/buf"]]
+version = "1.34.0"
+backend = "github:bufbuild/buf"
+
+[tools."github:bufbuild/buf".platforms.linux-x64]
+checksum = "blake3:af03bf1658558e3863817f8ec84919bf35b956b8046760f840a2844c8c7e23c0"
+name = "buf-Linux-x86_64.tar.gz"
+size = 21282392
+url = "https://github.com/bufbuild/buf/releases/download/v1.34.0/buf-Linux-x86_64.tar.gz"
+
+[tools."github:bufbuild/buf".platforms.linux-amd64]
+checksum = "sha256:82dcf1a5f45498b539a04d764e3cb274a13c8d94271c92508fc1624d227895ff"
+size = 21282392
+url = "https://github.com/bufbuild/buf/releases/download/v1.34.0/buf-Linux-x86_64.tar.gz"
+
+[tools."github:bufbuild/buf".platforms.linux-arm64]
+checksum = "sha256:564d3ee76d93940addc15ba99b6ccc08b199c345800947a6d7f92e123aa62343"
+size = 19562323
+url = "https://github.com/bufbuild/buf/releases/download/v1.34.0/buf-Linux-aarch64.tar.gz"
+
+[tools."github:bufbuild/buf".platforms.darwin-amd64]
+checksum = "sha256:6f07be0a8db1798fae85e19bbe6eb5618dadddff4be3e3d1e80a30d4f2a35d20"
+size = 21910673
+url = "https://github.com/bufbuild/buf/releases/download/v1.34.0/buf-Darwin-x86_64.tar.gz"
+
+[tools."github:bufbuild/buf".platforms.darwin-arm64]
+checksum = "sha256:1a36e18b9aaaa69465d1a3b5fd061a9b6b9933ab93a71961824eba2afa0151fe"
+size = 20684310
+url = "https://github.com/bufbuild/buf/releases/download/v1.34.0/buf-Darwin-arm64.tar.gz"

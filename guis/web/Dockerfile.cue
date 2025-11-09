@@ -11,17 +11,17 @@ _ops: [ "Dockerfile", "compose.yaml", "skaffold.yaml", "compose-cache.json" ]
 	dir: "guis/web/",
 	copy: []
 	layers: {
-		dev: [ { dirs: [ ".vscode" ] }, stacks.#pnpm.#nuxt, { dirs: [ "interfaces", "i18n_messages" ], files: [ "i18n.config.ts", "decs.d.ts", "eslint.config.js" ] } ]
+		dev: [ { dirs: [ ".vscode" ] }, stacks.#pnpm.#nuxt, { dirs: [ "interfaces", "i18n/i18n_messages" ], files: [ "i18n.config.ts", "decs.d.ts", "eslint.config.js" ] } ]
 		ops: [ { files: list.Concat([_ops, _firebase]) } ]
 	}
 
 	integrate: {
 		env: [ "DOCKER_HOST=host.docker.internal:2375", "TESTCONTAINERS_HOST_OVERRIDE=gateway.docker.internal" ]
 		run: [
-			{ cmd: "eval \"$(pkgx dev)\" && just sayt test", files: [ "vitest.config.ts", "vitest.unit.config.ts", "vitest.integration.config.ts", "vitest.workspace.ts" ], dirs: [ "tests" ] },
-			{ cmd: "eval \"$(pkgx dev)\" && just sayt test -- -- --reporter=junit --outputFile=/root/reports/junit-report.xml" },
+			{ cmd: "just sayt test", files: [ "vitest.config.ts", "vitest.unit.config.ts", "vitest.integration.config.ts", "vitest.workspace.ts" ], dirs: [ "tests" ] },
+			{ cmd: "just sayt test -- -- --reporter=junit --outputFile=/root/reports/junit-report.xml" },
 			{ cmd: "mkdir -p /var/run/", files: _ops },
-			{ cmd: "eval \"$(pkgx dev)\" && pnpm test:int --run" }]
+			{ cmd: "pnpm test:int --run" }]
 	}
 }
 
@@ -30,7 +30,7 @@ _ops: [ "Dockerfile", "compose.yaml", "skaffold.yaml", "compose-cache.json" ]
 	workdir: #web.integrate.workdir
 	as: "artifact"
 	mount: #web.integrate.mount
-	run: [ { cmd: "eval \"$(pkgx dev)\" pnpm --dir /monorepo --filter ./guis/web... build --dotenv .env.preview", files: _firebase } ]
+	run: [ { cmd: "pnpm --dir /monorepo --filter ./guis/web... build --dotenv .env.preview", files: _firebase } ]
 }
 
 #release: docker.#image & {

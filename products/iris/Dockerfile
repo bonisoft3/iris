@@ -17,20 +17,32 @@ ARG K8S_IMAGES_NGINX_SOURCES=k8s_images_nginx_sources
 FROM cgr.dev/chainguard/wolfi-base:latest@sha256:deba562a90aa3278104455cf1c34ffa6c6edc6bea20d6b6d731a350e99ddd32a AS devserver
 WORKDIR /monorepo/./plugins/devserver/
 ENV DOCKER_CACHE_MOUNT='/root/.dcm'
-ENV PKGX_DIR='/root/.dcm/pkgx'
 ENV XDG_CACHE_HOME='/root/.dcm/cache'
 ENV XDG_DATA_HOME='/root/.dcm/local/share'
 ENV TASK_TEMP_DIR='/root/.dcm/task'
 ENV SKAFFOLD_CACHE_FILE='/root/.dcm/skaffold/cache'
+ENV PATH=/root/.local/bin:$PATH
+ENV MISE_VERSION=2025.10.2
 ARG TARGETOS
 ARG TARGETARCH
 COPY --from=tonistiigi/xx:1.5.0@sha256:0c6a569797744e45955f39d4f7538ac344bfb7ebf0a54006a0a4297b153ccf0f / /
 RUN --mount=type=cache,target=/root/.dcm/ mkdir -p ~/.dcm && mkdir -p /var/run && mkdir -p /usr/local/bin
 RUN --mount=type=cache,target=/root/.dcm/ xx-apk add curl libgcc libstdc++ coreutils xz
-RUN --mount=type=cache,target=/root/.dcm/ curl -ssL https://github.com/pkgxdev/pkgx/releases/download/v1.3.1/pkgx-1.3.1+$(xx-info os)+$(xx-info alpine-arch | tr _ -).tar.xz | tar xJ -C /usr/local/bin/
-COPY --chmod=0755 ./plugins/devserver/dind.sh ./
-COPY ./plugins/devserver/Taskfile.yaml ./
-RUN --mount=type=cache,target=/root/.dcm/ pkgx task wolfi
+RUN --mount=type=cache,target=/root/.dcm/ curl -fsSL https://mise.run/ | MISE_VERSION=v${MISE_VERSION} sh
+RUN --mount=type=cache,target=/root/.dcm/ mkdir -p /root/.config/mise/
+COPY .devcontainer/mise.toml .devcontainer/mise.lock .devcontainer/mise.alpine.lock .
+RUN --mount=type=cache,target=/root/.dcm/ mv mise.toml $HOME/.config/mise/config.toml && mv mise.lock $HOME/.config/mise/config.lock
+RUN --mount=type=cache,target=/root/.dcm/ test -f /etc/alpine-release && mv mise.alpine.lock $HOME/.config/mise/config.lock || rm mise.alpine.lock
+COPY .devcontainer/lazy-shims.nu .
+RUN --mount=type=cache,target=/root/.dcm/ cd /root/.config/mise && \
+	mise trust && \
+	mise install && \
+	mkdir -p /usr/local/lib/docker/cli-plugins && \
+	ln -sf $(mise where aqua:docker/compose)/docker-cli-plugin-docker-compose /usr/local/lib/docker/cli-plugins/docker-compose && \
+	ln -sf $(mise where aqua:docker/buildx)/docker-cli-plugin-docker-buildx /usr/local/lib/docker/cli-plugins/docker-buildx && \
+	$XDG_DATA_HOME/mise/shims/nu /monorepo/plugins/devserver/lazy-shims.nu /root/.config/mise/config.toml && \
+	rm /monorepo/plugins/devserver/lazy-shims.nu && \
+	rm -rf $XDG_DATA_HOME/.local/share/mise/installs/
 
 FROM scratch AS root_sayt
 WORKDIR /monorepo/./
@@ -47,7 +59,7 @@ FROM cgr.dev/chainguard/wolfi-base:latest@sha256:deba562a90aa3278104455cf1c34ffa
 WORKDIR /monorepo/plugins/libstoml/
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_gradle /monorepo /monorepo
-COPY plugins/libstoml/.pkgx.yaml ./
+COPY plugins/libstoml/.mise.toml ./
 COPY plugins/libstoml/gradle gradle
 COPY --chmod=0755 plugins/libstoml/gradlew ./
 COPY plugins/libstoml/gradlew.bat plugins/libstoml/gradle.properties plugins/libstoml/settings.gradle* plugins/libstoml/build.gradle* ./
@@ -77,7 +89,7 @@ COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_gradle /monorepo /monorepo
 COPY --from=plugins_libstoml_sources /monorepo /monorepo
 COPY --from=plugins_jvm_sources /monorepo /monorepo
-COPY libraries/logs/.pkgx.yaml ./
+COPY libraries/logs/.mise.toml ./
 COPY libraries/logs/gradle gradle
 COPY --chmod=0755 libraries/logs/gradlew ./
 COPY libraries/logs/gradlew.bat libraries/logs/gradle.properties libraries/logs/settings.gradle* libraries/logs/build.gradle* ./
@@ -100,7 +112,7 @@ COPY --from=plugins_jvm_sources /monorepo /monorepo
 COPY --from=plugins_micronaut_sources /monorepo /monorepo
 COPY --from=libraries_logs_sources /monorepo /monorepo
 COPY --from=libraries_xproto_sources /monorepo /monorepo
-COPY libraries/pbtables/.pkgx.yaml ./
+COPY libraries/pbtables/.mise.toml ./
 COPY libraries/pbtables/gradle gradle
 COPY --chmod=0755 libraries/pbtables/gradlew ./
 COPY libraries/pbtables/gradlew.bat libraries/pbtables/gradle.properties libraries/pbtables/settings.gradle* libraries/pbtables/build.gradle* ./
@@ -124,7 +136,7 @@ COPY --from=libraries_logs_sources /monorepo /monorepo
 COPY --from=plugins_micronaut_sources /monorepo /monorepo
 COPY --from=libraries_xproto_sources /monorepo /monorepo
 COPY --from=libraries_pbtables_sources /monorepo /monorepo
-COPY services/tracker/.pkgx.yaml ./
+COPY services/tracker/.mise.toml ./
 COPY services/tracker/gradle gradle
 COPY --chmod=0755 services/tracker/gradlew ./
 COPY services/tracker/gradlew.bat services/tracker/gradle.properties services/tracker/settings.gradle* services/tracker/build.gradle* ./
@@ -143,7 +155,7 @@ FROM cgr.dev/chainguard/wolfi-base:latest@sha256:deba562a90aa3278104455cf1c34ffa
 WORKDIR /monorepo/guis/web/
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_pnpm /monorepo /monorepo
-COPY guis/web/.pkgx.yaml ./
+COPY guis/web/.mise.toml ./
 COPY guis/web/package.json ./
 COPY guis/web/.vscode .vscode
 # https://code.visualstudio.com/docs/containers/debug-node#_mapping-docker-container-source-files-to-the-local-workspace

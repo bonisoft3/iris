@@ -36,9 +36,9 @@ import "bonisoft.org/libraries/pbtables"
 	run: [
 		{ cmd: "./gradlew --dry-run --no-daemon jibBuildTar" },
 		{ cmd: "./gradlew --no-daemon jibBuildTar" },
-		{ cmd: "mkdir -p /jib && pkgx tar xf ./build/jib-image.tar -C /jib",
+		{ cmd: "mkdir -p /jib && tar xf ./build/jib-image.tar -C /jib",
 		stmt: [ "# Hacking as in https://stackoverflow.com/a/67233414" ] },
-		{ cmd: "mkdir -p /layers && cd /jib && jq -r '.[].Layers[]' < /jib/manifest.json | xargs cat | pkgx tar xzf - -i -C /layers" }
+		{ cmd: "mkdir -p /layers && cd /jib && jq -r '.[].Layers[]' < /jib/manifest.json | xargs cat | tar xzf - -C /layers" }
 	]
 }
 

@@ -28,8 +28,8 @@ import "bonisoft.org:root"
 	mount: #release.mount
 	workdir: devserver.#devserver.workdir
 	run: [ {
-		"cmd": "--mount=type=secret,id=host.env,required set -a && . /run/secrets/host.env &&  docker compose build develop",
-		files: [ "Dockerfile", "compose.yaml", "Taskfile.yaml" ],
+		"cmd": "--mount=type=secret,id=host.env,required set -a && . /run/secrets/host.env && docker compose build develop",
+		files: [ "Dockerfile", "compose.yaml" ],
 	} ]
 }
 
