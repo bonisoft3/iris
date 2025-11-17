@@ -92,6 +92,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.9.3
+      vitest:
+        specifier: ^1.5.2
+        version: 1.6.1(@types/node@20.19.23)(terser@5.44.0)
       webpack:
         specifier: ^5.102.1
         version: 5.102.1
