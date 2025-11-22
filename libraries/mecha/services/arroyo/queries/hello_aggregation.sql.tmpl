@@ -1,0 +1,41 @@
+-- vim: set filetype=sql:
+-- Windowed aggregation query for concatenating last 3 hello messages
+-- Uses updating semantics for immediate emission when COUNT >= 3
+
+{{- $data := (datasource "data") -}}
+{{- $entity := $data.entity -}}
+{{- $aggregationEntity := $data.aggregationEntity -}}
+{{- $stream := $data.stream }}
+
+-- Create source table from SSE
+CREATE TABLE {{ $entity.lower }}_events (
+    {{ $entity.primaryField }}_value TEXT,
+    table_name TEXT,
+    action TEXT,
+    timestamp BIGINT,
+    stream_id TEXT
+) WITH (
+    connector = 'sse',
+    endpoint = 'http://proxy{{ $stream.sseEndpoint }}',
+    format = 'json'
+);
+
+-- Create output sink for aggregated results (using webhook to call PostgREST)
+CREATE TABLE {{ $aggregationEntity.lower }}_output (
+    {{ $aggregationEntity.primaryField }} TEXT
+) WITH (
+    connector = 'webhook',
+    endpoint = 'http://crud:3000/{{ $aggregationEntity.lower }}',
+    headers = 'Content-Type:application/json',
+    format = 'json'
+);
+
+-- Count-based aggregation - emits final result when window closes
+-- Uses hop window to create non-updating append-only output
+INSERT INTO {{ $aggregationEntity.lower }}_output
+SELECT
+    string_agg({{ $entity.primaryField }}_value, ', ') as {{ $aggregationEntity.primaryField }}
+FROM {{ $entity.lower }}_events
+WHERE action = 'I' AND table_name = '{{ $stream.tableName }}'
+GROUP BY hop(interval '1' second, interval '1' second)
+HAVING COUNT(*) >= 2;

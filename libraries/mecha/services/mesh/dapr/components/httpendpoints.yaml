@@ -1,0 +1,60 @@
+---
+apiVersion: dapr.io/v1alpha1
+kind: HTTPEndpoint
+metadata:
+  name: crud-service
+spec:
+  baseUrl: http://crud:3000
+  headers:
+    - name: "Content-Type"
+      value: "application/json"
+
+---
+apiVersion: dapr.io/v1alpha1
+kind: HTTPEndpoint
+metadata:
+  name: proxy-service  
+spec:
+  baseUrl: http://proxy:80
+  headers:
+    - name: "Content-Type"
+      value: "application/json"
+
+---
+apiVersion: dapr.io/v1alpha1
+kind: Resiliency
+metadata:
+  name: mesh-resiliency
+spec:
+  policies:
+    retries:
+      default-retry:
+        policy: constant
+        duration: 1s
+        maxRetries: 3
+    circuitBreakers:
+      default-circuit:
+        maxRequests: 20
+        interval: 30s
+        timeout: 10s
+        trip: consecutiveFailures >= 5
+      crud-circuit:
+        maxRequests: 10
+        interval: 30s
+        timeout: 5s
+        trip: consecutiveFailures >= 3
+    timeouts:
+      default-timeout:
+        response: 30s
+      crud-timeout:
+        response: 10s
+  targets:
+    httpEndpoints:
+      crud-service:
+        retry: default-retry
+        circuitBreaker: crud-circuit
+        timeout: crud-timeout
+      proxy-service:
+        retry: default-retry
+        circuitBreaker: default-circuit
+        timeout: default-timeout

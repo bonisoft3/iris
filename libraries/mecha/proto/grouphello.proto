@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package mecha.v1;
+
+import "buf/validate/validate.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+// GroupHello entity - aggregated/grouped hello messages from stream analytics
+message GroupHello {
+  string id = 1 [
+    (buf.validate.field).string.uuid = true
+  ];
+  
+  // Concatenated message values from multiple hello messages
+  string messages = 2 [
+    (buf.validate.field).string = {
+      min_len: 1,
+      max_len: 2000  // Larger than Hello.message since it contains multiple messages
+    }
+  ];
+  
+  google.protobuf.Timestamp created_at = 3;
+  
+  google.protobuf.Timestamp updated_at = 4;
+}
+
+// CRUD Request/Response messages
+message CreateGroupHelloRequest {
+  GroupHello grouphello = 1 [(buf.validate.field).required = true];
+}
+
+message CreateGroupHelloResponse {
+  GroupHello grouphello = 1;
+}
+
+message GetGroupHelloRequest {
+  string id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message GetGroupHelloResponse {
+  GroupHello grouphello = 1;
+}
+
+message UpdateGroupHelloRequest {
+  string id = 1 [(buf.validate.field).string.uuid = true];
+  GroupHello grouphello = 2 [(buf.validate.field).required = true];
+}
+
+message UpdateGroupHelloResponse {
+  GroupHello grouphello = 1;
+}
+
+message DeleteGroupHelloRequest {
+  string id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message DeleteGroupHelloResponse {
+  bool deleted = 1;
+}
+
+// GroupHello service - basic CRUD operations for aggregated messages
+service GroupHelloService {
+  rpc CreateGroupHello(CreateGroupHelloRequest) returns (CreateGroupHelloResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/grouphello"
+      body: "grouphello"
+    };
+  }
+  
+  rpc GetGroupHello(GetGroupHelloRequest) returns (GetGroupHelloResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/grouphello/{id}"
+    };
+  }
+  
+  rpc UpdateGroupHello(UpdateGroupHelloRequest) returns (UpdateGroupHelloResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/grouphello/{id}"
+      body: "grouphello"
+    };
+  }
+  
+  rpc DeleteGroupHello(DeleteGroupHelloRequest) returns (DeleteGroupHelloResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/grouphello/{id}"
+    };
+  }
+}

@@ -1,0 +1,21 @@
+log_level: "trace"
+
+source:
+  postgres:
+    url: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}?sslmode=disable"
+    mode: replication
+    replication:
+      replication_slot: pgstream_${POSTGRES_DB}_slot
+    
+target:
+  webhooks:
+    subscriptions:
+      store:
+        url: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}?sslmode=disable"
+      cache:
+        enabled: false
+        refresh_interval: 60
+
+modifiers:
+  injector:
+    enabled: true

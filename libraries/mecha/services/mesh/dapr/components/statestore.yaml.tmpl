@@ -1,0 +1,108 @@
+# vim: set filetype=yaml:
+{{- $data := (datasource "data") -}}
+{{- $streamLower := "hello" -}}
+{{- if gt (len $data.eventSubscriptions) 0 -}}
+  {{- $first := index $data.eventSubscriptions 0 -}}
+  {{- $streamLower = $first.lower -}}
+{{- end -}}
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: env-secret-store
+spec:
+  type: secretstores.local.env
+  version: v1
+
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: pgstate
+spec:
+  type: state.postgresql
+  version: v2
+  metadata:
+    - name: connectionString
+      secretKeyRef:
+        name: DATABASE_URL
+        key: DATABASE_URL
+    - name: outboxPublishPubsub
+      value: "eventbus"
+    - name: outboxPublishTopic
+      value: "cloudevents"
+auth:
+  secretStore: env-secret-store
+
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: eventbus
+spec:
+  type: pubsub.redis
+  version: v1
+  metadata:
+    - name: redisHost
+      value: redis:6379
+    - name: redisPassword
+      value: ""
+
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: redis-streams-binding
+spec:
+  type: bindings.redis
+  version: v1
+  metadata:
+    - name: redisHost
+      value: redis:6379
+    - name: redisPassword
+      value: ""
+    - name: direction
+      value: "input"
+    - name: stream
+      value: "{{ $streamLower }}_durable_stream"
+    - name: consumerGroup
+      value: "dapr_event_handlers"
+    - name: processingTimeout
+      value: "15s"
+    - name: redeliverInterval
+      value: "60s"
+
+---
+apiVersion: dapr.io/v2alpha1
+kind: Subscription
+metadata:
+  name: outbox-subscription
+spec:
+  pubsubname: eventbus
+  topic: cloudevents
+  routes:
+    default: /inbox-sorter
+
+---
+apiVersion: dapr.io/v2alpha1
+kind: Subscription
+metadata:
+  name: inbox-subscription
+spec:
+  pubsubname: eventbus
+  topic: cloudevents
+  routes:
+    default: /inbox
+
+{{- range $sub := $data.eventSubscriptions }}
+---
+apiVersion: dapr.io/v2alpha1
+kind: Subscription
+metadata:
+  name: {{ $sub.lower }}-events-subscription
+spec:
+  pubsubname: eventbus
+  topic: {{ $sub.lower }}_events
+  routes:
+    default: /dapr-{{ $sub.lower }}-events
+{{ end }}

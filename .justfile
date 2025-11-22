@@ -12,8 +12,8 @@ doctor:
   just sayt doctor
 
 [no-cd]
-chat:
-  just sayt chat
+generate:
+  just sayt generate
 [no-cd]
 vet:
   just sayt vet

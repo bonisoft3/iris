@@ -1,0 +1,17 @@
+[settings]
+lockfile = true
+experimental = true
+paranoid = false
+aqua.github_attestations = false
+aqua.cosign = false
+aqua.slsa = false
+aqua.minisign = false
+
+[tools]
+"aqua:bufbuild/buf" = "1.44.0"
+"aqua:hairyhenderson/gomplate" = "4.3.3"
+"aqua:ariga/atlas" = "0.38.0"
+"aqua:go-task/task" = "3.44.1"
+"github:xataio/pgstream" = "0.8.5"
+"github:dapr/dapr" = "1.16.1"
+"github:dapr/cli" = "1.16.1"

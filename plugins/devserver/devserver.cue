@@ -26,7 +26,7 @@ import "bonisoft.org/plugins/sayt:docker"
 		{ cmd: "xx-apk add curl libgcc libstdc++ coreutils xz bash" },
 		{ cmd: "curl -fsSL https://mise.run/ | MISE_VERSION=v${MISE_VERSION} sh" },
 		{ stmt: [ "COPY .devcontainer/mise.toml .devcontainer/mise.lock .devcontainer/mise.alpine.lock ./", ] },
-		{ stmt: [ "COPY --chmod=0755 .devcontainer/lazy-shims.nu .devcontainer/lazy-docker.sh .devcontainer/lazy-mise.sh ./", ] },
+		{ stmt: [ "COPY --chmod=0755 plugins/devserver/lazy-shims.nu plugins/devserver/lazy-docker.sh plugins/devserver/lazy-mise.sh ./", ] },
 		{ cmd: """
 mv mise.toml ${XDG_CONFIG_HOME}/mise/config.toml && \\
     mv mise.lock ${XDG_CONFIG_HOME}/mise/config.lock && \\

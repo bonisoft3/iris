@@ -1,0 +1,273 @@
+# vim: set filetype=nginx:
+worker_processes  1;
+
+events {
+	worker_connections  1024;
+}
+
+http {
+	# Define a DNS resolver (e.g., Google's public DNS or Docker's internal DNS)
+	resolver 127.0.0.11 valid=1s; # Docker's internal DNS resolver
+
+	# Initialize the Lua environment to read environment variables
+	init_by_lua_block {
+		upstream_host = os.getenv("UPSTREAM_HOST")
+		upstream_port = os.getenv("UPSTREAM_PORT")
+		pgrst_host = os.getenv("PGRST_HOST") or "crud"
+		pgrst_port = os.getenv("PGRST_PORT") or "3000"
+	}
+
+	server {
+		listen 80;
+
+		location /dapr/ {
+			# Return a 404 Not Found for any request under /dapr
+			return 404;
+		}
+
+		location /crud/ {
+			# Fast path: Direct CRUD with minimal latency
+			# Forward directly to PostgREST, stripping /crud/ prefix
+			proxy_pass http://crud:3000/;
+			proxy_set_header Host $host;
+			proxy_set_header X-Real-IP $remote_addr;
+			proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+			proxy_set_header X-Forwarded-Proto $scheme;
+		}
+
+		location /inbox-sorter {
+			content_by_lua_block {
+				local cjson = require "cjson.safe"
+				ngx.req.read_body()
+				local body = ngx.req.get_body_data()
+				if not body then
+					ngx.exit(ngx.HTTP_BAD_REQUEST)
+				end
+
+				local ce = cjson.decode(body)
+				if not ce or not ce.data then
+					ngx.exit(ngx.HTTP_BAD_REQUEST)
+				end
+
+				local pb = cjson.decode(ce.data)
+				if not pb or not pb[1] or not pb[1].id then
+					ngx.exit(ngx.HTTP_BAD_REQUEST)
+				end
+
+				local target_uri = "/inbox-letter-" .. pb[1].id
+				return ngx.exec(target_uri)
+			}
+		}
+
+		location ~ ^/inbox-letter-(.*) {
+			# Use a variable for mesh to avoid dns resolution on startup
+			set $mesh_upstream http://mesh:3500;
+			proxy_pass $mesh_upstream/v1.0/publish/eventbus/inbox-letter-$1;
+			proxy_set_header Host $host;
+			proxy_set_header X-Real-IP $remote_addr;
+			proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+			proxy_set_header X-Forwarded-Proto $scheme;
+		}
+
+		# Observable path: Higher latency but guaranteed correlation and events via Dapr outbox
+		location /events/ {
+			# Use Dapr state management with automatic outbox publishing
+			# Dapr handles correlation IDs and tracing automatically
+			# Use a variable for mesh to avoid dns resolution on startup
+			set $mesh_upstream http://mesh:3500;
+			rewrite ^/events/(.*) /$1 break;
+			proxy_pass $mesh_upstream/v1.0/state/pgstate;
+			proxy_set_header Host $host;
+			proxy_set_header X-Real-IP $remote_addr;
+			proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+			proxy_set_header X-Forwarded-Proto $scheme;
+			proxy_set_header Content-Type $content_type;
+		}
+
+		location /webhook {
+			content_by_lua_file /usr/local/openresty/nginx/conf/webhook_handler.lua;
+		}
+
+		location /redis-streams-events {
+			content_by_lua_file /usr/local/openresty/nginx/conf/redis_streams_events_handler.lua;
+		}
+
+{{- $data := (datasource "data") -}}
+{{- range $entity := $data.entities }}
+		location /dapr-{{ $entity.name }}-events {
+			content_by_lua_block {
+				local cjson = require "cjson.safe"
+				local redis = require "resty.redis"
+
+				if ngx.var.request_method ~= "POST" then
+					ngx.status = 405
+					ngx.say("Method not allowed")
+					return
+				end
+
+				ngx.req.read_body()
+				local body = ngx.req.get_body_data()
+				if not body then
+					ngx.status = 400
+					ngx.say("No body")
+					return
+				end
+
+				local event = cjson.decode(body)
+				if not event then
+					ngx.status = 400
+					ngx.say("Invalid JSON")
+					return
+				end
+
+				local primary_value = "MISSING"
+				if event.data then
+					for _, field in ipairs(event.data) do
+						if field.name == "world" then
+							primary_value = field.value
+							break
+						end
+					end
+				end
+
+				-- Create unique message ID for tracking
+				local message_id = ngx.time() .. "-" .. ngx.worker.pid() .. "-" .. math.random(10000)
+
+				-- Prepare event for pending acknowledgment queue (CDC path - minimal context)
+				local pending_event = {
+					world_value = primary_value,
+					table_name = event.table_name,
+					action = event.action,
+					timestamp = event.timestamp,
+					message_id = message_id,
+					dapr_delivery_id = ngx.var.http_ce_id or "unknown", -- CloudEvents ID from Dapr
+					source = event.source or "cdc"
+				}
+
+				-- Store in Redis pending acknowledgment queue (with 5min TTL)
+				local red = redis:new()
+				red:set_timeouts(1000, 1000, 1000)
+
+				local ok, err = red:connect("redis", 6379)
+				if not ok then
+					ngx.status = 500
+					ngx.say('{"status": "redis_error"}')
+					return
+				end
+
+				-- Add to pending queue (ZADD with score = expiry timestamp)
+				local expire_at = ngx.time() + 300 -- 5 minutes
+				local pending_res, pending_err = red:zadd("pending_acks", expire_at, message_id)
+				if not pending_res then
+					red:set_keepalive(30000, 100)
+					ngx.status = 500
+					ngx.say('{"status": "pending_queue_error"}')
+					return
+				end
+
+				local event_res, event_err = red:setex("event:" .. message_id, 300, cjson.encode(pending_event))
+				if not event_res then
+					red:set_keepalive(30000, 100)
+					ngx.status = 500
+					ngx.say('{"status": "event_store_error"}')
+					return
+				end
+
+				-- Publish to processing channel (not directly to SSE)
+				local pub_res, pub_err = red:publish("{{ $entity.name }}_processing_channel", cjson.encode(pending_event))
+				if not pub_res then
+					red:set_keepalive(30000, 100)
+					ngx.status = 500
+					ngx.say('{"status": "publish_error"}')
+					return
+				end
+
+				red:set_keepalive(30000, 100)
+
+				-- IMPORTANT: Return success to Dapr immediately after Redis write
+				-- At-least-once delivery to Redis; exactly-once to SSE via ID coordination
+				ngx.status = 200
+				ngx.header.content_type = "application/json"
+				ngx.say('{"status": "queued", "message_id": "' .. message_id .. '"}')
+			}
+		}
+
+{{ end }}
+
+		location /ack-message {
+			content_by_lua_block {
+				local cjson = require "cjson.safe"
+				local redis = require "resty.redis"
+
+				if ngx.var.request_method ~= "POST" then
+					ngx.status = 405
+					ngx.say("Method not allowed")
+					return
+				end
+
+				ngx.req.read_body()
+				local body = ngx.req.get_body_data()
+				if not body then
+					ngx.status = 400
+					ngx.say("No body")
+					return
+				end
+
+				local ack_data = cjson.decode(body)
+				if not ack_data or not ack_data.message_id then
+					ngx.status = 400
+					ngx.say("Missing message_id")
+					return
+				end
+
+				local message_id = ack_data.message_id
+
+				-- Connect to Redis
+				local red = redis:new()
+				red:set_timeouts(1000, 1000, 1000)
+				local ok, err = red:connect("redis", 6379)
+				if not ok then
+					ngx.status = 500
+					ngx.say('{"status": "redis_error"}')
+					return
+				end
+
+				-- Remove from pending queue (successful processing)
+				local rem_res, rem_err = red:zrem("pending_acks", message_id)
+				local del_res, del_err = red:del("event:" .. message_id)
+
+				red:set_keepalive(30000, 100)
+
+				if rem_res and rem_res > 0 then
+					ngx.status = 200
+					ngx.say('{"status": "acknowledged"}')
+				else
+					ngx.status = 404
+					ngx.say('{"status": "not_found"}')
+				end
+			}
+		}
+
+{{- range $entity := $data.entities }}
+		location /stream/sse/{{ $entity.lower }} {
+			content_by_lua_file /usr/local/openresty/nginx/conf/sse_handler.lua;
+		}
+
+{{ end }}
+
+		location / {
+			# Use Lua to set the upstream host and port
+			set_by_lua_block $upstream_host { return upstream_host }
+			set_by_lua_block $upstream_port { return upstream_port }
+
+			# Use a variable for the upstream
+			# host to avoid dns resolution on startup
+			set $upstream http://$upstream_host:$upstream_port;
+			proxy_pass $upstream;
+			proxy_set_header Host $host;
+			proxy_set_header X-Real-IP $remote_addr;
+			proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+			proxy_set_header X-Forwarded-Proto $scheme;
+		}
+	}
+}

@@ -1,0 +1,3 @@
+say:
+  generate:
+    rulemap: { "auto-cue": null }

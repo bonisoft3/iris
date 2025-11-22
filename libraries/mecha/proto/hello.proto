@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package mecha.v1;
+
+import "buf/validate/validate.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+// Hello entity - simple domain model with CEL validation
+message Hello {
+  string id = 1 [
+    (buf.validate.field).string.uuid = true
+  ];
+  
+  string message = 2 [
+    (buf.validate.field).string = {
+      min_len: 1,
+      max_len: 500,
+      pattern: "^[\\p{L}\\p{N}\\p{P}\\p{S}\\s]+$"
+    }
+  ];
+  
+  google.protobuf.Timestamp created_at = 3;
+  
+  google.protobuf.Timestamp updated_at = 4;
+}
+
+// CRUD Request/Response messages
+message CreateHelloRequest {
+  Hello hello = 1 [(buf.validate.field).required = true];
+}
+
+message CreateHelloResponse {
+  Hello hello = 1;
+}
+
+message GetHelloRequest {
+  string id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message GetHelloResponse {
+  Hello hello = 1;
+}
+
+message UpdateHelloRequest {
+  string id = 1 [(buf.validate.field).string.uuid = true];
+  Hello hello = 2 [(buf.validate.field).required = true];
+}
+
+message UpdateHelloResponse {
+  Hello hello = 1;
+}
+
+message DeleteHelloRequest {
+  string id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message DeleteHelloResponse {
+  bool deleted = 1;
+}
+
+// Hello service - basic CRUD operations
+service HelloService {
+  rpc CreateHello(CreateHelloRequest) returns (CreateHelloResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/hello"
+      body: "hello"
+    };
+  }
+  
+  rpc GetHello(GetHelloRequest) returns (GetHelloResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/hello/{id}"
+    };
+  }
+  
+  rpc UpdateHello(UpdateHelloRequest) returns (UpdateHelloResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/hello/{id}"
+      body: "hello"
+    };
+  }
+  
+  rpc DeleteHello(DeleteHelloRequest) returns (DeleteHelloResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/hello/{id}"
+    };
+  }
+}
