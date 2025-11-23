@@ -17,18 +17,19 @@ COPY --from=tonistiigi/xx:1.5.0@sha256:0c6a569797744e45955f39d4f7538ac344bfb7ebf
 RUN --mount=type=cache,target=${DCM_PATH} mkdir -p ${DCM_PATH} /var/run /usr/local/bin ${XDG_CONFIG_HOME}/mise
 RUN --mount=type=cache,target=${DCM_PATH} xx-apk add curl libgcc libstdc++ coreutils xz bash
 RUN --mount=type=cache,target=${DCM_PATH} curl -fsSL https://mise.run/ | MISE_VERSION=v${MISE_VERSION} sh
-COPY .devcontainer/mise.toml .devcontainer/mise.lock .devcontainer/mise.alpine.lock ./
+COPY plugins/devserver/mise.toml plugins/devserver/mise.lock plugins/devserver/mise.alpine.lock ./
 COPY --chmod=0755 plugins/devserver/lazy-shims.nu plugins/devserver/lazy-docker.sh plugins/devserver/lazy-mise.sh ./
 RUN --mount=type=cache,target=${DCM_PATH} mv mise.toml ${XDG_CONFIG_HOME}/mise/config.toml && \
     mv mise.lock ${XDG_CONFIG_HOME}/mise/config.lock && \
     (test -f /etc/alpine-release && mv mise.alpine.lock ${XDG_CONFIG_HOME}/mise/config.lock || rm mise.alpine.lock)
+COPY --chmod=0755 ./plugins/devserver/lazy-shims.nu ./plugins/devserver/lazy-docker.sh ./plugins/devserver/lazy-mise.sh ./
+COPY ./plugins/devserver/mise.toml ./plugins/devserver/mise.lock ./plugins/devserver/mise.alpine.lock ./
 RUN --mount=type=cache,target=${DCM_PATH} cd ${XDG_CONFIG_HOME}/mise && \
-		mv /monorepo/plugins/devserver/lazy-mise.sh /root/.local/bin/lazy-mise && \
+		cp /monorepo/plugins/devserver/lazy-mise.sh /root/.local/bin/lazy-mise && \
 		/root/.local/bin/lazy-mise --help && \
 		mise trust && mise install && \
 		${XDG_DATA_HOME}/mise/shims/nu /monorepo/plugins/devserver/lazy-shims.nu config.toml --delete-installs && \
-		mv /monorepo/plugins/devserver/lazy-docker.sh /root/.local/bin/docker && \
-		rm /monorepo/plugins/devserver/lazy-shims.nu
+		cp /monorepo/plugins/devserver/lazy-docker.sh /root/.local/bin/docker
 
 FROM scratch AS root_buf
 WORKDIR /monorepo/./

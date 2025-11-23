@@ -25,7 +25,7 @@ import "bonisoft.org/plugins/sayt:docker"
 		{ cmd: "mkdir -p ${DCM_PATH} /var/run /usr/local/bin ${XDG_CONFIG_HOME}/mise" },
 		{ cmd: "xx-apk add curl libgcc libstdc++ coreutils xz bash" },
 		{ cmd: "curl -fsSL https://mise.run/ | MISE_VERSION=v${MISE_VERSION} sh" },
-		{ stmt: [ "COPY .devcontainer/mise.toml .devcontainer/mise.lock .devcontainer/mise.alpine.lock ./", ] },
+    { stmt: [ "COPY plugins/devserver/mise.toml plugins/devserver/mise.lock plugins/devserver/mise.alpine.lock ./" ] },
 		{ stmt: [ "COPY --chmod=0755 plugins/devserver/lazy-shims.nu plugins/devserver/lazy-docker.sh plugins/devserver/lazy-mise.sh ./", ] },
 		{ cmd: """
 mv mise.toml ${XDG_CONFIG_HOME}/mise/config.toml && \\
@@ -34,12 +34,11 @@ mv mise.toml ${XDG_CONFIG_HOME}/mise/config.toml && \\
 """ },
 		{ cmd: """
 cd ${XDG_CONFIG_HOME}/mise && \\
-		mv /monorepo/plugins/devserver/lazy-mise.sh /root/.local/bin/lazy-mise && \\
+		cp /monorepo/plugins/devserver/lazy-mise.sh /root/.local/bin/lazy-mise && \\
 		/root/.local/bin/lazy-mise --help && \\
 		mise trust && mise install && \\
 		${XDG_DATA_HOME}/mise/shims/nu /monorepo/plugins/devserver/lazy-shims.nu config.toml --delete-installs && \\
-		mv /monorepo/plugins/devserver/lazy-docker.sh /root/.local/bin/docker && \\
-		rm /monorepo/plugins/devserver/lazy-shims.nu
-""" },
+		cp /monorepo/plugins/devserver/lazy-docker.sh /root/.local/bin/docker
+""", files: [ "mise.toml", "mise.lock", "mise.alpine.lock" ], scripts: [ "lazy-shims.nu", "lazy-docker.sh", "lazy-mise.sh" ] }
 	]
 }

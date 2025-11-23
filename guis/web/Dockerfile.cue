@@ -18,6 +18,7 @@ _ops: [ "Dockerfile", "compose.yaml", "skaffold.yaml", "compose-cache.json" ]
 	integrate: {
 		env: [ "DOCKER_HOST=host.docker.internal:2375", "TESTCONTAINERS_HOST_OVERRIDE=gateway.docker.internal" ]
 		run: [
+			{ cmd: "just sayt setup" },
 			{ cmd: "just sayt test", files: [ "vitest.config.ts", "vitest.unit.config.ts", "vitest.integration.config.ts", "vitest.workspace.ts" ], dirs: [ "tests" ] },
 			{ cmd: "just sayt test -- -- --reporter=junit --outputFile=/root/reports/junit-report.xml" },
 			{ cmd: "mkdir -p /var/run/", files: _ops },
