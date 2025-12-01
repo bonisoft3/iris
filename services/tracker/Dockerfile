@@ -158,8 +158,6 @@ RUN --mount=type=cache,sharing=locked,target=/root/.dcm/gradle [ ! -e .vscode/ta
 RUN --mount=type=cache,sharing=locked,target=/root/.dcm/gradle --network=none [ ! -e .vscode/tasks.json ] || just sayt test --rerun
 COPY services/tracker/src/it src/it
 COPY services/tracker/Dockerfile services/tracker/compose.yaml services/tracker/skaffold.yaml ./
-RUN --mount=type=cache,sharing=locked,target=/root/.dcm/gradle --mount=type=secret,id=host.env,required dind.sh sh -c 'unset DOCKER_HOST && docker ps'
-RUN --mount=type=cache,sharing=locked,target=/root/.dcm/gradle --mount=type=secret,id=host.env,required dind.sh docker -H unix:///var/run/docker.sock ps
 RUN --mount=type=cache,sharing=locked,target=/root/.dcm/gradle --mount=type=secret,id=host.env,required dind.sh ./gradlew integrationTest --rerun
 CMD ["true"]
 

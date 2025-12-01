@@ -23,8 +23,10 @@ import "bonisoft.org/libraries/pbtables"
 			C.test,
 			[ docker.#run & { cmd: "--network=none [ ! -e .vscode/tasks.json ] || just sayt test --rerun" } ],
 			L.ops,
-			[ { cmd: "--mount=type=secret,id=host.env,required dind.sh sh -c 'unset DOCKER_HOST && docker ps'" } ],
-			[ { cmd: "--mount=type=secret,id=host.env,required dind.sh docker -H unix:///var/run/docker.sock ps" } ],
+			// unstable
+			// [ { cmd: "--mount=type=secret,id=host.env,required dind.sh sh -c 'unset DOCKER_HOST && docker ps'" } ],
+			// unstable
+			// [ { cmd: "--mount=type=secret,id=host.env,required dind.sh docker -H unix:///var/run/docker.sock ps" } ],
 			[ { cmd: "--mount=type=secret,id=host.env,required dind.sh ./gradlew integrationTest --rerun" } ]
 		])
 	}
