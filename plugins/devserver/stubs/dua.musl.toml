@@ -1,0 +1,32 @@
+# Auto-generated Alpine/musl stub for ($binary_info.clean_name)
+
+version = "2.32.0"
+bin = "dua"
+
+# Platform configurations
+[platforms.darwin-amd64]
+url = "https://github.com/Byron/dua-cli/releases/download/v2.32.0/dua-v2.32.0-x86_64-apple-darwin.tar.gz"
+checksum = "sha256:ceec037df8a1e5b8ef810eb0fa2fab1c26771b7a1300156ec195893c017ea6c0"
+size = 1022092
+
+[platforms.linux-amd64]
+url = "https://github.com/Byron/dua-cli/releases/download/v2.32.0/dua-v2.32.0-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:3553b6ef42b7398c979066e6360c0cb79b593c4b11f804dfbdd0caba0772e015"
+size = 1196065
+
+[platforms.linux-arm64]
+url = "https://github.com/Byron/dua-cli/releases/download/v2.32.0/dua-v2.32.0-aarch64-unknown-linux-musl.tar.gz"
+checksum = "sha256:e0a5190dead2e588622f8ddc32c539cae94e83af4164e813a03c775aad4e89f6"
+size = 1108824
+
+[platforms.macos-arm64]
+url = "https://github.com/Byron/dua-cli/releases/download/v2.32.0/dua-v2.32.0-x86_64-apple-darwin.tar.gz"
+checksum = "sha256:ceec037df8a1e5b8ef810eb0fa2fab1c26771b7a1300156ec195893c017ea6c0"
+size = 1022092
+
+[platforms.windows-amd64]
+url = "https://github.com/Byron/dua-cli/releases/download/v2.32.0/dua-v2.32.0-x86_64-pc-windows-msvc.zip"
+checksum = "sha256:eb697c75361479c1e645cc4d7bb54bf83d6900e79159d308e5b363c36c0babe4"
+size = 876268
+bin = "dua.exe"
+

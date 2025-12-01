@@ -66,7 +66,7 @@ dependencies {
     testImplementation(platform(libs.testcontainers.bom))
     testImplementation("io.mockk:mockk:1.13.7")
     testRuntimeOnly(libs.testcontainers.postgresql)
-    testImplementation("org.testcontainers:mockserver")
+    testRuntimeOnly(libs.testcontainers.mockserver)
     testImplementation("org.mock-server:mockserver-netty:5.14.0")
     testImplementation("io.kotest.extensions:kotest-extensions-mockserver:1.2.1")
 }

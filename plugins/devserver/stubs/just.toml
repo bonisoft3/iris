@@ -1,0 +1,37 @@
+# Auto-generated stub for ($binary_info.clean_name)
+
+version = "1.42.4"
+bin = "just"
+
+# Platform configurations
+[platforms.macos-arm64]
+url = "https://github.com/casey/just/releases/download/1.42.4/just-1.42.4-aarch64-apple-darwin.tar.gz"
+checksum = "sha256:9bea24da39a54f1517ebc8d050789e9631eaf9bcec76a94866a9955a3a1a663f"
+size = 1701037
+
+[platforms.linux-amd64]
+url = "https://github.com/casey/just/releases/download/1.42.4/just-1.42.4-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:678efc1cfbd5fa5a88375daa7e2f3864a049d6d63a0296df925a2ae5f516cb56"
+size = 2003117
+
+[platforms.linux-arm64]
+url = "https://github.com/casey/just/releases/download/1.42.4/just-1.42.4-aarch64-unknown-linux-musl.tar.gz"
+checksum = "sha256:beb35a4ed1208ffbb0fef26042c65875759a5358b9ee1a7856dec8490dfd4aca"
+size = 1829411
+
+[platforms.darwin-amd64]
+url = "https://github.com/casey/just/releases/download/1.42.4/just-1.42.4-x86_64-apple-darwin.tar.gz"
+checksum = "sha256:ec8781b4341552877a432a922818f1656bcee6ec51155dbbdba490d9bd8f8dd2"
+size = 1836612
+
+[platforms.darwin-arm64]
+url = "https://github.com/casey/just/releases/download/1.42.4/just-1.42.4-aarch64-apple-darwin.tar.gz"
+checksum = "sha256:9bea24da39a54f1517ebc8d050789e9631eaf9bcec76a94866a9955a3a1a663f"
+size = 1701037
+
+[platforms.windows-amd64]
+url = "https://github.com/casey/just/releases/download/1.42.4/just-1.42.4-x86_64-pc-windows-msvc.zip"
+checksum = "sha256:238cb448eb2ced3f7ac2f32872cf08244179b10b2d3f67e9069087ccbdc3d7f6"
+size = 1753550
+bin = "just.exe"
+

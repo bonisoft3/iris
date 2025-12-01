@@ -1,0 +1,10 @@
+#!/bin/sh
+# Get the directory where this script lives
+DIR="$(dirname "$(readlink -f "$0")")" 
+
+# Check for Alpine and prefer musl variant if available
+if [ -f /etc/alpine-release ] && [ -f "$DIR/($tool_name).musl.toml" ]; then
+    exec mise tool-stub "$DIR/dua.musl.toml" "$@"
+else
+    exec mise tool-stub "$DIR/dua.toml" "$@"
+fi

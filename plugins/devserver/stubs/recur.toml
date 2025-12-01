@@ -1,0 +1,32 @@
+# Auto-generated stub for ($binary_info.clean_name)
+
+version = "v3.0.0"
+bin = "recur"
+
+# Platform configurations
+[platforms.macos-arm64]
+url = "https://github.com/dbohdan/recur/releases/download/v3.0.0/recur-v3.0.0-macos-arm64"
+checksum = "sha256:88bdb74f29f95f2f5fa0e792d9fbc7efec4e6438aa9378689f677813dbdcb06b"
+size = 4636850
+
+[platforms.linux-amd64]
+url = "https://github.com/dbohdan/recur/releases/download/v3.0.0/recur-v3.0.0-linux-x86_64"
+checksum = "sha256:49098339a168a8df21c4044438ac683093665f86728e18132228b44ac9a39be1"
+size = 4878675
+
+[platforms.linux-arm64]
+url = "https://github.com/dbohdan/recur/releases/download/v3.0.0/recur-v3.0.0-linux-aarch64"
+checksum = "sha256:6915ed18be6b46771fdbc1369ce41fa7cb311626bcd3d277856a23c440eac79a"
+size = 4665234
+
+[platforms.darwin-arm64]
+url = "https://github.com/dbohdan/recur/releases/download/v3.0.0/recur-v3.0.0-macos-arm64"
+checksum = "sha256:88bdb74f29f95f2f5fa0e792d9fbc7efec4e6438aa9378689f677813dbdcb06b"
+size = 4636850
+
+[platforms.windows-amd64]
+url = "https://github.com/dbohdan/recur/releases/download/v3.0.0/recur-v3.0.0-windows-amd64.exe"
+checksum = "sha256:a735d7b9e105ee1145450c9929877f44df56b1da6e8c118b0415db809ef7940b"
+size = 5215232
+bin = "recur.exe"
+

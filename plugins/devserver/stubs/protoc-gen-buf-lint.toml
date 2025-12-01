@@ -1,0 +1,37 @@
+# Auto-generated stub for ($binary_info.clean_name)
+
+version = "1.57.2"
+bin = "protoc-gen-buf-lint"
+
+# Platform configurations
+[platforms.macos-arm64]
+url = "https://github.com/bufbuild/buf/releases/download/v1.57.2/buf-Darwin-arm64.tar.gz"
+checksum = "sha256:942dd3c96444615def14ed791de33c882f9a6a2166ead1c22973c04a4d3b186e"
+size = 27577513
+
+[platforms.linux-amd64]
+url = "https://github.com/bufbuild/buf/releases/download/v1.57.2/buf-Linux-x86_64.tar.gz"
+checksum = "sha256:275883a9bb684d37b26a5c86466870a3acd2420163ac6f4827491498d89e34ad"
+size = 28623318
+
+[platforms.linux-arm64]
+url = "https://github.com/bufbuild/buf/releases/download/v1.57.2/buf-Linux-aarch64.tar.gz"
+checksum = "sha256:fcc74ba98842bf431f2c4b9fccc5fe77b13aafd497125472ab341295f4915329"
+size = 26178307
+
+[platforms.darwin-amd64]
+url = "https://github.com/bufbuild/buf/releases/download/v1.57.2/buf-Darwin-x86_64.tar.gz"
+checksum = "sha256:b5cefc5eec24331e26a49db2b71b46e7e5a30d8d8f361f9ccc69e7dd5fda5c7c"
+size = 29338298
+
+[platforms.darwin-arm64]
+url = "https://github.com/bufbuild/buf/releases/download/v1.57.2/buf-Darwin-arm64.tar.gz"
+checksum = "sha256:942dd3c96444615def14ed791de33c882f9a6a2166ead1c22973c04a4d3b186e"
+size = 27577513
+
+[platforms.windows-amd64]
+url = "https://github.com/bufbuild/buf/releases/download/v1.57.2/buf-Windows-x86_64.zip"
+checksum = "sha256:9129b146336155b6e5dedb9ebd07cbed14499aac5c903acf59d9c6d8aa8c7126"
+size = 29266670
+bin = "protoc-gen-buf-lint.exe"
+

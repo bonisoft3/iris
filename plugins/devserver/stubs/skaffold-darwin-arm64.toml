@@ -1,0 +1,17 @@
+# Auto-generated stub for ($binary_info.clean_name)
+
+version = "2.16.1"
+bin = "skaffold-darwin-arm64"
+
+# Platform configurations
+[platforms.macos-arm64]
+url = "https://storage.googleapis.com/skaffold/releases/v2.16.1/skaffold-darwin-arm64"
+checksum = "blake3:2c67f3ca76d018ea381098008c620af3918f6657955057888ffe9e318fed26f4"
+size = 128449456
+
+[platforms.windows-amd64]
+url = "https://storage.googleapis.com/skaffold/releases/v2.16.1/skaffold-windows-amd64"
+checksum = "sha256:457f28a871b9e1027b53f92e9db1f933e0c1f4cefe94d9232a84f10b0d804814"
+size = 210
+bin = "skaffold-darwin-arm64.exe"
+

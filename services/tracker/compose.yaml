@@ -13,7 +13,6 @@ services:
         - host.env
       target: debug
     volumes:
-      - ${DIND:+/root/.dcm}${DIND:-root-dot-docker-cache-mount}:/root/.dcm
       - //var/run/docker.sock:/var/run/docker.sock
       - ${HOME:-~}/.skaffold/cache:/root/.skaffold/cache
     entrypoint:

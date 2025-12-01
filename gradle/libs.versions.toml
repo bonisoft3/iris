@@ -6,7 +6,7 @@ micronaut = "4.9.3"   # keep in sync with gradle.properties
 micronautPlugins = "4.5.4"
 firebase = "32.6.0"   # keep in sync with gradle.properties
 kotest = "5.8.1"
-testcontainers = "1.18.1"
+testcontainers = "2.0.2"
 pnpm = "8.5.1"
 node = "20.2.0"
 
@@ -90,7 +90,8 @@ kotest-koin = { module = "io.kotest:kotest-extensions-koin", version = "4.4.3" }
 micronaut-kotest = { module = "io.micronaut.test:micronaut-test-kotest5" }
 datafaker = { module = "net.datafaker:datafaker", version = "1.9.0" }
 testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
-testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql", version = "1.21.3" }
+testcontainers-mockserver = { module = "org.testcontainers:mockserver", version = "1.21.3" }
 
 # Notice this is not a catalog, but rather it replaces settings.gradle.kts:PluginManagement.
 # See https://github.com/gradle/gradle/issues/16078. Because of that, we don't use it.

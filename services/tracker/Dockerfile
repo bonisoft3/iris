@@ -12,7 +12,6 @@ ARG LIBRARIES_PBTABLES_SOURCES=libraries_pbtables_sources
 FROM cgr.dev/chainguard/wolfi-base:latest@sha256:deba562a90aa3278104455cf1c34ffa6c6edc6bea20d6b6d731a350e99ddd32a AS devserver
 WORKDIR /monorepo/./plugins/devserver/
 ENV DCM_PATH=/root/.dcm
-ENV DOCKER_CACHE_MOUNT=${DCM_PATH}
 ENV XDG_CACHE_HOME=${DCM_PATH}/cache
 ENV XDG_DATA_HOME=${DCM_PATH}/local/share
 ENV TASK_TEMP_DIR=${DCM_PATH}/task
@@ -22,22 +21,15 @@ ENV MISE_VERSION=2025.10.2
 ARG TARGETOS
 ARG TARGETARCH
 COPY --from=tonistiigi/xx:1.5.0@sha256:0c6a569797744e45955f39d4f7538ac344bfb7ebf0a54006a0a4297b153ccf0f / /
-RUN --mount=type=cache,target=${DCM_PATH} mkdir -p ${DCM_PATH} /var/run /usr/local/bin ${XDG_CONFIG_HOME}/mise
-RUN --mount=type=cache,target=${DCM_PATH} xx-apk add curl libgcc libstdc++ coreutils xz bash
-RUN --mount=type=cache,target=${DCM_PATH} curl -fsSL https://mise.run/ | MISE_VERSION=v${MISE_VERSION} sh
-COPY plugins/devserver/mise.toml plugins/devserver/mise.lock plugins/devserver/mise.alpine.lock ./
-COPY --chmod=0755 plugins/devserver/lazy-shims.nu plugins/devserver/lazy-docker.sh plugins/devserver/lazy-mise.sh ./
-RUN --mount=type=cache,target=${DCM_PATH} mv mise.toml ${XDG_CONFIG_HOME}/mise/config.toml && \
-    mv mise.lock ${XDG_CONFIG_HOME}/mise/config.lock && \
-    (test -f /etc/alpine-release && mv mise.alpine.lock ${XDG_CONFIG_HOME}/mise/config.lock || rm mise.alpine.lock)
-COPY --chmod=0755 ./plugins/devserver/lazy-shims.nu ./plugins/devserver/lazy-docker.sh ./plugins/devserver/lazy-mise.sh ./
-COPY ./plugins/devserver/mise.toml ./plugins/devserver/mise.lock ./plugins/devserver/mise.alpine.lock ./
-RUN --mount=type=cache,target=${DCM_PATH} cd ${XDG_CONFIG_HOME}/mise && \
-		cp /monorepo/plugins/devserver/lazy-mise.sh /root/.local/bin/lazy-mise && \
-		/root/.local/bin/lazy-mise --help && \
-		mise trust && mise install && \
-		${XDG_DATA_HOME}/mise/shims/nu /monorepo/plugins/devserver/lazy-shims.nu config.toml --delete-installs && \
-		cp /monorepo/plugins/devserver/lazy-docker.sh /root/.local/bin/docker
+RUN  mkdir -p /var/run /usr/local/bin /root/.local/bin ${XDG_CONFIG_HOME}/mise
+RUN  xx-apk add curl libgcc libstdc++ coreutils xz bash just socat nmap
+COPY --chmod=0755 ./plugins/devserver/mise-install.sh ./
+RUN  ./mise-install.sh /root/.local/bin
+COPY ./plugins/devserver/stubs stubs
+RUN  cp ./stubs/* $HOME/.local/bin/
+RUN  curl -fsSL https://github.com/ko1nksm/shdotenv/releases/download/v0.14.0/shdotenv -o $HOME/.local/bin/shdotenv && chmod 755 $HOME/.local/bin/shdotenv
+COPY ./plugins/devserver/dind.sh ./
+RUN  cp dind.sh $HOME/.local/bin/
 
 FROM scratch AS root_sayt
 WORKDIR /monorepo/./
@@ -54,7 +46,7 @@ FROM cgr.dev/chainguard/wolfi-base:latest@sha256:deba562a90aa3278104455cf1c34ffa
 WORKDIR /monorepo/plugins/libstoml/
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_gradle /monorepo /monorepo
-COPY plugins/libstoml/.mise.toml plugins/libstoml/mise.lock plugins/libstoml/mise.alpine.lock ./
+COPY plugins/libstoml/.mise.toml plugins/libstoml/.mise.lock plugins/libstoml/.mise.alpine.lock ./
 COPY plugins/libstoml/gradle gradle
 COPY --chmod=0755 plugins/libstoml/gradlew ./
 COPY plugins/libstoml/gradlew.bat plugins/libstoml/gradle.properties plugins/libstoml/settings.gradle* plugins/libstoml/build.gradle* ./
@@ -84,7 +76,7 @@ COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_gradle /monorepo /monorepo
 COPY --from=plugins_libstoml_sources /monorepo /monorepo
 COPY --from=plugins_jvm_sources /monorepo /monorepo
-COPY libraries/logs/.mise.toml libraries/logs/mise.lock libraries/logs/mise.alpine.lock ./
+COPY libraries/logs/.mise.toml libraries/logs/.mise.lock libraries/logs/.mise.alpine.lock ./
 COPY libraries/logs/gradle gradle
 COPY --chmod=0755 libraries/logs/gradlew ./
 COPY libraries/logs/gradlew.bat libraries/logs/gradle.properties libraries/logs/settings.gradle* libraries/logs/build.gradle* ./
@@ -107,7 +99,7 @@ COPY --from=plugins_jvm_sources /monorepo /monorepo
 COPY --from=plugins_micronaut_sources /monorepo /monorepo
 COPY --from=libraries_logs_sources /monorepo /monorepo
 COPY --from=libraries_xproto_sources /monorepo /monorepo
-COPY libraries/pbtables/.mise.toml libraries/pbtables/mise.lock libraries/pbtables/mise.alpine.lock ./
+COPY libraries/pbtables/.mise.toml libraries/pbtables/.mise.lock libraries/pbtables/.mise.alpine.lock ./
 COPY libraries/pbtables/gradle gradle
 COPY --chmod=0755 libraries/pbtables/gradlew ./
 COPY libraries/pbtables/gradlew.bat libraries/pbtables/gradle.properties libraries/pbtables/settings.gradle* libraries/pbtables/build.gradle* ./
@@ -126,7 +118,7 @@ COPY --from=libraries_logs_sources /monorepo /monorepo
 COPY --from=plugins_micronaut_sources /monorepo /monorepo
 COPY --from=libraries_xproto_sources /monorepo /monorepo
 COPY --from=libraries_pbtables_sources /monorepo /monorepo
-COPY services/tracker/.mise.toml services/tracker/mise.lock services/tracker/mise.alpine.lock ./
+COPY services/tracker/.mise.toml services/tracker/.mise.lock services/tracker/.mise.alpine.lock ./
 COPY services/tracker/gradle gradle
 COPY --chmod=0755 services/tracker/gradlew ./
 COPY services/tracker/gradlew.bat services/tracker/gradle.properties services/tracker/settings.gradle* services/tracker/build.gradle* ./
@@ -148,34 +140,36 @@ COPY --from=libraries_logs_sources /monorepo /monorepo
 COPY --from=plugins_micronaut_sources /monorepo /monorepo
 COPY --from=libraries_xproto_sources /monorepo /monorepo
 COPY --from=libraries_pbtables_sources /monorepo /monorepo
-COPY services/tracker/.mise.toml services/tracker/mise.lock services/tracker/mise.alpine.lock ./
-RUN --mount=type=cache,target=${DCM_PATH} --mount=type=cache,sharing=locked,target=/root/.dcm/gradle [ ! -e .mise.toml ] || just setup
+COPY services/tracker/.mise.toml services/tracker/.mise.lock services/tracker/.mise.alpine.lock ./
+RUN --mount=type=cache,sharing=locked,target=/root/.dcm/gradle [ ! -e .mise.toml ] || just setup
 COPY services/tracker/gradle gradle
 COPY --chmod=0755 services/tracker/gradlew ./
 COPY services/tracker/gradlew.bat services/tracker/gradle.properties services/tracker/settings.gradle* services/tracker/build.gradle* ./
-RUN --mount=type=cache,target=${DCM_PATH} --mount=type=cache,sharing=locked,target=/root/.dcm/gradle ./gradlew dependencies
+RUN --mount=type=cache,sharing=locked,target=/root/.dcm/gradle ./gradlew dependencies
 COPY services/tracker/src/main src/main
 COPY services/tracker/.vscode .vscode
-RUN --mount=type=cache,target=${DCM_PATH} --mount=type=cache,sharing=locked,target=/root/.dcm/gradle [ ! -e .vscode/tasks.json ] || just build
+RUN --mount=type=cache,sharing=locked,target=/root/.dcm/gradle [ ! -e .vscode/tasks.json ] || just build
 COPY services/tracker/src/test src/test
 CMD ["just","launch"]
 
 FROM debug AS integrate
 WORKDIR /monorepo/services/tracker/
-RUN --mount=type=cache,target=${DCM_PATH} --mount=type=cache,sharing=locked,target=/root/.dcm/gradle [ ! -e .vscode/tasks.json ] || just test
-RUN --mount=type=cache,target=${DCM_PATH} --mount=type=cache,sharing=locked,target=/root/.dcm/gradle --network=none [ ! -e .vscode/tasks.json ] || just sayt test --rerun
+RUN --mount=type=cache,sharing=locked,target=/root/.dcm/gradle [ ! -e .vscode/tasks.json ] || just test
+RUN --mount=type=cache,sharing=locked,target=/root/.dcm/gradle --network=none [ ! -e .vscode/tasks.json ] || just sayt test --rerun
 COPY services/tracker/src/it src/it
 COPY services/tracker/Dockerfile services/tracker/compose.yaml services/tracker/skaffold.yaml ./
-RUN --mount=type=cache,target=${DCM_PATH} --mount=type=cache,sharing=locked,target=/root/.dcm/gradle --mount=type=secret,id=host.env,required set -a && . /run/secrets/host.env && ./gradlew integrationTest --rerun
+RUN --mount=type=cache,sharing=locked,target=/root/.dcm/gradle --mount=type=secret,id=host.env,required dind.sh sh -c 'unset DOCKER_HOST && docker ps'
+RUN --mount=type=cache,sharing=locked,target=/root/.dcm/gradle --mount=type=secret,id=host.env,required dind.sh docker -H unix:///var/run/docker.sock ps
+RUN --mount=type=cache,sharing=locked,target=/root/.dcm/gradle --mount=type=secret,id=host.env,required dind.sh ./gradlew integrationTest --rerun
 CMD ["true"]
 
 FROM debug AS artifact
 WORKDIR /monorepo/services/tracker/
-RUN --mount=type=cache,target=${DCM_PATH} --mount=type=cache,sharing=locked,target=/root/.dcm/gradle ./gradlew --dry-run --no-daemon jibBuildTar
-RUN --mount=type=cache,target=${DCM_PATH} --mount=type=cache,sharing=locked,target=/root/.dcm/gradle ./gradlew --no-daemon jibBuildTar
+RUN --mount=type=cache,sharing=locked,target=/root/.dcm/gradle ./gradlew --dry-run --no-daemon jibBuildTar
+RUN --mount=type=cache,sharing=locked,target=/root/.dcm/gradle ./gradlew --no-daemon jibBuildTar
 # Hacking as in https://stackoverflow.com/a/67233414
-RUN --mount=type=cache,target=${DCM_PATH} --mount=type=cache,sharing=locked,target=/root/.dcm/gradle mkdir -p /jib && tar xf ./build/jib-image.tar -C /jib
-RUN --mount=type=cache,target=${DCM_PATH} --mount=type=cache,sharing=locked,target=/root/.dcm/gradle mkdir -p /layers && cd /jib && jq -r '.[].Layers[]' < /jib/manifest.json | xargs cat | tar xzf - -C /layers
+RUN --mount=type=cache,sharing=locked,target=/root/.dcm/gradle mkdir -p /jib && tar xf ./build/jib-image.tar -C /jib
+RUN --mount=type=cache,sharing=locked,target=/root/.dcm/gradle mkdir -p /layers && cd /jib && for tb in $(jq -r '.[].Layers[]' < /jib/manifest.json); do cat $tb | tar xzf - -C /layers; done
 
 FROM scratch AS release
 WORKDIR /monorepo//app

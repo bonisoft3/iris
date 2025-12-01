@@ -1,0 +1,37 @@
+# Auto-generated Alpine/musl stub for ($binary_info.clean_name)
+
+version = "v1.2.21"
+bin = "tcping"
+
+# Platform configurations
+[platforms.macos-arm64]
+url = "https://github.com/lvillis/tcping-rs/releases/download/1.2.21/tcping-1.2.21-aarch64-apple-darwin.tar.gz"
+checksum = "sha256:3bcae22c83d1beaa29d8efec1f9cb0352c42fb9b19b4fa47594adbf7dac9079f"
+size = 398145
+
+[platforms.linux-amd64]
+url = "https://github.com/lvillis/tcping-rs/releases/download/1.2.21/tcping-1.2.21-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:463403649c90a3bed56d6535034343e9dba0d38648a31027c96dedca477989de"
+size = 490715
+
+[platforms.linux-arm64]
+url = "https://github.com/lvillis/tcping-rs/releases/download/1.2.21/tcping-1.2.21-aarch64-unknown-linux-musl.tar.gz"
+checksum = "sha256:a934bf3239ab3e3fd1fe904b8d823f3a3536372af894977c777e6053175a0799"
+size = 462131
+
+[platforms.darwin-amd64]
+url = "https://github.com/lvillis/tcping-rs/releases/download/1.2.21/tcping-1.2.21-x86_64-apple-darwin.tar.gz"
+checksum = "sha256:2cf7e1d17f3894a6c7ca8b62633a4e0bf9a4a52f18f96c2be753e904e6f118ca"
+size = 406581
+
+[platforms.darwin-arm64]
+url = "https://github.com/lvillis/tcping-rs/releases/download/1.2.21/tcping-1.2.21-aarch64-apple-darwin.tar.gz"
+checksum = "sha256:3bcae22c83d1beaa29d8efec1f9cb0352c42fb9b19b4fa47594adbf7dac9079f"
+size = 398145
+
+[platforms.windows-amd64]
+url = "https://github.com/lvillis/tcping-rs/releases/download/1.2.21/tcping-1.2.21-x86_64-pc-windows-msvc.zip"
+checksum = "sha256:aa2f8769cb62f10f54cae0bba7b9b79676679830d9502c6687b122128294332e"
+size = 273081
+bin = "tcping.exe"
+

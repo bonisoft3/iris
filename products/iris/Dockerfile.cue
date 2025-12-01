@@ -28,12 +28,17 @@ _tracker_tx: stacks.#basic & {
 	workdir: #debug.workdir
 	mount: #debug.mount
 	run: [
+		{ cmd: "which skaffold" },
+		{ stmt:  [ "RUN cp /monorepo/plugins/devserver/dind.sh /usr/local/bin" ] },
 		{ cmd: "--mount=type=secret,id=host.env,required set -a && . /run/secrets/host.env && mkdir -p /root/.docker && echo $DOCKER_AUTH_CONFIG > /root/.docker/config.json" },
-		{ cmd: "--mount=type=secret,id=host.env,required set -a && . /run/secrets/host.env && skaffold build -p preview" },
-		{ cmd: "--mount=type=secret,id=host.env,required set -a && . /run/secrets/host.env && skaffold build -p preview --file-output ~/artifacts.json" },
 		{ cmd: "--mount=type=secret,id=host.env,required set -a && . /run/secrets/host.env && mkdir -p /root/.kube/ && echo $KUBECONFIG_DATA > /root/.kube/config" },
-		{ cmd: "--mount=type=secret,id=host.env,required set -a && . /run/secrets/host.env && skaffold run -p preview --skip-tests" },
-		{ cmd: "--mount=type=secret,id=host.env,required set -a && . /run/secrets/host.env && skaffold verify -p preview --build-artifacts ~/artifacts.json" },
+		// this often needs to be set from outside first
+		{ cmd: "--mount=type=secret,id=host.env,required dind.sh kubectl config set-cluster kind-iris --insecure-skip-tls-verify=true" },
+		{ cmd: "--mount=type=secret,id=host.env,required dind.sh skaffold build -p preview" },
+		{ cmd: "--mount=type=secret,id=host.env,required dind.sh skaffold build -p preview --file-output ~/artifacts.json" },
+		// uses kind load which requires the same kind version inside and outside the container
+		{ cmd: "--mount=type=secret,id=host.env,required dind.sh skaffold run -p preview --skip-tests" },
+		{ cmd: "--mount=type=secret,id=host.env,required dind.sh skaffold verify -p preview --build-artifacts ~/artifacts.json" },
 	]
 }
 

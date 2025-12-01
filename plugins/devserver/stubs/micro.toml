@@ -1,0 +1,27 @@
+# Auto-generated stub for ($binary_info.clean_name)
+
+version = "2.0.14"
+bin = "micro"
+
+# Platform configurations
+[platforms.macos-arm64]
+url = "https://github.com/zyedidia/micro/releases/download/v2.0.14/micro-2.0.14-macos-arm64.tgz"
+checksum = "blake3:b79e1455096cf4af37998a4ef0457ded4499b01aec9d860aa58d5b7ed7e02e02"
+size = 4658175
+
+[platforms.linux-arm64]
+url = "https://github.com/zyedidia/micro/releases/download/v2.0.14/micro-2.0.14-linux-arm64.tar.gz"
+checksum = "sha256:2e01b3ea62cdea3e62eb3ee99f6bffe84de06f689cf479173c4e7221b6613d06"
+size = 4306186
+
+[platforms.darwin-arm64]
+url = "https://github.com/zyedidia/micro/releases/download/v2.0.14/micro-2.0.14-macos-arm64.tar.gz"
+checksum = "sha256:e96d99cd09bde96dba3eb93e044e649fbbcf62dee63469510fbd054e1ee8f230"
+size = 4658175
+
+[platforms.windows-amd64]
+url = "https://github.com/zyedidia/micro/releases/download/v2.0.14/micro-2.0.14-win64.zip"
+checksum = "sha256:ef95e181249d0547942558d65b73cf484d6e06490bcfc0c540085a04f1ee00f8"
+size = 4672099
+bin = "micro.exe"
+

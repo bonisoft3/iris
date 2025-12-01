@@ -1,43 +1,32 @@
-# copy and paste from ./plugins/devserver/Dockerfile
+# Copy & paste from ../../plugins/devserver/Dockerfile
 FROM cgr.dev/chainguard/wolfi-base:latest@sha256:deba562a90aa3278104455cf1c34ffa6c6edc6bea20d6b6d731a350e99ddd32a AS devserver
 WORKDIR /monorepo/./plugins/devserver/
-ENV DCM_PATH=/root/.dcm
-ENV DOCKER_CACHE_MOUNT=${DCM_PATH}
-ENV XDG_CACHE_HOME=${DCM_PATH}/cache
-ENV XDG_DATA_HOME=${DCM_PATH}/local/share
-ENV TASK_TEMP_DIR=${DCM_PATH}/task
-ENV SKAFFOLD_CACHE_FILE=${DCM_PATH}/skaffold/cache
+ENV XDG_CACHE_HOME=/root/.local/cache
+ENV XDG_DATA_HOME=/root/.local/share
+ENV XDG_CONFIG_HOME=/root/.local/config
 ENV PATH=/root/.local/bin:${XDG_DATA_HOME}/mise/shims:$PATH
 ENV MISE_VERSION=2025.10.2
 ARG TARGETOS
 ARG TARGETARCH
 COPY --from=tonistiigi/xx:1.5.0@sha256:0c6a569797744e45955f39d4f7538ac344bfb7ebf0a54006a0a4297b153ccf0f / /
-RUN --mount=type=cache,target=${DCM_PATH} mkdir -p ${DCM_PATH} /var/run /usr/local/bin ${XDG_CONFIG_HOME}/mise
-RUN --mount=type=cache,target=${DCM_PATH} xx-apk add curl libgcc libstdc++ coreutils xz bash
-RUN --mount=type=cache,target=${DCM_PATH} curl -fsSL https://mise.run/ | MISE_VERSION=v${MISE_VERSION} sh
-COPY plugins/devserver/mise.toml plugins/devserver/mise.lock plugins/devserver/mise.alpine.lock ./
-COPY --chmod=0755 plugins/devserver/lazy-shims.nu plugins/devserver/lazy-docker.sh plugins/devserver/lazy-mise.sh ./
-RUN --mount=type=cache,target=${DCM_PATH} mv mise.toml ${XDG_CONFIG_HOME}/mise/config.toml && \
-    mv mise.lock ${XDG_CONFIG_HOME}/mise/config.lock && \
-    (test -f /etc/alpine-release && mv mise.alpine.lock ${XDG_CONFIG_HOME}/mise/config.lock || rm mise.alpine.lock)
-COPY --chmod=0755 ./plugins/devserver/lazy-shims.nu ./plugins/devserver/lazy-docker.sh ./plugins/devserver/lazy-mise.sh ./
-COPY ./plugins/devserver/mise.toml ./plugins/devserver/mise.lock ./plugins/devserver/mise.alpine.lock ./
-RUN --mount=type=cache,target=${DCM_PATH} cd ${XDG_CONFIG_HOME}/mise && \
-		cp /monorepo/plugins/devserver/lazy-mise.sh /root/.local/bin/lazy-mise && \
-		/root/.local/bin/lazy-mise --help && \
-		mise trust && mise install && \
-		${XDG_DATA_HOME}/mise/shims/nu /monorepo/plugins/devserver/lazy-shims.nu config.toml --delete-installs && \
-		cp /monorepo/plugins/devserver/lazy-docker.sh /root/.local/bin/docker
+RUN  mkdir -p /var/run /usr/local/bin /root/.local/bin ${XDG_CONFIG_HOME}/mise
+RUN  xx-apk add curl libgcc libstdc++ coreutils xz bash just socat nmap
+COPY --chmod=0755 ./plugins/devserver/mise-install.sh ./
+RUN  ./mise-install.sh /root/.local/bin
+COPY ./plugins/devserver/stubs stubs
+RUN  cp ./stubs/* $HOME/.local/bin/
+COPY ./plugins/devserver/dind.sh ./
+RUN  curl -fsSL https://github.com/ko1nksm/shdotenv/releases/download/v0.14.0/shdotenv -o $HOME/.local/bin/shdotenv && chmod 755 $HOME/.local/bin/shdotenv
+RUN which nu 
+RUN yq --help
 
 FROM devserver AS debug
 COPY .justfile /monorepo/
 COPY plugins/sayt /monorepo/plugins/sayt
 COPY buf.work.yaml /monorepo/
 COPY libraries/xproto /monorepo/libraries/xproto
-COPY .devcontainer /monorepo/.devcontainer
 COPY plugins/devserver /monorepo/plugins/devserver
 WORKDIR /monorepo/services/tracker-tx
-ENTRYPOINT ["../../plugins/devserver/dind.sh"]
 RUN apk add --no-cache envoy=1.35.3-r0 wget socat nmap
 # envsubst has no aarch64 release, but the x86_64 works on aarch64
 RUN echo https://github.com/a8m/envsubst/releases/download/v1.2.0/envsubst-`uname -s`-`uname -m` | sed -e 's/aarch64/x86_64/' | xargs wget -O /usr/local/bin/envsubst
@@ -50,7 +39,8 @@ ENV PROTO_DESCRIPTOR_PB=/monorepo/libraries/xproto/out/xproto.desc.pb
 ENV GRPC_ADDRESS=127.0.0.1
 ENV GRPC_PORT=50051
 COPY services/tracker-tx .
-RUN mise trust
+RUN just setup
+RUN yq --help
 
 FROM debug AS test
 RUN just test

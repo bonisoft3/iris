@@ -23,7 +23,9 @@ import "bonisoft.org/libraries/pbtables"
 			C.test,
 			[ docker.#run & { cmd: "--network=none [ ! -e .vscode/tasks.json ] || just sayt test --rerun" } ],
 			L.ops,
-			[ { cmd: "--mount=type=secret,id=host.env,required set -a && . /run/secrets/host.env && ./gradlew integrationTest --rerun" } ]
+			[ { cmd: "--mount=type=secret,id=host.env,required dind.sh sh -c 'unset DOCKER_HOST && docker ps'" } ],
+			[ { cmd: "--mount=type=secret,id=host.env,required dind.sh docker -H unix:///var/run/docker.sock ps" } ],
+			[ { cmd: "--mount=type=secret,id=host.env,required dind.sh ./gradlew integrationTest --rerun" } ]
 		])
 	}
 }
@@ -38,7 +40,7 @@ import "bonisoft.org/libraries/pbtables"
 		{ cmd: "./gradlew --no-daemon jibBuildTar" },
 		{ cmd: "mkdir -p /jib && tar xf ./build/jib-image.tar -C /jib",
 		stmt: [ "# Hacking as in https://stackoverflow.com/a/67233414" ] },
-		{ cmd: "mkdir -p /layers && cd /jib && jq -r '.[].Layers[]' < /jib/manifest.json | xargs cat | tar xzf - -C /layers" }
+		{ cmd: "mkdir -p /layers && cd /jib && for tb in $(jq -r '.[].Layers[]' < /jib/manifest.json); do cat $tb | tar xzf - -C /layers; done" }
 	]
 }
 

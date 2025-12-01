@@ -1,2 +1,11 @@
+[settings]
+lockfile = true
+experimental = true
+paranoid = false
+aqua.github_attestations = false
+aqua.cosign = false
+aqua.slsa = false
+aqua.minisign = false
+
 [tools]
-java = "openjdk-21.0.2"
+java = "openjdk-21.0"
