@@ -11,5 +11,6 @@ idiomatic_version_file_enable_tools = ["python"]
 [tools]
 "aqua:nektos/act" = "0.2.65"
 "aqua:casey/just" = "1.42.4"
-"github:nushell/nushell" = "0.107.0"
+"github:nushell/nushell" = "0.107.0"  # github due to arm64
+"github:cue-lang/cue" = "0.15.1"
 "aqua:astral-sh/uv" = "0.6.14"

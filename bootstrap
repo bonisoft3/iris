@@ -3,6 +3,9 @@
 check_and_install() {
 	command -v "$1" >/dev/null 2>&1 || {
 		if command -v apt-get >/dev/null 2>&1; then
+		  if ! command -v sudo >/dev/null 2>&1; then
+				apt-get update && apt-get install -y sudo
+			fi
 			sudo apt-get update && sudo apt-get install -y "$2"
 		elif command -v yum >/dev/null 2>&1; then
 			sudo yum install -y "$2"
