@@ -10,8 +10,8 @@
 		{
 			"label": "build",
 			"type": "shell",
-			"command": "pnpm turbo --filter ./guis/web assemble",
-      "options": { "cwd": "${workspaceFolder}/../.." },
+			"command": "pnpm -C ../.. exec turbo --filter ./guis/web assemble",
+      "options": { "cwd": "${workspaceFolder}" },
 			"problemMatcher": [ "$tsc" ],
 			"group": {
 				"kind": "build",
@@ -23,8 +23,8 @@
 			"label": "test",
 			"type": "shell",
 			"command": "pnpm",
-			"args": [  "turbo", "--filter", "./guis/web", "test" ],
-      "options": { "cwd": "${workspaceFolder}/../.." },
+			"command": "pnpm -C ../.. exec turbo --filter ./guis/web test",
+      "options": { "cwd": "${workspaceFolder}" },
 			"group": {
 				"kind": "test",
 				"isDefault": true
