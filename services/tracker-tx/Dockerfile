@@ -59,6 +59,7 @@ COPY --from=binaries /bin/ls /bin/ls
 COPY --from=binaries /bin/sh /bin/sh
 COPY --from=binaries /bin/tee /bin/tee
 COPY --from=binaries /bin/cat /bin/cat
+COPY --from=debug /usr/local/bin//envsubst /bin/envsubst
 
 FROM envoy AS release
 COPY services/tracker-tx /monorepo/services/tracker-tx

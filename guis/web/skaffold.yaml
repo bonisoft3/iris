@@ -3,6 +3,8 @@ kind: Config
 metadata:
   name: guis_web
 build:
+  tagPolicy:
+    sha256: {}
   local:
     push: false
     tryImportMissing: false

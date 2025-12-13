@@ -3,6 +3,8 @@ kind: Config
 metadata:
   name: services_tracker
 build:
+  tagPolicy:
+    sha256: {}
   local:
     push: false
     tryImportMissing: false

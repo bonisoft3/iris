@@ -27,5 +27,5 @@ fi
 "$@"
 EXIT_CODE=$?
 
-[ -n "$SOCAT_PID" ] && kill $SOCAT_PID
+[ -n "$SOCAT_PID" ] && kill $SOCAT_PID || true
 exit

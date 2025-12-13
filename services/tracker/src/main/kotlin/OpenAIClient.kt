@@ -52,7 +52,7 @@ class OpenAIClient(@field:Inject @Value("\${openai.api.url}") private val openAi
 			}
 			val responseBody = gptResponse.body!!.string()
 			val jsonObject = json.parseToJsonElement(responseBody).jsonObject
-			val msg = if (promptPathPrefix == "classpath:prompts/ollama_") {
+			val msg = if (promptPathPrefix == "classpath:prompts/shimmy_") {
 				jsonObject["message"]?.jsonObject?.get("content")?.jsonPrimitive?.content
 			} else {
 				jsonObject["choices"]?.jsonArray?.firstOrNull()?.jsonObject?.get("message")

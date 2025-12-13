@@ -1,5 +1,5 @@
 {
-  "model": "llama3.2:1b",
+  "model": "smollm2-135m-instruct-q4-k-m",
   "stream": false,
   "messages": [
     {

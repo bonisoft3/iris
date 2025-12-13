@@ -73,7 +73,7 @@ class TrackerEndpointTest : BehaviorSpec({
             "fakeStorageUrl",
             "fakePlacesKey", mockserverUrl,
             "fakeAnnotateEndpoint",
-            mockserverUrl, "language/translate/v2", mockserverUrl, "classpath:prompts/ollama_"
+            mockserverUrl, "language/translate/v2", mockserverUrl, "classpath:prompts/shimmy_"
         )
         val request = trackRequest { }
 

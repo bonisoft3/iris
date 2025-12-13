@@ -26,7 +26,7 @@ portForward:
   address: 0.0.0.0
 - resourceType: service
   resourceName: services-tracker-svc
-  port: 11434  # ollama
+  port: 11435  # shimmy
   address: 0.0.0.0
 - resourceType: service
   resourceName: services-tracker-svc
@@ -67,6 +67,8 @@ profiles:
     kubectl:
       defaultNamespace: default
   build:
+    tagPolicy:
+      sha256: {}
     local:
       push: false
       # on mac using buildkit and dependent image args which are not multiarch
@@ -75,8 +77,8 @@ profiles:
       useDockerCLI: true
       concurrency: 64
     artifacts:
-      - image: gcr.io/trash-362115/ollama
-        context: images/ollama
+      - image: gcr.io/trash-362115/shimmy
+        context: images/shimmy
         docker:
           target: release
 

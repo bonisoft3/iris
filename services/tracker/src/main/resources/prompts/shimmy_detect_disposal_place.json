@@ -1,5 +1,5 @@
 {
-  "model": "llama3.2:1b",
+  "model": "smollm2-135m-instruct-q4-k-m",
 	"stream": false,
   "prompt": "Identify the main object in the image. If this object is identified as a trash can, recycling bin, or any other place you can dispose of trash, answer yes. If not, answer no.",
   "messages": [

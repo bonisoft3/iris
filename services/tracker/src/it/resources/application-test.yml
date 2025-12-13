@@ -41,7 +41,7 @@ grpc:
 
 openai:
   api:
-    url: "http://localhost:11434"
+    url: "http://localhost:11435"
     key: ${OPENAI_KEY:mockvalue}
   endpoint:
     chat-completions: "/api/chat"
@@ -55,9 +55,9 @@ chat:
 
 gemini:
   api:
-    url: "http://localhost:11434"
+    url: "http://localhost:11435"
     key: ${GEMINI_API_KEY:mockvalue}
   endpoint:
     chat-completions: "/api/chat"
 
-prompt-path-prefix: "classpath:prompts/ollama_"
+prompt-path-prefix: "classpath:prompts/shimmy_"
