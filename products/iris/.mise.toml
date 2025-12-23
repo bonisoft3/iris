@@ -2,6 +2,7 @@
 lockfile = true
 experimental = true
 paranoid = false
+github.github_attestations = false
 aqua.github_attestations = false
 aqua.cosign = false
 aqua.slsa = false

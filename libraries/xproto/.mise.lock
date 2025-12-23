@@ -66,4 +66,3 @@ url = "https://github.com/bufbuild/buf/releases/download/v1.34.0/buf-Darwin-arm6
 checksum = "sha256:f51af381fd2f22534bf10d9c70c6f21e25afbd400833eec330cb05fada9199f5"
 size = 35776512
 url = "https://github.com/bufbuild/buf/releases/download/v1.34.0/buf-Windows-x86_64.exe"
-url_api = "https://api.github.com/repos/bufbuild/buf/releases/assets/175190220"

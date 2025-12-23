@@ -22,7 +22,7 @@ check_and_install() {
 	}
 }
 
-mise_version=v2025.9.17
+mise_version=v2025.12.12
 mise_install_path="$HOME/.local/bin/mise"
 
 install_mise() {

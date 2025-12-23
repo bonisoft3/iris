@@ -1,3 +1,13 @@
+[settings]
+lockfile = true
+experimental = true
+paranoid = false
+github.github_attestations = false
+aqua.github_attestations = false
+aqua.cosign = false
+aqua.slsa = false
+aqua.minisign = false
+
 [tools]
 node = "22.14.0"
 "npm:pnpm" = "9.15.2"

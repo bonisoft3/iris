@@ -2,12 +2,13 @@
 lockfile = true
 experimental = true
 paranoid = false
+# github.github_attestations = false
 aqua.github_attestations = false
 aqua.cosign = false
 aqua.slsa = false
 aqua.minisign = false
 
 [tools]
-"github:bufbuild/buf" = { version = "1.34.0", os = ["linux", "macos"] }
+"github:bufbuild/buf" = "1.32.1"
 "aqua:mikefarah/yq" = "v4.44.2"
 "aqua:go-task/task" = "3.38.0"

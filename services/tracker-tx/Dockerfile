@@ -39,7 +39,8 @@ ENV PROTO_DESCRIPTOR_PB=/monorepo/libraries/xproto/out/xproto.desc.pb
 ENV GRPC_ADDRESS=127.0.0.1
 ENV GRPC_PORT=50051
 COPY services/tracker-tx .
-RUN just setup
+RUN mise trust .
+RUN MISE_DEBUG=1 just setup
 RUN yq --help
 
 FROM debug AS test
