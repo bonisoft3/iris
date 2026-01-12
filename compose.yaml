@@ -39,3 +39,11 @@ services:
       target: integrate
       secrets:
         - host.env
+  plugins_sayt:
+    build:
+      context: .
+      network: host
+      dockerfile: ./plugins/sayt/Dockerfile
+      target: integrate
+      secrets:
+        - host.env
