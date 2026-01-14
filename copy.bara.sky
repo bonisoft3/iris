@@ -52,3 +52,24 @@ core.workflow(
         core.move("services/butler", "")
     ],
 )
+
+core.workflow(
+    name = "sayt",
+    origin = git.origin(
+        url = "git@github.com:worldsense/trash.git",
+        ref = "main",
+    ),
+    destination = git.destination(
+        url = "git@github.com:bonitao/sayt.git",
+        fetch = "main",
+        push = "main",
+    ),
+    origin_files = glob([
+        "plugins/sayt/**",
+    ]),
+    destination_files = glob(["**"]),
+    authoring = authoring.pass_thru("Default Author <default@example.com>"),
+    transformations = [
+        core.move("plugins/sayt", "")
+    ],
+)
