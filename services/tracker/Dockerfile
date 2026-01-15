@@ -163,8 +163,13 @@ CMD ["true"]
 
 FROM debug AS artifact
 WORKDIR /monorepo/services/tracker/
-RUN --mount=type=cache,sharing=locked,target=/root/.dcm/gradle ./gradlew --dry-run --no-daemon jibBuildTar
-RUN --mount=type=cache,sharing=locked,target=/root/.dcm/gradle ./gradlew --no-daemon jibBuildTar
+RUN mkdir -p /root/.docker
+RUN --mount=type=cache,sharing=locked,target=/root/.dcm/gradle \
+    --mount=type=secret,id=docker_auth_config,target=/root/.docker/config.json,required=false \
+    ./gradlew --dry-run --no-daemon jibBuildTar
+RUN --mount=type=cache,sharing=locked,target=/root/.dcm/gradle \
+    --mount=type=secret,id=docker_auth_config,target=/root/.docker/config.json,required=false \
+    ./gradlew --no-daemon jibBuildTar
 # Hacking as in https://stackoverflow.com/a/67233414
 RUN --mount=type=cache,sharing=locked,target=/root/.dcm/gradle mkdir -p /jib && tar xf ./build/jib-image.tar -C /jib
 RUN --mount=type=cache,sharing=locked,target=/root/.dcm/gradle mkdir -p /layers && cd /jib && for tb in $(jq -r '.[].Layers[]' < /jib/manifest.json); do cat $tb | tar xzf - -C /layers; done

@@ -1,4 +1,4 @@
-FROM docker:cli AS integrate
+FROM docker:29-cli@sha256:06a1ee7af01fecf797268686773f20d1410a8ef4da497144bd08001011b1fffa AS integrate
 
 WORKDIR /mecha
 

@@ -7,6 +7,11 @@ checksum = "sha256:94e22c4be44d205def456427639ca5ca1c1a9e29acc31808a7b28fdd5dcf7
 size = 15577079
 url = "https://github.com/astral-sh/uv/releases/download/0.6.14/uv-aarch64-unknown-linux-musl.tar.gz"
 
+[tools."aqua:astral-sh/uv".platforms.linux-x64]
+checksum = "sha256:0cac4df0cb3457b154f2039ae471e89cd4e15f3bd790bbb3cb0b8b40d940b93e"
+size = 17032361
+url = "https://github.com/astral-sh/uv/releases/download/0.6.14/uv-x86_64-unknown-linux-musl.tar.gz"
+
 [[tools."aqua:casey/just"]]
 version = "1.42.4"
 backend = "aqua:casey/just"
