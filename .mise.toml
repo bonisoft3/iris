@@ -1,7 +1,9 @@
 [settings]
+locked = true
 lockfile = true
 experimental = true
 paranoid = false
+github.slsa = false
 github.github_attestations = false
 aqua.github_attestations = false
 aqua.cosign = false

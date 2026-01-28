@@ -22,7 +22,7 @@ check_and_install() {
 	}
 }
 
-mise_version=v2025.12.12
+mise_version=v2026.1.7
 mise_install_path="$HOME/.local/bin/mise"
 
 install_mise() {
@@ -41,7 +41,7 @@ install_mise() {
 setup_mise() {
 	# Recursively trust all projects in the monorepo by finding mise.toml and running `mise trust` in each directory
 	echo "Trusting all projects in the monorepo..."
-	find . -type f -name ".mise.toml" -execdir "$mise_install_path" trust -y . \;
+	find . -type f -name ".mise.toml" -execdir "$mise_install_path" trust -a -y . \;
 
 	echo "Installing default tools..."
 	$mise_install_path install

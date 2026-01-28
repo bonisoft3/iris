@@ -1,43 +1,142 @@
 # SAYT CLI
 
-Make your repo feel like it has its own DevOps team. SAYT wraps modern tooling
-into a single command so you can bootstrap, build, test, and launch
-with zero guesswork.
+Sayt is a small tool that covers a large part of the concerns that arise during
+modern software development. It codifies the learnings from multiple journeys
+of simple mvps to unicorn companies, with a special eye towards making it
+up-scalable and down-scalable so you can do go through that whole journey as
+well.
+
+It can be used by both ai agentics and human beings, in either scenario it will
+give you consistent and efficient flows that will speed up both your internal
+development cycle and the larger product iteration loops, spawning from small
+microservices to large monorepos.
+
+Sayt overlaps with several tools with more narrow scopes, such as bazel,
+docker, garden, skaffold, 
 
 ## Why SAYT?
 
-- **Batteries included**: `setup`, `doctor`, `generate`, `lint`, `build`,
-`test`, `launch`, `integrate`, `release`, and `verify` all live behind a single
-entrypoint.
-- **Zero drift**: Tasks re-use configuration you already use, from your vscode
+- **Batteries included**: sayt is highly configurable, but it comes with powerful defaults that can cover your whole software development lifecycle.
+- **Zero drift**: tasks re-use configuration you already use, from your vscode
 setup to your docker compose files.
-- **Portable**: Works anywhere nushell, docker and mise are available - macOS,
+- **Portable**: works anywhere nushell, docker and mise are available - macOS,
 Linux, Windows (native or WSL), dev containers, CI runners.
-- **Developer-first**: Every command prints the exact shell steps it executes,
-making it easy to reproduce or customize workflows.
+- **Developer-first**: every command prints the exact shell steps it executes,
+making it easy to reproduce and debug.
+
+## Install
+
+**macOS / Linux:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/bonitao/sayt/refs/heads/main/install | sh
+```
+
+**Windows (PowerShell):**
+```powershell
+irm https://raw.githubusercontent.com/bonitao/sayt/refs/heads/main/install | iex
+```
+
+After installation, `sayt` will be available in your PATH.
+
+<details>
+<summary><strong>Extended Install Options</strong></summary>
+
+### Using mise package manager
+
+If you use [mise](https://mise.jdx.dev/) for tool management:
+
+```bash
+mise use -g github:bonitao/sayt
+```
+
+### Manual binary download
+
+**macOS / Linux:**
+```bash
+curl -fsSL -o sayt "https://github.com/bonitao/sayt/releases/latest/download/sayt-$(uname -s | tr A-Z a-z)-$(uname -m)"
+chmod +x sayt && command -v xattr >/dev/null && xattr -d com.apple.quarantine sayt
+mv sayt ~/.local/bin/
+```
+
+**Windows (PowerShell):**
+```powershell
+curl -o sayt.exe https://github.com/bonitao/sayt/releases/latest/download/sayt-windows-x64.exe
+Move-Item sayt.exe "$env:LOCALAPPDATA\Microsoft\WindowsApps\"
+```
+
+### Repository wrapper scripts
+
+For teams who want zero external dependencies for contributors, you can commit
+wrapper scripts directly in your repository. After cloning, anyone can run
+`./saytw` without installing anything globally.
+
+Download and commit these files to your repo:
+- **macOS / Linux:** [`saytw`](https://raw.githubusercontent.com/bonitao/sayt/refs/heads/main/saytw) - POSIX shell wrapper
+- **Windows:** [`saytw.ps1`](https://raw.githubusercontent.com/bonitao/sayt/refs/heads/main/saytw.ps1) - PowerShell wrapper
+
+The wrappers automatically download and cache the SAYT binary on first run.
+
+### Self-management flags
+
+If you already have sayt installed (or via the wrapper), these flags provide convenient shortcuts:
+
+**Install sayt to your user directory:**
+```bash
+# Installs to ~/.local/bin (Unix) or %LOCALAPPDATA%\Programs\sayt (Windows)
+sayt --install
+```
+
+**Install sayt system-wide for all users:**
+```bash
+# Installs to /usr/local/bin (Unix) or C:\Program Files\sayt (Windows)
+# Requires sudo (Unix) or Administrator (Windows)
+sudo sayt --install --global
+```
+
+**Add wrapper scripts to your repository:**
+```bash
+# Downloads saytw and saytw.ps1, then commits them to git
+sayt --commit
+```
+
+**Bootstrap wrapper scripts without installing sayt globally:**
+```bash
+# One-liner: pipe saytw to sh with --commit flag
+curl -fsSL https://raw.githubusercontent.com/bonitao/sayt/refs/heads/main/saytw | sh -s -- --commit
+```
+
+This downloads and runs sayt via the wrapper, which then commits the wrapper scripts to your repo - no global installation needed.
+
+</details>
 
 ## Getting started
 
-```bash
-# Trust and install tools declared in .mise.toml, then warm up auxiliary caches
-./plugins/sayt/sayt.nu setup
+Let us start teaching sayt how to compile your code. By default, it will
+piggyback on vscode configuration. If you already have it configured with a
+`.vscode/tasks.json`, you can simply do `sayt build`. If not, you can ask your
+favorite ai or search engine for help.
 
-# Run health checks for required CLIs and network access
-./plugins/sayt/sayt.nu doctor
-
-# Build & test using your .vscode/tasks.json definitions
-./plugins/sayt/sayt.nu build
-./plugins/sayt/sayt.nu test
-
-# Regenerate artifacts (Dockerfiles, manifests, configs) from .say.* rules
-./plugins/sayt/sayt.nu generate --force
-
-# Launch the docker-based dev stack or run full integration tests
-./plugins/sayt/sayt.nu launch
-./plugins/sayt/sayt.nu integrate
+```
+claude -p "Create .vscode/tasks.json with a shell 'build' task for this project, you are an expert in tasks.json."
+  --allowedTools "Read,Write,Edit,Glob,Grep"
+sayt build
 ```
 
-Use `./plugins/sayt/sayt.nu help <command>` for command-specific options.
+And you can repeat the steps to add a test task that will run unit tests.
+
+```
+claude -p "Create .vscode/tasks.json with a shell 'test' task for this project that will run all the unit tests"
+  --allowedTools "Read,Write,Edit,Glob,Grep"
+sayt test
+```
+
+This will give you uniform calling for all your project that you can use
+everywhere, in your CI, your documentation, your AGENTS.md or your muscle
+memory. Beyond build and test, sayt offers you several other verbs with
+integrated and efficient implementations encoding the best practices of the
+tools you already know and love.
+
+Use `sayt help <command>` for command-specific options.
 
 ## Command overview
 
@@ -69,18 +168,6 @@ in the editor.
 targets while handling docker-out-of-docker plumbing, auth, and kubeconfig
 exports automatically.
 - mise-en-place: reuse your existing `.mise.toml` for describing developer tools, or hook your own custom logic for venv, flox, apt, or whatever you prefer.
-
-## Requirements
-
-- SAYT is distributed as a single file in the actually-portable-format which
-works on mac/linux and windows, arm64 and x86, with the single requirement of a
-working shell. You can download it and put in your path with the name you want.
-
-- We also offer shell based wrappers for mac/linux and windows, namely
-`saytw` and `saytw.ps` that you can download commit in your repository. After
-cloning the repo, anyone can run `./saytw` to acccess sayt. The wrappers depend
-on a posix shell in mac/unix or powershell in windows and the ability to access
-the internet for which they will try several different paths.
 
 ## Contributing
 

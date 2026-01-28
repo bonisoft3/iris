@@ -1,12 +1,11 @@
+[[tools."github:pnpm/pnpm"]]
+version = "9.15.2"
+backend = "github:pnpm/pnpm"
+"platforms.linux-arm64" = { url = "https://github.com/pnpm/pnpm/releases/download/v9.15.2/pnpm-linux-arm64" }
+"platforms.linux-x64" = { url = "https://github.com/pnpm/pnpm/releases/download/v9.15.2/pnpm-linux-x64" }
+
 [[tools.node]]
 version = "22.14.0"
 backend = "core:node"
-
-[tools.node.platforms.macos-arm64]
-checksum = "sha256:e9404633bc02a5162c5c573b1e2490f5fb44648345d64a958b17e325729a5e42"
-size = 47035396
-url = "https://nodejs.org/dist/v22.14.0/node-v22.14.0-darwin-arm64.tar.gz"
-
-[[tools."npm:pnpm"]]
-version = "9.15.2"
-backend = "npm:pnpm"
+"platforms.linux-arm64" = { checksum = "sha256:8cf30ff7250f9463b53c18f89c6c606dfda70378215b2c905d0a9a8b08bd45e0", url = "https://nodejs.org/dist/v22.14.0/node-v22.14.0-linux-arm64.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:9d942932535988091034dc94cc5f42b6dc8784d6366df3a36c4c9ccb3996f0c2", url = "https://nodejs.org/dist/v22.14.0/node-v22.14.0-linux-x64.tar.gz"}

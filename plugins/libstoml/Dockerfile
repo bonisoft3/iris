@@ -10,7 +10,7 @@ ENV XDG_DATA_HOME=${DCM_PATH}/local/share
 ENV TASK_TEMP_DIR=${DCM_PATH}/task
 ENV SKAFFOLD_CACHE_FILE=${DCM_PATH}/skaffold/cache
 ENV PATH=/root/.local/bin:${XDG_DATA_HOME}/mise/shims:$PATH
-ENV MISE_VERSION=2025.10.2
+ENV MISE_VERSION=2026.1.7
 ARG TARGETOS
 ARG TARGETARCH
 COPY --from=tonistiigi/xx:1.5.0@sha256:0c6a569797744e45955f39d4f7538ac344bfb7ebf0a54006a0a4297b153ccf0f / /
@@ -39,7 +39,7 @@ FROM cgr.dev/chainguard/wolfi-base:latest@sha256:deba562a90aa3278104455cf1c34ffa
 WORKDIR /monorepo/plugins/libstoml/
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_gradle /monorepo /monorepo
-COPY plugins/libstoml/.mise.toml plugins/libstoml/.mise.lock plugins/libstoml/.mise.alpine.lock ./
+COPY plugins/libstoml/.mise.toml plugins/libstoml/mise.lock plugins/libstoml/.mise.alpine.lock ./
 COPY plugins/libstoml/gradle gradle
 COPY --chmod=0755 plugins/libstoml/gradlew ./
 COPY plugins/libstoml/gradlew.bat plugins/libstoml/gradle.properties plugins/libstoml/settings.gradle* plugins/libstoml/build.gradle* ./
@@ -54,7 +54,7 @@ ENV GRADLE_USER_HOME='/root/.dcm/gradle'
 ENV JAVA_TOOL_OPTIONS=-Djava.net.preferIPv4Stack=true
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_gradle /monorepo /monorepo
-COPY plugins/libstoml/.mise.toml plugins/libstoml/.mise.lock plugins/libstoml/.mise.alpine.lock ./
+COPY plugins/libstoml/.mise.toml plugins/libstoml/mise.lock plugins/libstoml/.mise.alpine.lock ./
 RUN --mount=type=cache,sharing=locked,target=/root/.dcm/gradle [ ! -e .mise.toml ] || just setup
 COPY plugins/libstoml/gradle gradle
 COPY --chmod=0755 plugins/libstoml/gradlew ./

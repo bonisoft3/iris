@@ -1,0 +1,44 @@
+[[tools."aqua:ariga/atlas"]]
+version = "0.38.0"
+backend = "aqua:ariga/atlas"
+"platforms.linux-arm64" = { url = "https://release.ariga.io/atlas/atlas-linux-arm64-0.38.0"}
+"platforms.linux-x64" = { url = "https://release.ariga.io/atlas/atlas-linux-amd64-0.38.0"}
+
+[[tools."aqua:bufbuild/buf"]]
+version = "1.44.0"
+backend = "aqua:bufbuild/buf"
+"platforms.linux-x64" = { checksum = "sha256:b077285b47f20dc4f463c6fa11d0edca84af82ed589a50625adef7bac7883dc7", url = "https://github.com/bufbuild/buf/releases/download/v1.44.0/buf-Linux-x86_64.tar.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:8cd711985eff7a20d8fe30fd197c67760db923142adf2612928164e4fb9e9d1b", url = "https://github.com/bufbuild/buf/releases/download/v1.44.0/buf-Darwin-arm64.tar.gz"}
+
+[[tools."aqua:go-task/task"]]
+version = "3.44.1"
+backend = "aqua:go-task/task"
+"platforms.linux-x64" = { checksum = "sha256:62969d22bee5ea8950cc64a30cc7eb278f89ad67683132e728841457aae523c1", url = "https://github.com/go-task/task/releases/download/v3.44.1/task_linux_amd64.tar.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:0784902e0a531cb4a9a4d91fc6235f344afdab963ee08042635e9b020eb72350", url = "https://github.com/go-task/task/releases/download/v3.44.1/task_darwin_arm64.tar.gz"}
+
+[[tools."aqua:hairyhenderson/gomplate"]]
+version = "4.3.3"
+backend = "aqua:hairyhenderson/gomplate"
+"platforms.linux-arm64" = { checksum = "sha256:25bd73720ff470cec0dfaa31ca2c436b30f86142db9af68382ce64e0f3e7b9c5", url = "https://github.com/hairyhenderson/gomplate/releases/download/v4.3.3/gomplate_linux-arm64"}
+"platforms.linux-x64" = { checksum = "sha256:ca281666e86f2f09218c1653e1908f572c0e349e9de64cb4ea93ade9333f0596", url = "https://github.com/hairyhenderson/gomplate/releases/download/v4.3.3/gomplate_linux-amd64"}
+"platforms.macos-arm64" = { checksum = "sha256:a3f6dd646d73840737e98fec6296e5c9ca95fcdd21fbdd0f4591aceab06f926d", url = "https://github.com/hairyhenderson/gomplate/releases/download/v4.3.3/gomplate_darwin-arm64"}
+
+[[tools."github:dapr/cli"]]
+version = "1.16.1"
+backend = "github:dapr/cli"
+"platforms.linux-arm64" = { checksum = "sha256:56e890cad046ac24782e69ea8000d51c87a5ff2c218d3f86053110737ddb6f35", url = "https://github.com/dapr/cli/releases/download/v1.16.1/dapr_linux_arm64.tar.gz", url_api = "https://api.github.com/repos/dapr/cli/releases/assets/294696932"}
+"platforms.linux-x64" = { checksum = "sha256:89f24f2daeee460c6dd0168fe5e2cdb9c5954adc48438bf51e364f99831ae1ea", url = "https://github.com/dapr/cli/releases/download/v1.16.1/dapr_linux_amd64.tar.gz", url_api = "https://api.github.com/repos/dapr/cli/releases/assets/294696923"}
+
+[[tools."github:dapr/dapr"]]
+version = "1.16.1"
+backend = "github:dapr/dapr"
+"platforms.linux-arm64" = { checksum = "sha256:c20ee86ed3cc06e0f8178cf7cc94c3bc283f174a0abda653d517a34de5795216", url = "https://github.com/dapr/dapr/releases/download/v1.16.1/daprd_linux_arm64-stablecomponents.tar.gz", url_api = "https://api.github.com/repos/dapr/dapr/releases/assets/301165672"}
+"platforms.linux-x64" = { checksum = "sha256:428f4f49d3c5766f34e3f89e602c230c940c3b2a0b330bb160de263015727ef7", url = "https://github.com/dapr/dapr/releases/download/v1.16.1/daprd_linux_amd64-stablecomponents.tar.gz", url_api = "https://api.github.com/repos/dapr/dapr/releases/assets/301165623"}
+"platforms.macos-arm64" = { checksum = "sha256:e4760b2602c784edba73525d5de850e603c63bd399dfc2ad9858bb3a00e41fdd", url = "https://github.com/dapr/dapr/releases/download/v1.16.1/daprd_darwin_arm64.tar.gz", url_api = "https://api.github.com/repos/dapr/dapr/releases/assets/301165607"}
+
+[[tools."github:xataio/pgstream"]]
+version = "0.8.5"
+backend = "github:xataio/pgstream"
+"platforms.linux-arm64" = { checksum = "sha256:7bab60d1e7af93b1b1d17cb5a73e45085c0e70e3f896a3ab21bd693430e8cf78", url = "https://github.com/xataio/pgstream/releases/download/v0.8.5/pgstream.linux.arm64", url_api = "https://api.github.com/repos/xataio/pgstream/releases/assets/304630303"}
+"platforms.linux-x64" = { checksum = "sha256:7404fb6c01c42d5f59d40dd5c785002a67058f83626624a68de301fe7ed7bb31", url = "https://github.com/xataio/pgstream/releases/download/v0.8.5/pgstream.linux.amd64", url_api = "https://api.github.com/repos/xataio/pgstream/releases/assets/304630302"}
+"platforms.macos-arm64" = { checksum = "sha256:adfdc6e6d48a1435477e6e7432675b173ce4b5a4e6b51b37bf72d9cffdeed1a7", url = "https://github.com/xataio/pgstream/releases/download/v0.8.5/pgstream.macos.arm64", url_api = "https://api.github.com/repos/xataio/pgstream/releases/assets/304630305"}

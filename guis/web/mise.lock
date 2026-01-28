@@ -1,0 +1,17 @@
+[[tools."github:pnpm/pnpm"]]
+version = "9.15.2"
+backend = "github:pnpm/pnpm"
+"platforms.linux-arm64" = { url = "https://github.com/pnpm/pnpm/releases/download/v9.15.2/pnpm-linux-arm64", url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/216187381"}
+"platforms.linux-x64" = { url = "https://github.com/pnpm/pnpm/releases/download/v9.15.2/pnpm-linux-x64", url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/216187382"}
+"platforms.macos-arm64" = { checksum = "blake3:f8d3b3a1cf77cb49e716c28b8a13e429b737633a4b63cad2d5ac798e266d1797", url = "https://github.com/pnpm/pnpm/releases/download/v9.15.2/pnpm-macos-arm64", url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/216187376"}
+"platforms.macos-x64" = { url = "https://github.com/pnpm/pnpm/releases/download/v9.15.2/pnpm-macos-x64", url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/216187378"}
+"platforms.windows-x64" = { url = "https://github.com/pnpm/pnpm/releases/download/v9.15.2/pnpm-win-x64.exe", url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/216187374"}
+
+[[tools.node]]
+version = "22.14.0"
+backend = "core:node"
+"platforms.linux-arm64" = { checksum = "sha256:8cf30ff7250f9463b53c18f89c6c606dfda70378215b2c905d0a9a8b08bd45e0", url = "https://nodejs.org/dist/v22.14.0/node-v22.14.0-linux-arm64.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:9d942932535988091034dc94cc5f42b6dc8784d6366df3a36c4c9ccb3996f0c2", url = "https://nodejs.org/dist/v22.14.0/node-v22.14.0-linux-x64.tar.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:e9404633bc02a5162c5c573b1e2490f5fb44648345d64a958b17e325729a5e42", url = "https://nodejs.org/dist/v22.14.0/node-v22.14.0-darwin-arm64.tar.gz"}
+"platforms.macos-x64" = { checksum = "sha256:6698587713ab565a94a360e091df9f6d91c8fadda6d00f0cf6526e9b40bed250", url = "https://nodejs.org/dist/v22.14.0/node-v22.14.0-darwin-x64.tar.gz"}
+"platforms.windows-x64" = { checksum = "sha256:55b639295920b219bb2acbcfa00f90393a2789095b7323f79475c9f34795f217", url = "https://nodejs.org/dist/v22.14.0/node-v22.14.0-win-x64.zip"}

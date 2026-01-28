@@ -36,8 +36,8 @@ jobs:
           SAYT_VERSION: ${{ steps.version.outputs.version }}
         run: |
           mkdir -p binaries
-          docker compose -f plugins/sayt/compose.yaml build release-build
-          docker compose -f plugins/sayt/compose.yaml run --rm \
+          docker compose -f compose.yaml build release-build
+          docker compose -f compose.yaml run --rm \
             -e SAYT_VERSION \
             -v "${PWD}/binaries:/out" \
             release-build sh -c 'cp -a "/srv/releases/download/${SAYT_VERSION}/." /out/'
@@ -62,6 +62,14 @@ jobs:
         with:
           name: sayt-binaries
           path: binaries
+
+      - name: Create uname-compatible aliases
+        run: |
+          cd binaries
+          cp sayt-macos-x64 sayt-darwin-x86_64
+          cp sayt-macos-arm64 sayt-darwin-arm64
+          cp sayt-linux-x64 sayt-linux-x86_64
+          cp sayt-linux-arm64 sayt-linux-aarch64
 
       - name: Determine version
         id: version

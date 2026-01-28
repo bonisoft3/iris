@@ -10,7 +10,7 @@ ENV XDG_DATA_HOME=${DCM_PATH}/local/share
 ENV TASK_TEMP_DIR=${DCM_PATH}/task
 ENV SKAFFOLD_CACHE_FILE=${DCM_PATH}/skaffold/cache
 ENV PATH=/root/.local/bin:${XDG_DATA_HOME}/mise/shims:$PATH
-ENV MISE_VERSION=2025.10.2
+ENV MISE_VERSION=2026.1.7
 ARG TARGETOS
 ARG TARGETARCH
 COPY --from=tonistiigi/xx:1.5.0@sha256:0c6a569797744e45955f39d4f7538ac344bfb7ebf0a54006a0a4297b153ccf0f / /
@@ -38,7 +38,7 @@ FROM cgr.dev/chainguard/wolfi-base:latest@sha256:deba562a90aa3278104455cf1c34ffa
 WORKDIR /monorepo/guis/web/
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_pnpm /monorepo /monorepo
-COPY guis/web/.mise.toml guis/web/.mise.lock guis/web/.mise.alpine.lock ./
+COPY guis/web/.mise.toml guis/web/mise.lock guis/web/.mise.alpine.lock ./
 COPY guis/web/package.json ./
 COPY guis/web/.vscode .vscode
 # https://code.visualstudio.com/docs/containers/debug-node#_mapping-docker-container-source-files-to-the-local-workspace
@@ -68,7 +68,7 @@ FROM devserver AS debug
 WORKDIR /monorepo/guis/web/
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_pnpm /monorepo /monorepo
-COPY guis/web/.mise.toml guis/web/.mise.lock guis/web/.mise.alpine.lock ./
+COPY guis/web/.mise.toml guis/web/mise.lock guis/web/.mise.alpine.lock ./
 RUN  [ ! -e .mise.toml ] || just setup
 RUN  pnpm --dir /monorepo/ install --frozen-lockfile
 COPY guis/web/package.json ./

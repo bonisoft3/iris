@@ -4,34 +4,28 @@ version = "0.25.0"
 bin = "xh"
 
 # Platform configurations
-[platforms.macos-arm64]
-url = "https://github.com/ducaale/xh/releases/download/v0.25.0/xh-v0.25.0-aarch64-apple-darwin.tar.gz"
-checksum = "sha256:08de099b7143c118899c14fae9d037152dc1dd60ace4c3204a0de4c5e02e5deb"
-size = 3643819
-
-[platforms.linux-amd64]
-url = "https://github.com/ducaale/xh/releases/download/v0.25.0/xh-v0.25.0-x86_64-unknown-linux-musl.tar.gz"
-checksum = "sha256:fb3adc87b19ed1139cdd77d6d6bc0d15eb20b87e60fb5e6428102f6acd15fc10"
-size = 4056139
-
-[platforms.linux-arm64]
-url = "https://github.com/ducaale/xh/releases/download/v0.25.0/xh-v0.25.0-aarch64-unknown-linux-musl.tar.gz"
-checksum = "sha256:0e5b8d3f575201dca16a042b97c826c26c0c5ce6bdaaff1a132c21b31d1990dd"
-size = 3755661
-
 [platforms.darwin-amd64]
 url = "https://github.com/ducaale/xh/releases/download/v0.25.0/xh-v0.25.0-x86_64-apple-darwin.tar.gz"
 checksum = "sha256:48b1ba31772a71bc6c6a51dc9f561f18e306c7a469c05d35a317bd74963b83e8"
-size = 3850883
 
 [platforms.darwin-arm64]
 url = "https://github.com/ducaale/xh/releases/download/v0.25.0/xh-v0.25.0-aarch64-apple-darwin.tar.gz"
 checksum = "sha256:08de099b7143c118899c14fae9d037152dc1dd60ace4c3204a0de4c5e02e5deb"
-size = 3643819
+
+[platforms.linux-amd64]
+url = "https://github.com/ducaale/xh/releases/download/v0.25.0/xh-v0.25.0-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:fb3adc87b19ed1139cdd77d6d6bc0d15eb20b87e60fb5e6428102f6acd15fc10"
+
+[platforms.linux-arm64]
+url = "https://github.com/ducaale/xh/releases/download/v0.25.0/xh-v0.25.0-aarch64-unknown-linux-musl.tar.gz"
+checksum = "sha256:0e5b8d3f575201dca16a042b97c826c26c0c5ce6bdaaff1a132c21b31d1990dd"
+
+[platforms.macos-arm64]
+url = "https://github.com/ducaale/xh/releases/download/v0.25.0/xh-v0.25.0-aarch64-apple-darwin.tar.gz"
+checksum = "blake3:47931d7c441eeda3b5faf4886e01dda502714ddc0059bceb68654ab7d2203c53"
 
 [platforms.windows-amd64]
 url = "https://github.com/ducaale/xh/releases/download/v0.25.0/xh-v0.25.0-x86_64-pc-windows-msvc.zip"
 checksum = "sha256:00cf11e2dcc62d90db94cd31be6609a53ecfc786039d541ce938065132bedf01"
-size = 3968169
 bin = "xh.exe"
 

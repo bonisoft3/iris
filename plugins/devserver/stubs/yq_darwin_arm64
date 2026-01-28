@@ -4,34 +4,27 @@ version = "v4.44.2"
 
 # Platform configurations
 [platforms.darwin-amd64]
-url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_darwin_{{ arch () }}.tar.gz"
+url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_darwin_amd64.tar.gz"
 checksum = "sha256:7e02afc024868ab298cb44fe9b1cf56ffb2e083cd5a426cc6616c08c1aad3e7a"
-size = 4149869
 
 [platforms.darwin-arm64]
-url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_darwin_{{ arch () }}.tar.gz"
+url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_darwin_arm64.tar.gz"
 checksum = "sha256:86f172cd7b8d84f178b20b02df12c772aacb5ffefeecba33af93727b0d3000f2"
-size = 3914114
-bin = "docker-compose"  # Rename from docker-compose-linux-x86_64 to docker-compose
 
 [platforms.linux-amd64]
 url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_amd64.tar.gz"
 checksum = "sha256:e4c2570249e3993e33ffa44e592b5eee8545bd807bfbeb596c2986d86cb6c85c"
-size = 4087934
 
 [platforms.linux-arm64]
 url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_arm64.tar.gz"
 checksum = "sha256:79c22d98b2ff517cb8b1c20499350cbc1e8c753483c8f72a37a299e6e9872a98"
-size = 3775812
 
 [platforms.macos-arm64]
 url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_darwin_arm64.tar.gz"
 checksum = "blake3:e7914628e6283a1b6102333ed99860a052285274a00e4626d049ba4e5162bc37"
-size = 3914114
 
 [platforms.windows-amd64]
 url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_windows_amd64.zip"
 checksum = "sha256:690b85576122647ae8f7edf46af1a8046119d4603c426213cd1b0e031a42007c"
-size = 4175247
 bin = "yq.exe"
 

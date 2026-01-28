@@ -1,0 +1,44 @@
+[[tools."aqua:astral-sh/uv"]]
+version = "0.6.14"
+backend = "aqua:astral-sh/uv"
+"platforms.linux-arm64" = { checksum = "sha256:94e22c4be44d205def456427639ca5ca1c1a9e29acc31808a7b28fdd5dcf7f17", url = "https://github.com/astral-sh/uv/releases/download/0.6.14/uv-aarch64-unknown-linux-musl.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:0cac4df0cb3457b154f2039ae471e89cd4e15f3bd790bbb3cb0b8b40d940b93e", url = "https://github.com/astral-sh/uv/releases/download/0.6.14/uv-x86_64-unknown-linux-musl.tar.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:4ea4731010fbd1bc8e790e07f199f55a5c7c2c732e9b77f85e302b0bee61b756", url = "https://github.com/astral-sh/uv/releases/download/0.6.14/uv-aarch64-apple-darwin.tar.gz"}
+"platforms.macos-x64" = { checksum = "sha256:1d8ecb2eb3b68fb50e4249dc96ac9d2458dc24068848f04f4c5b42af2fd26552", url = "https://github.com/astral-sh/uv/releases/download/0.6.14/uv-x86_64-apple-darwin.tar.gz"}
+"platforms.windows-x64" = { checksum = "sha256:93b29fc234758e381df461d7638ff73d0f08bdf3a0dc37923b1ee0b9e442ca3f", url = "https://github.com/astral-sh/uv/releases/download/0.6.14/uv-x86_64-pc-windows-msvc.zip"}
+
+[[tools."aqua:casey/just"]]
+version = "1.42.4"
+backend = "aqua:casey/just"
+"platforms.linux-arm64" = { checksum = "sha256:beb35a4ed1208ffbb0fef26042c65875759a5358b9ee1a7856dec8490dfd4aca", url = "https://github.com/casey/just/releases/download/1.42.4/just-1.42.4-aarch64-unknown-linux-musl.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:678efc1cfbd5fa5a88375daa7e2f3864a049d6d63a0296df925a2ae5f516cb56", url = "https://github.com/casey/just/releases/download/1.42.4/just-1.42.4-x86_64-unknown-linux-musl.tar.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:9bea24da39a54f1517ebc8d050789e9631eaf9bcec76a94866a9955a3a1a663f", url = "https://github.com/casey/just/releases/download/1.42.4/just-1.42.4-aarch64-apple-darwin.tar.gz"}
+"platforms.macos-x64" = { checksum = "sha256:ec8781b4341552877a432a922818f1656bcee6ec51155dbbdba490d9bd8f8dd2", url = "https://github.com/casey/just/releases/download/1.42.4/just-1.42.4-x86_64-apple-darwin.tar.gz"}
+"platforms.windows-x64" = { checksum = "sha256:238cb448eb2ced3f7ac2f32872cf08244179b10b2d3f67e9069087ccbdc3d7f6", url = "https://github.com/casey/just/releases/download/1.42.4/just-1.42.4-x86_64-pc-windows-msvc.zip"}
+
+[[tools."aqua:nektos/act"]]
+version = "0.2.65"
+backend = "aqua:nektos/act"
+"platforms.linux-arm64" = { checksum = "sha256:13d8c0ce63197b0f52180f514b5a538cb691ae9cee15d07073cf411b31efb8ff", url = "https://github.com/nektos/act/releases/download/v0.2.65/act_Linux_arm64.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:ececd3b7f21dd8cb7eeab1f77c6a74c0d96547aa013015c92d46dd95dd538fe6", url = "https://github.com/nektos/act/releases/download/v0.2.65/act_Linux_x86_64.tar.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:4e0f75851d3c6da0fc893096c0de1b151987c2c5ff6b3f3ea6c006f8497fddc5", url = "https://github.com/nektos/act/releases/download/v0.2.65/act_Darwin_arm64.tar.gz"}
+"platforms.macos-x64" = { checksum = "sha256:67e9ece3a2b521824327ec04fb235c4ba0c1446670319e357a76802433e3a738", url = "https://github.com/nektos/act/releases/download/v0.2.65/act_Darwin_x86_64.tar.gz"}
+"platforms.windows-x64" = { checksum = "sha256:5e21488894f5bb27756f3a0ad9603576ad65bb2a014b55b1b0f39f3c28f1390c", url = "https://github.com/nektos/act/releases/download/v0.2.65/act_Windows_x86_64.zip"}
+
+[[tools."github:cue-lang/cue"]]
+version = "0.15.1"
+backend = "github:cue-lang/cue"
+"platforms.linux-arm64" = { checksum = "sha256:6bb80ec3262c7cedf898a21e9e9481c86da54488f144788b1fa0a5dc01879a0b", url = "https://github.com/cue-lang/cue/releases/download/v0.15.1/cue_v0.15.1_linux_arm64.tar.gz", url_api = "https://api.github.com/repos/cue-lang/cue/releases/assets/319203819"}
+"platforms.linux-x64" = { checksum = "sha256:aa282261245e9ab0d65b17ec3c7207f5231600106f7b26fc0c2e158b3937ca3f", url = "https://github.com/cue-lang/cue/releases/download/v0.15.1/cue_v0.15.1_linux_amd64.tar.gz", url_api = "https://api.github.com/repos/cue-lang/cue/releases/assets/319203817"}
+"platforms.macos-arm64" = { checksum = "sha256:9ee183ec8686675a0aea24f9f5cfb64235ee4e7583e8e771432a0bf58e64411a", url = "https://github.com/cue-lang/cue/releases/download/v0.15.1/cue_v0.15.1_darwin_arm64.tar.gz", url_api = "https://api.github.com/repos/cue-lang/cue/releases/assets/319203820"}
+"platforms.macos-x64" = { checksum = "sha256:e761c85f060283d7c52b0b80e3ae57b569a0c4e7f7029bdbf38d7f079b2128bc", url = "https://github.com/cue-lang/cue/releases/download/v0.15.1/cue_v0.15.1_darwin_amd64.tar.gz", url_api = "https://api.github.com/repos/cue-lang/cue/releases/assets/319203816"}
+"platforms.windows-x64" = { checksum = "sha256:516fa080c1af12578ff76a4165cc7bf14ad9bbe5d9724a0c07553860d038885e", url = "https://github.com/cue-lang/cue/releases/download/v0.15.1/cue_v0.15.1_windows_amd64.zip", url_api = "https://api.github.com/repos/cue-lang/cue/releases/assets/319203818"}
+
+[[tools."github:nushell/nushell"]]
+version = "0.107.0"
+backend = "github:nushell/nushell"
+"platforms.linux-arm64" = { checksum = "sha256:858142296927292095623c05c7ff0a79a53c9071949ca8867e672083ba87b73c", url = "https://github.com/nushell/nushell/releases/download/0.107.0/nu-0.107.0-aarch64-unknown-linux-gnu.tar.gz", url_api = "https://api.github.com/repos/nushell/nushell/releases/assets/289026684"}
+"platforms.linux-x64" = { checksum = "sha256:9c803a1b2019c80e75b4170edc2d3ccbf02aebc784bc9b243881ac178d27f381", url = "https://github.com/nushell/nushell/releases/download/0.107.0/nu-0.107.0-x86_64-unknown-linux-gnu.tar.gz", url_api = "https://api.github.com/repos/nushell/nushell/releases/assets/289026180"}
+"platforms.macos-arm64" = { checksum = "sha256:3bc70d98ab2fd94ad8244d233c92aa6e768ca2c91dd860a209ae6ba6d15f1051", url = "https://github.com/nushell/nushell/releases/download/0.107.0/nu-0.107.0-aarch64-apple-darwin.tar.gz", url_api = "https://api.github.com/repos/nushell/nushell/releases/assets/289032519"}
+"platforms.macos-x64" = { checksum = "sha256:e69c2e4f3b68444e17186f289a9a2ed7ec88b57da930892b1a7a3544d68a91d1", url = "https://github.com/nushell/nushell/releases/download/0.107.0/nu-0.107.0-x86_64-apple-darwin.tar.gz", url_api = "https://api.github.com/repos/nushell/nushell/releases/assets/289028707"}
+"platforms.windows-x64" = { checksum = "sha256:6f62ab495b5166239512429886f944eab9153f734a27703516d5eabb5d370e4d", url = "https://github.com/nushell/nushell/releases/download/0.107.0/nu-0.107.0-x86_64-pc-windows-msvc.zip", url_api = "https://api.github.com/repos/nushell/nushell/releases/assets/289031932"}

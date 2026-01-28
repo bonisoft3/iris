@@ -1,5 +1,5 @@
 $ErrorActionPreference = "Stop"
-$Version = if ($env:SAYT_VERSION) { $env:SAYT_VERSION } else { "v0.0.10" }
+$Version = if ($env:SAYT_VERSION) { $env:SAYT_VERSION } else { "v0.0.14" }
 if (-not ($Version.StartsWith("v")) -and $Version -ne "latest") {
     $Version = "v$Version"
 }
@@ -75,6 +75,8 @@ if (-not (Test-Path $Binary)) {
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     if ($DownloadBase) {
         $Url = "$DownloadBase/$BinName"
+    } elseif ($Version -eq "latest") {
+        $Url = "https://github.com/bonitao/sayt/releases/latest/download/$BinName"
     } else {
         $Url = "https://github.com/bonitao/sayt/releases/download/$Version/$BinName"
     }

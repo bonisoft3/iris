@@ -1,0 +1,26 @@
+[[tools."aqua:go-task/task"]]
+version = "3.38.0"
+backend = "aqua:go-task/task"
+"platforms.linux-arm64" = { checksum = "sha256:30d3c727a434ee3bf69fb69e5d1aa84c3ab401fc2343a2760b4c7808acc689b8", url = "https://github.com/go-task/task/releases/download/v3.38.0/task_linux_arm64.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:a6241c9fbcc49bdffef907e4d6325adb074295fd094f2bfa6a2e32282c2ed06e", url = "https://github.com/go-task/task/releases/download/v3.38.0/task_linux_amd64.tar.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:a575c9e10591bb35d1bb678bdde2fa221330d207a787b0a5979d4287ee7f4c0f", url = "https://github.com/go-task/task/releases/download/v3.38.0/task_darwin_arm64.tar.gz"}
+"platforms.macos-x64" = { checksum = "sha256:a2aefff4f3cb2851ce133c13a20502f1dfa8a6bc34d3f4e01c67cf3278f4f73d", url = "https://github.com/go-task/task/releases/download/v3.38.0/task_darwin_amd64.tar.gz"}
+"platforms.windows-x64" = { checksum = "sha256:6586105949b4359b37f770b7604542c23f064e055c6521791cd8d5916ec287fb", url = "https://github.com/go-task/task/releases/download/v3.38.0/task_windows_amd64.zip"}
+
+[[tools."aqua:mikefarah/yq"]]
+version = "v4.44.2"
+backend = "aqua:mikefarah/yq"
+"platforms.linux-arm64" = { checksum = "sha256:d05d9dae44503433e668d097143bfeb102ee7e2d486773ae23aaf81256ed54fd", url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_arm64"}
+"platforms.linux-x64" = { checksum = "sha256:246b781828353a59fb04ffaada241f78a8f3f25c623047b40306def1f6806e71", url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_amd64"}
+"platforms.macos-arm64" = { checksum = "sha256:6cfa3c2c3a44356d0da42d8204fc85730cea999a779058d94d3a5b96d83f1030", url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_darwin_arm64"}
+"platforms.macos-x64" = { checksum = "sha256:c098dc4d2b03fc2d0fbd9f913f7239292e4068e69cfd444d4772a1fe429fa655", url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_darwin_amd64"}
+"platforms.windows-x64" = { checksum = "sha256:6ad543c4754377f1a490cd3cb9f6212171ca0cacd3361179659ca4bfdfecbf33", url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_windows_amd64.exe"}
+
+[[tools."github:bufbuild/buf"]]
+version = "1.32.1"
+backend = "github:bufbuild/buf"
+"platforms.linux-arm64" = { checksum = "sha256:f2f5c4234985c09c1793f020177fd62a14b0b509f92849732ddabfa4ecb2ac39", url = "https://github.com/bufbuild/buf/releases/download/v1.32.1/buf-Linux-aarch64.tar.gz", url_api = "https://api.github.com/repos/bufbuild/buf/releases/assets/169270022"}
+"platforms.linux-x64" = { checksum = "sha256:ca09415a6f0b86d9c38bde25a678dcc31b8e75492e68379e36b6c9ccd1755190", url = "https://github.com/bufbuild/buf/releases/download/v1.32.1/buf-Linux-x86_64.tar.gz", url_api = "https://api.github.com/repos/bufbuild/buf/releases/assets/169270025"}
+"platforms.macos-arm64" = { checksum = "sha256:7e995489fdefc02622b428f9e6fc43d4edc58eb72fbcb3d00e3e99e7c185808a", url = "https://github.com/bufbuild/buf/releases/download/v1.32.1/buf-Darwin-arm64.tar.gz", url_api = "https://api.github.com/repos/bufbuild/buf/releases/assets/169270020"}
+"platforms.macos-x64" = { checksum = "sha256:9f0cc8e92d138a0f5ee5de3e0be1262f4d230e8e46dc85b3095df4c8c0110674", url = "https://github.com/bufbuild/buf/releases/download/v1.32.1/buf-Darwin-x86_64.tar.gz", url_api = "https://api.github.com/repos/bufbuild/buf/releases/assets/169270017"}
+"platforms.windows-x64" = { checksum = "sha256:8a7763e80cb534ff43240b89f5472c9fc7434b6ccdfc4b56b7decc1bbb1ea93e", url = "https://github.com/bufbuild/buf/releases/download/v1.32.1/buf-Windows-x86_64.exe", url_api = "https://api.github.com/repos/bufbuild/buf/releases/assets/169270027"}

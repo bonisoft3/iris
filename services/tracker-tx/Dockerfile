@@ -5,7 +5,7 @@ ENV XDG_CACHE_HOME=/root/.local/cache
 ENV XDG_DATA_HOME=/root/.local/share
 ENV XDG_CONFIG_HOME=/root/.local/config
 ENV PATH=/root/.local/bin:${XDG_DATA_HOME}/mise/shims:$PATH
-ENV MISE_VERSION=2025.10.2
+ENV MISE_VERSION=2026.1.7
 ARG TARGETOS
 ARG TARGETARCH
 COPY --from=tonistiigi/xx:1.5.0@sha256:0c6a569797744e45955f39d4f7538ac344bfb7ebf0a54006a0a4297b153ccf0f / /
@@ -39,7 +39,7 @@ ENV PROTO_DESCRIPTOR_PB=/monorepo/libraries/xproto/out/xproto.desc.pb
 ENV GRPC_ADDRESS=127.0.0.1
 ENV GRPC_PORT=50051
 COPY services/tracker-tx .
-RUN mise trust .
+RUN mise trust -a .
 RUN MISE_DEBUG=1 just setup
 RUN yq --help
 

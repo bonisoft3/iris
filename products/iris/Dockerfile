@@ -22,7 +22,7 @@ ENV XDG_DATA_HOME=${DCM_PATH}/local/share
 ENV TASK_TEMP_DIR=${DCM_PATH}/task
 ENV SKAFFOLD_CACHE_FILE=${DCM_PATH}/skaffold/cache
 ENV PATH=/root/.local/bin:${XDG_DATA_HOME}/mise/shims:$PATH
-ENV MISE_VERSION=2025.10.2
+ENV MISE_VERSION=2026.1.7
 ARG TARGETOS
 ARG TARGETARCH
 COPY --from=tonistiigi/xx:1.5.0@sha256:0c6a569797744e45955f39d4f7538ac344bfb7ebf0a54006a0a4297b153ccf0f / /
@@ -51,7 +51,7 @@ FROM cgr.dev/chainguard/wolfi-base:latest@sha256:deba562a90aa3278104455cf1c34ffa
 WORKDIR /monorepo/plugins/libstoml/
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_gradle /monorepo /monorepo
-COPY plugins/libstoml/.mise.toml plugins/libstoml/.mise.lock plugins/libstoml/.mise.alpine.lock ./
+COPY plugins/libstoml/.mise.toml plugins/libstoml/mise.lock plugins/libstoml/.mise.alpine.lock ./
 COPY plugins/libstoml/gradle gradle
 COPY --chmod=0755 plugins/libstoml/gradlew ./
 COPY plugins/libstoml/gradlew.bat plugins/libstoml/gradle.properties plugins/libstoml/settings.gradle* plugins/libstoml/build.gradle* ./
@@ -81,7 +81,7 @@ COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_gradle /monorepo /monorepo
 COPY --from=plugins_libstoml_sources /monorepo /monorepo
 COPY --from=plugins_jvm_sources /monorepo /monorepo
-COPY libraries/logs/.mise.toml libraries/logs/.mise.lock libraries/logs/.mise.alpine.lock ./
+COPY libraries/logs/.mise.toml libraries/logs/mise.lock libraries/logs/.mise.alpine.lock ./
 COPY libraries/logs/gradle gradle
 COPY --chmod=0755 libraries/logs/gradlew ./
 COPY libraries/logs/gradlew.bat libraries/logs/gradle.properties libraries/logs/settings.gradle* libraries/logs/build.gradle* ./
@@ -104,7 +104,7 @@ COPY --from=plugins_jvm_sources /monorepo /monorepo
 COPY --from=plugins_micronaut_sources /monorepo /monorepo
 COPY --from=libraries_logs_sources /monorepo /monorepo
 COPY --from=libraries_xproto_sources /monorepo /monorepo
-COPY libraries/pbtables/.mise.toml libraries/pbtables/.mise.lock libraries/pbtables/.mise.alpine.lock ./
+COPY libraries/pbtables/.mise.toml libraries/pbtables/mise.lock libraries/pbtables/.mise.alpine.lock ./
 COPY libraries/pbtables/gradle gradle
 COPY --chmod=0755 libraries/pbtables/gradlew ./
 COPY libraries/pbtables/gradlew.bat libraries/pbtables/gradle.properties libraries/pbtables/settings.gradle* libraries/pbtables/build.gradle* ./
@@ -128,7 +128,7 @@ COPY --from=libraries_logs_sources /monorepo /monorepo
 COPY --from=plugins_micronaut_sources /monorepo /monorepo
 COPY --from=libraries_xproto_sources /monorepo /monorepo
 COPY --from=libraries_pbtables_sources /monorepo /monorepo
-COPY services/tracker/.mise.toml services/tracker/.mise.lock services/tracker/.mise.alpine.lock ./
+COPY services/tracker/.mise.toml services/tracker/mise.lock services/tracker/.mise.alpine.lock ./
 COPY services/tracker/gradle gradle
 COPY --chmod=0755 services/tracker/gradlew ./
 COPY services/tracker/gradlew.bat services/tracker/gradle.properties services/tracker/settings.gradle* services/tracker/build.gradle* ./
@@ -147,7 +147,7 @@ FROM cgr.dev/chainguard/wolfi-base:latest@sha256:deba562a90aa3278104455cf1c34ffa
 WORKDIR /monorepo/guis/web/
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_pnpm /monorepo /monorepo
-COPY guis/web/.mise.toml guis/web/.mise.lock guis/web/.mise.alpine.lock ./
+COPY guis/web/.mise.toml guis/web/mise.lock guis/web/.mise.alpine.lock ./
 COPY guis/web/package.json ./
 COPY guis/web/.vscode .vscode
 # https://code.visualstudio.com/docs/containers/debug-node#_mapping-docker-container-source-files-to-the-local-workspace

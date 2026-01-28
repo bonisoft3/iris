@@ -30,7 +30,7 @@ COPY --from=postgrest/postgrest:latest /bin/postgrest /usr/local/bin/postgrest
 
 # Copy mise configuration and install all tools (including openresty, redis, go-task)
 COPY mise.toml mise.lock /
-RUN mise trust && mise install
+RUN mise trust -a && mise install
 ENV PATH=$PATH:/root/.local/share/mise/shims
 
 RUN dapr init --slim

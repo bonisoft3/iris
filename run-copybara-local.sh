@@ -8,6 +8,9 @@ if [ -z "$GH_TOKEN" ]; then
   exit 1
 fi
 
+WORKFLOW=${1:-sayt_local}
+ORIGIN_REF=${2:-HEAD}
+
 echo "Starting Copybara in Docker..."
 
 # We pipe the script to the container's bash.
@@ -17,6 +20,8 @@ cat <<'EOF' | docker run --rm -i \
   -v "$(pwd):/src" \
   -w /src \
   -e GH_TOKEN="$GH_TOKEN" \
+  -e COPYBARA_WORKFLOW="$WORKFLOW" \
+  -e COPYBARA_ORIGIN_REF="$ORIGIN_REF" \
   eclipse-temurin:21-jdk-jammy \
   /bin/bash
     set -e
@@ -38,19 +43,17 @@ cat <<'EOF' | docker run --rm -i \
     git config --global user.name "Copybara Local"
     # Use the token for HTTPS auth
     git config --global url."https://oauth2:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
+    git config --global url."https://oauth2:${GH_TOKEN}@github.com/".insteadOf "git@github.com:"
     git config --global --add safe.directory /src
 
     # 4. Prepare Local Config
     echo "Preparing local Copybara config..."
-    # Replace origin with file:///src (local)
-    # Replace ref="main" with ref="HEAD" (current checkout)
-    # Replace destination with HTTPS URL
-    sed -e 's|git@github.com:worldsense/trash.git|file:///src|g' \
-        -e 's|ref = "main"|ref = "HEAD"|g' \
-        -e 's|git@github.com:bonitao/sayt.git|https://github.com/bonitao/sayt.git|g' \
+    # Override local origin and ref for this run.
+    sed -e 's|^LOCAL_ORIGIN = \".*\"$|LOCAL_ORIGIN = \"file:///src\"|g' \
+        -e "s|^ORIGIN_REF = \".*\"$|ORIGIN_REF = \"${COPYBARA_ORIGIN_REF}\"|g" \
         copy.bara.sky > /tmp/copy.bara.sky
     
     # 5. Run Copybara
     echo "Running Copybara..."
-    java -jar /tmp/copybara.jar migrate /tmp/copy.bara.sky sayt --force --init-history
+    java -jar /tmp/copybara.jar migrate /tmp/copy.bara.sky "${COPYBARA_WORKFLOW}" --force --init-history
 EOF

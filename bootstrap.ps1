@@ -1,5 +1,5 @@
 $BusyboxVersion = "5857-g3681e397f"
-$MiseVersion    = "2025.11.2"
+$MiseVersion    = "2026.1.7"
 
 if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
   Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
@@ -64,7 +64,7 @@ if (-not (Get-Command mise -ErrorAction SilentlyContinue)) {
     Write-Host "Trusting all projects in the monorepo..."
     Get-ChildItem -Recurse -File -Filter ".mise.toml" | ForEach-Object {
         $dir = Split-Path $_.FullName
-        mise trust -y $dir
+        mise trust -a -y $dir
     }
 
     Write-Host "Installing default tools..."

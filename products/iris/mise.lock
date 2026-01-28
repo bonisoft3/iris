@@ -1,0 +1,35 @@
+[[tools."aqua:GoogleContainerTools/skaffold"]]
+version = "2.13.2"
+backend = "aqua:GoogleContainerTools/skaffold"
+"platforms.linux-arm64" = { url = "https://storage.googleapis.com/skaffold/releases/v2.13.2/skaffold-linux-arm64"}
+"platforms.linux-x64" = { url = "https://storage.googleapis.com/skaffold/releases/v2.13.2/skaffold-linux-amd64"}
+"platforms.macos-arm64" = { checksum = "blake3:743aa2fff476a9a38f47444a7e3cdc9adec5f000dba03f054a8e693db35eac47", url = "https://storage.googleapis.com/skaffold/releases/v2.13.2/skaffold-darwin-arm64"}
+"platforms.macos-x64" = { url = "https://storage.googleapis.com/skaffold/releases/v2.13.2/skaffold-darwin-amd64"}
+"platforms.windows-x64" = { url = "https://storage.googleapis.com/skaffold/releases/v2.13.2/skaffold-windows-amd64.exe"}
+
+[[tools."aqua:getsops/sops"]]
+version = "3.9.1"
+backend = "aqua:getsops/sops"
+"platforms.linux-arm64" = { checksum = "sha256:bc946fef11dbe199587adac567037b69374c4202f928ca138443539efc85b357", url = "https://github.com/getsops/sops/releases/download/v3.9.1/sops-v3.9.1.linux.arm64"}
+"platforms.linux-x64" = { checksum = "sha256:cd795109851c3a483bbaa66d15d19ddb2227ac0352b39e25d96b67d51edb6225", url = "https://github.com/getsops/sops/releases/download/v3.9.1/sops-v3.9.1.linux.amd64"}
+"platforms.macos-arm64" = { checksum = "sha256:0ab2cc54f0d8b8414dab83c18017ae3c005d405480b343c788a84fa4af5b19e3", url = "https://github.com/getsops/sops/releases/download/v3.9.1/sops-v3.9.1.darwin.arm64"}
+"platforms.macos-x64" = { checksum = "sha256:740b3a356c965830272d8f7aec2ea2e500d4a39f03e4aad347c004f3a0bdc2de", url = "https://github.com/getsops/sops/releases/download/v3.9.1/sops-v3.9.1.darwin.amd64"}
+"platforms.windows-x64" = { checksum = "sha256:745ab6aa6d6e3fbbb8a3484ec22caf2cbf61b5f70d1416eea5d2a644de722f31", url = "https://github.com/getsops/sops/releases/download/v3.9.1/sops-v3.9.1.exe"}
+
+[[tools."aqua:kubernetes/kubernetes/kubectl"]]
+version = "1.31.2"
+backend = "aqua:kubernetes/kubernetes/kubectl"
+"platforms.linux-arm64" = { url = "https://dl.k8s.io/v1.31.2/bin/linux/arm64/kubectl"}
+"platforms.linux-x64" = { url = "https://dl.k8s.io/v1.31.2/bin/linux/amd64/kubectl"}
+"platforms.macos-arm64" = { checksum = "sha256:0792d570d20fc495ea64baec26cd6bde961434b900038f2952f3334501872e80", url = "https://dl.k8s.io/v1.31.2/bin/darwin/arm64/kubectl"}
+"platforms.macos-x64" = { url = "https://dl.k8s.io/v1.31.2/bin/darwin/amd64/kubectl"}
+"platforms.windows-x64" = { url = "https://dl.k8s.io/v1.31.2/bin/windows/amd64/kubectl.exe"}
+
+[[tools."aqua:viaduct-ai/kustomize-sops"]]
+version = "4.3.2"
+backend = "aqua:viaduct-ai/kustomize-sops"
+"platforms.linux-arm64" = { checksum = "sha256:fe651d68db1b25ab666fd71921d4658e9c0819cff0cd2b4bfad599b35f863846", url = "https://github.com/viaduct-ai/kustomize-sops/releases/download/v4.3.2/ksops_4.3.2_Linux_arm64.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:35eb1aa34e9f210e2dad767d483855e176b00954091c4ec7e77a958ecd0b02b4", url = "https://github.com/viaduct-ai/kustomize-sops/releases/download/v4.3.2/ksops_4.3.2_Linux_x86_64.tar.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:9e466376e1650d683ddcabca10b366ef15881a3fe8beebfbed04d1900e330ebb", url = "https://github.com/viaduct-ai/kustomize-sops/releases/download/v4.3.2/ksops_4.3.2_Darwin_arm64.tar.gz"}
+"platforms.macos-x64" = { checksum = "sha256:728fae8fc04d53b443897e45e67780de570906aaa44e13d8078d8e59f412940a", url = "https://github.com/viaduct-ai/kustomize-sops/releases/download/v4.3.2/ksops_4.3.2_Darwin_x86_64.tar.gz"}
+"platforms.windows-x64" = { checksum = "sha256:5f7cb8a53ef6e277fc7b80505ffec68b9ecbe9538e72f6f5accf3e840c675ee7", url = "https://github.com/viaduct-ai/kustomize-sops/releases/download/v4.3.2/ksops_4.3.2_Windows_x86_64.tar.gz"}

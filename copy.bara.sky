@@ -1,75 +1,126 @@
-core.workflow(
-    name = "iris",
-    origin = git.origin(
-        url = "git@github.com:worldsense/trash.git",
-        ref = "main",
-    ),
-    destination = git.destination(
-        url = "git@github.com:bonisoft3/iris.git",
-        fetch = "main",
-        push = "main",
-    ),
-    origin_files = glob([
-        "*",
-        ".*",
-        "services/tracker/**",
-        "guis/web/**",
-        "services/tracker-tx/**",
-        "products/iris/**",
-		"gradle/**",
-		"k8s/**",
-		"libraries/**",
-		"patches/**",
-		"plugins/**",
-    ], exclude = ["guis/web/.env",
-                "guis/web/.env.preview",
-                "guis/web/.env.production",
-				"libraries/xdocker",
-				"libraries/xproto",
-				]),
-    destination_files = glob(["**"]),
-    authoring = authoring.pass_thru("Default Author <default@example.com>"),
-)
+REMOTE_ORIGIN = "git@github.com:worldsense/trash.git"
+LOCAL_ORIGIN = "file:///home/runner/work/trash/trash"
+ORIGIN_REF = "main"
+DEST_REF = "main"
+AUTHOR = "Default Author <default@example.com>"
 
-core.workflow(
-    name = "butler",
-    origin = git.origin(
-        url = "git@github.com:worldsense/trash.git",
-        ref = "main",
-		submodules = "RECURSIVE",
-    ),
-    destination = git.destination(
-        url = "git@github.com:bonisoft3/butler.git",
-        fetch = "main",
-        push = "main",
-    ),
-    origin_files = glob([
-        "services/butler/**",
-    ]),
-    destination_files = glob(["**"]),
-    authoring = authoring.pass_thru("Default Author <default@example.com>"),
-    transformations = [
-        core.move("services/butler", "")
-    ],
-)
+# For single-directory workflows, preserve original message if it looks scoped
+# to that directory (e.g., "feat(sayt): ..." or "fix(sayt): ..."), otherwise
+# use a generic sync message.
+def scoped_message_transform(scope):
+    """Returns a transform that keeps scoped messages or replaces with sync message."""
+    def _transform(ctx):
+        msg = ctx.message
+        # Keep if message contains scope in conventional commit format: (scope) or scope:
+        if "(" + scope + ")" in msg.lower() or scope + ":" in msg.lower() or scope + "/" in msg.lower():
+            return
+        # Replace with generic sync message, preserving first line as context
+        first_line = msg.split("\n")[0][:72]
+        ctx.set_message("Sync: " + first_line + "\n\nFrom worldsense/trash")
+    return core.dynamic_transform(_transform, params = {"scope": scope})
 
-core.workflow(
-    name = "sayt",
-    origin = git.origin(
-        url = "git@github.com:worldsense/trash.git",
-        ref = "main",
+WORKFLOWS = [
+    struct(
+        name = "iris",
+        destination = "git@github.com:bonisoft3/iris.git",
+        origin_files = [
+            "*",
+            ".*",
+            "services/tracker/**",
+            "guis/web/**",
+            "services/tracker-tx/**",
+            "products/iris/**",
+            "gradle/**",
+            "k8s/**",
+            "libraries/**",
+            "patches/**",
+            "plugins/**",
+        ],
+        origin_excludes = [
+            "guis/web/.env",
+            "guis/web/.env.preview",
+            "guis/web/.env.production",
+            "libraries/xdocker",
+            "libraries/xproto",
+        ],
+        transformations = [],
+        submodules = "",
+        mode = "SQUASH",
+        scope = "",
     ),
-    destination = git.destination(
-        url = "git@github.com:bonitao/sayt.git",
-        fetch = "main",
-        push = "main",
+    struct(
+        name = "butler",
+        destination = "git@github.com:bonisoft3/butler.git",
+        origin_files = [
+            "services/butler/**",
+        ],
+        origin_excludes = [],
+        transformations = [
+            core.move("services/butler", ""),
+        ],
+        submodules = "RECURSIVE",
+        mode = "SQUASH",
+        scope = "",
     ),
-    origin_files = glob([
-        "plugins/sayt/**",
-    ]),
-    destination_files = glob(["**"]),
-    authoring = authoring.pass_thru("Default Author <default@example.com>"),
-    transformations = [
-        core.move("plugins/sayt", "")
-    ],
-)
+    struct(
+        name = "sayt",
+        destination = "git@github.com:bonisoft3/sayt.git",
+        origin_files = [
+            "plugins/sayt/**",
+        ],
+        origin_excludes = [],
+        transformations = [
+            core.move("plugins/sayt", ""),
+        ],
+        submodules = "",
+        mode = "ITERATIVE",
+        scope = "sayt",
+    ),
+]
+
+def register_workflows(origin_url, name_suffix):
+    for workflow in WORKFLOWS:
+        if workflow.submodules:
+            origin = git.origin(
+                url = origin_url,
+                ref = ORIGIN_REF,
+                submodules = workflow.submodules,
+            )
+        else:
+            origin = git.origin(
+                url = origin_url,
+                ref = ORIGIN_REF,
+            )
+
+        # Build transformations: workflow-specific + message handling
+        transforms = workflow.transformations[:]
+        if workflow.scope:
+            # For scoped workflows: keep original message if scoped, else generic
+            transforms.append(scoped_message_transform(workflow.scope))
+        elif workflow.mode == "SQUASH":
+            # For squash workflows: include all original messages
+            transforms.append(metadata.squash_notes(
+                prefix = "Synced from worldsense/trash:\n\n",
+                show_author = True,
+            ))
+
+        core.workflow(
+            name = workflow.name + name_suffix,
+            mode = workflow.mode,
+            origin = origin,
+            destination = git.destination(
+                url = workflow.destination,
+                fetch = DEST_REF,
+                push = DEST_REF,
+            ),
+            origin_files = glob(
+                workflow.origin_files,
+                exclude = workflow.origin_excludes,
+            ),
+            destination_files = glob(["**"]),
+            authoring = authoring.pass_thru(AUTHOR),
+            transformations = transforms,
+        )
+
+register_workflows(REMOTE_ORIGIN, "")
+register_workflows(LOCAL_ORIGIN, "_local")

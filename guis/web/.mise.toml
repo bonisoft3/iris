@@ -1,7 +1,9 @@
 [settings]
+locked = true
 lockfile = true
 experimental = true
 paranoid = false
+github.slsa = false
 github.github_attestations = false
 aqua.github_attestations = false
 aqua.cosign = false
@@ -10,4 +12,4 @@ aqua.minisign = false
 
 [tools]
 node = "22.14.0"
-"npm:pnpm" = "9.15.2"
+"github:pnpm/pnpm" = "9.15.2"
