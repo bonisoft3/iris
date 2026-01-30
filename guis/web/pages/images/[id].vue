@@ -23,11 +23,18 @@ async function fetchImageById(imageId: string): Promise<TrashItem | null> {
       },
     })
 
-    return response.ok ? (response._data as TrashItem[])[0] : null
+    return response.ok ? (response._data as TrashItem[])[0]! : null
   }
   catch (error) {
     console.error('Network error:', error)
     return null
+  }
+}
+
+interface TranslationInterface {
+  translations: {
+    caption: string
+    disposalInstructions: string
   }
 }
 
@@ -56,7 +63,7 @@ async function fetchTranslatedTrashItem(language: string): Promise<string[] | nu
 
   if (data._data) {
     const translations: TranslationInterface[] = data._data as TranslationInterface[]
-    return [translations[0].translations.caption, translations[0].translations.disposalInstructions]
+    return [translations[0]!.translations.caption, translations[0]!.translations.disposalInstructions]
   }
   return null
 }

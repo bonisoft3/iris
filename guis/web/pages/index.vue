@@ -39,14 +39,14 @@ interface WasteCategoryInterface {
 
 interface Post {
   id: number
-  title: string
+  title: string | { body?: { static?: string } }
   text: string
 }
 
 const { t, tm } = useI18n()
 const show = ref(false)
 const curiosity = ref('')
-const curiosities: Post[] = tm('posts')
+const curiosities = tm('posts') as unknown as Post[]
 const curiositiesLength = curiosities.length
 const userData = await getCurrentUser()
 const config = useRuntimeConfig()
@@ -83,10 +83,10 @@ function getWasteCategoryFromLabel(label: string) {
   }
 
   return {
-    icon: icon[label],
-    style: `${style[label]} border-radius: 50%;`,
-    title: title[label],
-    description: description[label],
+    icon: icon[label] as string,
+    style: `${style[label] as string} border-radius: 50%;`,
+    title: title[label] as string,
+    description: description[label] as string,
   }
 }
 
@@ -110,10 +110,10 @@ async function getPredominantDiscardingTypes() {
   const predominantDiscardingTypes = Object.entries(countObj).map(([key, value]) => ({ [key]: value }))
 
   predominantDiscardingTypes.sort((a, b) => {
-    const keyA = Object.keys(a)[0]
-    const keyB = Object.keys(b)[0]
+    const keyA = Object.keys(a)[0]!
+    const keyB = Object.keys(b)[0]!
 
-    return b[keyB] - a[keyA]
+    return b[keyB]! - a[keyA]!
   })
 
   const topDiscardingKeys = predominantDiscardingTypes.slice(0, 3).map(a => Object.keys(a)).flat()
@@ -122,9 +122,9 @@ async function getPredominantDiscardingTypes() {
 }
 
 function randomizeCuriosity() {
-  const curiosity = curiosities[Math.floor(Math.random() * curiositiesLength)]
-
-  return `${curiosity.title?.body?.static ?? curiosity.title ?? ''}`
+  const curiosity = curiosities[Math.floor(Math.random() * curiositiesLength)]!
+  const title = curiosity.title
+  return typeof title === 'string' ? title : title.body!.static!
 }
 
 function getCenterForDisposalPlace(disposalPlaces: DisposalPlace[]): { lat: number, lng: number } {
@@ -132,7 +132,7 @@ function getCenterForDisposalPlace(disposalPlaces: DisposalPlace[]): { lat: numb
     return { lat: 0, lng: 0 };
   }
   const randomIndex = Math.floor(Math.random() * disposalPlaces.length)
-  const disposalPlace = disposalPlaces[randomIndex]
+  const disposalPlace = disposalPlaces[randomIndex]!
   const lat = disposalPlace.latlng.latitude
   const long = disposalPlace.latlng.longitude
 

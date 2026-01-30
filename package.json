@@ -17,15 +17,17 @@
       }
     },
     "overrides": {
-      "nuxt": "^4.0.3",
-      "@nuxt/kit": "^4.0.3"
+      "nuxt": "^4.3.0",
+      "@nuxt/kit": "^4.3.0",
+      "prisma": "5.18.0",
+      "@prisma/client": "5.18.0"
     }
   },
   "dependencies": {
     "turbo": "^1.12.4"
   },
   "devDependencies": {
-    "re2": "1.21.3"
+    "re2": "1.23.2"
   },
   "packageManager": "pnpm@9.15.2"
 }

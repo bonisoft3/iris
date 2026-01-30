@@ -6,7 +6,7 @@ import * as firebaseAuth from 'firebase/auth'
 import * as firebaseui from 'firebaseui'
 import { onMounted } from 'vue'
 import 'firebaseui/dist/firebaseui.css'
-import UAParser from 'ua-parser-js'
+import { UAParser } from 'ua-parser-js'
 import XButton from '../../components/XButton.vue'
 
 const { t } = useI18n()

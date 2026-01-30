@@ -125,7 +125,7 @@ async function fetchTranslatedTrashItem(language: string): Promise<string[] | nu
 
   if (data._data) {
     const translations: TranslationInterface[] = data._data as TranslationInterface[]
-    return [translations[0].translations.caption, translations[0].translations.disposalInstructions]
+    return [translations[0]!.translations.caption, translations[0]!.translations.disposalInstructions]
   }
   return null
 }
@@ -137,7 +137,7 @@ const imageCategories = computed(() => {
 
 function capitalizeString(str: string | undefined) {
   if (!str) return ''
-  return str.length < 1 ? str : str[0].toUpperCase() + str.slice(1)
+  return str.length < 1 ? str : str.charAt(0).toUpperCase() + str.slice(1)
 }
 
 function expandImage() {
@@ -204,8 +204,8 @@ function splitDisposalInstructions(disposalInstructions: string | undefined): Ar
         let numberPart: string = ''
         let textPart: string = ''
         if (match) {
-          numberPart = match[1]
-          textPart = line.substring(match[0].length)
+          numberPart = match[1]!
+          textPart = line.substring(match[0]!.length)
         }
 
         if (numberPart !== undefined && numberPart !== '' && textPart !== undefined && textPart !== '') {
@@ -311,12 +311,13 @@ watch(
       const latitude = newValue?.pbjson.latlng?.latitude || 0
       const longitude = newValue?.pbjson.latlng?.longitude || 0
       const geocode = await getCityAndNeighborhood(latitude, longitude, config)
-      if (geocode.results[0].address_components.length > 4) {
-        city.value = geocode.results[0].address_components[4].long_name
+      const firstResult = geocode.results[0]!
+      if (firstResult.address_components.length > 4) {
+        city.value = firstResult.address_components[4]!.long_name
       }
 
-      if (geocode.results[0].address_components.length > 2) {
-        neighborhood.value = geocode.results[0].address_components[2].long_name
+      if (firstResult.address_components.length > 2) {
+        neighborhood.value = firstResult.address_components[2]!.long_name
       }
       mapPosition.value = `https://www.google.com/maps/embed/v1/place?q=${latitude},${longitude}&key=${config.public.MAPS_EMBED_API_KEY}`
     }
@@ -353,11 +354,12 @@ onBeforeMount(async () => {
     const latitude = props.trashItem?.pbjson.latlng?.latitude || 0
     const longitude = props.trashItem?.pbjson.latlng?.longitude || 0
     const geocode = await getCityAndNeighborhood(latitude, longitude, config)
-    if (geocode.results[0].address_components.length > 4) {
-      city.value = geocode.results[0].address_components[4].long_name
+    const firstResult = geocode.results[0]!
+    if (firstResult.address_components.length > 4) {
+      city.value = firstResult.address_components[4]!.long_name
     }
-    if (geocode.results[0].address_components.length > 2) {
-      neighborhood.value = geocode.results[0].address_components[2].long_name
+    if (firstResult.address_components.length > 2) {
+      neighborhood.value = firstResult.address_components[2]!.long_name
     }
     mapPosition.value = `https://www.google.com/maps/embed/v1/place?q=${latitude},${longitude}&key=${config.public.MAPS_EMBED_API_KEY}`
     userDisposalPlaces.value = await getNearbyUserDiposalPlaces(user?.uid)
@@ -455,7 +457,7 @@ onBeforeMount(async () => {
 
       <div v-else-if="!userRegistered && !props.trashItem?.pbjson?.isDisposalPlace">
         <div class="text-center text-subtitle-2 mt-2 py-1 px-3">
-          {{ $t('item_available_for_donation') }}
+          {{ t('item_available_for_donation') }}
         </div>
         <v-btn
           class="mx-2 mb-2 text-white"
@@ -474,7 +476,7 @@ onBeforeMount(async () => {
         "
       >
         <div class="text-center text-subtitle-2 mt-2 py-1 px-3">
-          {{ $t('item_available_for_donation') }}
+          {{ t('item_available_for_donation') }}
         </div>
         <v-btn
           class="mx-2 mb-2 text-white"
@@ -486,7 +488,7 @@ onBeforeMount(async () => {
 
       <div v-else-if="seeingOwnPicture && userRegistered">
         <div class="text-center text-subtitle-2 mt-2 py-1 px-3">
-          {{ $t('item_available_for_donation') }}
+          {{ t('item_available_for_donation') }}
         </div>
         <v-btn
           class="mx-2 mb-2 text-white"

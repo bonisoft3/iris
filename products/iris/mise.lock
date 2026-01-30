@@ -16,14 +16,23 @@ backend = "aqua:getsops/sops"
 "platforms.macos-x64" = { checksum = "sha256:740b3a356c965830272d8f7aec2ea2e500d4a39f03e4aad347c004f3a0bdc2de", url = "https://github.com/getsops/sops/releases/download/v3.9.1/sops-v3.9.1.darwin.amd64"}
 "platforms.windows-x64" = { checksum = "sha256:745ab6aa6d6e3fbbb8a3484ec22caf2cbf61b5f70d1416eea5d2a644de722f31", url = "https://github.com/getsops/sops/releases/download/v3.9.1/sops-v3.9.1.exe"}
 
+[[tools."aqua:kubernetes-sigs/kind"]]
+version = "0.30.0"
+backend = "aqua:kubernetes-sigs/kind"
+"platforms.linux-arm64" = { checksum = "sha256:7ea2de9d2d190022ed4a8a4e3ac0636c8a455e460b9a13ccf19f15d07f4f00eb", url = "https://github.com/kubernetes-sigs/kind/releases/download/v0.30.0/kind-linux-arm64"}
+"platforms.linux-x64" = { checksum = "sha256:517ab7fc89ddeed5fa65abf71530d90648d9638ef0c4cde22c2c11f8097b8889", url = "https://github.com/kubernetes-sigs/kind/releases/download/v0.30.0/kind-linux-amd64"}
+"platforms.macos-arm64" = { checksum = "sha256:ceaf40df1d1551c481fb50e3deb5c3deecad5fd599df5469626b70ddf52a1518", url = "https://github.com/kubernetes-sigs/kind/releases/download/v0.30.0/kind-darwin-arm64"}
+"platforms.macos-x64" = { checksum = "sha256:4f0b6e3b88bdc66d922c08469f05ef507d4903dd236e6319199bb9c868eed274", url = "https://github.com/kubernetes-sigs/kind/releases/download/v0.30.0/kind-darwin-amd64"}
+"platforms.windows-x64" = { checksum = "sha256:a75fed2b6964d877461cc145b37e997ac0f59a63bd02a750134ac25378f78ce7", url = "https://github.com/kubernetes-sigs/kind/releases/download/v0.30.0/kind-windows-amd64"}
+
 [[tools."aqua:kubernetes/kubernetes/kubectl"]]
 version = "1.31.2"
 backend = "aqua:kubernetes/kubernetes/kubectl"
-"platforms.linux-arm64" = { url = "https://dl.k8s.io/v1.31.2/bin/linux/arm64/kubectl"}
-"platforms.linux-x64" = { url = "https://dl.k8s.io/v1.31.2/bin/linux/amd64/kubectl"}
-"platforms.macos-arm64" = { checksum = "sha256:0792d570d20fc495ea64baec26cd6bde961434b900038f2952f3334501872e80", url = "https://dl.k8s.io/v1.31.2/bin/darwin/arm64/kubectl"}
-"platforms.macos-x64" = { url = "https://dl.k8s.io/v1.31.2/bin/darwin/amd64/kubectl"}
-"platforms.windows-x64" = { url = "https://dl.k8s.io/v1.31.2/bin/windows/amd64/kubectl.exe"}
+"platforms.linux-arm64" = { url = "https://dl.k8s.io/release/v1.31.2/bin/linux/arm64/kubectl"}
+"platforms.linux-x64" = { url = "https://dl.k8s.io/release/v1.31.2/bin/linux/amd64/kubectl"}
+"platforms.macos-arm64" = { checksum = "sha256:0792d570d20fc495ea64baec26cd6bde961434b900038f2952f3334501872e80", url = "https://dl.k8s.io/release/v1.31.2/bin/darwin/arm64/kubectl"}
+"platforms.macos-x64" = { url = "https://dl.k8s.io/release/v1.31.2/bin/darwin/amd64/kubectl"}
+"platforms.windows-x64" = { url = "https://dl.k8s.io/release/v1.31.2/bin/windows/amd64/kubectl.exe"}
 
 [[tools."aqua:viaduct-ai/kustomize-sops"]]
 version = "4.3.2"

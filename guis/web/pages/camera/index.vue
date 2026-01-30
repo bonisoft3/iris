@@ -106,7 +106,7 @@ async function getLatlng(): Promise<GeolocationPosition | null> {
     navigator.geolocation.getCurrentPosition(
       res,
       (reason) => {
-        logger.warn('Failed to get gps', reason)
+        logger.warn(`Failed to get gps: ${String(reason)}`)
         res(null)
       },
       { timeout: 10000 }
@@ -148,7 +148,7 @@ async function confirmImageSaveModal() {
   const nowNanos = nowMillis * 1000
   const nowSeconds = Math.round((now - nowMillis) / 1000)
   const latlng = await getLatlng()
-  logger.info('Calling track at', url, ' ts', nowSeconds, ' with body len', snapshotUrl.value.length)
+  logger.info(`Calling track at ${url} ts ${nowSeconds} with body len ${snapshotUrl.value.length}`)
   try {
     procFeedbackMessages()
     sendingPhoto.value = true
@@ -166,7 +166,7 @@ async function confirmImageSaveModal() {
         },
       },
     })
-    logger.info('Track response:', response)
+    logger.info(`Track response: ${JSON.stringify(response)}`)
     imageId.value = (response as { id: string }).id
     sendingPhoto.value = false
     sendPhotoError.value = false

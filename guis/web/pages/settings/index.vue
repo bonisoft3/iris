@@ -9,7 +9,7 @@ const aiModels = [
   { label: 'Gemini', value: 'gemini' }
 ]
 
-const selectedModel = ref(localStorage.getItem('ai_model') || aiModels[0].value)
+const selectedModel = ref(localStorage.getItem('ai_model') || aiModels[0]!.value)
 
 function saveSettings() {
   localStorage.setItem('ai_model', selectedModel.value)

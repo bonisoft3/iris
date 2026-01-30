@@ -15,7 +15,7 @@ const disposalPlaceToShow = ref<DisposalPlace | null>(null)
 
 function openTrashCanDetails(idx: number) {
   if (disposalPlaces.value)
-    disposalPlaceToShow.value = disposalPlaces.value[idx]
+    disposalPlaceToShow.value = disposalPlaces.value[idx] as DisposalPlace
   showTrashCanDetails.value = true
 }
 

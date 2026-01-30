@@ -17,8 +17,9 @@ const neighborhood = ref('')
 
 onMounted(async () => {
   const geocode = await getCityAndNeighborhood(props.disposalPlace.latlng.latitude, props.disposalPlace.latlng.longitude, config)
-  city.value = geocode.results[0].address_components[4].long_name
-  neighborhood.value = geocode.results[0].address_components[2].long_name
+  const firstResult = geocode.results[0]!
+  city.value = firstResult.address_components[4]!.long_name
+  neighborhood.value = firstResult.address_components[2]!.long_name
 })
 </script>
 
