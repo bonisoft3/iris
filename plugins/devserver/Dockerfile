@@ -1,6 +1,6 @@
 
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:deba562a90aa3278104455cf1c34ffa6c6edc6bea20d6b6d731a350e99ddd32a AS devserver
+FROM cgr.dev/chainguard/wolfi-base:latest@sha256:417d791afa234c538bca977fe0f44011d2381e60a9fde44c938bd17b9cc38f66 AS devserver
 WORKDIR /monorepo/./plugins/devserver/
 ENV DCM_PATH=/root/.dcm
 ENV XDG_CACHE_HOME=${DCM_PATH}/cache
