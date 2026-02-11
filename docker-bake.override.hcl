@@ -30,6 +30,9 @@ target "ci-defaults" {
   secret = [
     "id=host.env,env=HOST_ENV",
   ]
+  args = {
+    SOURCE_DATE_EPOCH = "0"
+  }
   cache-from = CACHE_SCOPE != "" ? ["type=gha,scope=main"] : []
   cache-to = []
 }
@@ -74,3 +77,4 @@ target "plugins_sayt" {
   cache-from = cache_from("plugins-sayt")
   cache-to   = cache_to("plugins-sayt")
 }
+
