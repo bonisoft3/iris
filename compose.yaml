@@ -41,15 +41,9 @@ services:
         - host.env
   plugins_sayt:
     build:
-      context: ./plugins/sayt
+      context: .
       network: host
-      dockerfile: ./Dockerfile
-      additional_contexts:
-        devserver: ./plugins/devserver
+      dockerfile: ./plugins/sayt/Dockerfile
       target: integrate
       secrets:
         - host.env
-
-secrets:
-  host.env:
-    file: ${HOST_ENV_FILE:-/dev/null}
