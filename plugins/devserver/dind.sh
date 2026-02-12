@@ -1,31 +1,59 @@
 #!/bin/sh
 set -e
-test -e /run/secrets/host.env || ! echo "Missing host.env" >&2
-which shdotenv >/dev/null || ! echo Missing shdotenv >&2
-eval "$(shdotenv -e /run/secrets/host.env || echo "exit $?")"
-test -n "$DOCKER_HOST" || ! echo Missing DOCKER_HOST >&2
+die() {
+  echo "$1" >&2
+  exit 1
+}
+test -e /run/secrets/host.env || die "Missing host.env"
+
+set -a
+. /run/secrets/host.env
+set +a
+
+test -n "$DOCKER_HOST" || die "Missing DOCKER_HOST"
 SOCAT_PID=
+CREATED_SOCKET=0
 if [ ! -e /var/run/docker.sock ]; then
+  ulimit -n 1048576 2>/dev/null || true
   DOCKER_HOST_ADDRESS=${DOCKER_HOST#tcp://}
-  DOCKER_HOST_IP=${DOCKER_HOST_ADDRESS%:*}
-  DOCKER_HOST_PORT=${DOCKER_HOST_ADDRESS#*:}
-  test -n "$DOCKER_HOST_ADDRESS" || ! echo Missing DOCKER_HOST_ADDRESS >&2
-  test -n "$DOCKER_HOST_IP" || ! echo Missing DOCKER_HOST_ADDRESS >&2
-  test -n "$DOCKER_HOST_PORT" || ! echo Missing DOCKER_HOST_PORT >&2
-	# This creates intermittent errors
+  test -n "$DOCKER_HOST_ADDRESS" || die "Missing DOCKER_HOST_ADDRESS"
+  # This creates intermittent errors
   # trap 'kill $(jobs -p) 2>/dev/null' EXIT INT TERM
-  ncat -w 5 -z $DOCKER_HOST_IP $DOCKER_HOST_PORT
-  socat -d0 UNIX-LISTEN:/var/run/docker.sock,fork TCP:$DOCKER_HOST_ADDRESS &
-	SOCAT_PID=$!
-  ncat -w 5 -z -U /var/run/docker.sock
-  test -e /var/run/docker.sock || ! echo "Failed to create docker.sock" >&2
+  socat -d0 UNIX-LISTEN:/var/run/docker.sock,fork,backlog=1024 TCP:$DOCKER_HOST_ADDRESS &
+  SOCAT_PID=$!
+  CREATED_SOCKET=1
+fi
+export DOCKER_HOST=unix:///var/run/docker.sock
+
+if [ "$CREATED_SOCKET" -eq 1 ]; then
+  if ! socat -u OPEN:/dev/null TCP:$DOCKER_HOST_ADDRESS,retry=10,interval=1 >/dev/null 2>&1; then
+    die "Failed to connect to Docker host $DOCKER_HOST_ADDRESS"
+  fi
+  if ! socat -u OPEN:/dev/null UNIX-CONNECT:/var/run/docker.sock,retry=10,interval=1 >/dev/null 2>&1; then
+    die "Failed to connect to /var/run/docker.sock"
+  fi
 fi
 
 [ ! -e ~/.docker/config.json -a -n "$DOCKER_AUTH_CONFIG" ] && mkdir -p ~/.docker/ && echo "$DOCKER_AUTH_CONFIG" > ~/.docker/config.json
-[ -e ~/.docker/config.json ] || ! echo "Failed to create docker config json" >&2
+[ -e ~/.docker/config.json ] || die "Failed to create docker config json"
 
 "$@"
-EXIT_CODE=$?
+CMD_EXIT=$?
 
-[ -n "$SOCAT_PID" ] && kill $SOCAT_PID || true
-exit
+SOCAT_EXIT=0
+if [ -n "$SOCAT_PID" ]; then
+  if kill -0 "$SOCAT_PID" 2>/dev/null; then
+    kill "$SOCAT_PID" >/dev/null 2>&1 || true
+    wait "$SOCAT_PID" >/dev/null 2>&1 || SOCAT_EXIT=$?
+  else
+    SOCAT_EXIT=1
+  fi
+fi
+
+if [ $CMD_EXIT -ne 0 ]; then
+  exit $CMD_EXIT
+fi
+if [ $SOCAT_EXIT -ne 0 ]; then
+  echo "warn: socat tunnel exited unexpectedly" >&2
+fi
+exit 0
