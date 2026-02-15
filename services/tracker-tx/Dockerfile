@@ -48,7 +48,7 @@ RUN just test
 RUN --network=none just test
 
 FROM debug AS integrate
-RUN --mount=type=secret,id=host.env,required set -a && source /run/secrets/host.env && docker compose up --force-recreate --build --remove-orphans -d --wait develop
+RUN --mount=type=secret,id=host.env,required set -a && . /run/secrets/host.env && docker compose up --force-recreate --build --remove-orphans -d --wait develop
 
 FROM debug AS artifact
 RUN task build

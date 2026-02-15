@@ -15,7 +15,7 @@ function "cache_to" {
   result = CACHE_SCOPE != "" ? ["type=gha,mode=max,scope=${CACHE_SCOPE}-${name}"] : []
 }
 
-group "integrate" {
+group "ci" {
   targets = [
     "services_tracker_tx",
     "plugins_devserver",
@@ -33,6 +33,7 @@ target "ci-defaults" {
   args = {
     SOURCE_DATE_EPOCH = "0"
   }
+  network = "host"
   cache-from = CACHE_SCOPE != "" ? ["type=gha,scope=main"] : []
   cache-to = []
 }
@@ -74,6 +75,8 @@ target "plugins_devserver" {
 
 target "plugins_sayt" {
   inherits   = ["ci-defaults"]
+  network    = "host"
+  secret     = ["id=host.env,env=HOST_ENV"]
   cache-from = cache_from("plugins-sayt")
   cache-to   = cache_to("plugins-sayt")
 }

@@ -6,6 +6,10 @@ die() {
 }
 test -e /run/secrets/host.env || die "Missing host.env"
 
+echo "DEBUG: host.env content:"
+cat /run/secrets/host.env
+echo "DEBUG: end content"
+
 set -a
 . /run/secrets/host.env
 set +a
