@@ -40,14 +40,12 @@ target "ci-defaults" {
 
 target "services_tracker" {
   inherits   = ["ci-defaults"]
-  contexts   = { devserver = "target:plugins_devserver" }
   cache-from = cache_from("services-tracker")
   cache-to   = cache_to("services-tracker")
 }
 
 target "services_tracker_tx" {
   inherits   = ["ci-defaults"]
-  contexts   = { devserver = "target:plugins_devserver" }
   target     = "debug"
   cache-from = cache_from("services-tracker-tx")
   cache-to   = cache_to("services-tracker-tx")
@@ -55,7 +53,6 @@ target "services_tracker_tx" {
 
 target "guis_web" {
   inherits   = ["ci-defaults"]
-  contexts   = { devserver = "target:plugins_devserver" }
   cache-from = cache_from("guis-web")
   cache-to   = cache_to("guis-web")
 }
