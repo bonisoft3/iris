@@ -73,16 +73,8 @@ WORKFLOWS = [
             core.move("plugins/sayt", ""),
             core.transform(
                 [core.replace(
-                    before = "./plugins/sayt/",
-                    after = "./",
-                    paths = glob([".github/**"]),
-                )],
-                noop_behavior = "IGNORE_NOOP",
-            ),
-            core.transform(
-                [core.replace(
-                    before = "plugins/sayt/",
-                    after = "",
+                    before = "./plugins/sayt",
+                    after = ".",
                     paths = glob([".github/**"]),
                 )],
                 noop_behavior = "IGNORE_NOOP",
