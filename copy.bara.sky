@@ -71,6 +71,16 @@ WORKFLOWS = [
         origin_excludes = [],
         transformations = [
             core.move("plugins/sayt", ""),
+            core.replace(
+                before = "./plugins/sayt/",
+                after = "./",
+                paths = glob([".github/**"]),
+            ),
+            core.replace(
+                before = "plugins/sayt/",
+                after = "",
+                paths = glob([".github/**"]),
+            ),
         ],
         submodules = "",
         mode = "ITERATIVE",
