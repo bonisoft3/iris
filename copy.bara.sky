@@ -71,15 +71,21 @@ WORKFLOWS = [
         origin_excludes = [],
         transformations = [
             core.move("plugins/sayt", ""),
-            core.replace(
-                before = "./plugins/sayt/",
-                after = "./",
-                paths = glob([".github/**"]),
+            core.transform(
+                [core.replace(
+                    before = "./plugins/sayt/",
+                    after = "./",
+                    paths = glob([".github/**"]),
+                )],
+                noop_behavior = "IGNORE_NOOP",
             ),
-            core.replace(
-                before = "plugins/sayt/",
-                after = "",
-                paths = glob([".github/**"]),
+            core.transform(
+                [core.replace(
+                    before = "plugins/sayt/",
+                    after = "",
+                    paths = glob([".github/**"]),
+                )],
+                noop_behavior = "IGNORE_NOOP",
             ),
         ],
         submodules = "",
