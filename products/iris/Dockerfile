@@ -14,7 +14,7 @@ ARG SERVICES_TRACKER_TX_SOURCES=services_tracker_tx_sources
 ARG GUIS_WEB_SOURCES=guis_web_sources
 ARG K8S_IMAGES_NGINX_SOURCES=k8s_images_nginx_sources
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:417d791afa234c538bca977fe0f44011d2381e60a9fde44c938bd17b9cc38f66 AS devserver
+FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8 AS devserver
 WORKDIR /monorepo/./plugins/devserver/
 ENV DCM_PATH=/root/.dcm
 ENV XDG_CACHE_HOME=${DCM_PATH}/cache
@@ -47,7 +47,7 @@ COPY ./gradle gradle
 COPY --chmod=0755 ./gradlew ./
 COPY ./gradlew.bat ./gradle.properties ./settings.gradle.kts ./build.gradle.kts ./
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:417d791afa234c538bca977fe0f44011d2381e60a9fde44c938bd17b9cc38f66 AS plugins_libstoml_sources
+FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8 AS plugins_libstoml_sources
 WORKDIR /monorepo/plugins/libstoml/
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_gradle /monorepo /monorepo
@@ -60,7 +60,7 @@ COPY plugins/libstoml/.vscode .vscode
 COPY plugins/libstoml/src/test src/test
 COPY plugins/libstoml/Dockerfile plugins/libstoml/compose.yaml ./
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:417d791afa234c538bca977fe0f44011d2381e60a9fde44c938bd17b9cc38f66 AS plugins_jvm_sources
+FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8 AS plugins_jvm_sources
 WORKDIR /monorepo/plugins/jvm/
 COPY --from=plugins_libstoml_sources /monorepo /monorepo
 COPY plugins/jvm/. .
@@ -69,13 +69,13 @@ FROM scratch AS root_buf
 WORKDIR /monorepo/./
 COPY ./buf.work.yaml ./
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:417d791afa234c538bca977fe0f44011d2381e60a9fde44c938bd17b9cc38f66 AS plugins_micronaut_sources
+FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8 AS plugins_micronaut_sources
 WORKDIR /monorepo/plugins/micronaut/
 COPY --from=plugins_libstoml_sources /monorepo /monorepo
 COPY --from=plugins_jvm_sources /monorepo /monorepo
 COPY plugins/micronaut/. .
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:417d791afa234c538bca977fe0f44011d2381e60a9fde44c938bd17b9cc38f66 AS libraries_logs_sources
+FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8 AS libraries_logs_sources
 WORKDIR /monorepo/libraries/logs/
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_gradle /monorepo /monorepo
@@ -90,12 +90,12 @@ COPY libraries/logs/.vscode .vscode
 COPY libraries/logs/src/test src/test
 COPY libraries/logs/Dockerfile ./
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:417d791afa234c538bca977fe0f44011d2381e60a9fde44c938bd17b9cc38f66 AS libraries_xproto_sources
+FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8 AS libraries_xproto_sources
 WORKDIR /monorepo/libraries/xproto/
 COPY --from=root_buf /monorepo /monorepo
 COPY libraries/xproto/. .
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:417d791afa234c538bca977fe0f44011d2381e60a9fde44c938bd17b9cc38f66 AS libraries_pbtables_sources
+FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8 AS libraries_pbtables_sources
 WORKDIR /monorepo/libraries/pbtables/
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_gradle /monorepo /monorepo
@@ -118,7 +118,7 @@ WORKDIR /monorepo/./
 COPY ./patches patches
 COPY ./.npmrc ./package.json ./pnpm-lock.yaml ./pnpm-workspace.yaml ./turbo.json ./
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:417d791afa234c538bca977fe0f44011d2381e60a9fde44c938bd17b9cc38f66 AS services_tracker_sources
+FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8 AS services_tracker_sources
 WORKDIR /monorepo/services/tracker/
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_gradle /monorepo /monorepo
@@ -138,12 +138,12 @@ COPY services/tracker/src/test src/test
 COPY services/tracker/src/it src/it
 COPY services/tracker/Dockerfile services/tracker/compose.yaml services/tracker/skaffold.yaml ./
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:417d791afa234c538bca977fe0f44011d2381e60a9fde44c938bd17b9cc38f66 AS services_tracker_tx_sources
+FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8 AS services_tracker_tx_sources
 WORKDIR /monorepo/services/tracker-tx/
 COPY --from=libraries_xproto_sources /monorepo /monorepo
 COPY services/tracker-tx/. .
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:417d791afa234c538bca977fe0f44011d2381e60a9fde44c938bd17b9cc38f66 AS guis_web_sources
+FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8 AS guis_web_sources
 WORKDIR /monorepo/guis/web/
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_pnpm /monorepo /monorepo
@@ -173,11 +173,11 @@ COPY guis/web/tests tests
 COPY guis/web/vitest.* ./
 COPY guis/web/Dockerfile guis/web/compose.yaml guis/web/skaffold.yaml guis/web/compose-cache.json guis/web/.env.preview guis/web/.env.production guis/web/.firebaserc guis/web/firebase.json ./
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:417d791afa234c538bca977fe0f44011d2381e60a9fde44c938bd17b9cc38f66 AS k8s_images_nginx_sources
+FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8 AS k8s_images_nginx_sources
 WORKDIR /monorepo/k8s/images/nginx/
 COPY k8s/images/nginx/. .
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:417d791afa234c538bca977fe0f44011d2381e60a9fde44c938bd17b9cc38f66 AS sources
+FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8 AS sources
 WORKDIR /monorepo/products/iris/
 COPY --from=services_tracker_sources /monorepo /monorepo
 COPY --from=services_tracker_tx_sources /monorepo /monorepo

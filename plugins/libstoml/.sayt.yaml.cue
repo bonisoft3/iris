@@ -1,6 +1,6 @@
 package libstoml
 
 #vet: {
-  "Dockerfile": =~ "cgr.dev/chainguard/wolfi-base:latest@sha256:378e1d3d5ced3c8ea83c92784b081972bb235c813db8b56f936c50deac8357f3" & !~ ":latest "
+  "Dockerfile": =~ "chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8" & !~ ":latest "
   ".pkgx.yaml": {...}
 }

@@ -2,7 +2,7 @@ ARG DEVSERVER=devserver
 ARG ROOT_SAYT=root_sayt
 ARG ROOT_GRADLE=root_gradle
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:417d791afa234c538bca977fe0f44011d2381e60a9fde44c938bd17b9cc38f66 AS devserver
+FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8 AS devserver
 WORKDIR /monorepo/./plugins/devserver/
 ENV DCM_PATH=/root/.dcm
 ENV XDG_CACHE_HOME=${DCM_PATH}/cache
@@ -35,7 +35,7 @@ COPY ./gradle gradle
 COPY --chmod=0755 ./gradlew ./
 COPY ./gradlew.bat ./gradle.properties ./settings.gradle.kts ./build.gradle.kts ./
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:417d791afa234c538bca977fe0f44011d2381e60a9fde44c938bd17b9cc38f66 AS sources
+FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8 AS sources
 WORKDIR /monorepo/plugins/libstoml/
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_gradle /monorepo /monorepo

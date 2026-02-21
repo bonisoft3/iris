@@ -8,7 +8,7 @@ ARG PLUGINS_MICRONAUT_SOURCES=plugins_micronaut_sources
 ARG LIBRARIES_LOGS_SOURCES=libraries_logs_sources
 ARG LIBRARIES_XPROTO_SOURCES=libraries_xproto_sources
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:417d791afa234c538bca977fe0f44011d2381e60a9fde44c938bd17b9cc38f66 AS devserver
+FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8 AS devserver
 WORKDIR /monorepo/./plugins/devserver/
 ENV DCM_PATH=/root/.dcm
 ENV XDG_CACHE_HOME=${DCM_PATH}/cache
@@ -41,7 +41,7 @@ COPY ./gradle gradle
 COPY --chmod=0755 ./gradlew ./
 COPY ./gradlew.bat ./gradle.properties ./settings.gradle.kts ./build.gradle.kts ./
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:417d791afa234c538bca977fe0f44011d2381e60a9fde44c938bd17b9cc38f66 AS plugins_libstoml_sources
+FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8 AS plugins_libstoml_sources
 WORKDIR /monorepo/plugins/libstoml/
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_gradle /monorepo /monorepo
@@ -54,7 +54,7 @@ COPY plugins/libstoml/.vscode .vscode
 COPY plugins/libstoml/src/test src/test
 COPY plugins/libstoml/Dockerfile plugins/libstoml/compose.yaml ./
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:417d791afa234c538bca977fe0f44011d2381e60a9fde44c938bd17b9cc38f66 AS plugins_jvm_sources
+FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8 AS plugins_jvm_sources
 WORKDIR /monorepo/plugins/jvm/
 COPY --from=plugins_libstoml_sources /monorepo /monorepo
 COPY plugins/jvm/. .
@@ -63,13 +63,13 @@ FROM scratch AS root_buf
 WORKDIR /monorepo/./
 COPY ./buf.work.yaml ./
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:417d791afa234c538bca977fe0f44011d2381e60a9fde44c938bd17b9cc38f66 AS plugins_micronaut_sources
+FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8 AS plugins_micronaut_sources
 WORKDIR /monorepo/plugins/micronaut/
 COPY --from=plugins_libstoml_sources /monorepo /monorepo
 COPY --from=plugins_jvm_sources /monorepo /monorepo
 COPY plugins/micronaut/. .
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:417d791afa234c538bca977fe0f44011d2381e60a9fde44c938bd17b9cc38f66 AS libraries_logs_sources
+FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8 AS libraries_logs_sources
 WORKDIR /monorepo/libraries/logs/
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_gradle /monorepo /monorepo
@@ -84,12 +84,12 @@ COPY libraries/logs/.vscode .vscode
 COPY libraries/logs/src/test src/test
 COPY libraries/logs/Dockerfile ./
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:417d791afa234c538bca977fe0f44011d2381e60a9fde44c938bd17b9cc38f66 AS libraries_xproto_sources
+FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8 AS libraries_xproto_sources
 WORKDIR /monorepo/libraries/xproto/
 COPY --from=root_buf /monorepo /monorepo
 COPY libraries/xproto/. .
 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:417d791afa234c538bca977fe0f44011d2381e60a9fde44c938bd17b9cc38f66 AS sources
+FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8 AS sources
 WORKDIR /monorepo/libraries/pbtables/
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_gradle /monorepo /monorepo

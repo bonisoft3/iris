@@ -1,5 +1,5 @@
 # CDC service based on pgstream with self-healing init scripts.
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:815b27b8a70713c70404e44a718eddd52ea6f4a2bfad5f56455b52cd2789a9b2
+FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8
 RUN apk add curl postgresql-client gettext busybox && mkdir -p /usr/local/bin/
 
 # Install pgstream

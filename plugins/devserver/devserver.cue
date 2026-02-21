@@ -4,7 +4,7 @@ import "bonisoft.org/plugins/sayt:docker"
 
 #devserver: docker.#image & {
 	#docker_cache_mount: "/root/.dcm"
-	from: "cgr.dev/chainguard/wolfi-base:latest@sha256:417d791afa234c538bca977fe0f44011d2381e60a9fde44c938bd17b9cc38f66"
+	from: "chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8"
 	as: "devserver"
 	mount: [
 		// still finding how to make this reliable
