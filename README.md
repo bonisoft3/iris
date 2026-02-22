@@ -123,13 +123,12 @@ stacks.
 In this environment you are mostly working on the IDE, be it neovim, vscode or
 intellij, among others. Since vscode has widespread support, we treat as the
 first class editor, and integrate with it by providing configuration files
-for each directory, and by leveraging the vscode-test-runner, aka `vtr` to
-provide the most common actions in this environment, compiling and unit testing
-code.
+for each directory, and by using CUE to extract and run tasks from
+`.vscode/tasks.json`, providing the most common actions in this environment:
+compiling and unit testing code.
 
-You can install visual studio code by following the official instructions. The
-companion vtr tool is installed on demand when you run any action from this
-environment.
+You can install visual studio code by following the official instructions.
+CUE is managed internally via a mise tool stub — no manual installation needed.
  
 ### build
 

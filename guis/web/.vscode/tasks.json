@@ -22,7 +22,6 @@
 		{
 			"label": "test",
 			"type": "shell",
-			"command": "pnpm",
 			"command": "pnpm -C ../.. exec turbo --filter ./guis/web test",
       "options": { "cwd": "${workspaceFolder}" },
 			"group": {

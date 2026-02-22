@@ -41,19 +41,13 @@ Before using the context-dependent commands, ensure your environment is properly
 1. **Check Environment Status**: Run `just doctor` to see which environment components are available:
    - **pkg**: Package manager (pkgx/scoop) 
    - **cli**: CLI tools (cue, aider)
-   - **ide**: IDE integration (vtr - vscode-task-runner)
+   - **ide**: IDE integration (cue + .vscode/tasks.json)
    - **cnt**: Container tools (docker)
    - **k8s**: Kubernetes tools (kind, skaffold)
    - **cld**: Cloud tools (gcloud)
    - **xpl**: Crossplane
 
-2. **Install Missing Tools**: Some tools need manual installation:
-   ```bash
-   # Install vscode-task-runner for build/test commands
-   pipx install vscode-task-runner
-   
-   # Other tools are installed via just setup in relevant directories
-   ```
+2. **Install Missing Tools**: Run `just setup` in the relevant directory to install via mise.
 
 ### `just setup` - Install Development Dependencies
 **Context-dependent dependency installation based on `.pkgx.yaml`**
@@ -68,14 +62,14 @@ The command reads each directory's `.pkgx.yaml` file and:
 - **Recursive**: Calls local `.sayt.nu` files if present
 
 ### `just build` - Compile Code
-**Delegates to VS Code tasks via vscode-task-runner (vtr)**
+**Delegates to VS Code tasks via CUE-based task runner**
 
 - **guis/web**: `pnpm turbo --filter ./guis/web assemble` (TypeScript compilation)
 - **services/tracker**: `./gradlew assemble` (Kotlin/Java compilation)  
 - **services/shelfie**: `go build -o app` with dependencies on `sqlc-generate` and `buf-generate`
 
-**Requirements**: 
-- `vtr` (vscode-task-runner) must be installed: `pipx install vscode-task-runner`
+**Requirements**:
+- CUE is managed internally via a mise tool stub — no manual installation needed
 - Language-specific compilers (Node.js, Java, Go) must be available
 
 Implementation: Reads `.vscode/tasks.json` in current directory for build configuration.
@@ -87,7 +81,7 @@ Implementation: Reads `.vscode/tasks.json` in current directory for build config
 - **services/tracker**: `./gradlew test` (JUnit/Kotest)
 - **services/shelfie**: Go test suite with `gotestsum` formatting
 
-**Requirements**: Same as `just build` - requires `vtr` and language-specific toolchains.
+**Requirements**: Same as `just build` - requires language-specific toolchains (installed via `just setup`).
 
 Implementation: Reads `.vscode/tasks.json` for test configuration specific to each tech stack.
 
@@ -116,12 +110,8 @@ This creates a consistent developer experience where the same commands (`just se
 
 **Common Issues:**
 
-1. **"command not found: vtr"**
-   - Solution: `pipx install vscode-task-runner`
-
-2. **Missing language compilers (go, java, node)**
-   - Solution: Run `just setup` in the relevant directory to install via pkgx
-   - Or install manually using your system package manager
+1. **Missing language compilers (go, java, node)**
+   - Solution: Run `just setup` in the relevant directory to install via mise
 
 3. **Docker commands fail**
    - Solution: Ensure Docker daemon is running and user has permissions
@@ -250,8 +240,7 @@ The tracker service integrates with multiple AI providers:
 
 ### IDE Environment
 - VS Code as first-class editor with .vscode configurations
-- Uses vscode-test-runner (vtr) for common actions
-- Delegates to .vscode/tasks.json for build and test tasks
+- Uses CUE to extract and run build/test commands from .vscode/tasks.json
 - Unit tests are deterministic with mocked dependencies
 
 ### Preview Environment (K8s)
