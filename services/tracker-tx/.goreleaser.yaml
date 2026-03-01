@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
+project_name: services-tracker-tx
+
+before:
+  hooks:
+    - skaffold build -p production --push=false --tag={{ .Version }}
+
+builds:
+  - skip: true
+
+publishers:
+  - name: skaffold
+    cmd: skaffold build -p production --tag={{ .Version }}
+
+release:
+  disable: true
