@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
+project_name: iris
+
+before:
+  hooks:
+    - skaffold build -p production --push=false --tag={{ .Version }}
+    - pnpm -C ../../guis/web install --frozen-lockfile
+    - pnpm -C ../../guis/web exec dotenv -e .env.production -- pnpm -C ../../guis/web exec nuxt build
+
+builds:
+  - skip: true
+
+publishers:
+  - name: skaffold
+    cmd: skaffold build -p production --tag={{ .Version }}
+  - name: firebase
+    cmd: pnpm decrypt-creds && pnpm exec firebase deploy --message "{{ .Version }}"
+    dir: ../../guis/web
+
+release:
+  disable: true

@@ -12,4 +12,4 @@ aqua.minisign = false
 
 [tools]
 java = "openjdk-21.0"
-"aqua:GoogleContainerTools/skaffold" = "2.13.2"
+"aqua:GoogleContainerTools/skaffold" = "2.17.2"
