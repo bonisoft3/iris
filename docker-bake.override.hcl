@@ -5,8 +5,10 @@ variable "CACHE_SCOPE" {
 function "cache_from" {
   params = [name]
   result = CACHE_SCOPE != "" ? [
-    "type=gha,scope=main",
+    "type=gha,scope=main-${name}",
+    "type=gha,scope=main-${name}-release",
     "type=gha,scope=${CACHE_SCOPE}-${name}",
+    "type=gha,scope=${CACHE_SCOPE}-${name}-release",
   ] : []
 }
 
@@ -34,7 +36,7 @@ target "ci-defaults" {
     SOURCE_DATE_EPOCH = "0"
   }
   network = "host"
-  cache-from = CACHE_SCOPE != "" ? ["type=gha,scope=main"] : []
+  cache-from = []
   cache-to = []
 }
 
