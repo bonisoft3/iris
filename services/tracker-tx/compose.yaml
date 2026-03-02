@@ -29,6 +29,11 @@ services:
       secrets:
         - host.env
 
+  release:
+    build:
+      context: ../..
+      dockerfile: services/tracker-tx/Dockerfile
+      target: release
 secrets:
   host.env:
     environment: HOST_ENV

@@ -4,7 +4,6 @@ project_name: guis-web
 
 before:
   hooks:
-    - pnpm decrypt-creds
     - pnpm install --frozen-lockfile
     - pnpm exec dotenv -e .env.production -- pnpm exec nuxt build
 
@@ -13,7 +12,7 @@ builds:
 
 publishers:
   - name: firebase
-    cmd: pnpm exec firebase deploy --message "{{ .Version }}"
+    cmd: pnpm decrypt-creds && pnpm exec firebase deploy --message "{{ .Version }}"
 
 release:
   disable: true

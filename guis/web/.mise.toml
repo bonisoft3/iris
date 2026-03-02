@@ -13,3 +13,4 @@ aqua.minisign = false
 [tools]
 node = "22.14.0"
 "github:pnpm/pnpm" = "9.15.2"
+"aqua:getsops/sops" = "3.9.1"

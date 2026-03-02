@@ -3,19 +3,13 @@ kind: Config
 metadata:
   name: services_tracker
 build:
-  tagPolicy:
-    sha256: {}
-  local:
-    push: false
-    tryImportMissing: false
-    useBuildkit: true
-    concurrency: 64
   artifacts:
     - image: gcr.io/trash-362115/services.tracker
-      context: ../..
-      docker:
-        dockerfile: services/tracker/Dockerfile
-        target: release
+      custom:
+        buildCommand: docker buildx bake release
+  local:
+    useBuildkit: true
+    concurrency: 64
 
 profiles:
 - name: production

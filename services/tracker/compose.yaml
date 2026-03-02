@@ -29,6 +29,11 @@ services:
       secrets:
         - host.env
       target: integrate
+  release:
+    build:
+      context: ../..
+      dockerfile: services/tracker/Dockerfile
+      target: release
 secrets:
   host.env:
     environment: HOST_ENV
