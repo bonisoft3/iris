@@ -50,6 +50,9 @@ loadtest:
 publish:
   just sayt release
 [no-cd]
+release:
+  just sayt release
+[no-cd]
 observe:
   just sayt observe
 [no-cd]

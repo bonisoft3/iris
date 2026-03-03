@@ -6,7 +6,7 @@ build:
   artifacts:
     - image: gcr.io/trash-362115/services.tracker-tx-gcp
       custom:
-        buildCommand: docker buildx bake release
+        buildCommand: docker buildx bake --allow=fs.read=../.. release
   local:
     useBuildkit: true
     concurrency: 64
