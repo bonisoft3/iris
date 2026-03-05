@@ -265,3 +265,6 @@ CLAUDE.md
 service-account.json
 **/.zig-cache
 **/zig-out
+
+# Git worktrees
+.worktrees/

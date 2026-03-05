@@ -1,0 +1,18 @@
+# BuildKit per-Dockerfile .dockerignore (docs.docker.com/build/concepts/context/).
+# Applies to images built from the root Dockerfile only. When both this file
+# and the repo-wide .dockerignore exist, BuildKit uses this one for Dockerfile
+# builds. Unlike .dockerignore, this intentionally keeps **/.git so that act
+# runners have git history (needed by dorny/paths-filter).
+**/build
+**/dist
+**/node_modules
+**/target
+**/.venv
+**/.idea
+**/.pyprojectx
+**/.output
+**/.nuxt
+**/.gradle
+**/.turbo
+**/.pnpm-store
+**/.aider.*

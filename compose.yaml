@@ -1,4 +1,12 @@
 services:
+  integrate:
+    build:
+      context: .
+      network: host
+      dockerfile: ./Dockerfile
+      target: integrate
+      secrets:
+        - host.env
   services_tracker:
     build:
       context: .
