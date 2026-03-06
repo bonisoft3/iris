@@ -42,3 +42,21 @@ backend = "github:nushell/nushell"
 "platforms.macos-arm64" = { checksum = "sha256:3bc70d98ab2fd94ad8244d233c92aa6e768ca2c91dd860a209ae6ba6d15f1051", url = "https://github.com/nushell/nushell/releases/download/0.107.0/nu-0.107.0-aarch64-apple-darwin.tar.gz", url_api = "https://api.github.com/repos/nushell/nushell/releases/assets/289032519"}
 "platforms.macos-x64" = { checksum = "sha256:e69c2e4f3b68444e17186f289a9a2ed7ec88b57da930892b1a7a3544d68a91d1", url = "https://github.com/nushell/nushell/releases/download/0.107.0/nu-0.107.0-x86_64-apple-darwin.tar.gz", url_api = "https://api.github.com/repos/nushell/nushell/releases/assets/289028707"}
 "platforms.windows-x64" = { checksum = "sha256:6f62ab495b5166239512429886f944eab9153f734a27703516d5eabb5d370e4d", url = "https://github.com/nushell/nushell/releases/download/0.107.0/nu-0.107.0-x86_64-pc-windows-msvc.zip", url_api = "https://api.github.com/repos/nushell/nushell/releases/assets/289031932"}
+
+[[tools."github:pnpm/pnpm"]]
+version = "9.15.2"
+backend = "github:pnpm/pnpm"
+"platforms.linux-arm64" = { url = "https://github.com/pnpm/pnpm/releases/download/v9.15.2/pnpm-linux-arm64", url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/216187381"}
+"platforms.linux-x64" = { url = "https://github.com/pnpm/pnpm/releases/download/v9.15.2/pnpm-linux-x64", url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/216187382"}
+"platforms.macos-arm64" = { checksum = "blake3:f8d3b3a1cf77cb49e716c28b8a13e429b737633a4b63cad2d5ac798e266d1797", url = "https://github.com/pnpm/pnpm/releases/download/v9.15.2/pnpm-macos-arm64", url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/216187376"}
+"platforms.macos-x64" = { url = "https://github.com/pnpm/pnpm/releases/download/v9.15.2/pnpm-macos-x64", url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/216187378"}
+"platforms.windows-x64" = { url = "https://github.com/pnpm/pnpm/releases/download/v9.15.2/pnpm-win-x64.exe", url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/216187374"}
+
+[[tools.node]]
+version = "22.10.0"
+backend = "core:node"
+"platforms.linux-arm64" = { checksum = "sha256:3624cf1b4cb9fd8b9e52330390af225e1be65b0d1235da4a0fa34cccb8a8ea6b", url = "https://nodejs.org/dist/v22.10.0/node-v22.10.0-linux-arm64.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:99f3301be2d3eb8294aae56ff7e7e4c3b7e7b01b6c6f59156d76d15bb6e05e0b", url = "https://nodejs.org/dist/v22.10.0/node-v22.10.0-linux-x64.tar.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:33ba1caa6215e1bef07e5d8c49be8c259aec27b89c8a6f765e71a41c86d36d74", url = "https://nodejs.org/dist/v22.10.0/node-v22.10.0-darwin-arm64.tar.gz"}
+"platforms.macos-x64" = { checksum = "sha256:a50b26bb7757294c02bbbc7e203ed2b6ff4bbf41cdd4f17ca86bb7a67320da39", url = "https://nodejs.org/dist/v22.10.0/node-v22.10.0-darwin-x64.tar.gz"}
+"platforms.windows-x64" = { checksum = "sha256:f20826dc08a66c652d4a7067fc3d1c4a51e6d2c2e02d1e1bcd8b61c40f5de936", url = "https://nodejs.org/dist/v22.10.0/node-v22.10.0-win-x64.zip"}
