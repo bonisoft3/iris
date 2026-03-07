@@ -9,7 +9,10 @@ before:
     - pnpm -C ../../guis/web exec dotenv -e .env.production -- pnpm -C ../../guis/web exec nuxt build
 
 builds:
-  - skip: true
+  # goreleaser v2 defaults to builder:go and runs `go list -m` even with
+  # skip:true — setting a non-go builder prevents that probe.
+  - builder: zig
+    skip: true
 
 publishers:
   - name: skaffold

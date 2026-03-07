@@ -28,11 +28,11 @@ backend = "aqua:kubernetes-sigs/kind"
 [[tools."aqua:kubernetes/kubernetes/kubectl"]]
 version = "1.31.2"
 backend = "aqua:kubernetes/kubernetes/kubectl"
-"platforms.linux-arm64" = { url = "https://dl.k8s.io/1.31.2/bin/linux/arm64/kubectl"}
-"platforms.linux-x64" = { url = "https://dl.k8s.io/1.31.2/bin/linux/amd64/kubectl"}
-"platforms.macos-arm64" = { checksum = "sha256:0792d570d20fc495ea64baec26cd6bde961434b900038f2952f3334501872e80", url = "https://dl.k8s.io/1.31.2/bin/darwin/arm64/kubectl"}
-"platforms.macos-x64" = { url = "https://dl.k8s.io/1.31.2/bin/darwin/amd64/kubectl"}
-"platforms.windows-x64" = { url = "https://dl.k8s.io/1.31.2/bin/windows/amd64/kubectl.exe"}
+"platforms.linux-arm64" = { url = "https://dl.k8s.io/v1.31.2/bin/linux/arm64/kubectl"}
+"platforms.linux-x64" = { url = "https://dl.k8s.io/v1.31.2/bin/linux/amd64/kubectl"}
+"platforms.macos-arm64" = { checksum = "sha256:0792d570d20fc495ea64baec26cd6bde961434b900038f2952f3334501872e80", url = "https://dl.k8s.io/v1.31.2/bin/darwin/arm64/kubectl"}
+"platforms.macos-x64" = { url = "https://dl.k8s.io/v1.31.2/bin/darwin/amd64/kubectl"}
+"platforms.windows-x64" = { url = "https://dl.k8s.io/v1.31.2/bin/windows/amd64/kubectl.exe"}
 
 [[tools."aqua:viaduct-ai/kustomize-sops"]]
 version = "4.3.2"

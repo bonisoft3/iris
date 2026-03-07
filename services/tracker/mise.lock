@@ -1,18 +1,9 @@
 [[tools."aqua:GoogleContainerTools/skaffold"]]
-version = "2.13.2"
-backend = "aqua:GoogleContainerTools/skaffold"
-"platforms.linux-arm64" = { url = "https://storage.googleapis.com/skaffold/releases/v2.13.2/skaffold-linux-arm64"}
-"platforms.linux-x64" = { url = "https://storage.googleapis.com/skaffold/releases/v2.13.2/skaffold-linux-amd64"}
-"platforms.macos-arm64" = { checksum = "blake3:743aa2fff476a9a38f47444a7e3cdc9adec5f000dba03f054a8e693db35eac47", url = "https://storage.googleapis.com/skaffold/releases/v2.13.2/skaffold-darwin-arm64"}
-"platforms.macos-x64" = { url = "https://storage.googleapis.com/skaffold/releases/v2.13.2/skaffold-darwin-amd64"}
-"platforms.windows-x64" = { url = "https://storage.googleapis.com/skaffold/releases/v2.13.2/skaffold-windows-amd64.exe"}
-
-[[tools."aqua:GoogleContainerTools/skaffold"]]
 version = "2.17.2"
 backend = "aqua:GoogleContainerTools/skaffold"
 "platforms.linux-arm64" = { url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-linux-arm64"}
 "platforms.linux-x64" = { url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-linux-amd64"}
-"platforms.macos-arm64" = { url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-darwin-arm64"}
+"platforms.macos-arm64" = { checksum = "blake3:8829e070b4f27f9de525bc6691269b71c8c2978547b07a0b2d7d9a7d22b7dbda", url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-darwin-arm64"}
 "platforms.macos-x64" = { url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-darwin-amd64"}
 "platforms.windows-x64" = { url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-windows-amd64.exe"}
 

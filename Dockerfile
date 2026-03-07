@@ -1,8 +1,13 @@
 # This Dockerfile brings the entire repo into the build context (see
 # Dockerfile.dockerignore). Only add targets here that truly need the full
 # monorepo — per-service images belong in their own Dockerfiles.
-FROM efrecon/act:v0.2.84@sha256:965f3a5170e2356a205086e8eef877b9e15e9581ae12dc4ba3428186ebcf272c AS integrate
-RUN apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/v3.21/main socat
+FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8 AS integrate
+ARG TARGETARCH
+RUN apk add --no-cache socat curl \
+ && mkdir -p /usr/local/bin /var/run \
+ && ARCH=$(case "$TARGETARCH" in amd64) echo x86_64;; arm64) echo arm64;; *) echo "$TARGETARCH";; esac) \
+ && curl -sL "https://github.com/nektos/act/releases/download/v0.2.84/act_Linux_${ARCH}.tar.gz" \
+    | tar xz -C /usr/local/bin act
 # Event JSON lets job-level if conditions detect act (env context is
 # unavailable at job level, but github.event.act works).
 RUN printf '{"act":true}\n' > /tmp/act-event.json
@@ -12,7 +17,6 @@ RUN --mount=type=bind,target=/monorepo \
     --mount=type=secret,id=host.env,required \
     cp /monorepo/plugins/devserver/dind.sh /usr/local/bin/ && chmod +x /usr/local/bin/dind.sh && \
     cd /monorepo && dind.sh act -j all \
-      --container-architecture linux/amd64 \
       --container-options "--user root" \
       --use-gitignore=false \
       --matrix os:ubuntu-latest \
