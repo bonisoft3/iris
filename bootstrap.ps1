@@ -1,5 +1,5 @@
 $BusyboxVersion = "5857-g3681e397f"
-$MiseVersion    = "2026.1.7"
+$MiseVersion    = "2026.3.5"
 
 if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
   Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
@@ -39,6 +39,13 @@ if (-not (Get-Command buf -ErrorAction SilentlyContinue)) {
     Write-Warning "buf installation failed: $_"; Write-Host "Falling back to latest buf..."; try { scoop install buf } catch { Write-Warning "Fallback buf install failed: $_" }
   }
 } else { Write-Host "buf is already installed." }
+
+# Workaround for mise >= v2026.2.7 native .exe shims failing to rebuild
+# on Windows CI (Access denied on rm -rf of shims dir).
+# See: https://github.com/jdx/mise/pull/8045
+if (-not $env:MISE_WINDOWS_SHIM_MODE) {
+  $env:MISE_WINDOWS_SHIM_MODE = "file"
+}
 
 if (-not (Get-Command mise -ErrorAction SilentlyContinue)) {
   Write-Host "Installing Mise via Scoop (version $MiseVersion)..."
