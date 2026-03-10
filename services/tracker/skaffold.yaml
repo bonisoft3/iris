@@ -22,3 +22,10 @@ test:
   - image: gcr.io/trash-362115/services.tracker
     custom:
     - command: just integrate
+
+verify:
+  - name: health-check
+    container:
+      name: health-check
+      image: curlimages/curl:8.5.0@sha256:08e466006f0860e54fc299378de998935333e0e130a15f6f98482e9f8dab3058
+      command: ["/bin/sh", "-c", "curl -sf http://services-tracker:8080/health || exit 1"]
