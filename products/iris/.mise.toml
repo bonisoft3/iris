@@ -14,5 +14,5 @@ aqua.minisign = false
 "aqua:GoogleContainerTools/skaffold" = "2.17.2"
 "aqua:getsops/sops" = "3.9.1"
 "aqua:viaduct-ai/kustomize-sops" = "4.3.2"
-"aqua:kubernetes/kubernetes/kubectl" = "1.31.2"
+"aqua:kubernetes/kubernetes/kubectl" = "1.34.5"
 "aqua:kubernetes-sigs/kind" = "0.30.0"

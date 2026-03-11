@@ -171,7 +171,7 @@ COPY guis/web/i18n/i18n_messages i18n/i18n_messages
 COPY guis/web/i18n.config.ts guis/web/decs.d.ts guis/web/eslint.config.js ./
 COPY guis/web/tests tests
 COPY guis/web/vitest.* ./
-COPY guis/web/Dockerfile guis/web/compose.yaml guis/web/skaffold.yaml guis/web/compose-cache.json guis/web/.env.preview guis/web/.env.production guis/web/.firebaserc guis/web/firebase.json ./
+COPY guis/web/Dockerfile guis/web/compose.yaml guis/web/skaffold.yaml guis/web/compose-cache.json guis/web/docker-bake.override.hcl guis/web/.env.preview guis/web/.env.production guis/web/.firebaserc guis/web/firebase.json ./
 
 FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8 AS k8s_images_nginx_sources
 WORKDIR /monorepo/k8s/images/nginx/
@@ -192,11 +192,14 @@ RUN  just setup
 
 FROM debug AS integrate
 WORKDIR /monorepo/./products/iris/
+ENV BUILDX_NO_DEFAULT_ATTESTATIONS=1
+ENV BUILDX_BAKE_ENTITLEMENTS_FS=0
 RUN  which skaffold
 RUN cp /monorepo/plugins/devserver/dind.sh /usr/local/bin
 RUN  --mount=type=secret,id=host.env,required set -a && . /run/secrets/host.env && mkdir -p /root/.docker && echo $DOCKER_AUTH_CONFIG > /root/.docker/config.json
 RUN  --mount=type=secret,id=host.env,required set -a && . /run/secrets/host.env && mkdir -p /root/.kube/ && echo $KUBECONFIG_DATA > /root/.kube/config
 RUN  --mount=type=secret,id=host.env,required dind.sh kubectl config set-cluster kind-iris --insecure-skip-tls-verify=true
+RUN  --mount=type=secret,id=host.env,required dind.sh docker version
 RUN  --mount=type=secret,id=host.env,required dind.sh skaffold build -p preview
 RUN  --mount=type=secret,id=host.env,required dind.sh skaffold build -p preview --file-output ~/artifacts.json
 RUN  --mount=type=secret,id=host.env,required dind.sh skaffold run -p preview --skip-tests

@@ -1,11 +1,15 @@
 [[tools."aqua:GoogleContainerTools/skaffold"]]
-version = "2.13.2"
+version = "2.17.2"
 backend = "aqua:GoogleContainerTools/skaffold"
 
 [tools."aqua:GoogleContainerTools/skaffold".platforms.macos-arm64]
-checksum = "blake3:743aa2fff476a9a38f47444a7e3cdc9adec5f000dba03f054a8e693db35eac47"
-size = 85035536
-url = "https://storage.googleapis.com/skaffold/releases/v2.13.2/skaffold-darwin-arm64"
+url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-darwin-arm64"
+
+[tools."aqua:GoogleContainerTools/skaffold".platforms.linux-arm64]
+url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-linux-arm64"
+
+[tools."aqua:GoogleContainerTools/skaffold".platforms.linux-amd64]
+url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-linux-amd64"
 
 [[tools."aqua:getsops/sops"]]
 version = "3.9.1"
@@ -27,13 +31,20 @@ size = 27656344
 url = "https://github.com/getsops/sops/releases/download/v3.9.1/sops-v3.9.1.linux.arm64"
 
 [[tools."aqua:kubernetes/kubernetes/kubectl"]]
-version = "1.31.2"
+version = "1.34.5"
 backend = "aqua:kubernetes/kubernetes/kubectl"
 
 [tools."aqua:kubernetes/kubernetes/kubectl".platforms.macos-arm64]
-checksum = "sha256:0792d570d20fc495ea64baec26cd6bde961434b900038f2952f3334501872e80"
-size = 56560802
-url = "https://dl.k8s.io/v1.31.2/bin/darwin/arm64/kubectl"
+checksum = "sha256:0c0b575db594e0f8842aa44e5d36b224bb9f8bf4b92cd34c0547d29b61a0277f"
+url = "https://dl.k8s.io/v1.34.5/bin/darwin/arm64/kubectl"
+
+[tools."aqua:kubernetes/kubernetes/kubectl".platforms.linux-arm64]
+checksum = "sha256:2d433b53b99ea532f877df6fa5044286e3950d4933967ac3d99262760bc649fd"
+url = "https://dl.k8s.io/v1.34.5/bin/linux/arm64/kubectl"
+
+[tools."aqua:kubernetes/kubernetes/kubectl".platforms.linux-amd64]
+checksum = "sha256:6a17dd8387783b3144a65535e38d02c351027e9718ea34a6c360476cb26d28bb"
+url = "https://dl.k8s.io/v1.34.5/bin/linux/amd64/kubectl"
 
 [[tools."aqua:viaduct-ai/kustomize-sops"]]
 version = "4.3.2"
