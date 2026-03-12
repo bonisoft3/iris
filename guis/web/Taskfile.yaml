@@ -29,6 +29,8 @@ vars:
       fi
   MISE_SHIMS_DIR:
     sh: echo "${MISE_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/mise}/shims"
+  VERB:
+    sh: echo "${SAYT_VERB:-}"
 
 env:
   PATH: "{{.MISE_SHIMS_DIR}}:{{.PATH}}"
@@ -37,7 +39,7 @@ tasks:
   say setup:
     desc: "Install runtimes and tools (delegates to sayt setup)"
     cmds:
-      - "{{.SAYT}} setup {{.CLI_ARGS}}"
+      - '{{.SAYT}} setup {{if eq .VERB "setup"}}{{.CLI_ARGS}}{{end}}'
     sources:
       - .mise.toml
       - mise.lock
@@ -61,7 +63,7 @@ tasks:
     desc: "Generate Dockerfile and compose.yaml from CUE"
     deps: [say setup]
     cmds:
-      - "{{.SAYT}} generate {{.CLI_ARGS}}"
+      - '{{.SAYT}} generate {{if eq .VERB "generate"}}{{.CLI_ARGS}}{{end}}'
     sources:
       - "*.cue"
       - "{{.MONOREPO_ROOT}}/plugins/sayt/cue/**/*.cue"
@@ -73,7 +75,7 @@ tasks:
     desc: "Run lint rules (delegates to sayt lint)"
     deps: [install]
     cmds:
-      - "{{.SAYT}} lint {{.CLI_ARGS}}"
+      - '{{.SAYT}} lint {{if eq .VERB "lint"}}{{.CLI_ARGS}}{{end}}'
     sources:
       - "**/*.ts"
       - "**/*.vue"
@@ -83,22 +85,22 @@ tasks:
     desc: "Compile TypeScript and assemble (delegates to sayt build)"
     deps: [install]
     cmds:
-      - "{{.SAYT}} build {{.CLI_ARGS}}"
+      - '{{.SAYT}} build {{if eq .VERB "build"}}{{.CLI_ARGS}}{{end}}'
 
   say test:
     desc: "Run unit tests (delegates to sayt test)"
     deps: [install]
     cmds:
-      - "{{.SAYT}} test {{.CLI_ARGS}}"
+      - '{{.SAYT}} test {{if eq .VERB "test"}}{{.CLI_ARGS}}{{end}}'
 
   say integrate:
     desc: "Run integration tests (delegates to sayt integrate)"
     deps: [say build]
     cmds:
-      - "{{.SAYT}} integrate {{.CLI_ARGS}}"
+      - '{{.SAYT}} integrate {{if eq .VERB "integrate"}}{{.CLI_ARGS}}{{end}}'
 
   say launch:
     desc: "Start development server (delegates to sayt launch)"
     deps: [install]
     cmds:
-      - "{{.SAYT}} launch {{.CLI_ARGS}}"
+      - '{{.SAYT}} launch {{if eq .VERB "launch"}}{{.CLI_ARGS}}{{end}}'
