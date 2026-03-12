@@ -1,0 +1,104 @@
+# Taskfile.yaml - Dependency-aware build orchestration for guis/web
+#
+# Use with: sayt --task <verb>  (or: just sayt --task <verb>)
+#
+# This file defines explicit dependencies between sayt verbs so that
+# running `sayt --task build` automatically runs `say setup` first, and
+# `sayt --task test` automatically runs `install` (and transitively `say setup`).
+#
+# go-task caches results via sources/generates, so repeated runs are fast.
+#
+# Task naming: sayt verbs are prefixed with "say" (e.g. "say setup", "say build").
+# Tasks without a sayt verb (e.g. "install") keep their plain name.
+
+version: '3'
+
+vars:
+  MONOREPO_ROOT:
+    sh: git rev-parse --show-toplevel
+  SAYT:
+    sh: |
+      if [ -n "${SAYT_DIR}" ]; then
+        echo "nu ${SAYT_DIR}/sayt.nu"
+      elif [ -x "./saytw" ]; then
+        echo "./saytw"
+      elif [ -x "{{.MONOREPO_ROOT}}/saytw" ]; then
+        echo "{{.MONOREPO_ROOT}}/saytw"
+      else
+        echo "sayt"
+      fi
+  MISE_SHIMS_DIR:
+    sh: echo "${MISE_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/mise}/shims"
+
+env:
+  PATH: "{{.MISE_SHIMS_DIR}}:{{.PATH}}"
+
+tasks:
+  say setup:
+    desc: "Install runtimes and tools (delegates to sayt setup)"
+    cmds:
+      - "{{.SAYT}} setup {{.CLI_ARGS}}"
+    sources:
+      - .mise.toml
+      - mise.lock
+    generates:
+      - mise.lock
+    run: once
+
+  install:
+    desc: "Install npm dependencies"
+    deps: [say setup]
+    cmds:
+      - pnpm install --frozen-lockfile
+    sources:
+      - "{{.MONOREPO_ROOT}}/pnpm-lock.yaml"
+      - package.json
+    generates:
+      - node_modules/.pnpm/lock.yaml
+    run: once
+
+  say generate:
+    desc: "Generate Dockerfile and compose.yaml from CUE"
+    deps: [say setup]
+    cmds:
+      - "{{.SAYT}} generate {{.CLI_ARGS}}"
+    sources:
+      - "*.cue"
+      - "{{.MONOREPO_ROOT}}/plugins/sayt/cue/**/*.cue"
+    generates:
+      - Dockerfile
+      - compose.yaml
+
+  say lint:
+    desc: "Run lint rules (delegates to sayt lint)"
+    deps: [install]
+    cmds:
+      - "{{.SAYT}} lint {{.CLI_ARGS}}"
+    sources:
+      - "**/*.ts"
+      - "**/*.vue"
+      - eslint.config.js
+
+  say build:
+    desc: "Compile TypeScript and assemble (delegates to sayt build)"
+    deps: [install]
+    cmds:
+      - "{{.SAYT}} build {{.CLI_ARGS}}"
+
+  say test:
+    desc: "Run unit tests (delegates to sayt test)"
+    deps: [install]
+    cmds:
+      - "{{.SAYT}} test {{.CLI_ARGS}}"
+
+  say integrate:
+    desc: "Run integration tests (delegates to sayt integrate)"
+    deps: [say build]
+    cmds:
+      - "{{.SAYT}} integrate {{.CLI_ARGS}}"
+
+  say launch:
+    desc: "Start development server (delegates to sayt launch)"
+    deps: [install]
+    cmds:
+      - "{{.SAYT}} launch {{.CLI_ARGS}}"
