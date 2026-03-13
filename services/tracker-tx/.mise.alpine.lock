@@ -7,39 +7,24 @@ backend = "github:go-task/task"
 "platforms.macos-x64" = { checksum = "sha256:8bc4dd3baed1c71956ade0bb0a9c1b94e3ed7b65e7f2ff3aab13d0562c820e59", url = "https://github.com/go-task/task/releases/download/v3.49.1/task_darwin_amd64.tar.gz", url_api = "https://api.github.com/repos/go-task/task/releases/assets/369609774"}
 "platforms.windows-x64" = { checksum = "sha256:725c551f699d4d6c0dc57bd8148f72bef8d5b2fb650d9c985f271a61522fd521", url = "https://github.com/go-task/task/releases/download/v3.49.1/task_windows_amd64.zip", url_api = "https://api.github.com/repos/go-task/task/releases/assets/369609805"}
 
-[[tools."aqua:mikefarah/yq"]]
-version = "v4.44.2"
-backend = "aqua:mikefarah/yq"
+[[tools."http:yq"]]
+version = "4.44.2"
+backend = "http:yq"
 
-[tools."aqua:mikefarah/yq".platforms.macos-arm64]
-checksum = "blake3:3a2cf7877f43d50e355c498aad6a8077dc6886ae1c76dbb5b45ce27e660b3351"
-size = 9894146
+[tools."http:yq".platforms.linux-amd64]
+url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_amd64"
+
+[tools."http:yq".platforms.linux-arm64]
+url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_arm64"
+
+[tools."http:yq".platforms.darwin-amd64]
+url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_darwin_amd64"
+
+[tools."http:yq".platforms.darwin-arm64]
 url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_darwin_arm64"
 
-[tools."aqua:mikefarah/yq".platforms.linux-amd64]
-checksum = "sha256:e4c2570249e3993e33ffa44e592b5eee8545bd807bfbeb596c2986d86cb6c85c"
-size = 4087934
-url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_amd64.tar.gz"
-
-[tools."aqua:mikefarah/yq".platforms.linux-arm64]
-checksum = "sha256:79c22d98b2ff517cb8b1c20499350cbc1e8c753483c8f72a37a299e6e9872a98"
-size = 3775812
-url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_arm64.tar.gz"
-
-[tools."aqua:mikefarah/yq".platforms.darwin-amd64]
-checksum = "sha256:7e02afc024868ab298cb44fe9b1cf56ffb2e083cd5a426cc6616c08c1aad3e7a"
-size = 4149869
-url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_darwin_amd64.tar.gz"
-
-[tools."aqua:mikefarah/yq".platforms.darwin-arm64]
-checksum = "sha256:86f172cd7b8d84f178b20b02df12c772aacb5ffefeecba33af93727b0d3000f2"
-size = 3914114
-url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_darwin_arm64.tar.gz"
-
-[tools."aqua:mikefarah/yq".platforms.windows-amd64]
-checksum = "sha256:690b85576122647ae8f7edf46af1a8046119d4603c426213cd1b0e031a42007c"
-size = 4175247
-url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_windows_amd64.zip"
+[tools."http:yq".platforms.windows-amd64]
+url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_windows_amd64.exe"
 
 [[tools."github:bufbuild/buf"]]
 version = "1.34.0"
@@ -76,3 +61,25 @@ checksum = "sha256:f51af381fd2f22534bf10d9c70c6f21e25afbd400833eec330cb05fada919
 size = 35776512
 url = "https://github.com/bufbuild/buf/releases/download/v1.34.0/buf-Windows-x86_64.exe"
 url_api = "https://api.github.com/repos/bufbuild/buf/releases/assets/175190212"
+
+[[tools."http:skaffold"]]
+version = "2.17.2"
+backend = "http:skaffold"
+
+[tools."http:skaffold".platforms.linux-x64]
+url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-linux-amd64"
+
+[tools."http:skaffold".platforms.linux-amd64]
+url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-linux-amd64"
+
+[tools."http:skaffold".platforms.linux-arm64]
+url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-linux-arm64"
+
+[tools."http:skaffold".platforms.darwin-amd64]
+url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-darwin-amd64"
+
+[tools."http:skaffold".platforms.darwin-arm64]
+url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-darwin-arm64"
+
+[tools."http:skaffold".platforms.windows-amd64]
+url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-windows-amd64.exe"

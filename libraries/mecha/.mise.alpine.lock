@@ -1,12 +1,25 @@
-[[tools."aqua:ariga/atlas"]]
+[[tools."http:atlas"]]
 version = "0.38.0"
-backend = "aqua:ariga/atlas"
-"platforms.linux-arm64" = { url = "https://release.ariga.io/atlas/atlas-linux-arm64-0.38.0"}
-"platforms.linux-x64" = { url = "https://release.ariga.io/atlas/atlas-linux-amd64-0.38.0"}
+backend = "http:atlas"
 
-[[tools."aqua:bufbuild/buf"]]
+[tools."http:atlas".platforms.linux-x64]
+url = "https://release.ariga.io/atlas/atlas-linux-amd64-v0.38.0"
+
+[tools."http:atlas".platforms.linux-amd64]
+url = "https://release.ariga.io/atlas/atlas-linux-amd64-v0.38.0"
+
+[tools."http:atlas".platforms.linux-arm64]
+url = "https://release.ariga.io/atlas/atlas-linux-arm64-v0.38.0"
+
+[tools."http:atlas".platforms.darwin-amd64]
+url = "https://release.ariga.io/atlas/atlas-darwin-amd64-v0.38.0"
+
+[tools."http:atlas".platforms.darwin-arm64]
+url = "https://release.ariga.io/atlas/atlas-darwin-arm64-v0.38.0"
+
+[[tools."github:bufbuild/buf"]]
 version = "1.44.0"
-backend = "aqua:bufbuild/buf"
+backend = "github:bufbuild/buf"
 "platforms.linux-x64" = { checksum = "sha256:b077285b47f20dc4f463c6fa11d0edca84af82ed589a50625adef7bac7883dc7", url = "https://github.com/bufbuild/buf/releases/download/v1.44.0/buf-Linux-x86_64.tar.gz"}
 "platforms.macos-arm64" = { checksum = "sha256:8cd711985eff7a20d8fe30fd197c67760db923142adf2612928164e4fb9e9d1b", url = "https://github.com/bufbuild/buf/releases/download/v1.44.0/buf-Darwin-arm64.tar.gz"}
 
@@ -19,9 +32,9 @@ backend = "github:go-task/task"
 "platforms.macos-x64" = { checksum = "sha256:8bc4dd3baed1c71956ade0bb0a9c1b94e3ed7b65e7f2ff3aab13d0562c820e59", url = "https://github.com/go-task/task/releases/download/v3.49.1/task_darwin_amd64.tar.gz", url_api = "https://api.github.com/repos/go-task/task/releases/assets/369609774"}
 "platforms.windows-x64" = { checksum = "sha256:725c551f699d4d6c0dc57bd8148f72bef8d5b2fb650d9c985f271a61522fd521", url = "https://github.com/go-task/task/releases/download/v3.49.1/task_windows_amd64.zip", url_api = "https://api.github.com/repos/go-task/task/releases/assets/369609805"}
 
-[[tools."aqua:hairyhenderson/gomplate"]]
+[[tools."github:hairyhenderson/gomplate"]]
 version = "4.3.3"
-backend = "aqua:hairyhenderson/gomplate"
+backend = "github:hairyhenderson/gomplate"
 "platforms.linux-arm64" = { checksum = "sha256:25bd73720ff470cec0dfaa31ca2c436b30f86142db9af68382ce64e0f3e7b9c5", url = "https://github.com/hairyhenderson/gomplate/releases/download/v4.3.3/gomplate_linux-arm64"}
 "platforms.linux-x64" = { checksum = "sha256:ca281666e86f2f09218c1653e1908f572c0e349e9de64cb4ea93ade9333f0596", url = "https://github.com/hairyhenderson/gomplate/releases/download/v4.3.3/gomplate_linux-amd64"}
 "platforms.macos-arm64" = { checksum = "sha256:a3f6dd646d73840737e98fec6296e5c9ca95fcdd21fbdd0f4591aceab06f926d", url = "https://github.com/hairyhenderson/gomplate/releases/download/v4.3.3/gomplate_darwin-arm64"}

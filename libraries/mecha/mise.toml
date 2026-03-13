@@ -1,5 +1,6 @@
 [settings]
 lockfile = true
+locked = true
 experimental = true
 paranoid = false
 aqua.github_attestations = false
@@ -8,10 +9,13 @@ aqua.slsa = false
 aqua.minisign = false
 
 [tools]
-"aqua:bufbuild/buf" = "1.44.0"
-"aqua:hairyhenderson/gomplate" = "4.3.3"
-"aqua:ariga/atlas" = "0.38.0"
+"github:bufbuild/buf" = "1.44.0"
+"github:hairyhenderson/gomplate" = "4.3.3"
 "github:go-task/task" = "v3.49.1"
 "github:xataio/pgstream" = "0.8.5"
 "github:dapr/dapr" = "1.16.1"
 "github:dapr/cli" = "1.16.1"
+
+[tools."http:atlas"]
+version = "0.38.0"
+url = 'https://release.ariga.io/atlas/atlas-{{ os(macos="darwin") }}-{{ arch(x64="amd64") }}-v{{ version }}'

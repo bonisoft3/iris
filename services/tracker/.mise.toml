@@ -12,4 +12,11 @@ aqua.minisign = false
 
 [tools]
 java = "openjdk-21.0"
-"aqua:GoogleContainerTools/skaffold" = "2.17.2"
+
+# http: backend — URL template works for macOS/Linux; Windows override below.
+[tools."http:skaffold"]
+version = "2.17.2"
+url = 'https://storage.googleapis.com/skaffold/releases/v{{ version }}/skaffold-{{ os(macos="darwin") }}-{{ arch(x64="amd64") }}'
+
+[tools."http:skaffold".platforms]
+windows-x64 = { url = 'https://storage.googleapis.com/skaffold/releases/v{{ version }}/skaffold-windows-amd64.exe' }
