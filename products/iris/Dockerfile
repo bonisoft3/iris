@@ -136,7 +136,7 @@ COPY services/tracker/src/main src/main
 COPY services/tracker/.vscode .vscode
 COPY services/tracker/src/test src/test
 COPY services/tracker/src/it src/it
-COPY services/tracker/Dockerfile services/tracker/compose.yaml services/tracker/skaffold.yaml ./
+COPY services/tracker/Dockerfile services/tracker/compose.yaml services/tracker/skaffold.yaml services/tracker/docker-bake.override.hcl ./
 
 FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8 AS services_tracker_tx_sources
 WORKDIR /monorepo/services/tracker-tx/
@@ -200,6 +200,7 @@ RUN  --mount=type=secret,id=host.env,required set -a && . /run/secrets/host.env 
 RUN  --mount=type=secret,id=host.env,required set -a && . /run/secrets/host.env && mkdir -p /root/.kube/ && echo $KUBECONFIG_DATA > /root/.kube/config
 RUN  --mount=type=secret,id=host.env,required dind.sh kubectl config set-cluster kind-iris --insecure-skip-tls-verify=true
 RUN  --mount=type=secret,id=host.env,required dind.sh docker version
+RUN  --mount=type=secret,id=host.env,required dind.sh docker buildx version
 RUN  --mount=type=secret,id=host.env,required dind.sh skaffold build -p preview
 RUN  --mount=type=secret,id=host.env,required dind.sh skaffold build -p preview --file-output ~/artifacts.json
 RUN  --mount=type=secret,id=host.env,required dind.sh skaffold run -p preview --skip-tests
