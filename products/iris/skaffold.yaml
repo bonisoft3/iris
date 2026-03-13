@@ -97,6 +97,10 @@ profiles:
       - image: gcr.io/trash-362115/playwright
         context: images/playwright
         docker: {}
+
+      - image: gcr.io/trash-362115/curl
+        context: images/curl
+        docker: {}
   verify:
   - name: browse-preview-e2e
     container:

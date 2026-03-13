@@ -27,7 +27,7 @@ verify:
   - name: health-check
     container:
       name: health-check
-      image: curlimages/curl:8.5.0@sha256:08e466006f0860e54fc299378de998935333e0e130a15f6f98482e9f8dab3058
-      command: ["/bin/sh", "-c", "curl -sf http://services-tracker-svc:9090/health || exit 1"]
+      image: gcr.io/trash-362115/curl
+      command: ["/bin/sh", "-c", "curl --retry 10 --retry-delay 3 --retry-connrefused -sf http://services-tracker-svc:9090/health || exit 1"]
     executionMode:
       kubernetesCluster: {}
