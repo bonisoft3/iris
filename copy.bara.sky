@@ -79,6 +79,14 @@ WORKFLOWS = [
                 )],
                 noop_behavior = "IGNORE_NOOP",
             ),
+            core.transform(
+                [core.replace(
+                    before = "Sayt is developed in the [worldsense/trash](https://github.com/worldsense/trash) monorepo under `plugins/sayt/` and synced to this repo via copybara. To cut a release:",
+                    after = "To cut a release:",
+                    paths = glob(["README.md"]),
+                )],
+                noop_behavior = "IGNORE_NOOP",
+            ),
         ],
         submodules = "",
         mode = "ITERATIVE",
