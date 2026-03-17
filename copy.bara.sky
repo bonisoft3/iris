@@ -11,8 +11,8 @@ def scoped_message_transform(scope):
     """Returns a transform that keeps scoped messages or replaces with sync message."""
     def _transform(ctx):
         msg = ctx.message
-        # Keep if message contains scope in conventional commit format: (scope) or scope:
-        if "(" + scope + ")" in msg.lower() or scope + ":" in msg.lower() or scope + "/" in msg.lower():
+        # Keep if message mentions the scope anywhere
+        if scope in msg.lower():
             return
         # Replace with generic sync message, preserving first line as context
         first_line = msg.split("\n")[0][:72]
