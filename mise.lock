@@ -9,7 +9,17 @@ checksum = "sha256:94e22c4be44d205def456427639ca5ca1c1a9e29acc31808a7b28fdd5dcf7
 url = "https://github.com/astral-sh/uv/releases/download/0.6.14/uv-aarch64-unknown-linux-musl.tar.gz"
 url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/245014378"
 
+[tools."github:astral-sh/uv"."platforms.linux-arm64-musl"]
+checksum = "sha256:94e22c4be44d205def456427639ca5ca1c1a9e29acc31808a7b28fdd5dcf7f17"
+url = "https://github.com/astral-sh/uv/releases/download/0.6.14/uv-aarch64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/245014378"
+
 [tools."github:astral-sh/uv"."platforms.linux-x64"]
+checksum = "sha256:0cac4df0cb3457b154f2039ae471e89cd4e15f3bd790bbb3cb0b8b40d940b93e"
+url = "https://github.com/astral-sh/uv/releases/download/0.6.14/uv-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/245014414"
+
+[tools."github:astral-sh/uv"."platforms.linux-x64-musl"]
 checksum = "sha256:0cac4df0cb3457b154f2039ae471e89cd4e15f3bd790bbb3cb0b8b40d940b93e"
 url = "https://github.com/astral-sh/uv/releases/download/0.6.14/uv-x86_64-unknown-linux-musl.tar.gz"
 url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/245014414"
@@ -38,7 +48,17 @@ checksum = "sha256:beb35a4ed1208ffbb0fef26042c65875759a5358b9ee1a7856dec8490dfd4
 url = "https://github.com/casey/just/releases/download/1.42.4/just-1.42.4-aarch64-unknown-linux-musl.tar.gz"
 url_api = "https://api.github.com/repos/casey/just/releases/assets/276111941"
 
+[tools."github:casey/just"."platforms.linux-arm64-musl"]
+checksum = "sha256:beb35a4ed1208ffbb0fef26042c65875759a5358b9ee1a7856dec8490dfd4aca"
+url = "https://github.com/casey/just/releases/download/1.42.4/just-1.42.4-aarch64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/casey/just/releases/assets/276111941"
+
 [tools."github:casey/just"."platforms.linux-x64"]
+checksum = "sha256:678efc1cfbd5fa5a88375daa7e2f3864a049d6d63a0296df925a2ae5f516cb56"
+url = "https://github.com/casey/just/releases/download/1.42.4/just-1.42.4-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/casey/just/releases/assets/276111021"
+
+[tools."github:casey/just"."platforms.linux-x64-musl"]
 checksum = "sha256:678efc1cfbd5fa5a88375daa7e2f3864a049d6d63a0296df925a2ae5f516cb56"
 url = "https://github.com/casey/just/releases/download/1.42.4/just-1.42.4-x86_64-unknown-linux-musl.tar.gz"
 url_api = "https://api.github.com/repos/casey/just/releases/assets/276111021"
@@ -96,7 +116,17 @@ checksum = "sha256:13d8c0ce63197b0f52180f514b5a538cb691ae9cee15d07073cf411b31efb
 url = "https://github.com/nektos/act/releases/download/v0.2.65/act_Linux_arm64.tar.gz"
 url_api = "https://api.github.com/repos/nektos/act/releases/assets/183113429"
 
+[tools."github:nektos/act"."platforms.linux-arm64-musl"]
+checksum = "sha256:13d8c0ce63197b0f52180f514b5a538cb691ae9cee15d07073cf411b31efb8ff"
+url = "https://github.com/nektos/act/releases/download/v0.2.65/act_Linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/nektos/act/releases/assets/183113429"
+
 [tools."github:nektos/act"."platforms.linux-x64"]
+checksum = "sha256:ececd3b7f21dd8cb7eeab1f77c6a74c0d96547aa013015c92d46dd95dd538fe6"
+url = "https://github.com/nektos/act/releases/download/v0.2.65/act_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/nektos/act/releases/assets/183113431"
+
+[tools."github:nektos/act"."platforms.linux-x64-musl"]
 checksum = "sha256:ececd3b7f21dd8cb7eeab1f77c6a74c0d96547aa013015c92d46dd95dd538fe6"
 url = "https://github.com/nektos/act/releases/download/v0.2.65/act_Linux_x86_64.tar.gz"
 url_api = "https://api.github.com/repos/nektos/act/releases/assets/183113431"

@@ -21,6 +21,7 @@ url = "https://github.com/getsops/sops/releases/download/v3.9.1/sops-v3.9.1.linu
 url_api = "https://api.github.com/repos/getsops/sops/releases/assets/196803720"
 
 [tools."github:getsops/sops"."platforms.macos-arm64"]
+checksum = "blake3:e8896d72c19d61effa937d5d990bec4d75c3b2eda8c3a7017a67a01220955a96"
 url = "https://github.com/getsops/sops/releases/download/v3.9.1/sops-v3.9.1.darwin.arm64"
 url_api = "https://api.github.com/repos/getsops/sops/releases/assets/196803718"
 
@@ -29,8 +30,8 @@ url = "https://github.com/getsops/sops/releases/download/v3.9.1/sops-v3.9.1.darw
 url_api = "https://api.github.com/repos/getsops/sops/releases/assets/196803721"
 
 [tools."github:getsops/sops"."platforms.windows-x64"]
-url = "https://github.com/getsops/sops/releases/download/v3.9.1/sops-v3.9.1.exe"
-url_api = "https://api.github.com/repos/getsops/sops/releases/assets/196803719"
+url = "https://github.com/getsops/sops/releases/download/v3.9.1/sops-3.9.1-1.x86_64.rpm"
+url_api = "https://api.github.com/repos/getsops/sops/releases/assets/196803722"
 
 [[tools."github:pnpm/pnpm"]]
 version = "9.15.2"

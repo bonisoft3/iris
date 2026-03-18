@@ -71,31 +71,6 @@ checksum = "sha256:725c551f699d4d6c0dc57bd8148f72bef8d5b2fb650d9c985f271a61522fd
 url = "https://github.com/go-task/task/releases/download/v3.49.1/task_windows_amd64.zip"
 url_api = "https://api.github.com/repos/go-task/task/releases/assets/369609805"
 
-[[tools."http:yq"]]
-version = "4.44.2"
-backend = "http:yq"
-
-[tools."http:yq"."platforms.linux-arm64"]
-url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_arm64"
-
-[tools."http:yq"."platforms.linux-arm64-musl"]
-url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_arm64"
-
-[tools."http:yq"."platforms.linux-x64"]
-url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_amd64"
-
-[tools."http:yq"."platforms.linux-x64-musl"]
-url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_amd64"
-
-[tools."http:yq"."platforms.macos-arm64"]
-url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_darwin_arm64"
-
-[tools."http:yq"."platforms.macos-x64"]
-url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_darwin_amd64"
-
-[tools."http:yq"."platforms.windows-x64"]
-url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_windows_amd64.exe"
-
 [[tools."http:skaffold"]]
 version = "2.17.2"
 backend = "http:skaffold"
@@ -120,3 +95,28 @@ url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-darwin-
 
 [tools."http:skaffold"."platforms.windows-x64"]
 url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-windows-amd64.exe"
+
+[[tools."http:yq"]]
+version = "4.44.2"
+backend = "http:yq"
+
+[tools."http:yq"."platforms.linux-arm64"]
+url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_arm64"
+
+[tools."http:yq"."platforms.linux-arm64-musl"]
+url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_arm64"
+
+[tools."http:yq"."platforms.linux-x64"]
+url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_amd64"
+
+[tools."http:yq"."platforms.linux-x64-musl"]
+url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_amd64"
+
+[tools."http:yq"."platforms.macos-arm64"]
+url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_darwin_arm64"
+
+[tools."http:yq"."platforms.macos-x64"]
+url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_darwin_amd64"
+
+[tools."http:yq"."platforms.windows-x64"]
+url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_windows_amd64.exe"
