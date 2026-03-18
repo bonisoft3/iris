@@ -193,8 +193,6 @@ dist-ssr
 
 # turbocache
 **/.turbo
-# go-task
-**/.task
 # playwright
 **/playwright-report
 

@@ -6,9 +6,7 @@
 # running `sayt --task build` automatically runs `say setup` first, and
 # `sayt --task test` automatically runs `install` (and transitively `say setup`).
 #
-# Work avoidance: tasks use either go-task sources/generates (for tasks
-# with clear input/output files) or fingerprint.nu (for tasks whose inputs
-# are whole directory trees, respecting .gitignore).
+# go-task caches results via sources/generates, so repeated runs are fast.
 #
 # Task naming: sayt verbs are prefixed with "say" (e.g. "say setup", "say build").
 # Tasks without a sayt verb (e.g. "install") keep their plain name.
@@ -29,7 +27,6 @@ vars:
       else
         echo "sayt"
       fi
-  FINGERPRINT: nu {{.MONOREPO_ROOT}}/plugins/sayt/fingerprint.nu
   MISE_SHIMS_DIR:
     sh: echo "${MISE_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/mise}/shims"
   VERB:
@@ -51,14 +48,15 @@ tasks:
     run: once
 
   install:
-    desc: "Install npm dependencies for guis/web"
+    desc: "Install npm dependencies"
     deps: [say setup]
     cmds:
-      - pnpm install --frozen-lockfile --filter "./guis/web..."
-    dir: "{{.MONOREPO_ROOT}}"
+      - pnpm install --frozen-lockfile
     sources:
       - "{{.MONOREPO_ROOT}}/pnpm-lock.yaml"
       - package.json
+    generates:
+      - node_modules/.pnpm/lock.yaml
     run: once
 
   say generate:
@@ -83,44 +81,17 @@ tasks:
       - "**/*.vue"
       - eslint.config.js
 
-  # Build inputs: all source directories + config files.
-  # fingerprint.nu expands directories via git ls-files (respects .gitignore),
-  # so new file types and subdirectories are picked up automatically.
-  # Only adding a new top-level source directory requires updating this list.
   say build:
     desc: "Compile TypeScript and assemble (delegates to sayt build)"
     deps: [install]
-    vars:
-      HASH:
-        sh: >-
-          {{.FINGERPRINT}}
-          components/ composables/ layouts/ middleware/ modules/
-          pages/ plugins/ server/ types/ utils/ interfaces/
-          i18n/ content/ assets/ public/
-          nuxt.config.ts tsconfig.json app.config.ts
     cmds:
       - '{{.SAYT}} build {{if eq .VERB "build"}}{{.CLI_ARGS}}{{end}}'
-      - mkdir -p .task/stamps && echo "{{.HASH}}" > .task/stamps/say-build.hash
-    status:
-      - test "{{.HASH}}" = "$(cat .task/stamps/say-build.hash 2>/dev/null)"
 
   say test:
     desc: "Run unit tests (delegates to sayt test)"
     deps: [install]
-    vars:
-      HASH:
-        sh: >-
-          {{.FINGERPRINT}}
-          components/ composables/ layouts/ middleware/ modules/
-          pages/ plugins/ server/ types/ utils/ interfaces/
-          i18n/ content/ assets/ public/ tests/
-          nuxt.config.ts tsconfig.json app.config.ts
-          vitest.config.ts vitest.unit.config.ts vitest.workspace.ts
     cmds:
       - '{{.SAYT}} test {{if eq .VERB "test"}}{{.CLI_ARGS}}{{end}}'
-      - mkdir -p .task/stamps && echo "{{.HASH}}" > .task/stamps/say-test.hash
-    status:
-      - test "{{.HASH}}" = "$(cat .task/stamps/say-test.hash 2>/dev/null)"
 
   say integrate:
     desc: "Run integration tests (delegates to sayt integrate)"
