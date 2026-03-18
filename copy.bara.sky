@@ -81,8 +81,8 @@ WORKFLOWS = [
             ),
             core.transform(
                 [core.replace(
-                    before = "Sayt is developed in the [worldsense/trash](https://github.com/worldsense/trash) monorepo under `plugins/sayt/` and synced to this repo via copybara. To cut a release:",
-                    after = "To cut a release:",
+                    before = "Sayt is developed in the [worldsense/trash](https://github.com/worldsense/trash) monorepo under `plugins/sayt/` and synced to this repo via copybara. To cut a release:\n\n1. **Determine version** — run `sayt release --dry-run` to see what git-cliff computes from conventional commits (e.g. `v0.1.0`).\n2. **Update version files** — edit `VERSION` and all copies to match, verify with `sayt lint`.\n3. **Merge** — open a PR and merge. Wait for copybara to sync to `bonisoft3/sayt`.\n4. **Tag** — create and push the version tag on `bonisoft3/sayt`. The `cd.yml` workflow triggers on the tag push, runs goreleaser, and publishes the GitHub release with binaries.",
+                    after = "To cut a release:\n\n1. **Determine version** — run `sayt release --dry-run` to see what git-cliff computes from conventional commits (e.g. `v0.1.0`).\n2. **Update version files** — edit `VERSION` and all copies to match, verify with `sayt lint`.\n3. **Merge** — open a PR and merge.\n4. **Tag** — create and push the version tag. The `cd.yml` workflow triggers on the tag push, runs goreleaser, and publishes the GitHub release with binaries.",
                     paths = glob(["README.md"]),
                 )],
                 noop_behavior = "IGNORE_NOOP",
