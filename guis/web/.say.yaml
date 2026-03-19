@@ -1,0 +1,12 @@
+say:
+  generate:
+    rulemap:
+      nuxt-prepare:
+        cmds:
+          - do: "pnpm nuxt prepare"
+  lint:
+    rulemap:
+      auto-cue: null
+      eslint:
+        cmds:
+          - do: "pnpm lint"
