@@ -126,7 +126,7 @@ This creates a consistent developer experience where the same commands (`just se
 ### Container Environment (Most Isolated)
 ```bash
 # In any directory with compose.yaml
-just develop       # Start with hot reload and debugging
+just launch        # Start with hot reload and debugging
 just integrate     # Run integration tests with Testcontainers
 ```
 
