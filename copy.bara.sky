@@ -93,6 +93,20 @@ WORKFLOWS = [
         scope = "sayt",
     ),
     struct(
+        name = "aigate",
+        destination = "git@github.com:bonisoft3/aigate.git",
+        origin_files = [
+            "plugins/aigate/**",
+        ],
+        origin_excludes = [],
+        transformations = [
+            core.move("plugins/aigate", ""),
+        ],
+        submodules = "",
+        mode = "ITERATIVE",
+        scope = "aigate",
+    ),
+    struct(
         name = "lazybox",
         destination = "git@github.com:bonisoft3/lazybox.git",
         origin_files = [

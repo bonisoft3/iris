@@ -5,9 +5,9 @@ version = "0.6.14"
 backend = "github:astral-sh/uv"
 
 [tools."github:astral-sh/uv"."platforms.linux-arm64"]
-checksum = "sha256:94e22c4be44d205def456427639ca5ca1c1a9e29acc31808a7b28fdd5dcf7f17"
-url = "https://github.com/astral-sh/uv/releases/download/0.6.14/uv-aarch64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/245014378"
+checksum = "sha256:ea25597354af186bdd55aee0de431e16d45d82951a4f41f065a8e4dc27885265"
+url = "https://github.com/astral-sh/uv/releases/download/0.6.14/uv-aarch64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/245014376"
 
 [tools."github:astral-sh/uv"."platforms.linux-arm64-musl"]
 checksum = "sha256:94e22c4be44d205def456427639ca5ca1c1a9e29acc31808a7b28fdd5dcf7f17"
@@ -15,9 +15,9 @@ url = "https://github.com/astral-sh/uv/releases/download/0.6.14/uv-aarch64-unkno
 url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/245014378"
 
 [tools."github:astral-sh/uv"."platforms.linux-x64"]
-checksum = "sha256:0cac4df0cb3457b154f2039ae471e89cd4e15f3bd790bbb3cb0b8b40d940b93e"
-url = "https://github.com/astral-sh/uv/releases/download/0.6.14/uv-x86_64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/245014414"
+checksum = "sha256:0aaf451c391d3913823bfb8ed354b446dcfd0553a32ed8266611e4181c61fd51"
+url = "https://github.com/astral-sh/uv/releases/download/0.6.14/uv-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/245014410"
 
 [tools."github:astral-sh/uv"."platforms.linux-x64-musl"]
 checksum = "sha256:0cac4df0cb3457b154f2039ae471e89cd4e15f3bd790bbb3cb0b8b40d940b93e"
@@ -87,7 +87,17 @@ checksum = "sha256:6bb80ec3262c7cedf898a21e9e9481c86da54488f144788b1fa0a5dc01879
 url = "https://github.com/cue-lang/cue/releases/download/v0.15.1/cue_v0.15.1_linux_arm64.tar.gz"
 url_api = "https://api.github.com/repos/cue-lang/cue/releases/assets/319203819"
 
+[tools."github:cue-lang/cue"."platforms.linux-arm64-musl"]
+checksum = "sha256:6bb80ec3262c7cedf898a21e9e9481c86da54488f144788b1fa0a5dc01879a0b"
+url = "https://github.com/cue-lang/cue/releases/download/v0.15.1/cue_v0.15.1_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/cue-lang/cue/releases/assets/319203819"
+
 [tools."github:cue-lang/cue"."platforms.linux-x64"]
+checksum = "sha256:aa282261245e9ab0d65b17ec3c7207f5231600106f7b26fc0c2e158b3937ca3f"
+url = "https://github.com/cue-lang/cue/releases/download/v0.15.1/cue_v0.15.1_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/cue-lang/cue/releases/assets/319203817"
+
+[tools."github:cue-lang/cue"."platforms.linux-x64-musl"]
 checksum = "sha256:aa282261245e9ab0d65b17ec3c7207f5231600106f7b26fc0c2e158b3937ca3f"
 url = "https://github.com/cue-lang/cue/releases/download/v0.15.1/cue_v0.15.1_linux_amd64.tar.gz"
 url_api = "https://api.github.com/repos/cue-lang/cue/releases/assets/319203817"
@@ -145,32 +155,3 @@ url_api = "https://api.github.com/repos/nektos/act/releases/assets/183113442"
 checksum = "sha256:5e21488894f5bb27756f3a0ad9603576ad65bb2a014b55b1b0f39f3c28f1390c"
 url = "https://github.com/nektos/act/releases/download/v0.2.65/act_Windows_x86_64.zip"
 url_api = "https://api.github.com/repos/nektos/act/releases/assets/183113434"
-
-[[tools."github:nushell/nushell"]]
-version = "0.107.0"
-backend = "github:nushell/nushell"
-
-[tools."github:nushell/nushell"."platforms.linux-arm64"]
-checksum = "sha256:858142296927292095623c05c7ff0a79a53c9071949ca8867e672083ba87b73c"
-url = "https://github.com/nushell/nushell/releases/download/0.107.0/nu-0.107.0-aarch64-unknown-linux-gnu.tar.gz"
-url_api = "https://api.github.com/repos/nushell/nushell/releases/assets/289026684"
-
-[tools."github:nushell/nushell"."platforms.linux-x64"]
-checksum = "sha256:9c803a1b2019c80e75b4170edc2d3ccbf02aebc784bc9b243881ac178d27f381"
-url = "https://github.com/nushell/nushell/releases/download/0.107.0/nu-0.107.0-x86_64-unknown-linux-gnu.tar.gz"
-url_api = "https://api.github.com/repos/nushell/nushell/releases/assets/289026180"
-
-[tools."github:nushell/nushell"."platforms.macos-arm64"]
-checksum = "sha256:3bc70d98ab2fd94ad8244d233c92aa6e768ca2c91dd860a209ae6ba6d15f1051"
-url = "https://github.com/nushell/nushell/releases/download/0.107.0/nu-0.107.0-aarch64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/nushell/nushell/releases/assets/289032519"
-
-[tools."github:nushell/nushell"."platforms.macos-x64"]
-checksum = "sha256:e69c2e4f3b68444e17186f289a9a2ed7ec88b57da930892b1a7a3544d68a91d1"
-url = "https://github.com/nushell/nushell/releases/download/0.107.0/nu-0.107.0-x86_64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/nushell/nushell/releases/assets/289028707"
-
-[tools."github:nushell/nushell"."platforms.windows-x64"]
-checksum = "sha256:6f62ab495b5166239512429886f944eab9153f734a27703516d5eabb5d370e4d"
-url = "https://github.com/nushell/nushell/releases/download/0.107.0/nu-0.107.0-x86_64-pc-windows-msvc.zip"
-url_api = "https://api.github.com/repos/nushell/nushell/releases/assets/289031932"

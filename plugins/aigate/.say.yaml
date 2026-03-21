@@ -1,0 +1,9 @@
+say:
+  build:
+    do: 'glob *.nu | each { |f| nu -c $"source ($f)" }'
+  test:
+    do: "nu ai-gate.test.nu"
+  lint:
+    do: 'open ai-gate.nu --raw | grep (open VERSION | str trim)'
+  verify:
+    do: "mise exec -- pnpm dlx promptfoo eval"
