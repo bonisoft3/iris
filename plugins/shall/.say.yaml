@@ -2,8 +2,8 @@ say:
   build:
     do: 'glob *.nu | each { |f| nu -c $"source ($f)" }'
   test:
-    do: "nu ai-gate.test.nu"
+    do: "nu shall.test.nu"
   lint:
-    do: 'open ai-gate.nu --raw | grep (open VERSION | str trim)'
+    do: 'open shall.nu --raw | grep (open VERSION | str trim)'
   verify:
     do: "mise exec -- pnpm dlx promptfoo eval"

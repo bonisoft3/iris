@@ -59,8 +59,8 @@ def "main prompt" [context: string] {
 
 def main [] {
   # --- Recursion guard ---
-  if ($env.__AI_GATE_ACTIVE? | default "") == "1" {
-    return (make_decision "allow" "nested call from AI gate")
+  if ($env.__SHALL_ACTIVE? | default "") == "1" {
+    return (make_decision "allow" "nested call")
   }
 
   let input = open --raw /dev/stdin | from json
@@ -79,7 +79,7 @@ def main [] {
   }
 
   # --- AI evaluation via Ollama ---
-  $env.__AI_GATE_ACTIVE = "1"
+  $env.__SHALL_ACTIVE = "1"
   let url = $env.OLLAMA_URL? | default $OLLAMA_URL
   ensure_ollama $url
 
@@ -99,12 +99,12 @@ def main [] {
       options: { num_predict: 60 }
     }
   } catch {|e|
-    print -e $"AI gate: ollama error: ($e.msg)"
+    print -e $"shall: ollama error: ($e.msg)"
     return (make_decision "ask" "ollama unavailable")
   }
 
   let verdict = try { $response.message.content | from json } catch {
-    print -e "AI gate: unparseable response from ollama"
+    print -e "shall: unparseable response from ollama"
     return (make_decision "ask" "unparseable response")
   }
 
@@ -115,7 +115,8 @@ def main [] {
     return (make_decision "ask" $"unexpected: '($decision)'")
   }
 
-  make_decision $decision $reason
+  # Never hard-deny — always let the human decide
+  make_decision (if $decision == "deny" { "ask" } else { $decision }) $reason
 }
 
 def ensure_ollama [url: string] {
@@ -125,7 +126,7 @@ def ensure_ollama [url: string] {
   }
 
   # Start ollama serve in the background
-  print -e "AI gate: starting ollama serve..."
+  print -e "shall: starting ollama serve..."
   ^ollama serve out+err> /dev/null &
 
   # Wait for it to be ready
@@ -136,7 +137,7 @@ def ensure_ollama [url: string] {
     sleep 500ms
   }
 
-  print -e "AI gate: ollama failed to start"
+  print -e "shall: ollama failed to start"
 }
 
 def make_decision [decision: string, reason: string] {
@@ -144,7 +145,7 @@ def make_decision [decision: string, reason: string] {
     hookSpecificOutput: {
       hookEventName: "PreToolUse"
       permissionDecision: $decision
-      permissionDecisionReason: $"AI gate: ($reason)"
+      permissionDecisionReason: $"shall: ($reason)"
     }
   } | to json --raw
 }

@@ -1,12 +1,12 @@
 #!/usr/bin/env nu
 
-# Test suite for ai-gate prompt + model accuracy.
+# Test suite for shall prompt + model accuracy.
 # Usage:
 #   nu test-gate.nu                              # defaults
 #   nu test-gate.nu --model gemma3:4b            # test a different model
 #   nu test-gate.nu --url http://ollama:11434    # remote Ollama (e.g. Docker)
 
-use ai-gate.nu [gate_prompt]
+use shall.nu [gate_prompt]
 
 def classify [model: string, command: string, url: string, cwd: string = "/home/user/project"] {
   let response = http post --content-type application/json --max-time 30sec $"($url)/api/chat" {

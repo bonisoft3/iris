@@ -22,9 +22,9 @@ services:
         FROM chainguard/wolfi-base:latest@sha256:73de6aadd7e28fb516fa1270fcb411b94ee79949635e7de2a4bdb8705f6c120c
         RUN apk add --no-cache nushell curl
         WORKDIR /app
-        COPY ai-gate.nu ai-gate.test.nu ./
+        COPY shall.nu shall.test.nu ./
         ENV OLLAMA_URL=http://ollama:11434
-        CMD ["nu", "ai-gate.test.nu", "--url", "http://ollama:11434"]
+        CMD ["nu", "shall.test.nu", "--url", "http://ollama:11434"]
     depends_on:
       model-pull:
         condition: service_completed_successfully

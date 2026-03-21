@@ -1,4 +1,4 @@
-description: AI gate prompt optimization
+description: shall — prompt optimization
 
 x-format: &format
   passthrough:
@@ -23,7 +23,7 @@ providers:
     config: *format
 
 prompts:
-  - "exec:nu ai-gate.nu prompt"
+  - "exec:nu shall.nu prompt"
 
 tests:
   # ALLOW cases
