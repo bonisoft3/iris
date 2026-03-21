@@ -92,6 +92,23 @@ WORKFLOWS = [
         mode = "ITERATIVE",
         scope = "sayt",
     ),
+    struct(
+        name = "lazybox",
+        destination = "git@github.com:bonisoft3/lazybox.git",
+        origin_files = [
+            ".devcontainer/**",
+        ],
+        origin_excludes = [
+            ".devcontainer/devcontainer.json",
+            ".devcontainer/.claude/**",
+        ],
+        transformations = [
+            core.move(".devcontainer", ""),
+        ],
+        submodules = "",
+        mode = "ITERATIVE",
+        scope = "lazybox",
+    ),
 ]
 
 def register_workflows(origin_url, name_suffix):
