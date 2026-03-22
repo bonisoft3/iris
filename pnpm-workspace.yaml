@@ -1,5 +1,6 @@
 packages:
   - libraries/xproto/
   - guis/web/
+  - guis/iris/
   - guis/shelfie/
   - guis/flashcards/

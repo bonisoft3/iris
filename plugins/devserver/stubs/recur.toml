@@ -1,27 +1,27 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
-version = "v3.0.0"
+version = "3.2.0"
 bin = "recur"
 
 # Platform configurations
 [platforms.darwin-arm64]
-url = "https://github.com/dbohdan/recur/releases/download/v3.0.0/recur-v3.0.0-macos-arm64"
-checksum = "sha256:88bdb74f29f95f2f5fa0e792d9fbc7efec4e6438aa9378689f677813dbdcb06b"
+url = "https://github.com/dbohdan/recur/releases/download/v3.2.0/recur-3.2.0-macos-arm64"
+checksum = "sha256:d568daf1ee8846f701e977eea601b84e8aed1f3d1296ad39dee1fe15072d65f6"
 
 [platforms.linux-amd64]
-url = "https://github.com/dbohdan/recur/releases/download/v3.0.0/recur-v3.0.0-linux-x86_64"
-checksum = "sha256:49098339a168a8df21c4044438ac683093665f86728e18132228b44ac9a39be1"
+url = "https://github.com/dbohdan/recur/releases/download/v3.2.0/recur-3.2.0-linux-x86_64"
+checksum = "sha256:39046a2fbe6555302170608edd45e3092b3746f50f3ca3b203309e628aeaa608"
 
 [platforms.linux-arm64]
-url = "https://github.com/dbohdan/recur/releases/download/v3.0.0/recur-v3.0.0-linux-aarch64"
-checksum = "sha256:6915ed18be6b46771fdbc1369ce41fa7cb311626bcd3d277856a23c440eac79a"
+url = "https://github.com/dbohdan/recur/releases/download/v3.2.0/recur-3.2.0-linux-aarch64"
+checksum = "sha256:f041b2a3dce58a600da3a843550d1b4eef0400f56f68089391edec48c23e1c49"
 
 [platforms.macos-arm64]
-url = "https://github.com/dbohdan/recur/releases/download/v3.0.0/recur-v3.0.0-macos-arm64"
-checksum = "blake3:a2bcf3e8eb89c2aee2d59e0cf4b453d959d7f7f9a81cd699d4c8179bf49ca077"
+url = "https://github.com/dbohdan/recur/releases/download/v3.2.0/recur-3.2.0-macos-arm64"
+checksum = "sha256:d568daf1ee8846f701e977eea601b84e8aed1f3d1296ad39dee1fe15072d65f6"
 
 [platforms.windows-amd64]
-url = "https://github.com/dbohdan/recur/releases/download/v3.0.0/recur-v3.0.0-windows-amd64.exe"
-checksum = "sha256:a735d7b9e105ee1145450c9929877f44df56b1da6e8c118b0415db809ef7940b"
+url = "https://github.com/dbohdan/recur/releases/download/v3.2.0/recur-3.2.0-windows-amd64.exe"
+checksum = "sha256:667479a65ea40c2a5838658b920335e695acab549f2c7530fb976c4b951df28e"
 bin = "recur.exe"
 

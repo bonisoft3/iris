@@ -11,19 +11,19 @@ aqua.slsa = false
 aqua.minisign = false
 
 [tools]
-"github:bufbuild/buf" = "1.32.1"
+"github:bufbuild/buf" = "1.66.1"
 "github:go-task/task" = "v3.49.1"
 
 # http: backend — URL template works for macOS/Linux; Windows override below.
 [tools."http:yq"]
-version = "4.44.2"
+version = "4.52.4"
 url = 'https://github.com/mikefarah/yq/releases/download/v{{ version }}/yq_{{ os(macos="darwin") }}_{{ arch(x64="amd64") }}'
 
 [tools."http:yq".platforms]
 windows-x64 = { url = 'https://github.com/mikefarah/yq/releases/download/v{{ version }}/yq_windows_amd64.exe' }
 
 [tools."http:skaffold"]
-version = "2.17.2"
+version = "2.18.1"
 url = 'https://storage.googleapis.com/skaffold/releases/v{{ version }}/skaffold-{{ os(macos="darwin") }}-{{ arch(x64="amd64") }}'
 
 [tools."http:skaffold".platforms]

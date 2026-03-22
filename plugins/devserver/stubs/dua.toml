@@ -1,27 +1,27 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
-version = "2.32.0"
+version = "2.34.0"
 bin = "dua"
 
 # Platform configurations
 [platforms.darwin-amd64]
-url = "https://github.com/Byron/dua-cli/releases/download/v2.32.0/dua-v2.32.0-x86_64-apple-darwin.tar.gz"
-checksum = "sha256:ceec037df8a1e5b8ef810eb0fa2fab1c26771b7a1300156ec195893c017ea6c0"
+url = "https://github.com/Byron/dua-cli/releases/download/v2.34.0/dua-v2.34.0-x86_64-apple-darwin.tar.gz"
+checksum = "sha256:c1b346360d0eabee17d43c03e4820fb097e9c334f07dd77708a44355f7b887e7"
 
 [platforms.linux-amd64]
-url = "https://github.com/Byron/dua-cli/releases/download/v2.32.0/dua-v2.32.0-x86_64-unknown-linux-musl.tar.gz"
-checksum = "sha256:3553b6ef42b7398c979066e6360c0cb79b593c4b11f804dfbdd0caba0772e015"
+url = "https://github.com/Byron/dua-cli/releases/download/v2.34.0/dua-v2.34.0-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:4f2de3f97206d6bca0d15fbb9241f52b1014df35fd7ae362bacf67371164c1a1"
 
 [platforms.linux-arm64]
-url = "https://github.com/Byron/dua-cli/releases/download/v2.32.0/dua-v2.32.0-aarch64-unknown-linux-musl.tar.gz"
-checksum = "sha256:e0a5190dead2e588622f8ddc32c539cae94e83af4164e813a03c775aad4e89f6"
+url = "https://github.com/Byron/dua-cli/releases/download/v2.34.0/dua-v2.34.0-aarch64-unknown-linux-musl.tar.gz"
+checksum = "sha256:d77a07e3aa1af12cfd9a60ace5a15395af96040089ba358df76d1621d12b1893"
 
 [platforms.macos-arm64]
-url = "https://github.com/Byron/dua-cli/releases/download/v2.32.0/dua-v2.32.0-x86_64-apple-darwin.tar.gz"
-checksum = "blake3:b3030dab15f1dd19255b2a1b8a09fc99703c87073ca47d421b57717502940cda"
+url = "https://github.com/Byron/dua-cli/releases/download/v2.34.0/dua-v2.34.0-x86_64-apple-darwin.tar.gz"
+checksum = "sha256:c1b346360d0eabee17d43c03e4820fb097e9c334f07dd77708a44355f7b887e7"
 
 [platforms.windows-amd64]
-url = "https://github.com/Byron/dua-cli/releases/download/v2.32.0/dua-v2.32.0-x86_64-pc-windows-msvc.zip"
-checksum = "sha256:eb697c75361479c1e645cc4d7bb54bf83d6900e79159d308e5b363c36c0babe4"
+url = "https://github.com/Byron/dua-cli/releases/download/v2.34.0/dua-v2.34.0-x86_64-pc-windows-msvc.zip"
+checksum = "sha256:abbd93e4d8eaf4d1b9181310a0240e37fc3d3e107a70870289125c0171fefca9"
 bin = "dua.exe"
 

@@ -23,6 +23,13 @@ services:
       target: integrate
       secrets:
         - host.env
+  guis_iris:
+    build:
+      context: ./guis/iris
+      network: host
+      dockerfile: ./Dockerfile
+      target: release
+
   services_shelfie:
     build:
       context: .

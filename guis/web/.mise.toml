@@ -11,6 +11,6 @@ aqua.slsa = false
 aqua.minisign = false
 
 [tools]
-node = "22.14.0"
-"github:pnpm/pnpm" = "9.15.2"
-"github:getsops/sops" = "3.9.1"
+node = "24.14.0"
+"github:pnpm/pnpm" = "10.32.1"
+"github:getsops/sops" = "3.12.2"

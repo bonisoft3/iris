@@ -1,28 +1,26 @@
 # Auto-generated Alpine/musl stub for ($binary_info.clean_name)
 
-version = "2.16.1"
+version = "2.18.1"
 bin = "skaffold-darwin-arm64"
 
 # Platform configurations
 [platforms.linux-arm64]
-url = "https://storage.googleapis.com/skaffold/releases/v2.16.1/skaffold-linux-arm64"
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-linux-arm64"
 
 [platforms.linux-x64]
-url = "https://storage.googleapis.com/skaffold/releases/v2.16.1/skaffold-linux-amd64"
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-linux-amd64"
 
 [platforms.macos-arm64]
-url = "https://storage.googleapis.com/skaffold/releases/v2.16.1/skaffold-darwin-arm64"
-checksum = "blake3:2c67f3ca76d018ea381098008c620af3918f6657955057888ffe9e318fed26f4"
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-darwin-arm64"
 
 [platforms.macos-x64]
-url = "https://storage.googleapis.com/skaffold/releases/v2.16.1/skaffold-darwin-amd64"
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-darwin-amd64"
 
 [platforms.windows-amd64]
-url = "https://storage.googleapis.com/skaffold/releases/v2.16.1/skaffold-windows-amd64"
-checksum = "sha256:457f28a871b9e1027b53f92e9db1f933e0c1f4cefe94d9232a84f10b0d804814"
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-windows-amd64"
 bin = "skaffold-darwin-arm64.exe"
 
 [platforms.windows-x64]
-url = "https://storage.googleapis.com/skaffold/releases/v2.16.1/skaffold-windows-amd64.exe"
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-windows-amd64.exe"
 bin = "skaffold-darwin-arm64.exe"
 

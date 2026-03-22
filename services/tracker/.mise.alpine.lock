@@ -1,3 +1,29 @@
+[[tools."http:skaffold"]]
+version = "2.18.1"
+backend = "http:skaffold"
+
+[tools."http:skaffold"."platforms.linux-arm64"]
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-linux-arm64"
+
+[tools."http:skaffold"."platforms.linux-arm64-musl"]
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-linux-arm64"
+
+[tools."http:skaffold"."platforms.linux-x64"]
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-linux-amd64"
+
+[tools."http:skaffold"."platforms.linux-x64-musl"]
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-linux-amd64"
+
+[tools."http:skaffold"."platforms.macos-arm64"]
+checksum = "blake3:a37ad31bf1045c53fbbf2c074eb965824baaba8f5a30d2e15626f46446773abc"
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-darwin-arm64"
+
+[tools."http:skaffold"."platforms.macos-x64"]
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-darwin-amd64"
+
+[tools."http:skaffold"."platforms.windows-x64"]
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-windows-amd64.exe"
+
 [[tools.java]]
 version = "openjdk-21.0.2"
 backend = "core:java"

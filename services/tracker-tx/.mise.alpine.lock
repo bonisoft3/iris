@@ -8,83 +8,77 @@ backend = "github:go-task/task"
 "platforms.windows-x64" = { checksum = "sha256:725c551f699d4d6c0dc57bd8148f72bef8d5b2fb650d9c985f271a61522fd521", url = "https://github.com/go-task/task/releases/download/v3.49.1/task_windows_amd64.zip", url_api = "https://api.github.com/repos/go-task/task/releases/assets/369609805"}
 
 [[tools."http:yq"]]
-version = "4.44.2"
+version = "4.52.4"
 backend = "http:yq"
 
 [tools."http:yq".platforms.linux-amd64]
-url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_amd64"
+url = "https://github.com/mikefarah/yq/releases/download/v4.52.4/yq_linux_amd64"
 
 [tools."http:yq".platforms.linux-arm64]
-url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_arm64"
+url = "https://github.com/mikefarah/yq/releases/download/v4.52.4/yq_linux_arm64"
 
 [tools."http:yq".platforms.darwin-amd64]
-url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_darwin_amd64"
+url = "https://github.com/mikefarah/yq/releases/download/v4.52.4/yq_darwin_amd64"
 
 [tools."http:yq".platforms.darwin-arm64]
-url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_darwin_arm64"
+url = "https://github.com/mikefarah/yq/releases/download/v4.52.4/yq_darwin_arm64"
 
 [tools."http:yq".platforms.windows-amd64]
-url = "https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_windows_amd64.exe"
+url = "https://github.com/mikefarah/yq/releases/download/v4.52.4/yq_windows_amd64.exe"
 
 [[tools."github:bufbuild/buf"]]
-version = "1.34.0"
+version = "1.66.1"
 backend = "github:bufbuild/buf"
 
 [tools."github:bufbuild/buf".platforms.macos-arm64]
-checksum = "blake3:4793c3c0488ddaa2c4ec5964a7080631193776222ccff946c00d710290bd4c9e"
 name = "buf-Darwin-arm64.tar.gz"
 size = 20684310
-url = "https://github.com/bufbuild/buf/releases/download/v1.34.0/buf-Darwin-arm64.tar.gz"
+url = "https://github.com/bufbuild/buf/releases/download/v1.66.1/buf-Darwin-arm64.tar.gz"
 url_api = "https://api.github.com/repos/bufbuild/buf/releases/assets/175190212"
 
 [tools."github:bufbuild/buf".platforms.linux-amd64]
-checksum = "sha256:82dcf1a5f45498b539a04d764e3cb274a13c8d94271c92508fc1624d227895ff"
 size = 21282392
-url = "https://github.com/bufbuild/buf/releases/download/v1.34.0/buf-Linux-x86_64.tar.gz"
+url = "https://github.com/bufbuild/buf/releases/download/v1.66.1/buf-Linux-x86_64.tar.gz"
 url_api = "https://api.github.com/repos/bufbuild/buf/releases/assets/175190220"
 
 [tools."github:bufbuild/buf".platforms.linux-arm64]
-checksum = "sha256:564d3ee76d93940addc15ba99b6ccc08b199c345800947a6d7f92e123aa62343"
 size = 19562323
-url = "https://github.com/bufbuild/buf/releases/download/v1.34.0/buf-Linux-aarch64.tar.gz"
+url = "https://github.com/bufbuild/buf/releases/download/v1.66.1/buf-Linux-aarch64.tar.gz"
 url_api = "https://api.github.com/repos/bufbuild/buf/releases/assets/175190217"
 
 [tools."github:bufbuild/buf".platforms.darwin-amd64]
-checksum = "sha256:6f07be0a8db1798fae85e19bbe6eb5618dadddff4be3e3d1e80a30d4f2a35d20"
 size = 21910673
-url = "https://github.com/bufbuild/buf/releases/download/v1.34.0/buf-Darwin-x86_64.tar.gz"
+url = "https://github.com/bufbuild/buf/releases/download/v1.66.1/buf-Darwin-x86_64.tar.gz"
 url_api = "https://api.github.com/repos/bufbuild/buf/releases/assets/175190210"
 
 [tools."github:bufbuild/buf".platforms.darwin-arm64]
-checksum = "sha256:1a36e18b9aaaa69465d1a3b5fd061a9b6b9933ab93a71961824eba2afa0151fe"
 size = 20684310
-url = "https://github.com/bufbuild/buf/releases/download/v1.34.0/buf-Darwin-arm64.tar.gz"
+url = "https://github.com/bufbuild/buf/releases/download/v1.66.1/buf-Darwin-arm64.tar.gz"
 url_api = "https://api.github.com/repos/bufbuild/buf/releases/assets/175190212"
 
 [tools."github:bufbuild/buf".platforms.windows-amd64]
-checksum = "sha256:f51af381fd2f22534bf10d9c70c6f21e25afbd400833eec330cb05fada9199f5"
 size = 35776512
-url = "https://github.com/bufbuild/buf/releases/download/v1.34.0/buf-Windows-x86_64.exe"
+url = "https://github.com/bufbuild/buf/releases/download/v1.66.1/buf-Windows-x86_64.exe"
 url_api = "https://api.github.com/repos/bufbuild/buf/releases/assets/175190212"
 
 [[tools."http:skaffold"]]
-version = "2.17.2"
+version = "2.18.1"
 backend = "http:skaffold"
 
 [tools."http:skaffold".platforms.linux-x64]
-url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-linux-amd64"
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-linux-amd64"
 
 [tools."http:skaffold".platforms.linux-amd64]
-url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-linux-amd64"
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-linux-amd64"
 
 [tools."http:skaffold".platforms.linux-arm64]
-url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-linux-arm64"
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-linux-arm64"
 
 [tools."http:skaffold".platforms.darwin-amd64]
-url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-darwin-amd64"
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-darwin-amd64"
 
 [tools."http:skaffold".platforms.darwin-arm64]
-url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-darwin-arm64"
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-darwin-arm64"
 
 [tools."http:skaffold".platforms.windows-amd64]
-url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-windows-amd64.exe"
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-windows-amd64.exe"

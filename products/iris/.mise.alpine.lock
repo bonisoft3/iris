@@ -1,111 +1,135 @@
 [[tools."github:getsops/sops"]]
-version = "3.9.1"
+version = "3.12.2"
 backend = "github:getsops/sops"
 
 [tools."github:getsops/sops".platforms.macos-arm64]
-checksum = "sha256:0ab2cc54f0d8b8414dab83c18017ae3c005d405480b343c788a84fa4af5b19e3"
 size = 28709826
-url = "https://github.com/getsops/sops/releases/download/v3.9.1/sops-v3.9.1.darwin.arm64"
+url = "https://github.com/getsops/sops/releases/download/v3.12.2/sops-v3.12.2.darwin.arm64"
 url_api = "https://api.github.com/repos/getsops/sops/releases/assets/196803718"
 
 [tools."github:getsops/sops".platforms.linux-amd64]
-checksum = "sha256:cd795109851c3a483bbaa66d15d19ddb2227ac0352b39e25d96b67d51edb6225"
 size = 29175960
-url = "https://github.com/getsops/sops/releases/download/v3.9.1/sops-v3.9.1.linux.amd64"
+url = "https://github.com/getsops/sops/releases/download/v3.12.2/sops-v3.12.2.linux.amd64"
 url_api = "https://api.github.com/repos/getsops/sops/releases/assets/196803720"
 
 [tools."github:getsops/sops".platforms.linux-arm64]
-checksum = "sha256:bc946fef11dbe199587adac567037b69374c4202f928ca138443539efc85b357"
 size = 27656344
-url = "https://github.com/getsops/sops/releases/download/v3.9.1/sops-v3.9.1.linux.arm64"
+url = "https://github.com/getsops/sops/releases/download/v3.12.2/sops-v3.12.2.linux.arm64"
 url_api = "https://api.github.com/repos/getsops/sops/releases/assets/196803717"
 
+[[tools."github:kubernetes-sigs/kind"]]
+version = "0.31.0"
+backend = "github:kubernetes-sigs/kind"
+
+[tools."github:kubernetes-sigs/kind"."platforms.linux-arm64"]
+checksum = "sha256:8e1014e87c34901cc422a1445866835d1e666f2a61301c27e722bdeab5a1f7e4"
+url = "https://github.com/kubernetes-sigs/kind/releases/download/v0.31.0/kind-linux-arm64"
+url_api = "https://api.github.com/repos/kubernetes-sigs/kind/releases/assets/330009872"
+
+[tools."github:kubernetes-sigs/kind"."platforms.linux-arm64-musl"]
+checksum = "sha256:8e1014e87c34901cc422a1445866835d1e666f2a61301c27e722bdeab5a1f7e4"
+url = "https://github.com/kubernetes-sigs/kind/releases/download/v0.31.0/kind-linux-arm64"
+url_api = "https://api.github.com/repos/kubernetes-sigs/kind/releases/assets/330009872"
+
+[tools."github:kubernetes-sigs/kind"."platforms.linux-x64"]
+checksum = "sha256:eb244cbafcc157dff60cf68693c14c9a75c4e6e6fedaf9cd71c58117cb93e3fa"
+url = "https://github.com/kubernetes-sigs/kind/releases/download/v0.31.0/kind-linux-amd64"
+url_api = "https://api.github.com/repos/kubernetes-sigs/kind/releases/assets/330009836"
+
+[tools."github:kubernetes-sigs/kind"."platforms.linux-x64-musl"]
+checksum = "sha256:eb244cbafcc157dff60cf68693c14c9a75c4e6e6fedaf9cd71c58117cb93e3fa"
+url = "https://github.com/kubernetes-sigs/kind/releases/download/v0.31.0/kind-linux-amd64"
+url_api = "https://api.github.com/repos/kubernetes-sigs/kind/releases/assets/330009836"
+
+[tools."github:kubernetes-sigs/kind"."platforms.macos-arm64"]
+checksum = "sha256:88bf554fe9da6311c9f8c2d082613c002911a476f6b5090e9420b35d84e70c5c"
+url = "https://github.com/kubernetes-sigs/kind/releases/download/v0.31.0/kind-darwin-arm64"
+url_api = "https://api.github.com/repos/kubernetes-sigs/kind/releases/assets/330009824"
+
+[tools."github:kubernetes-sigs/kind"."platforms.macos-x64"]
+checksum = "sha256:a8b3cf77b2ad77aec5bf710d1a2589d9117576132af812885cad41e9dede4d4e"
+url = "https://github.com/kubernetes-sigs/kind/releases/download/v0.31.0/kind-darwin-amd64"
+url_api = "https://api.github.com/repos/kubernetes-sigs/kind/releases/assets/330009808"
+
+[tools."github:kubernetes-sigs/kind"."platforms.windows-x64"]
+checksum = "sha256:2c3a9ff954de16244380778683cf99e271bfc2fac9c6c4e797e4623c45e59d9d"
+url = "https://github.com/kubernetes-sigs/kind/releases/download/v0.31.0/kind-windows-amd64"
+url_api = "https://api.github.com/repos/kubernetes-sigs/kind/releases/assets/330009913"
+
 [[tools."github:viaduct-ai/kustomize-sops"]]
-version = "4.3.2"
+version = "4.4.0"
 backend = "github:viaduct-ai/kustomize-sops"
 
 [tools."github:viaduct-ai/kustomize-sops".platforms.macos-arm64]
-checksum = "sha256:9e466376e1650d683ddcabca10b366ef15881a3fe8beebfbed04d1900e330ebb"
 size = 9328676
-url = "https://github.com/viaduct-ai/kustomize-sops/releases/download/v4.3.2/ksops_4.3.2_Darwin_arm64.tar.gz"
+url = "https://github.com/viaduct-ai/kustomize-sops/releases/download/v4.4.0/ksops_4.4.0_Darwin_arm64.tar.gz"
 url_api = "https://api.github.com/repos/viaduct-ai/kustomize-sops/releases/assets/176582867"
 
 [tools."github:viaduct-ai/kustomize-sops".platforms.linux-amd64]
-checksum = "sha256:35eb1aa34e9f210e2dad767d483855e176b00954091c4ec7e77a958ecd0b02b4"
 size = 9226366
-url = "https://github.com/viaduct-ai/kustomize-sops/releases/download/v4.3.2/ksops_4.3.2_Linux_x86_64.tar.gz"
+url = "https://github.com/viaduct-ai/kustomize-sops/releases/download/v4.4.0/ksops_4.4.0_Linux_x86_64.tar.gz"
 url_api = "https://api.github.com/repos/viaduct-ai/kustomize-sops/releases/assets/176582858"
 
 [tools."github:viaduct-ai/kustomize-sops".platforms.linux-arm64]
-checksum = "sha256:fe651d68db1b25ab666fd71921d4658e9c0819cff0cd2b4bfad599b35f863846"
 size = 8514706
-url = "https://github.com/viaduct-ai/kustomize-sops/releases/download/v4.3.2/ksops_4.3.2_Linux_arm64.tar.gz"
+url = "https://github.com/viaduct-ai/kustomize-sops/releases/download/v4.4.0/ksops_4.4.0_Linux_arm64.tar.gz"
 url_api = "https://api.github.com/repos/viaduct-ai/kustomize-sops/releases/assets/176582860"
 
 [tools."github:viaduct-ai/kustomize-sops".platforms.darwin-amd64]
-checksum = "sha256:728fae8fc04d53b443897e45e67780de570906aaa44e13d8078d8e59f412940a"
 size = 9646575
-url = "https://github.com/viaduct-ai/kustomize-sops/releases/download/v4.3.2/ksops_4.3.2_Darwin_x86_64.tar.gz"
+url = "https://github.com/viaduct-ai/kustomize-sops/releases/download/v4.4.0/ksops_4.4.0_Darwin_x86_64.tar.gz"
 url_api = "https://api.github.com/repos/viaduct-ai/kustomize-sops/releases/assets/176582868"
 
 [tools."github:viaduct-ai/kustomize-sops".platforms.darwin-arm64]
-checksum = "sha256:9e466376e1650d683ddcabca10b366ef15881a3fe8beebfbed04d1900e330ebb"
 size = 9328676
-url = "https://github.com/viaduct-ai/kustomize-sops/releases/download/v4.3.2/ksops_4.3.2_Darwin_arm64.tar.gz"
+url = "https://github.com/viaduct-ai/kustomize-sops/releases/download/v4.4.0/ksops_4.4.0_Darwin_arm64.tar.gz"
 url_api = "https://api.github.com/repos/viaduct-ai/kustomize-sops/releases/assets/176582867"
 
 [tools."github:viaduct-ai/kustomize-sops".platforms.windows-amd64]
-checksum = "sha256:5f7cb8a53ef6e277fc7b80505ffec68b9ecbe9538e72f6f5accf3e840c675ee7"
 size = 9488786
-url = "https://github.com/viaduct-ai/kustomize-sops/releases/download/v4.3.2/ksops_4.3.2_Windows_x86_64.tar.gz"
+url = "https://github.com/viaduct-ai/kustomize-sops/releases/download/v4.4.0/ksops_4.4.0_Windows_x86_64.tar.gz"
 url_api = "https://api.github.com/repos/viaduct-ai/kustomize-sops/releases/assets/176582861"
 
 [[tools."http:kubectl"]]
-version = "1.34.5"
+version = "1.35.2"
 backend = "http:kubectl"
 
 [tools."http:kubectl".platforms.linux-x64]
-checksum = "sha256:6a17dd8387783b3144a65535e38d02c351027e9718ea34a6c360476cb26d28bb"
-url = "https://dl.k8s.io/v1.34.5/bin/linux/amd64/kubectl"
+url = "https://dl.k8s.io/v1.35.2/bin/linux/amd64/kubectl"
 
 [tools."http:kubectl".platforms.linux-amd64]
-checksum = "sha256:6a17dd8387783b3144a65535e38d02c351027e9718ea34a6c360476cb26d28bb"
-url = "https://dl.k8s.io/v1.34.5/bin/linux/amd64/kubectl"
+url = "https://dl.k8s.io/v1.35.2/bin/linux/amd64/kubectl"
 
 [tools."http:kubectl".platforms.linux-arm64]
-checksum = "sha256:2d433b53b99ea532f877df6fa5044286e3950d4933967ac3d99262760bc649fd"
-url = "https://dl.k8s.io/v1.34.5/bin/linux/arm64/kubectl"
+url = "https://dl.k8s.io/v1.35.2/bin/linux/arm64/kubectl"
 
 [tools."http:kubectl".platforms.darwin-amd64]
-checksum = "sha256:61ccfd05992fcc1135818d25691e55997155e914c98b704df7ddd542339a93cb"
-url = "https://dl.k8s.io/v1.34.5/bin/darwin/amd64/kubectl"
+url = "https://dl.k8s.io/v1.35.2/bin/darwin/amd64/kubectl"
 
 [tools."http:kubectl".platforms.darwin-arm64]
-checksum = "sha256:0c0b575db594e0f8842aa44e5d36b224bb9f8bf4b92cd34c0547d29b61a0277f"
-url = "https://dl.k8s.io/v1.34.5/bin/darwin/arm64/kubectl"
+url = "https://dl.k8s.io/v1.35.2/bin/darwin/arm64/kubectl"
 
 [tools."http:kubectl".platforms.windows-amd64]
-checksum = "sha256:ecaabd85663e2beece62c53bcf4ad999e1959f60abd69188837e1a22d98604eb"
-url = "https://dl.k8s.io/v1.34.5/bin/windows/amd64/kubectl.exe"
+url = "https://dl.k8s.io/v1.35.2/bin/windows/amd64/kubectl.exe"
 
 [[tools."http:skaffold"]]
-version = "2.17.2"
+version = "2.18.1"
 backend = "http:skaffold"
 
 [tools."http:skaffold".platforms.linux-x64]
-url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-linux-amd64"
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-linux-amd64"
 
 [tools."http:skaffold".platforms.linux-amd64]
-url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-linux-amd64"
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-linux-amd64"
 
 [tools."http:skaffold".platforms.linux-arm64]
-url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-linux-arm64"
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-linux-arm64"
 
 [tools."http:skaffold".platforms.darwin-amd64]
-url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-darwin-amd64"
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-darwin-amd64"
 
 [tools."http:skaffold".platforms.darwin-arm64]
-url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-darwin-arm64"
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-darwin-arm64"
 
 [tools."http:skaffold".platforms.windows-amd64]
-url = "https://storage.googleapis.com/skaffold/releases/v2.17.2/skaffold-windows-amd64.exe"
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-windows-amd64.exe"
