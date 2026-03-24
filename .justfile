@@ -26,6 +26,9 @@ test:
   just sayt test
 
 [no-cd]
+launch:
+  just sayt launch
+[no-cd]
 develop:
   just sayt develop
 [no-cd]
