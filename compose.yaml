@@ -46,6 +46,12 @@ services:
       target: integrate
       secrets:
         - host.env
+  services_boxer:
+    build:
+      context: ./services/boxer
+      network: host
+      dockerfile: ./Dockerfile
+      target: release
   plugins_devserver:
     build:
       context: .

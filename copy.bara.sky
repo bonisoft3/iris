@@ -123,6 +123,20 @@ WORKFLOWS = [
         mode = "ITERATIVE",
         scope = "lazybox",
     ),
+    struct(
+        name = "boxer",
+        destination = "git@github.com:bonisoft3/boxer.git",
+        origin_files = [
+            "services/boxer/**",
+        ],
+        origin_excludes = [],
+        transformations = [
+            core.move("services/boxer", ""),
+        ],
+        submodules = "",
+        mode = "ITERATIVE",
+        scope = "boxer",
+    ),
 ]
 
 def register_workflows(origin_url, name_suffix):
