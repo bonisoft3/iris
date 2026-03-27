@@ -271,4 +271,4 @@ service-account.json
 # Git worktrees
 .worktrees/
 
-services/shelfie/app
+services/shelfie/shelfie
