@@ -4,9 +4,9 @@ DIR="$(dirname "$(readlink -f "$0")")"
 
 # Check for Alpine and prefer musl variant if available
 if [ -f /etc/alpine-release ] && [ -f "$DIR/protoc-gen-buf-lint.musl.toml" ]; then
-    mise trust -y -a -q .
-    MISE_LOCKED=0 exec mise tool-stub "$DIR/protoc-gen-buf-lint.musl.toml" "$@"
+    "$DIR/.lazybox" trust -y -a -q .
+    MISE_LOCKED=0 exec "$DIR/.lazybox" tool-stub "$DIR/protoc-gen-buf-lint.musl.toml" "$@"
 else
-    mise trust -y -a -q .
-    MISE_LOCKED=0 exec mise tool-stub "$DIR/protoc-gen-buf-lint.toml" "$@"
+    "$DIR/.lazybox" trust -y -a -q .
+    MISE_LOCKED=0 exec "$DIR/.lazybox" tool-stub "$DIR/protoc-gen-buf-lint.toml" "$@"
 fi
