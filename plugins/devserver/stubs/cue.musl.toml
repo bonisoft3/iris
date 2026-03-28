@@ -2,6 +2,7 @@
 
 version = "0.16.0"
 bin = "cue"
+strip_components = 1
 
 # Platform configurations
 [platforms.darwin-amd64]
@@ -28,4 +29,5 @@ checksum = "sha256:83ba7485cbad5f031ffc3e0142bc4f3ab26b53fd4491548939bfa9d5b00f6
 url = "https://github.com/cue-lang/cue/releases/download/v0.16.0/cue_v0.16.0_windows_amd64.zip"
 checksum = "sha256:e57180a908a5e35d8a2be00ba620b52fc6fdfc6e1400799d25bb53a115555b03"
 bin = "cue.exe"
+strip_components = 1
 

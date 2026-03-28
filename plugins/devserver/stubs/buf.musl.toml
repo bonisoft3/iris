@@ -2,6 +2,7 @@
 
 version = "1.66.1"
 bin = "buf"
+strip_components = 1
 
 # Platform configurations
 [platforms.darwin-amd64]
@@ -28,4 +29,5 @@ checksum = "sha256:e5e3a80dc1bc3dd374ecfcbc250c731a05dbb01d382117d3d420bca7875d9
 url = "https://github.com/bufbuild/buf/releases/download/v1.66.1/buf-Windows-x86_64.zip"
 checksum = "sha256:b4671213dd37e17fb574ccca7c82bef2b84f9df2c1bc933be0ce14aacf56d435"
 bin = "buf.exe"
+strip_components = 1
 

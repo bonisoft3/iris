@@ -2,6 +2,7 @@
 
 version = "1.20.0"
 bin = "hyperfine"
+strip_components = 1
 
 # Platform configurations
 [platforms.darwin-amd64]
@@ -28,4 +29,5 @@ checksum = "sha256:8ee7067016620447c9d2d6234ec9a4680f958b7ad983549b56334668f6307
 url = "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-x86_64-pc-windows-msvc.zip"
 checksum = "sha256:2508c549b049b1d4342d08edc1cb42bfac169082b6e3069431b5bab9822dbb32"
 bin = "hyperfine.exe"
+strip_components = 1
 

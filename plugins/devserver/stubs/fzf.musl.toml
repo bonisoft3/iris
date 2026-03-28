@@ -2,6 +2,7 @@
 
 version = "0.70.0"
 bin = "fzf"
+strip_components = 1
 
 # Platform configurations
 [platforms.darwin-amd64]
@@ -28,4 +29,5 @@ checksum = "sha256:75f4905c2e3d00666d81dffdd001bb2a9a8e0ad4e4ac8cecfc17a7401b99e
 url = "https://github.com/junegunn/fzf/releases/download/v0.70.0/fzf-0.70.0-windows_amd64.zip"
 checksum = "sha256:7465a6738e2c844742df973459c7509aed2d10d7a72bfd6de201b867b4eda4cd"
 bin = "fzf.exe"
+strip_components = 1
 

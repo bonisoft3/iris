@@ -2,6 +2,7 @@
 
 version = "4.52.4"
 bin = "install-man-page.sh"
+strip_components = 1
 
 # Platform configurations
 [platforms.darwin-amd64]
@@ -28,4 +29,5 @@ checksum = "sha256:99778ab9ac307b89889607a8f84b4c16e668077ccb8665617547b9059a219
 url = "https://github.com/mikefarah/yq/releases/download/v4.52.4/yq_windows_amd64.zip"
 checksum = "sha256:aa6a26dff7cdff53161873e9aebb768460a5d42088ceca0864d44e214a669c0d"
 bin = "install-man-page.sh.exe"
+strip_components = 1
 

@@ -2,6 +2,7 @@
 
 version = "0.9.9"
 bin = "zoxide"
+strip_components = 1
 
 # Platform configurations
 [platforms.darwin-amd64]
@@ -28,4 +29,5 @@ checksum = "sha256:57e733d0436309dae2ed97e46bba43937209395298e1d88812d4e893900cb
 url = "https://github.com/ajeetdsouza/zoxide/releases/download/v0.9.9/zoxide-0.9.9-x86_64-pc-windows-msvc.zip"
 checksum = "sha256:5af00d0916f05631e3030537289eac56605e7c1733318c4d525c8e847f12496d"
 bin = "zoxide.exe"
+strip_components = 1
 

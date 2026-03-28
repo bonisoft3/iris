@@ -2,6 +2,7 @@
 
 version = "0.25.3"
 bin = "xh"
+strip_components = 1
 
 # Platform configurations
 [platforms.darwin-amd64]
@@ -28,4 +29,5 @@ checksum = "sha256:3886af1df744a44f6f8da37d51e3f733c14b35aeb3f46828ee528970ad708
 url = "https://github.com/ducaale/xh/releases/download/v0.25.3/xh-v0.25.3-x86_64-pc-windows-msvc.zip"
 checksum = "sha256:49f60a01324ce42726ce1f8bcdff4b376b1e8533aed33d7a107a3cd70f040236"
 bin = "xh.exe"
+strip_components = 1
 

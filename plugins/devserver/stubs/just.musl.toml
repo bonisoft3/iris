@@ -2,6 +2,7 @@
 
 version = "1.47.1"
 bin = "just"
+strip_components = 1
 
 # Platform configurations
 [platforms.darwin-amd64]
@@ -28,4 +29,5 @@ checksum = "sha256:630390f3cfe131f5153c336cb5d5e9714c49ff27bee38d090da0a5901fd66
 url = "https://github.com/casey/just/releases/download/1.47.1/just-1.47.1-x86_64-pc-windows-msvc.zip"
 checksum = "sha256:0f059a129049e4efaff5ff645182972edb07180248f769c5153a90765643bb7b"
 bin = "just.exe"
+strip_components = 1
 
