@@ -49,20 +49,6 @@ WORKFLOWS = [
         scope = "",
     ),
     struct(
-        name = "butler",
-        destination = "git@github.com:bonisoft3/butler.git",
-        origin_files = [
-            "services/butler/**",
-        ],
-        origin_excludes = [],
-        transformations = [
-            core.move("services/butler", ""),
-        ],
-        submodules = "RECURSIVE",
-        mode = "SQUASH",
-        scope = "",
-    ),
-    struct(
         name = "sayt",
         destination = "git@github.com:bonisoft3/sayt.git",
         origin_files = [
