@@ -71,6 +71,14 @@ services:
       secrets:
         - host.env
 
+  devcontainer:
+    build:
+      context: ./.devcontainer
+      dockerfile: ./Dockerfile
+      target: nubox
+      args:
+        BASE_IMG: mcr.microsoft.com/devcontainers/base:ubuntu24.04@sha256:4bcb1b466771b1ba1ea110e2a27daea2f6093f9527fb75ee59703ec89b5561cb
+
 secrets:
   host.env:
     environment: HOST_ENV
