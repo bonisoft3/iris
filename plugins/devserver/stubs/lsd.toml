@@ -1,33 +1,50 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
-version = "1.2.0"
+tool = "github:lsd-rs/lsd"
+version = "v1.2.0"
 bin = "lsd"
 strip_components = 1
 
 # Platform configurations
 [platforms.darwin-amd64]
-url = "https://github.com/lsd-rs/lsd/releases/download/v1.2.0/lsd-1.2.0-x86_64-apple-darwin.tar.gz"
-checksum = "sha256:00d3c50551b270bbdf7da97816e5ba7f5fd10294cd310165f7f8b5523e738b9c"
+url = "https://github.com/lsd-rs/lsd/releases/download/v1.2.0/lsd-v1.2.0-x86_64-apple-darwin.tar.gz"
 
 [platforms.darwin-arm64]
-url = "https://github.com/lsd-rs/lsd/releases/download/v1.2.0/lsd-1.2.0-aarch64-apple-darwin.tar.gz"
-checksum = "sha256:9e34a5d392ff913302098aad0543dafa1883c531eaf229b82f086c3fca675e3e"
+url = "https://github.com/lsd-rs/lsd/releases/download/v1.2.0/lsd-v1.2.0-aarch64-apple-darwin.tar.gz"
 
 [platforms.linux-amd64]
-url = "https://github.com/lsd-rs/lsd/releases/download/v1.2.0/lsd-1.2.0-x86_64-unknown-linux-musl.tar.gz"
-checksum = "sha256:77849da1210336534258551a581401ba19ae6b8d7b66a2a1feff148ad41e3814"
+url = "https://github.com/lsd-rs/lsd/releases/download/v1.2.0/lsd-v1.2.0-x86_64-unknown-linux-musl.tar.gz"
 
 [platforms.linux-arm64]
-url = "https://github.com/lsd-rs/lsd/releases/download/v1.2.0/lsd-1.2.0-aarch64-unknown-linux-musl.tar.gz"
+url = "https://github.com/lsd-rs/lsd/releases/download/v1.2.0/lsd-v1.2.0-aarch64-unknown-linux-gnu.tar.gz"
 checksum = "sha256:48c069cf73a8ed0851f366afeac86e3a9b7db416133f45d033d31d123f819f26"
 
+[platforms.linux-arm64-musl]
+url = "https://github.com/lsd-rs/lsd/releases/download/v1.2.0/lsd-v1.2.0-aarch64-unknown-linux-musl.tar.gz"
+checksum = "sha256:642ecb1a763b9f790a99c83a1445c117a6813ed4edb5d498d4420423c6353eb8"
+
+[platforms.linux-x64]
+url = "https://github.com/lsd-rs/lsd/releases/download/v1.2.0/lsd-v1.2.0-x86_64-unknown-linux-gnu.tar.gz"
+checksum = "sha256:57d3b5859254adcfb8374ce98159cca97a14959997d2ae1176d2cff59556d829"
+
+[platforms.linux-x64-musl]
+url = "https://github.com/lsd-rs/lsd/releases/download/v1.2.0/lsd-v1.2.0-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:77849da1210336534258551a581401ba19ae6b8d7b66a2a1feff148ad41e3814"
+
 [platforms.macos-arm64]
-url = "https://github.com/lsd-rs/lsd/releases/download/v1.2.0/lsd-1.2.0-aarch64-apple-darwin.tar.gz"
+url = "https://github.com/lsd-rs/lsd/releases/download/v1.2.0/lsd-v1.2.0-aarch64-apple-darwin.tar.gz"
 checksum = "sha256:9e34a5d392ff913302098aad0543dafa1883c531eaf229b82f086c3fca675e3e"
 
+[platforms.macos-x64]
+url = "https://github.com/lsd-rs/lsd/releases/download/v1.2.0/lsd-v1.2.0-x86_64-apple-darwin.tar.gz"
+checksum = "sha256:00d3c50551b270bbdf7da97816e5ba7f5fd10294cd310165f7f8b5523e738b9c"
+
 [platforms.windows-amd64]
-url = "https://github.com/lsd-rs/lsd/releases/download/v1.2.0/lsd-1.2.0-x86_64-pc-windows-msvc.zip"
+url = "https://github.com/lsd-rs/lsd/releases/download/v1.2.0/lsd-v1.2.0-x86_64-pc-windows-msvc.zip"
+bin = "lsd.exe"
+
+[platforms.windows-x64]
+url = "https://github.com/lsd-rs/lsd/releases/download/v1.2.0/lsd-v1.2.0-x86_64-pc-windows-msvc.zip"
 checksum = "sha256:a65b9f457153934a7ce1f7e0fe1c4922a95bb2822222126e4fbaa6ee9c0d78e5"
 bin = "lsd.exe"
-strip_components = 1
 

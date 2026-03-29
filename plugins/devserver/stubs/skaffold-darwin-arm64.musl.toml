@@ -23,4 +23,3 @@ bin = "skaffold-darwin-arm64.exe"
 [platforms.windows-x64]
 url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-windows-amd64.exe"
 bin = "skaffold-darwin-arm64.exe"
-

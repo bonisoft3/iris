@@ -1,27 +1,36 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
+tool = "github:dbohdan/recur"
 version = "3.2.0"
 bin = "recur"
 
 # Platform configurations
-[platforms.darwin-arm64]
-url = "https://github.com/dbohdan/recur/releases/download/v3.2.0/recur-3.2.0-macos-arm64"
-checksum = "sha256:d568daf1ee8846f701e977eea601b84e8aed1f3d1296ad39dee1fe15072d65f6"
-
-[platforms.linux-amd64]
-url = "https://github.com/dbohdan/recur/releases/download/v3.2.0/recur-3.2.0-linux-x86_64"
-checksum = "sha256:39046a2fbe6555302170608edd45e3092b3746f50f3ca3b203309e628aeaa608"
-
 [platforms.linux-arm64]
-url = "https://github.com/dbohdan/recur/releases/download/v3.2.0/recur-3.2.0-linux-aarch64"
+url = "https://github.com/dbohdan/recur/releases/download/v3.2.0/recur-v3.2.0-linux-arm64"
 checksum = "sha256:f041b2a3dce58a600da3a843550d1b4eef0400f56f68089391edec48c23e1c49"
 
+[platforms.linux-arm64-musl]
+url = "https://github.com/dbohdan/recur/releases/download/v3.2.0/recur-v3.2.0-linux-arm64"
+checksum = "sha256:f041b2a3dce58a600da3a843550d1b4eef0400f56f68089391edec48c23e1c49"
+
+[platforms.linux-x64]
+url = "https://github.com/dbohdan/recur/releases/download/v3.2.0/recur-v3.2.0-linux-amd64"
+checksum = "sha256:39046a2fbe6555302170608edd45e3092b3746f50f3ca3b203309e628aeaa608"
+
+[platforms.linux-x64-musl]
+url = "https://github.com/dbohdan/recur/releases/download/v3.2.0/recur-v3.2.0-linux-amd64"
+checksum = "sha256:39046a2fbe6555302170608edd45e3092b3746f50f3ca3b203309e628aeaa608"
+
 [platforms.macos-arm64]
-url = "https://github.com/dbohdan/recur/releases/download/v3.2.0/recur-3.2.0-macos-arm64"
+url = "https://github.com/dbohdan/recur/releases/download/v3.2.0/recur-v3.2.0-darwin-arm64"
 checksum = "sha256:d568daf1ee8846f701e977eea601b84e8aed1f3d1296ad39dee1fe15072d65f6"
 
-[platforms.windows-amd64]
-url = "https://github.com/dbohdan/recur/releases/download/v3.2.0/recur-3.2.0-windows-amd64.exe"
+[platforms.macos-x64]
+url = "https://github.com/dbohdan/recur/releases/download/v3.2.0/recur-v3.2.0-darwin-amd64"
+checksum = "sha256:628ff53e03541579853c1ef19d53c4236be43bbfa78c6fa3d9538e006166e985"
+
+[platforms.windows-x64]
+url = "https://github.com/dbohdan/recur/releases/download/v3.2.0/recur-v3.2.0-windows-amd64.exe"
 checksum = "sha256:667479a65ea40c2a5838658b920335e695acab549f2c7530fb976c4b951df28e"
 bin = "recur.exe"
 

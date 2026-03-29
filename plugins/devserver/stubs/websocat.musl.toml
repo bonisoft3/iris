@@ -23,4 +23,3 @@ checksum = "sha256:7b554537b7b046caf598a0db4ee95016e4d2899595c71a403d73ff5ad9f0c
 [platforms.macos-arm64]
 url = "https://github.com/vi/websocat/releases/download/v1.14.0/websocat.x86_64-apple-darwin"
 checksum = "blake3:8385fa8b05bf17a5be880c8aaf2e80667973e58c0a80842e3c4fb7a7b936362c"
-

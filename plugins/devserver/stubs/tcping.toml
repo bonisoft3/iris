@@ -1,33 +1,14 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
+tool = "github:lvillis/tcping-rs"
 version = "1.2.24"
 bin = "tcping"
 strip_components = 1
 
 # Platform configurations
-[platforms.darwin-amd64]
-url = "https://github.com/lvillis/tcping-rs/releases/download/1.2.24/tcping-1.2.24-x86_64-apple-darwin.tar.gz"
-checksum = "sha256:2cf7e1d17f3894a6c7ca8b62633a4e0bf9a4a52f18f96c2be753e904e6f118ca"
-
-[platforms.darwin-arm64]
-url = "https://github.com/lvillis/tcping-rs/releases/download/1.2.24/tcping-1.2.24-aarch64-apple-darwin.tar.gz"
-checksum = "sha256:6c63ee47bdd07e92659ae3c475333c00cf1e36466d2b9b8ad4432815c108356b"
-
-[platforms.linux-amd64]
-url = "https://github.com/lvillis/tcping-rs/releases/download/1.2.24/tcping-1.2.24-x86_64-unknown-linux-musl.tar.gz"
-checksum = "sha256:c3fb111a600c9647e4d008ef31142a7416e232338787805b5949643a0105e653"
-
 [platforms.linux-arm64]
 url = "https://github.com/lvillis/tcping-rs/releases/download/1.2.24/tcping-1.2.24-aarch64-unknown-linux-musl.tar.gz"
-checksum = "sha256:595ad0aa486dd6ca9a337a214797e3b5bf1287e6c16f6baa0d0d0a6b2b9fdb3a"
 
-[platforms.macos-arm64]
-url = "https://github.com/lvillis/tcping-rs/releases/download/1.2.24/tcping-1.2.24-aarch64-apple-darwin.tar.gz"
-checksum = "sha256:6c63ee47bdd07e92659ae3c475333c00cf1e36466d2b9b8ad4432815c108356b"
-
-[platforms.windows-amd64]
-url = "https://github.com/lvillis/tcping-rs/releases/download/1.2.24/tcping-1.2.24-x86_64-pc-windows-msvc.zip"
-checksum = "sha256:8fa0a8298f71275427c6fe8deccd945c7b752f6b5a2acafb58f11fae87db53b1"
-bin = "tcping.exe"
-strip_components = 1
+[platforms.linux-x64]
+url = "https://github.com/lvillis/tcping-rs/releases/download/1.2.24/tcping-1.2.24-x86_64-unknown-linux-musl.tar.gz"
 

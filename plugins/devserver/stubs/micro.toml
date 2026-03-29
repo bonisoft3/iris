@@ -1,5 +1,6 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
+tool = "github:micro-editor/micro"
 version = "2.0.15"
 bin = "micro"
 strip_components = 1
@@ -7,19 +8,37 @@ strip_components = 1
 # Platform configurations
 [platforms.darwin-arm64]
 url = "https://github.com/zyedidia/micro/releases/download/v2.0.15/micro-2.0.15-macos-arm64.tar.gz"
-checksum = "sha256:2ff285cc49f2ac3f7a6e9110e2dabd3c848b73eed56a8396d627c0af80a34624"
 
 [platforms.linux-arm64]
-url = "https://github.com/zyedidia/micro/releases/download/v2.0.15/micro-2.0.15-linux-arm64.tar.gz"
+url = "https://github.com/micro-editor/micro/releases/download/v2.0.15/micro-2.0.15-linux-arm64.tar.gz"
 checksum = "sha256:5ca127857bf5500be3879f1a70b27556e737a49da04a1be5334de9e8e8781ad9"
 
+[platforms.linux-arm64-musl]
+url = "https://github.com/micro-editor/micro/releases/download/v2.0.15/micro-2.0.15-linux-arm64.tar.gz"
+checksum = "sha256:5ca127857bf5500be3879f1a70b27556e737a49da04a1be5334de9e8e8781ad9"
+
+[platforms.linux-x64]
+url = "https://github.com/micro-editor/micro/releases/download/v2.0.15/micro-2.0.15-linux32.tar.gz"
+checksum = "sha256:a105dcf5407760d11dd29c6e014238c655b1db2b0c3f08eb0e83fc986fbda196"
+
+[platforms.linux-x64-musl]
+url = "https://github.com/micro-editor/micro/releases/download/v2.0.15/micro-2.0.15-linux32.tar.gz"
+checksum = "sha256:a105dcf5407760d11dd29c6e014238c655b1db2b0c3f08eb0e83fc986fbda196"
+
 [platforms.macos-arm64]
-url = "https://github.com/zyedidia/micro/releases/download/v2.0.15/micro-2.0.15-macos-arm64.tgz"
+url = "https://github.com/micro-editor/micro/releases/download/v2.0.15/micro-2.0.15-macos-arm64.tar.gz"
 checksum = "sha256:2ff285cc49f2ac3f7a6e9110e2dabd3c848b73eed56a8396d627c0af80a34624"
+
+[platforms.macos-x64]
+url = "https://github.com/micro-editor/micro/releases/download/v2.0.15/micro-2.0.15-osx.tar.gz"
+checksum = "sha256:d765b9bdd6478c4f5a3cbd5a93ebe7bab2b9cec30b5350016975cf1045855cee"
 
 [platforms.windows-amd64]
 url = "https://github.com/zyedidia/micro/releases/download/v2.0.15/micro-2.0.15-win64.zip"
+bin = "micro.exe"
+
+[platforms.windows-x64]
+url = "https://github.com/micro-editor/micro/releases/download/v2.0.15/micro-2.0.15-win32.zip"
 checksum = "sha256:0001be61d9751af4b1f370cc4422dd62894a3285b91d43a50ccf5d6c607f7668"
 bin = "micro.exe"
-strip_components = 1
 
