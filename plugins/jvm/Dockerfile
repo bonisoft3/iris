@@ -41,7 +41,7 @@ FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b
 WORKDIR /monorepo/plugins/libstoml/
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_gradle /monorepo /monorepo
-COPY plugins/libstoml/.mise.toml plugins/libstoml/mise.lock plugins/libstoml/.mise.alpine.lock ./
+COPY plugins/libstoml/.mise.toml plugins/libstoml/mise.lock ./
 COPY plugins/libstoml/gradle gradle
 COPY --chmod=0755 plugins/libstoml/gradlew ./
 COPY plugins/libstoml/gradlew.bat plugins/libstoml/gradle.properties plugins/libstoml/settings.gradle* plugins/libstoml/build.gradle* ./

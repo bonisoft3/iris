@@ -39,7 +39,7 @@ FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b
 WORKDIR /monorepo/guis/web/
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_pnpm /monorepo /monorepo
-COPY guis/web/.mise.toml guis/web/mise.lock guis/web/.mise.alpine.lock ./
+COPY guis/web/.mise.toml guis/web/mise.lock ./
 COPY guis/web/package.json ./
 COPY guis/web/.vscode .vscode
 # https://code.visualstudio.com/docs/containers/debug-node#_mapping-docker-container-source-files-to-the-local-workspace
@@ -69,7 +69,7 @@ FROM devserver AS debug
 WORKDIR /monorepo/guis/web/
 COPY --from=root_sayt /monorepo /monorepo
 COPY --from=root_pnpm /monorepo /monorepo
-COPY guis/web/.mise.toml guis/web/mise.lock guis/web/.mise.alpine.lock ./
+COPY guis/web/.mise.toml guis/web/mise.lock ./
 RUN  [ ! -e .mise.toml ] || just setup
 RUN  pnpm --dir /monorepo/ install --frozen-lockfile
 COPY guis/web/package.json ./
