@@ -1,0 +1,30 @@
+/*
+ * @iris/ui-constraints — shared layout tokens
+ *
+ * Import this in any frontend project:
+ *   @import "@iris/ui-constraints/css/tokens.css";
+ *
+ * These tokens define the ONLY allowed z-index and layout values.
+ * ESLint rules in @iris/ui-constraints/eslint enforce their usage.
+ */
+
+:root {
+  /* ── Z-index layer scale ──
+   * ALL z-index values MUST use these tokens.
+   * Never use z-10/z-20/z-50 directly — use z-[var(--z-*)] instead.
+   * Layers are ordered: bleed < sticky < panel < nav < fab < dropdown < overlay < flash */
+  --z-bleed: 1;
+  --z-sticky: 10;
+  --z-panel: 20;
+  --z-nav: 30;
+  --z-fab: 35;
+  --z-dropdown: 40;
+  --z-overlay: 50;
+  --z-flash: 60;
+
+  /* ── Layout constants ──
+   * Shared sizing tokens for the app shell */
+  --shell-sidebar-w: 3.5rem;       /* 56px — sidebar width on lg+ */
+  --shell-bottomnav-h: 4rem;       /* 64px — bottom nav height on mobile */
+  --shell-header-h: 3rem;          /* 48px — sticky header height */
+}

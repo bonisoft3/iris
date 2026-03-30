@@ -1,0 +1,12 @@
+{
+  "name": "@iris/ui-constraints",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./css/tokens.css": "./css/tokens.css",
+    "./eslint": "./eslint/index.mjs",
+    "./playwright/visual-lint": "./playwright/visual-lint.ts",
+    "./playwright/camera-helpers": "./playwright/camera-helpers.ts"
+  }
+}
