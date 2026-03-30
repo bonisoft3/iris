@@ -1,7 +1,8 @@
-# Auto-generated Alpine/musl stub for ($binary_info.clean_name)
+# Auto-generated stub for ($binary_info.clean_name)
 
+tool = "http:docker-cli"
 version = "29.3.0"
-bin = "docker"
+bin = "docker-cli"
 strip_components = 1
 
 # Platform configurations
@@ -22,10 +23,9 @@ url = "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz"
 
 [platforms.macos-arm64]
 url = "https://download.docker.com/mac/static/stable/aarch64/docker-29.3.0.tgz"
+checksum = "blake3:e0f987762cbcb9fa7640f4a5f8b58e0e534442d48cc293b8023a81291906ccac"
 
-[platforms.macos-x64]
-url = "https://download.docker.com/mac/static/stable/x86_64/docker-29.3.0.tgz"
-
-[platforms.windows-x64]
+[platforms.windows-amd64]
 url = "https://download.docker.com/win/static/stable/x86_64/docker-29.3.0.zip"
-bin = "docker.exe"
+bin = "docker-cli.exe"
+

@@ -6,15 +6,6 @@ bin = "protoc-gen-buf-breaking"
 strip_components = 1
 
 # Platform configurations
-[platforms.darwin-amd64]
-url = "https://github.com/bufbuild/buf/releases/download/v1.66.1/buf-Darwin-x86_64.tar.gz"
-
-[platforms.darwin-arm64]
-url = "https://github.com/bufbuild/buf/releases/download/v1.66.1/buf-Darwin-arm64.tar.gz"
-
-[platforms.linux-amd64]
-url = "https://github.com/bufbuild/buf/releases/download/v1.66.1/buf-Linux-x86_64.tar.gz"
-
 [platforms.linux-arm64]
 url = "https://github.com/bufbuild/buf/releases/download/v1.66.1/buf-Linux-aarch64.tar.gz"
 checksum = "sha256:157806788e82216d4ea6010a9d21e61130225d0d61c37904a4fad675fe446d94"
@@ -38,10 +29,6 @@ checksum = "sha256:e5e3a80dc1bc3dd374ecfcbc250c731a05dbb01d382117d3d420bca7875d9
 [platforms.macos-x64]
 url = "https://github.com/bufbuild/buf/releases/download/v1.66.1/buf-Darwin-x86_64.tar.gz"
 checksum = "sha256:fd055cd83595039b9d05cf587b5460281b4a7ff0b86f7584cccba17ec1860e88"
-
-[platforms.windows-amd64]
-url = "https://github.com/bufbuild/buf/releases/download/v1.66.1/buf-Windows-x86_64.zip"
-bin = "protoc-gen-buf-breaking.exe"
 
 [platforms.windows-x64]
 url = "https://github.com/bufbuild/buf/releases/download/v1.66.1/buf-Windows-x86_64.zip"

@@ -13,7 +13,7 @@ idiomatic_version_file_enable_tools = ["python"]
 
 [tools]
 "github:nektos/act" = "v0.2.84"
-"github:casey/just" = "1.47.1"
+"github:casey/just" = "1.48.1"
 "github:nushell/nushell" = "0.110.0"
 "github:cue-lang/cue" = "0.16.0"
-"github:astral-sh/uv" = "0.10.12"
+"github:astral-sh/uv" = "0.11.2"

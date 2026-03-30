@@ -6,25 +6,32 @@ bin = "nu_plugin_inc"
 strip_components = 1
 
 # Platform configurations
-[platforms.darwin-amd64]
-url = "https://github.com/nushell/nushell/releases/download/0.110.0/nu-0.110.0-x86_64-apple-darwin.tar.gz"
-
-[platforms.darwin-arm64]
-url = "https://github.com/nushell/nushell/releases/download/0.110.0/nu-0.110.0-aarch64-apple-darwin.tar.gz"
-
-[platforms.linux-amd64]
-url = "https://github.com/nushell/nushell/releases/download/0.110.0/nu-0.110.0-x86_64-unknown-linux-musl.tar.gz"
-
 [platforms.linux-arm64]
+url = "https://github.com/nushell/nushell/releases/download/0.110.0/nu-0.110.0-aarch64-unknown-linux-gnu.tar.gz"
+checksum = "sha256:8c6d9655ecce9cea7f53d190d12e351df687614324201f4cf717310abf87d946"
+
+[platforms.linux-arm64-musl]
 url = "https://github.com/nushell/nushell/releases/download/0.110.0/nu-0.110.0-aarch64-unknown-linux-musl.tar.gz"
+checksum = "sha256:596ce2cc836eb5ca9f710c69995dd9bfac26135cf0cd67ff13ce98e528e7f9f4"
 
 [platforms.linux-x64]
+url = "https://github.com/nushell/nushell/releases/download/0.110.0/nu-0.110.0-x86_64-unknown-linux-gnu.tar.gz"
+checksum = "sha256:d68c38d408b04c7d957930d4de15b3ded1520cf322bc6897ef85666955f41889"
+
+[platforms.linux-x64-musl]
 url = "https://github.com/nushell/nushell/releases/download/0.110.0/nu-0.110.0-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:82b0f24646ad1dc5f1a2f2112b8a25178fb62e085c26b1a00eb2e0be091ce055"
 
 [platforms.macos-arm64]
 url = "https://github.com/nushell/nushell/releases/download/0.110.0/nu-0.110.0-aarch64-apple-darwin.tar.gz"
+checksum = "sha256:6d587b1daf7cb9a8ae4d4e265db4d4ed52ea8b69cdc5a42a02142dda300781ac"
 
-[platforms.windows-amd64]
+[platforms.macos-x64]
+url = "https://github.com/nushell/nushell/releases/download/0.110.0/nu-0.110.0-x86_64-apple-darwin.tar.gz"
+checksum = "sha256:d31bc17870c85d75b040c82b507071eea79001306cadc64a30917f7c9711b3d5"
+
+[platforms.windows-x64]
 url = "https://github.com/nushell/nushell/releases/download/0.110.0/nu-0.110.0-x86_64-pc-windows-msvc.zip"
+checksum = "sha256:70ad9dbc5e6f82fc5bb1fafe6bc39ddd4e50c8fa1eb5450d5c4a1dc5456161be"
 bin = "nu_plugin_inc.exe"
 

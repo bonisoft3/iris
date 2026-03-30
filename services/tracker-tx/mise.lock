@@ -104,27 +104,26 @@ url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-darwin-
 url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-windows-amd64.exe"
 
 [[tools."http:yq"]]
-version = "4.52.4"
+version = "4.52.5"
 backend = "http:yq"
 
 [tools."http:yq"."platforms.linux-arm64"]
-url = "https://github.com/mikefarah/yq/releases/download/v4.52.4/yq_linux_arm64"
+url = "https://github.com/mikefarah/yq/releases/download/v4.52.5/yq_linux_arm64"
 
 [tools."http:yq"."platforms.linux-arm64-musl"]
-url = "https://github.com/mikefarah/yq/releases/download/v4.52.4/yq_linux_arm64"
+url = "https://github.com/mikefarah/yq/releases/download/v4.52.5/yq_linux_arm64"
 
 [tools."http:yq"."platforms.linux-x64"]
-url = "https://github.com/mikefarah/yq/releases/download/v4.52.4/yq_linux_amd64"
+url = "https://github.com/mikefarah/yq/releases/download/v4.52.5/yq_linux_amd64"
 
 [tools."http:yq"."platforms.linux-x64-musl"]
-url = "https://github.com/mikefarah/yq/releases/download/v4.52.4/yq_linux_amd64"
+url = "https://github.com/mikefarah/yq/releases/download/v4.52.5/yq_linux_amd64"
 
 [tools."http:yq"."platforms.macos-arm64"]
-checksum = "blake3:c20df7e4e8b3829f733862edf45036cb088a7c1abaa77c3639108e756c3256bd"
-url = "https://github.com/mikefarah/yq/releases/download/v4.52.4/yq_darwin_arm64"
+url = "https://github.com/mikefarah/yq/releases/download/v4.52.5/yq_darwin_arm64"
 
 [tools."http:yq"."platforms.macos-x64"]
-url = "https://github.com/mikefarah/yq/releases/download/v4.52.4/yq_darwin_amd64"
+url = "https://github.com/mikefarah/yq/releases/download/v4.52.5/yq_darwin_amd64"
 
 [tools."http:yq"."platforms.windows-x64"]
-url = "https://github.com/mikefarah/yq/releases/download/v4.52.4/yq_windows_amd64.exe"
+url = "https://github.com/mikefarah/yq/releases/download/v4.52.5/yq_windows_amd64.exe"

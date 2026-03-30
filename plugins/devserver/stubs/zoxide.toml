@@ -6,15 +6,6 @@ bin = "zoxide"
 strip_components = 1
 
 # Platform configurations
-[platforms.darwin-amd64]
-url = "https://github.com/ajeetdsouza/zoxide/releases/download/v0.9.9/zoxide-0.9.9-x86_64-apple-darwin.tar.gz"
-
-[platforms.darwin-arm64]
-url = "https://github.com/ajeetdsouza/zoxide/releases/download/v0.9.9/zoxide-0.9.9-aarch64-apple-darwin.tar.gz"
-
-[platforms.linux-amd64]
-url = "https://github.com/ajeetdsouza/zoxide/releases/download/v0.9.9/zoxide-0.9.9-x86_64-unknown-linux-musl.tar.gz"
-
 [platforms.linux-arm64]
 url = "https://github.com/ajeetdsouza/zoxide/releases/download/v0.9.9/zoxide-0.9.9-aarch64-linux-android.tar.gz"
 checksum = "sha256:7d3687aa803212186d3207d152daec4bd46112110f1ddef070e5369d8e193a8c"
@@ -38,10 +29,6 @@ checksum = "sha256:57e733d0436309dae2ed97e46bba43937209395298e1d88812d4e893900cb
 [platforms.macos-x64]
 url = "https://github.com/ajeetdsouza/zoxide/releases/download/v0.9.9/zoxide-0.9.9-x86_64-apple-darwin.tar.gz"
 checksum = "sha256:364249cff18354397c72ebb6b8f7358404c051c486e0f2f7a46e36c86c16f8c7"
-
-[platforms.windows-amd64]
-url = "https://github.com/ajeetdsouza/zoxide/releases/download/v0.9.9/zoxide-0.9.9-x86_64-pc-windows-msvc.zip"
-bin = "zoxide.exe"
 
 [platforms.windows-x64]
 url = "https://github.com/ajeetdsouza/zoxide/releases/download/v0.9.9/zoxide-0.9.9-x86_64-pc-windows-msvc.zip"

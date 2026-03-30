@@ -5,7 +5,7 @@ ENV XDG_CACHE_HOME=/root/.local/cache
 ENV XDG_DATA_HOME=/root/.local/share
 ENV XDG_CONFIG_HOME=/root/.local/config
 ENV PATH=/root/.local/bin:${XDG_DATA_HOME}/mise/shims:$PATH
-ENV MISE_VERSION=2026.3.5
+ENV MISE_VERSION=2026.3.17
 ARG TARGETOS
 ARG TARGETARCH
 COPY --from=tonistiigi/xx:1.5.0@sha256:0c6a569797744e45955f39d4f7538ac344bfb7ebf0a54006a0a4297b153ccf0f / /

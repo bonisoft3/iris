@@ -18,7 +18,7 @@ import "bonisoft.org/plugins/sayt:docker"
     "TASK_TEMP_DIR=${DCM_PATH}/task",
     "SKAFFOLD_CACHE_FILE=${DCM_PATH}/skaffold/cache",
 		"PATH=/root/.local/bin:${XDG_DATA_HOME}/mise/shims:$PATH",
-		"MISE_VERSION=2026.3.5",
+		"MISE_VERSION=2026.3.17",
 	]
 	run: [
 		{ stmt: ["ARG TARGETOS", "ARG TARGETARCH"] },

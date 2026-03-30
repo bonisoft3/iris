@@ -1,5 +1,5 @@
 $BusyboxVersion = "5857-g3681e397f"
-$MiseVersion    = "2026.3.5"
+$MiseVersion    = "2026.3.17"
 
 if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
   Set-ExecutionPolicy RemoteSigned -Scope CurrentUser

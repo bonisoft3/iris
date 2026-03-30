@@ -1,37 +1,37 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
 tool = "github:mikefarah/yq"
-version = "4.52.4"
+version = "4.52.5"
 bin = "install-man-page.sh"
 strip_components = 1
 
 # Platform configurations
 [platforms.linux-arm64]
-url = "https://github.com/mikefarah/yq/releases/download/v4.52.4/yq_linux_arm64.tar.gz"
-checksum = "sha256:10a4a2093090363a00b55ad52e132a082f9652970cb8f1ad35a1ae048b917e6e"
+url = "https://github.com/mikefarah/yq/releases/download/v4.52.5/yq_linux_arm64.tar.gz"
+checksum = "sha256:33cf72426fc5f5e7d9b99801a58d34c6fa7e4426dad594569fb972dde5891109"
 
 [platforms.linux-arm64-musl]
-url = "https://github.com/mikefarah/yq/releases/download/v4.52.4/yq_linux_arm64.tar.gz"
-checksum = "sha256:10a4a2093090363a00b55ad52e132a082f9652970cb8f1ad35a1ae048b917e6e"
+url = "https://github.com/mikefarah/yq/releases/download/v4.52.5/yq_linux_arm64.tar.gz"
+checksum = "sha256:33cf72426fc5f5e7d9b99801a58d34c6fa7e4426dad594569fb972dde5891109"
 
 [platforms.linux-x64]
-url = "https://github.com/mikefarah/yq/releases/download/v4.52.4/yq_linux_amd64.tar.gz"
-checksum = "sha256:3fa3c1c32d94520102ea4d853d03c3ab907867d964540e896410ad8a7fc6c8f7"
+url = "https://github.com/mikefarah/yq/releases/download/v4.52.5/yq_linux_amd64.tar.gz"
+checksum = "sha256:c529c33e6b545d95e39445c37f673e31ca110c3ca9310b47ccea78f9190b061e"
 
 [platforms.linux-x64-musl]
-url = "https://github.com/mikefarah/yq/releases/download/v4.52.4/yq_linux_amd64.tar.gz"
-checksum = "sha256:3fa3c1c32d94520102ea4d853d03c3ab907867d964540e896410ad8a7fc6c8f7"
+url = "https://github.com/mikefarah/yq/releases/download/v4.52.5/yq_linux_amd64.tar.gz"
+checksum = "sha256:c529c33e6b545d95e39445c37f673e31ca110c3ca9310b47ccea78f9190b061e"
 
 [platforms.macos-arm64]
-url = "https://github.com/mikefarah/yq/releases/download/v4.52.4/yq_darwin_arm64.tar.gz"
-checksum = "sha256:99778ab9ac307b89889607a8f84b4c16e668077ccb8665617547b9059a219ecc"
+url = "https://github.com/mikefarah/yq/releases/download/v4.52.5/yq_darwin_arm64.tar.gz"
+checksum = "sha256:4613600ee3416000a223f28b5323d3f003ee5bb4c18c5fa916450d31d686aecb"
 
 [platforms.macos-x64]
-url = "https://github.com/mikefarah/yq/releases/download/v4.52.4/yq_darwin_amd64.tar.gz"
-checksum = "sha256:b05d49a6e4dd1897bf3a16e080b249f16ac7c87b7e6ce85253d52f130b671b6a"
+url = "https://github.com/mikefarah/yq/releases/download/v4.52.5/yq_darwin_amd64.tar.gz"
+checksum = "sha256:672029a24f3038f29fe5fb5a15d600c00ab6affbd5a92e880d3319d629fdee9e"
 
 [platforms.windows-x64]
-url = "https://github.com/mikefarah/yq/releases/download/v4.52.4/yq_windows_amd64.zip"
-checksum = "sha256:aa6a26dff7cdff53161873e9aebb768460a5d42088ceca0864d44e214a669c0d"
+url = "https://github.com/mikefarah/yq/releases/download/v4.52.5/yq_windows_amd64.zip"
+checksum = "sha256:8394de63138204bea852cd25adc1e1ec1a572f572a6f875d300b95ca0742d970"
 bin = "install-man-page.sh.exe"
 

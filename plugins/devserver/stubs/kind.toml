@@ -5,15 +5,6 @@ version = "0.31.0"
 bin = "kind"
 
 # Platform configurations
-[platforms.darwin-amd64]
-url = "https://github.com/kubernetes-sigs/kind/releases/download/v0.31.0/kind-darwin-amd64"
-
-[platforms.darwin-arm64]
-url = "https://github.com/kubernetes-sigs/kind/releases/download/v0.31.0/kind-darwin-arm64"
-
-[platforms.linux-amd64]
-url = "https://github.com/kubernetes-sigs/kind/releases/download/v0.31.0/kind-linux-amd64"
-
 [platforms.linux-arm64]
 url = "https://github.com/kubernetes-sigs/kind/releases/download/v0.31.0/kind-linux-arm64"
 checksum = "sha256:8e1014e87c34901cc422a1445866835d1e666f2a61301c27e722bdeab5a1f7e4"
@@ -37,10 +28,6 @@ checksum = "sha256:88bf554fe9da6311c9f8c2d082613c002911a476f6b5090e9420b35d84e70
 [platforms.macos-x64]
 url = "https://github.com/kubernetes-sigs/kind/releases/download/v0.31.0/kind-darwin-amd64"
 checksum = "sha256:a8b3cf77b2ad77aec5bf710d1a2589d9117576132af812885cad41e9dede4d4e"
-
-[platforms.windows-amd64]
-url = "https://github.com/kubernetes-sigs/kind/releases/download/v0.31.0/kind-windows-amd64"
-bin = "kind.exe"
 
 [platforms.windows-x64]
 url = "https://github.com/kubernetes-sigs/kind/releases/download/v0.31.0/kind-windows-amd64"

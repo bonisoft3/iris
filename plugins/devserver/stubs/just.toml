@@ -1,30 +1,37 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
 tool = "github:casey/just"
-version = "1.47.1"
+version = "1.48.1"
 bin = "just"
 strip_components = 1
 
 # Platform configurations
-[platforms.darwin-amd64]
-url = "https://github.com/casey/just/releases/download/1.47.1/just-1.47.1-x86_64-apple-darwin.tar.gz"
-
-[platforms.darwin-arm64]
-url = "https://github.com/casey/just/releases/download/1.47.1/just-1.47.1-aarch64-apple-darwin.tar.gz"
-
-[platforms.linux-amd64]
-url = "https://github.com/casey/just/releases/download/1.47.1/just-1.47.1-x86_64-unknown-linux-musl.tar.gz"
-
 [platforms.linux-arm64]
-url = "https://github.com/casey/just/releases/download/1.47.1/just-1.47.1-aarch64-unknown-linux-musl.tar.gz"
+url = "https://github.com/casey/just/releases/download/1.48.1/just-1.48.1-aarch64-unknown-linux-musl.tar.gz"
+checksum = "sha256:3308721b991cf88cf2b9bbb3b31ac40550ec61a0c9b6fc011564e25e87964030"
+
+[platforms.linux-arm64-musl]
+url = "https://github.com/casey/just/releases/download/1.48.1/just-1.48.1-aarch64-unknown-linux-musl.tar.gz"
+checksum = "sha256:3308721b991cf88cf2b9bbb3b31ac40550ec61a0c9b6fc011564e25e87964030"
 
 [platforms.linux-x64]
-url = "https://github.com/casey/just/releases/download/1.47.1/just-1.47.1-x86_64-unknown-linux-musl.tar.gz"
+url = "https://github.com/casey/just/releases/download/1.48.1/just-1.48.1-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:9293e553ce401d1b524bf4e104918f72f268e3f9c6827e0055fe98d84a1b2522"
+
+[platforms.linux-x64-musl]
+url = "https://github.com/casey/just/releases/download/1.48.1/just-1.48.1-x86_64-unknown-linux-musl.tar.gz"
+checksum = "sha256:9293e553ce401d1b524bf4e104918f72f268e3f9c6827e0055fe98d84a1b2522"
 
 [platforms.macos-arm64]
-url = "https://github.com/casey/just/releases/download/1.47.1/just-1.47.1-aarch64-apple-darwin.tar.gz"
+url = "https://github.com/casey/just/releases/download/1.48.1/just-1.48.1-aarch64-apple-darwin.tar.gz"
+checksum = "sha256:03a73339ff55bcf7411a3c940cdcb0a726d98134b87203c83a9008575434e2a8"
 
-[platforms.windows-amd64]
-url = "https://github.com/casey/just/releases/download/1.47.1/just-1.47.1-x86_64-pc-windows-msvc.zip"
+[platforms.macos-x64]
+url = "https://github.com/casey/just/releases/download/1.48.1/just-1.48.1-x86_64-apple-darwin.tar.gz"
+checksum = "sha256:4c3e9c880b8fc93d7fc24abfde3c36b0cc59f6e9f8b31f7175095700f64125a7"
+
+[platforms.windows-x64]
+url = "https://github.com/casey/just/releases/download/1.48.1/just-1.48.1-x86_64-pc-windows-msvc.zip"
+checksum = "sha256:368cd9ca827cba04d9e6fc00f7ad840773c4605b6f64b9f87bdb00325d351029"
 bin = "just.exe"
 

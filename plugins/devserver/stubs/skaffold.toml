@@ -1,0 +1,30 @@
+# Auto-generated stub for ($binary_info.clean_name)
+
+tool = "http:skaffold"
+version = "2.18.1"
+bin = "skaffold"
+
+# Platform configurations
+[platforms.darwin-amd64]
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-darwin-amd64"
+
+[platforms.darwin-arm64]
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-darwin-arm64"
+
+[platforms.linux-amd64]
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-linux-amd64"
+
+[platforms.linux-arm64]
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-linux-arm64"
+
+[platforms.linux-x64]
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-linux-amd64"
+
+[platforms.macos-arm64]
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-darwin-arm64"
+checksum = "blake3:a37ad31bf1045c53fbbf2c074eb965824baaba8f5a30d2e15626f46446773abc"
+
+[platforms.windows-amd64]
+url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-windows-amd64.exe"
+bin = "skaffold.exe"
+

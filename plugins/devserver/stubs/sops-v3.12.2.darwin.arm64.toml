@@ -1,13 +1,10 @@
-# Auto-generated Alpine/musl stub for ($binary_info.clean_name)
+# Auto-generated stub for ($binary_info.clean_name)
 
 tool = "github:getsops/sops"
 version = "3.12.2"
-bin = "sops"
+bin = "sops-v3.12.2.darwin.arm64"
 
 # Platform configurations
-[platforms.linux-amd64]
-url = "https://github.com/getsops/sops/releases/download/v3.12.2/sops-v3.12.2.linux.amd64"
-
 [platforms.linux-arm64]
 url = "https://github.com/getsops/sops/releases/download/v3.12.2/sops-v3.12.2.linux.arm64"
 checksum = "sha256:f66de6f528dca946e910d74fa36a62a7714c11d0db16bd3c9bd8acf73b66704b"
@@ -35,5 +32,5 @@ checksum = "sha256:767c0dcb42e052fd6f2ac17d4473eca6f5fc4910e2b70127f1308d86c606c
 [platforms.windows-x64]
 url = "https://github.com/getsops/sops/releases/download/v3.12.2/sops-3.12.2-1.x86_64.rpm"
 checksum = "sha256:1d5382d11932a662a5d7e7dddf223289c2fe16f2da5b7478a64c0513d5a6733b"
-bin = "sops.exe"
+bin = "sops-v3.12.2.darwin.arm64.exe"
 
