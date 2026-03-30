@@ -1,15 +1,15 @@
-# lint-lazybox-sync.nu — Checks that stubs/.lazybox matches the canonical .devcontainer/.lazybox
+# lint-lazybox-sync.nu — Checks that plugins/devserver/lazy-mise matches the canonical .devcontainer/lazy-mise
 
 export def main [] {
-	let canonical = $env.FILE_PWD | path join "../../.devcontainer/.lazybox"
-	let copy = $env.FILE_PWD | path join "stubs/.lazybox"
+	let canonical = $env.FILE_PWD | path join "../../.devcontainer/lazy-mise"
+	let copy = $env.FILE_PWD | path join "lazy-mise"
 
 	if not ($canonical | path exists) {
-		print -e "✗ canonical .devcontainer/.lazybox not found"
+		print -e "✗ canonical .devcontainer/lazy-mise not found"
 		exit 1
 	}
 	if not ($copy | path exists) {
-		print -e "✗ stubs/.lazybox not found — copy from .devcontainer/.lazybox"
+		print -e "✗ plugins/devserver/lazy-mise not found — copy from .devcontainer/lazy-mise"
 		exit 1
 	}
 
@@ -17,9 +17,9 @@ export def main [] {
 	let copy_content = open $copy --raw
 
 	if $canonical_content != $copy_content {
-		print -e "✗ stubs/.lazybox is out of sync with .devcontainer/.lazybox"
-		print -e "  Run: cp .devcontainer/.lazybox plugins/devserver/stubs/.lazybox"
+		print -e "✗ plugins/devserver/lazy-mise is out of sync with .devcontainer/lazy-mise"
+		print -e "  Run: cp .devcontainer/lazy-mise plugins/devserver/lazy-mise"
 		exit 1
 	}
-	print "stubs/.lazybox in sync with .devcontainer/.lazybox"
+	print "lazy-mise in sync with .devcontainer/lazy-mise"
 }
