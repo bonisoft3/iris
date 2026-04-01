@@ -23,6 +23,8 @@ group "ci" {
     "plugins_devserver",
     "services_shelfie",
     "plugins_sayt",
+    "guis_web",
+    "services_tracker",
   ]
 }
 
