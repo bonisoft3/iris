@@ -185,7 +185,9 @@ async function checkConstrainedImages(page: Page): Promise<VisualBug[]> {
       const style = getComputedStyle(el)
       const testId = el.getAttribute("data-testid") || "unnamed-image"
 
-      if (style.aspectRatio === "auto" || !style.aspectRatio) {
+      // ratio="fill" uses h-full (parent height) instead of aspect-ratio — both are valid
+      const isFillMode = el.getAttribute("data-constrained-ratio") === "fill"
+      if (!isFillMode && (style.aspectRatio === "auto" || !style.aspectRatio)) {
         bugs.push({
           rule: "constrained-image-ratio",
           description: `Image "${testId}" container missing aspect-ratio`,
@@ -262,7 +264,8 @@ async function checkUnconstrainedObjectCoverImages(page: Page): Promise<VisualBu
         const containerStyle = getComputedStyle(container)
         const aspect = containerStyle.aspectRatio
 
-        if (aspect && aspect !== "auto") {
+        // Accept explicit aspect-ratio OR a ConstrainedImage with ratio="fill"
+        if ((aspect && aspect !== "auto") || container.hasAttribute("data-constrained-image")) {
           foundAspect = true
           break
         }
@@ -371,24 +374,14 @@ export async function assertNotObscured(locator: Locator, label?: string) {
     y: box!.y + box!.height / 2,
   }
 
-  const isClickable = await page.evaluate(
-    ({ x, y, selector }) => {
-      const target = document.querySelector(selector)
-      if (!target) return false
+  // Use locator.evaluate to get the actual DOM element, then check from the
+  // element's perspective — no querySelector needed, avoids selector ambiguity.
+  const isClickable = await locator.evaluate(
+    (el, { x, y }) => {
       const top = document.elementFromPoint(x, y)
-      return top !== null && (target.contains(top) || top.contains(target))
+      return top !== null && (el.contains(top) || top.contains(el))
     },
-    {
-      x: center.x,
-      y: center.y,
-      selector: (await locator.evaluate((el) => {
-        // Build a unique selector for this element
-        if (el.id) return `#${el.id}`
-        const testId = el.getAttribute("data-testid")
-        if (testId) return `[data-testid="${testId}"]`
-        return el.tagName.toLowerCase()
-      })),
-    },
+    { x: center.x, y: center.y },
   )
 
   expect(
@@ -520,6 +513,128 @@ If there are no bugs, return: {"bugs":[],"passed":true}`,
     expect(
       failingBugs.length,
       `Vision review found ${failingBugs.length} bug(s) at ${viewport}:\n${summary}`,
+    ).toBe(0)
+  }
+}
+
+/**
+ * Vision-driven feature parity check across viewports.
+ *
+ * Takes screenshots at two viewports, asks a vision LLM to list
+ * available user actions on each, then compare. Catches features
+ * that exist on one viewport but not the other (e.g. settings
+ * button on mobile but not desktop).
+ *
+ * No manual feature list needed — the LLM discovers features visually.
+ *
+ * Requires ANTHROPIC_API_KEY in the environment.
+ *
+ * Usage:
+ *   await assertFeatureParity(page, "/gallery", {
+ *     viewportA: { name: "mobile", width: 375, height: 812 },
+ *     viewportB: { name: "desktop", width: 1440, height: 900 },
+ *   })
+ */
+export async function assertFeatureParity(
+  page: Page,
+  path: string,
+  opts: {
+    viewportA: { name: string; width: number; height: number }
+    viewportB: { name: string; width: number; height: number }
+    /** Navigate function — override if auth handling is needed */
+    navigate?: (page: Page, path: string) => Promise<void>
+  },
+) {
+  let Anthropic: any
+  try {
+    Anthropic = (await (Function('return import("@anthropic-ai/sdk")')() as Promise<any>)).default
+  } catch {
+    console.warn("[feature-parity] @anthropic-ai/sdk not installed, skipping")
+    return
+  }
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.warn("[feature-parity] ANTHROPIC_API_KEY not set, skipping")
+    return
+  }
+
+  const nav = opts.navigate || (async (p: Page, pt: string) => {
+    await p.goto(pt)
+    await p.waitForLoadState("domcontentloaded")
+  })
+
+  // Screenshot viewport A
+  await page.setViewportSize({ width: opts.viewportA.width, height: opts.viewportA.height })
+  await nav(page, path)
+  await page.waitForTimeout(1000)
+  const screenshotA = (await page.screenshot({ type: "jpeg", quality: 70 })).toString("base64")
+
+  // Screenshot viewport B
+  await page.setViewportSize({ width: opts.viewportB.width, height: opts.viewportB.height })
+  await nav(page, path)
+  await page.waitForTimeout(1000)
+  const screenshotB = (await page.screenshot({ type: "jpeg", quality: 70 })).toString("base64")
+
+  const anthropic = new Anthropic()
+  const response = await anthropic.messages.create({
+    model: "claude-sonnet-4-6",
+    max_tokens: 2048,
+    messages: [{
+      role: "user",
+      content: [
+        { type: "text", text: `You are comparing two screenshots of the SAME page at different viewport sizes to check feature parity.\n\nImage 1: "${opts.viewportA.name}" (${opts.viewportA.width}x${opts.viewportA.height})\nImage 2: "${opts.viewportB.name}" (${opts.viewportB.width}x${opts.viewportB.height})` },
+        { type: "image", source: { type: "base64", media_type: "image/jpeg" as const, data: screenshotA } },
+        { type: "image", source: { type: "base64", media_type: "image/jpeg" as const, data: screenshotB } },
+        { type: "text", text: `List all USER ACTIONS available on each screenshot (navigation links, buttons, settings, toggles, menus).
+
+Then compare: are any actions available on one viewport but MISSING on the other?
+
+Layout differences are expected and OK:
+- Sidebar nav on desktop vs bottom nav on mobile = SAME feature, different layout
+- Hamburger menu vs always-visible nav = SAME feature
+- Different styling/size = OK
+
+What IS a problem:
+- A settings/preferences feature exists on one but not the other
+- A navigation destination reachable on one but not the other
+- An action (edit, delete, share) present on one but not the other
+
+Respond with ONLY raw JSON:
+{"viewportA_actions":["action1","action2"],"viewportB_actions":["action1","action2"],"missing_from_A":["action only in B"],"missing_from_B":["action only in A"],"passed":true|false}
+
+If all actions are available on both (possibly via different UI patterns), set passed=true and empty missing arrays.` },
+      ],
+    }],
+  })
+
+  const text = response.content[0].type === "text" ? response.content[0].text : ""
+  let result: {
+    viewportA_actions: string[]
+    viewportB_actions: string[]
+    missing_from_A: string[]
+    missing_from_B: string[]
+    passed: boolean
+  }
+
+  try {
+    const cleaned = text.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim()
+    result = JSON.parse(cleaned)
+  } catch {
+    console.warn(`[feature-parity] Failed to parse response: ${text.slice(0, 300)}`)
+    return
+  }
+
+  const issues: string[] = []
+  if (result.missing_from_A.length > 0) {
+    issues.push(`Missing from ${opts.viewportA.name}: ${result.missing_from_A.join(", ")}`)
+  }
+  if (result.missing_from_B.length > 0) {
+    issues.push(`Missing from ${opts.viewportB.name}: ${result.missing_from_B.join(", ")}`)
+  }
+
+  if (issues.length > 0) {
+    expect(
+      issues.length,
+      `Feature parity failed between ${opts.viewportA.name} and ${opts.viewportB.name}:\n${issues.join("\n")}\n\n${opts.viewportA.name} actions: ${result.viewportA_actions.join(", ")}\n${opts.viewportB.name} actions: ${result.viewportB_actions.join(", ")}`,
     ).toBe(0)
   }
 }

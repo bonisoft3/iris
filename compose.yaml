@@ -7,22 +7,6 @@ services:
       target: integrate
       secrets:
         - host.env
-  services_tracker:
-    build:
-      context: .
-      network: host
-      dockerfile: ./services/tracker/Dockerfile
-      target: integrate
-      secrets:
-        - host.env
-  guis_web:
-    build:
-      context: .
-      network: host
-      dockerfile: ./guis/web/Dockerfile
-      target: integrate
-      secrets:
-        - host.env
   guis_iris:
     build:
       context: ./guis/iris
