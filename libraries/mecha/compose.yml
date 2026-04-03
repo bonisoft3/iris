@@ -1,65 +1,26 @@
 services:
-  integrate:
-    command: "true"
-    build:
-      secrets:
-        - host.env
-      network: host
-      context: ../..
-      dockerfile: libraries/mecha/Dockerfile
-      target: integrate
-  lazybox:
-    build:
-      context: ../../.devcontainer/
-      target: lazybox
   database:
     build:
       context: services/database
       dockerfile: Dockerfile
-      args:
-        OVERLAY: bonisoft3/lazybox
-      additional_contexts:
-        bonisoft3/lazybox: service:lazybox
-    develop:
-      watch:
-        - action: rebuild
-          path: ./services/database/schemas/schema.hcl
-        - action: rebuild
-          path: ./services/database/atlas.hcl
-        - action: rebuild
-          path: ./services/database/Dockerfile
-        - action: rebuild
-          path: ./services/database/01-run-atlas-migrations.sh
-        - action: rebuild
-          path: ./services/database/healthcheck.sh
     ports:
       - "5432"
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-mecha}
     healthcheck:
-       test: ["CMD", "pg_isready", "-h", "localhost", "-p", "5432", "-d", "${POSTGRES_DB}", "-U", "${POSTGRES_USER}"]
-       start_interval: 100ms
-       start_period: 5m
+      test: ["CMD", "pg_isready", "-h", "localhost", "-p", "5432", "-d", "${POSTGRES_DB:-mecha}", "-U", "${POSTGRES_USER:-postgres}"]
+      start_interval: 100ms
+      start_period: 5m
 
   crud:
-    build:
-      context: .
-      dockerfile: services/crud/Dockerfile
-      additional_contexts:
-        bonisoft3/lazybox: service:lazybox
-    develop:
-      watch:
-        - action: rebuild
-          path: ./services/crud/Dockerfile
-        - action: rebuild
-          path: ./services/crud/healthcheck.sh
+    image: postgrest/postgrest:v12.2.3@sha256:0a46780309a604cdc8b56c776c6e5e15788ce58174d709e40459ab5a2d44d228
     depends_on:
       database:
         condition: service_healthy
     environment:
-      PGRST_DB_URI: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}
+      PGRST_DB_URI: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-mecha}
       PGRST_DB_SCHEMA: public
       PGRST_DB_ANON_ROLE: anon
       PGRST_SERVER_HOST: '*'
@@ -68,230 +29,117 @@ services:
     ports:
       - "3000"
       - "3001"
-   
-  proxy:
-    build:
-      context: .
-      dockerfile: services/proxy/Dockerfile
-    develop:
-      watch:
-        - action: sync
-          path: ./services/proxy/nginx.conf
-          target: /usr/local/openresty/nginx/conf/nginx.conf
-        - action: sync
-          path: ./services/proxy/*.lua
-          target: /usr/local/openresty/nginx/conf/
-        - action: rebuild
-          path: ./services/proxy/Dockerfile
-        - action: rebuild
-          path: ./services/proxy/entrypoint.sh
-        - action: rebuild
-          path: ./services/proxy/healthcheck.sh
-    ports:
-      - "80"
-    environment:
-      UPSTREAM_HOST: ${UPSTREAM_HOST:-app}
-      UPSTREAM_PORT: ${UPSTREAM_PORT:-8000}
-      PGRST_HOST: ${PGRST_HOST:-crud}
-      PGRST_PORT: ${PGRST_PORT:-3000}
-    depends_on:
-      app:
-        condition: service_healthy
-      crud:
-        condition: service_healthy
 
-  mesh:
-    build:
-      context: .
-      dockerfile: services/mesh/Dockerfile
-    develop:
-      watch:
-        - action: rebuild
-          path: ./services/mesh/Dockerfile
-        - action: rebuild
-          path: ./services/mesh/entrypoint.sh
-        - action: rebuild
-          path: ./services/mesh/dapr/components/statestore.yaml
-        - action: rebuild
-          path: ./services/mesh/dapr/components/httpendpoints.yaml
-        - action: rebuild
-          path: ./services/mesh/healthcheck.sh
-    environment:
-      DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}"
-    ports:
-      - "3500"  # Dapr HTTP API for external access with circuit breaking
-      - "50001"
+  boxer:
+    image: ghcr.io/bonisoft3/boxer:latest
     depends_on:
-      redis:
-        condition: service_healthy
       database:
         condition: service_healthy
-      proxy:
-        condition: service_healthy
-      crud:
-        condition: service_healthy
+      webhook:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-mecha}
+      BOXER_DELIVERY_URL: http://webhook:8080
+      BOXER_PUBLICATION: boxer_pub
+      BOXER_TABLE: Hello
+    restart: on-failure
 
-  app:
-    build:
-      context: .
-      dockerfile: services/app/Dockerfile
-    develop:
-      watch:
-        - action: rebuild
-          path: ./services/app/Dockerfile
-        - action: rebuild
-          path: ./services/app/html/index.html
-        - action: rebuild
-          path: ./services/app/healthcheck.sh
+  electric:
+    image: electricsql/electric:latest
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-mecha}
+      ELECTRIC_INSECURE: "true"
     ports:
-      - "8000"
+      - "5133"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:5133/v1/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 
-  stream-analytics-test:
-    build:
-      context: .
-      dockerfile: tests/stream-analytics-test/Dockerfile
-    develop:
-      watch:
-        - action: rebuild
-          path: ./tests/stream-analytics-test/Dockerfile
-        - action: rebuild
-          path: ./tests/stream-analytics-test/entrypoint.sh
-        - action: rebuild
-          path: ./tests/stream-analytics-test/healthcheck.sh
-    restart: "no"
-    depends_on:
-      arroyo:
-        condition: service_healthy
-      cdc:
-        condition: service_healthy
+  webhook:
+    image: ealen/echo-server:latest
+    environment:
+      PORT: "8080"
+    ports:
+      - "8080"
 
-  crud-test:
-    build:
-      context: .
-      dockerfile: tests/crud-test/Dockerfile
-    develop:
-      watch:
-        - action: rebuild
-          path: ./tests/crud-test/Dockerfile
-        - action: rebuild
-          path: ./tests/crud-test/entrypoint.sh
-        - action: rebuild
-          path: ./tests/crud-test/healthcheck.sh
-    restart: "no"
-    depends_on:
-      mesh:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      cdc:
-        condition: service_healthy
-
-  integration-test:
-    build:
-      context: .
-      dockerfile: tests/integration-test/Dockerfile
-      additional_contexts:
-        bonisoft3/lazybox: service:lazybox
-    develop:
-      watch:
-        - action: rebuild
-          path: ./tests/integration-test/Dockerfile
-        - action: rebuild
-          path: ./tests/integration-test/entrypoint.sh
-        - action: rebuild
-          path: ./tests/integration-test/healthcheck.sh
-    restart: "no"
-    depends_on:
-      crud-test:
-        condition: service_healthy
-      stream-analytics-test:
-        condition: service_healthy
-      events-test:
-        condition: service_healthy
-      cdc:
-        condition: service_healthy
-
-  events-test:
-    build:
-      context: .
-      dockerfile: tests/events-test/Dockerfile
-    develop:
-      watch:
-        - action: rebuild
-          path: ./tests/events-test/Dockerfile
-        - action: rebuild
-          path: ./tests/events-test/entrypoint.sh
-        - action: rebuild
-          path: ./tests/events-test/healthcheck.sh
-    restart: "no"
-    depends_on:
-      mesh:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+  # --- AI profile: stream processing + LLM gateway ---
 
   redis:
     image: redis:7.4.1-alpine@sha256:59b6e694653476de2c992937ebe1c64182af4728e54bb49e9b7a6c26614d8933
-    volumes:
-      - /data
-    healthcheck:
-      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
-      start_interval: 100ms
-      start_period: 5m
     ports:
       - "6379"
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+    profiles:
+      - ai
+      - unicorn
 
-  cdc:
+  proxy:
     build:
-      context: .
-      dockerfile: services/cdc/Dockerfile
-    develop:
-      watch:
-        - action: rebuild
-          path: ./services/cdc/Dockerfile
-        - action: rebuild
-          path: ./services/cdc/start-pgstream.sh
-        - action: rebuild
-          path: ./services/cdc/config/pgstream.yaml
-        - action: rebuild
-          path: ./services/cdc/healthcheck.sh
-    ports: 
-      - "9900"
+      context: services/proxy
+      dockerfile: Dockerfile
     depends_on:
       database:
         condition: service_healthy
-      proxy:
+      crud:
+        condition: service_started
+      redis:
         condition: service_healthy
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      UPSTREAM_HOST: ${UPSTREAM_HOST:-webhook}
+      UPSTREAM_PORT: ${UPSTREAM_PORT:-8080}
+    ports:
+      - "80"
+    profiles:
+      - ai
+      - unicorn
 
   arroyo:
     build:
-      context: .
-      dockerfile: services/arroyo/Dockerfile
-    develop:
-      watch:
-        - action: rebuild
-          path: ./services/arroyo/Dockerfile
-        - action: rebuild
-          path: ./services/arroyo/arroyo-init.sh
-        - action: rebuild
-          path: ./services/arroyo/queries/hello_aggregation.sql
-        - action: rebuild
-          path: ./services/arroyo/healthcheck.sh
-    ports:
-      - "5115"  # Arroyo web UI
-      - "6900"  # Arroyo API
+      context: services/arroyo
+      dockerfile: Dockerfile
     depends_on:
       proxy:
-        condition: service_healthy
-      mesh:
-        condition: service_healthy
-    environment:
-      ARROYO_COMPILER_ALLOW_UNSTABLE_FEATURES: "true"
+        condition: service_started
+    ports:
+      - "5115"
+    profiles:
+      - ai
 
-secrets:
-  host.env:
-    environment: HOST_ENV
+  # --- Unicorn profile: service mesh + durable delivery ---
+
+  mesh:
+    build:
+      context: services/mesh
+      dockerfile: Dockerfile
+    depends_on:
+      proxy:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    ports:
+      - "3500"
+    profiles:
+      - unicorn
+
+  # Smoke test: verify CRUD and CDC delivery end-to-end
+  integrate:
+    build:
+      context: .
+      dockerfile: tests/Dockerfile
+    depends_on:
+      crud:
+        condition: service_started
+      boxer:
+        condition: service_started
+    restart: "no"

@@ -4,7 +4,7 @@
 schema "public" {
   comment = "Standard PostgreSQL public schema"
 }
-table "hello" {
+table "Hello" {
   schema = schema.public
   column "id" {
     type = uuid
@@ -31,7 +31,7 @@ table "hello" {
   }
 }
 
-table "grouphello" {
+table "GroupHello" {
   schema = schema.public
   column "id" {
     type = uuid

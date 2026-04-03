@@ -5,7 +5,7 @@
 			"label": "build",
 			"type": "shell",
 			"command": "task",
-			"args": [ "generate:all" ],
+			"args": [ "generate" ],
 			"problemMatcher": [],
 			"group": {
 				"kind": "build",

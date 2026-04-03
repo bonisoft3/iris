@@ -1,4 +1,3 @@
-ARG LAZYBOX=bonisoft3/lazybox
 # Database image with Atlas migrations and a pg_isready health probe.
 FROM postgres:18-trixie@sha256:073e7c8b84e2197f94c8083634640ab37105effe1bc853ca4d5fbece3219b0e8
 
@@ -19,9 +18,6 @@ COPY atlas.hcl /atlas/atlas.hcl
 # Copy migration and helper scripts
 COPY --chmod=755 01-run-atlas-migrations.sh /docker-entrypoint-initdb.d/01-run-atlas-migrations.sh
 COPY --chmod=755 healthcheck.sh /usr/local/bin/healthcheck.sh
-
-COPY --from=bonisoft3/lazybox /lazybox/ /root/
-ENV PATH=$PATH:/root/.local/bin:/root/.local/share/lazybox/bin
 
 CMD ["postgres", "-c", "wal_level=logical"]
 

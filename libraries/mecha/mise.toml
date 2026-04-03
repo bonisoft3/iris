@@ -10,9 +10,9 @@ aqua.minisign = false
 
 [tools]
 "github:bufbuild/buf" = "1.66.1"
+"github:cue-lang/cue" = "0.16.0"
 "github:hairyhenderson/gomplate" = "5.0.0"
 "github:go-task/task" = "v3.49.1"
-"github:xataio/pgstream" = "1.0.1"
 "github:dapr/dapr" = "1.17.3"
 "github:dapr/cli" = "1.17.0"
 

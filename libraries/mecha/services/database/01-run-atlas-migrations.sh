@@ -20,4 +20,10 @@ atlas schema apply \
   --to "file:///schemas/" \
   --auto-approve
 
-echo "✅ Atlas migrations + declarative schema application complete!"
+# Create replication slot for Boxer (must be outside a transaction)
+echo "Creating replication slot for Boxer..."
+psql -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -h /var/run/postgresql -c \
+  "SELECT pg_create_logical_replication_slot('boxer_slot', 'pgoutput')" 2>/dev/null || \
+  echo "Replication slot already exists"
+
+echo "Atlas migrations + schema + replication slot complete!"

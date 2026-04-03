@@ -32,86 +32,45 @@ tasks:
       - "**/*.sql"
 
   generate:
-    desc: "Generate all artifacts from protobuf and atlas"
+    desc: "Generate all artifacts from protobuf schemas and atlas"
     deps: [buf:generate, cue:generate, atlas:hash]
     cmds:
-      - echo "🎉 Generated all artifacts"
+      - echo "Generated all artifacts"
 
   build:
     desc: "Build artifacts (delegates to generate)"
     deps: [generate]
     cmds:
-      - echo "🚀 Build complete"
+      - echo "Build complete"
 
-  develop:
-    desc: "Start Dapr multi-app services (use task --watch develop for hot reload)"
-    deps: [ensure-dirs, init-dapr, generate]
-    sources:
-      - "**/*.proto"
-      - "**/*.yaml"
-      - "**/*.yml"
-      - "**/*.sql"
-      - "**/*.cue"
-      - "**/*.tmpl"
-    cmds:
-      - echo "Starting Dapr multi-app..."
-      - dapr run -f dapr.yaml
-
-  develop:compose:
-    desc: "Start development environment with schema-driven database (original compose mode)"
-    deps: [build]
+  launch:
+    desc: "Start the local dev stack with hot reload"
+    deps: [generate]
     cmds:
       - docker compose up --build --watch
 
-  ensure-dirs:
-    desc: "Ensure all required directories exist"
+  integrate:
+    desc: "Run CRUD + CDC smoke tests"
     cmds:
-      - mkdir -p services/database services/redis services/crud services/mesh
-      - mkdir -p tests/crud-test tests/events-test tests/integration-test
-      - mkdir -p dapr/components generated
-      - mkdir -p services/database/migrations
-
-  init-dapr:
-    desc: "Initialize Dapr runtime if not already done"
-    cmds:
-      - |
-        if [ ! -d "$HOME/.dapr" ]; then
-          echo "Initializing Dapr runtime..."
-          dapr init --slim
-        else
-          echo "Dapr runtime already initialized"
-        fi
+      - docker compose run --build integrate
 
   clean:
-    desc: "Clean generated files and stop all processes"
+    desc: "Clean generated files and Docker state"
     cmds:
-      - pkill -f "dapr run" || true
-      - rm -rf generated/*
-      - echo "Cleaned up processes and generated files"
-
-  logs:
-    desc: "Show logs from running Dapr services"
-    cmds:
-      - |
-        echo "Showing Dapr logs..."
-        tail -f ~/.dapr/logs/* 2>/dev/null || echo "No Dapr logs found"
+      - docker compose down -v || true
+      - rm -rf gen/*
+      - echo "Cleaned generated files and Docker volumes"
 
   status:
-    desc: "Show status of running Dapr services"
+    desc: "Show health of running services"
     cmds:
       - |
-        echo "Dapr processes:"
-        ps aux | grep dapr | grep -v grep || echo "No Dapr processes running"
-        echo ""
         echo "Service health checks:"
-        curl -s --connect-timeout 1 http://localhost:5432 > /dev/null && echo "✓ PostgreSQL (5432)" || echo "✗ PostgreSQL (5432)"
-        redis-cli -p 6379 ping > /dev/null 2>&1 && echo "✓ Redis (6379)" || echo "✗ Redis (6379)"
-        curl -s --connect-timeout 1 http://localhost:3000 > /dev/null && echo "✓ PostgREST (3000)" || echo "✗ PostgREST (3000)"
-        curl -s --connect-timeout 1 http://localhost:3500/v1.0/healthz > /dev/null && echo "✓ Dapr HTTP (3500)" || echo "✗ Dapr HTTP (3500)"
+        curl -s --connect-timeout 1 http://localhost:3000/ > /dev/null && echo "crud (PostgREST) OK" || echo "crud (PostgREST) not responding"
+        curl -s --connect-timeout 1 http://localhost:5133/v1/health > /dev/null && echo "electric OK" || echo "electric not responding"
 
   atlas:hash:
     desc: "Generate migration checksums for atlas.sum file"
-    deps: [ensure-dirs]
     cmds:
       - |
         if command -v atlas >/dev/null 2>&1; then
