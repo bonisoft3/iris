@@ -195,6 +195,9 @@ importers:
       react-dom:
         specifier: ^19.1.0
         version: 19.2.4(react@19.2.4)
+      react-ripples:
+        specifier: ^2.2.1
+        version: 2.2.1
       sonner:
         specifier: ^2.0.7
         version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -12707,6 +12710,9 @@ packages:
     peerDependenciesMeta:
       '@types/react':
         optional: true
+
+  react-ripples@2.2.1:
+    resolution: {integrity: sha512-TfLjgZICQlsYCN2iX4fdeZNjoDzhJVC7r+R3irqyaNvCtWezouS9j+sE+nwSk747irtV8RKRDHmwMmsNBOw8Qg==}
 
   react-style-singleton@2.2.3:
     resolution: {integrity: sha512-b6jSvxvVnyptAiLjbkWLE/lOnR4lfTtDAl+eUC7RZy+QQWc6wRzIV2CE6xBuMmDxc2qIihtDCZD5NPOFl7fRBQ==}
@@ -30972,6 +30978,8 @@ snapshots:
       use-sidecar: 1.1.3(@types/react@19.2.14)(react@19.2.4)
     optionalDependencies:
       '@types/react': 19.2.14
+
+  react-ripples@2.2.1: {}
 
   react-style-singleton@2.2.3(@types/react@19.2.14)(react@18.2.0):
     dependencies:

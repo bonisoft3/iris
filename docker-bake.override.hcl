@@ -22,6 +22,8 @@ group "ci" {
     "services_tracker_tx",
     "plugins_devserver",
     "services_shelfie",
+    "services_boxer",
+    "guis_iris",
     "plugins_sayt",
   ]
 }
@@ -73,6 +75,24 @@ target "plugins_devserver" {
   target     = "devserver"
   cache-from = cache_from("plugins-devserver")
   cache-to   = cache_to("plugins-devserver")
+}
+
+target "guis_iris" {
+  inherits   = ["ci-defaults"]
+  context    = "."
+  dockerfile = "guis/iris/Dockerfile"
+  target     = "release"
+  cache-from = cache_from("guis-iris")
+  cache-to   = cache_to("guis-iris")
+}
+
+target "services_boxer" {
+  inherits   = ["ci-defaults"]
+  context    = "./services/boxer"
+  dockerfile = "./Dockerfile"
+  target     = "release"
+  cache-from = cache_from("services-boxer")
+  cache-to   = cache_to("services-boxer")
 }
 
 target "plugins_sayt" {
