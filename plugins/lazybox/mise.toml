@@ -1,0 +1,72 @@
+[settings]
+lockfile = true
+locked = true
+experimental = true
+paranoid = false
+aqua.github_attestations = false
+aqua.cosign = false
+aqua.slsa = false
+aqua.minisign = false
+github.github_attestations = false
+github.slsa = false
+
+[tools]
+"github:docker/buildx" = "0.32.1"
+"github:docker/compose" = "5.1.1"
+"github:nushell/nushell" = "0.110.0"
+"github:cue-lang/cue" = "0.16.0"
+"github:go-task/task" = "v3.49.1"
+"github:casey/just" = "1.48.1"
+"github:getsops/sops" = "3.12.2"
+"github:bufbuild/buf" = "1.66.1"
+"github:kubernetes-sigs/kind" = "0.31.0"
+"github:micro-editor/micro" = "2.0.15"
+"github:sharkdp/bat" = "0.26.1"
+"github:sharkdp/fd" = "10.4.2"
+"github:junegunn/fzf" = "0.70.0"
+"github:ducaale/xh" = "0.25.3"
+"github:ajeetdsouza/zoxide" = "0.9.9"
+"github:jqlang/jq" = "jq-1.8.1"
+"github:BurntSushi/ripgrep" = "15.1.0"
+"aqua:Byron/dua-cli" = "2.34.0"
+"github:sharkdp/hyperfine" = "1.20.0"
+"github:lsd-rs/lsd" = "1.2.0"
+"github:astral-sh/uv" = "0.11.2"
+"github:mikefarah/yq" = "4.52.5"
+"github:dbohdan/recur" = "3.2.0"
+"github:lvillis/tcping-rs" = "1.2.24"
+"github:chmln/sd" = "v1.1.0"
+"github:FiloSottile/age" = "v1.3.1"
+
+# http: backend — URL templates work for macOS/Linux; Windows overrides below.
+[tools."http:docker-cli"]
+version = "29.3.0"
+url = 'https://download.docker.com/{{ os(macos="mac") }}/static/stable/{{ arch(x64="x86_64", arm64="aarch64") }}/docker-{{ version }}.tgz'
+strip_components = 1
+bin = "docker"
+
+[tools."http:docker-cli".platforms]
+windows-x64 = { url = 'https://download.docker.com/win/static/stable/x86_64/docker-{{ version }}.zip' }
+
+[tools."http:skaffold"]
+version = "2.18.1"
+url = 'https://storage.googleapis.com/skaffold/releases/v{{ version }}/skaffold-{{ os(macos="darwin") }}-{{ arch(x64="amd64") }}'
+
+[tools."http:skaffold".platforms]
+windows-x64 = { url = 'https://storage.googleapis.com/skaffold/releases/v{{ version }}/skaffold-windows-amd64.exe' }
+
+[tools."http:kubectl"]
+version = "1.35.2"
+url = 'https://dl.k8s.io/v{{ version }}/bin/{{ os(macos="darwin") }}/{{ arch(x64="amd64") }}/kubectl'
+
+[tools."http:kubectl".platforms]
+windows-x64 = { url = 'https://dl.k8s.io/v{{ version }}/bin/windows/amd64/kubectl.exe' }
+
+[tools."http:helm"]
+version = "4.1.3"
+url = 'https://get.helm.sh/helm-v{{ version }}-{{ os(macos="darwin") }}-{{ arch(x64="amd64") }}.tar.gz'
+strip_components = 1
+bin = "helm"
+
+[tools."http:helm".platforms]
+windows-x64 = { url = 'https://get.helm.sh/helm-v{{ version }}-windows-amd64.zip' }

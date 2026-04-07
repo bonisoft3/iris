@@ -96,14 +96,11 @@ WORKFLOWS = [
         name = "lazybox",
         destination = "git@github.com:bonisoft3/lazybox.git",
         origin_files = [
-            ".devcontainer/**",
+            "plugins/lazybox/**",
         ],
-        origin_excludes = [
-            ".devcontainer/devcontainer.json",
-            ".devcontainer/.claude/**",
-        ],
+        origin_excludes = [],
         transformations = [
-            core.move(".devcontainer", ""),
+            core.move("plugins/lazybox", ""),
         ],
         submodules = "",
         mode = "ITERATIVE",

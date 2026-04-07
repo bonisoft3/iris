@@ -1,0 +1,57 @@
+#!/bin/sh
+# lazybox bootstrap — finds or downloads mise, then delegates.
+# Works in both build-time (docker build) and runtime contexts.
+# All paths are resolved explicitly (no PATH lookups) to avoid shim loops.
+set -eu
+PREFIX="$(dirname "$(realpath "$0")")/.."
+
+# Use bundled CA certs if available, otherwise trust host certs
+CERT="$PREFIX/share/ca-certificates/ca-certificates.crt"
+[ -f "$CERT" ] && export SSL_CERT_FILE="${SSL_CERT_FILE:-$CERT}"
+
+# Find mise: check libexec only (NOT bin/mise — that's the stub wrapper and would loop)
+MISE_BIN=""
+for candidate in "$PREFIX/libexec/mise"; do
+    if [ -x "$candidate" ]; then
+        MISE_BIN="$candidate"
+        break
+    fi
+done
+
+if [ -z "$MISE_BIN" ]; then
+    MISE_BIN="$PREFIX/libexec/mise"
+    MISE_VERSION=2026.3.17
+    ARCH=$(uname -m | sed 's/x86_64/x64/; s/aarch64/arm64/')
+    OS=$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')
+    LIBC=; [ "$OS" = "linux" ] && LIBC="-musl"
+
+    # Use bundled static-curl if present, otherwise system curl
+    if [ -x "$PREFIX/libexec/static-curl" ]; then
+        CURL="$PREFIX/libexec/static-curl"
+    else
+        CURL=curl
+    fi
+
+    mkdir -p "$PREFIX/libexec"
+    "$CURL" -fsSL "https://github.com/jdx/mise/releases/download/v${MISE_VERSION}/mise-v${MISE_VERSION}-${OS}-${ARCH}${LIBC}" -o "$MISE_BIN"
+    chmod 755 "$MISE_BIN"
+fi
+
+
+# On Linux, ensure mise detects musl when glibc is absent (scratch, busybox, Alpine)
+if [ "$(uname -s)" = "Linux" ] && [ ! -f /etc/alpine-release ]; then
+    if [ ! -f /lib64/ld-linux-x86-64.so.2 ] && [ ! -f /lib/ld-linux-aarch64.so.1 ] && [ ! -f /lib/ld-linux-armhf.so.3 ]; then
+        mkdir -p /etc 2>/dev/null || true
+        touch /etc/alpine-release 2>/dev/null || true
+    fi
+fi
+
+# Disable attestation checks to avoid GitHub API rate limiting
+export MISE_AQUA__GITHUB_ATTESTATIONS=false
+export MISE_AQUA__COSIGN=false
+export MISE_AQUA__SLSA=false
+export MISE_AQUA__MINISIGN=false
+export MISE_GITHUB__GITHUB_ATTESTATIONS=false
+export MISE_GITHUB__SLSA=false
+
+exec "$MISE_BIN" "$@"

@@ -1,0 +1,11 @@
+say:
+  generate:
+    do: "nu mise-lazybox.nu -f"
+  lint:
+    do: "nu mise-lazybox.test.nu"
+  build:
+    do: "docker build --target lazybox -t bonisoft3/lazybox ."
+  test:
+    do: "nu mise-lazybox.test.nu"
+  release:
+    do: "docker build --target lazybox -t bonisoft3/lazybox . && docker build --target nubox -t bonisoft3/lazybox:nubox ."

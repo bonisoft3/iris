@@ -1,3 +1,3 @@
 package say
 
-say: lint: copy: ["../../.devcontainer/lazy-mise", "lazy-mise"]
+say: lint: copy: ["../lazybox/lazy-mise", "lazy-mise"]
