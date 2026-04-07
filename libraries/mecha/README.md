@@ -1,280 +1,342 @@
-# Mecha — CRUD + CDC + Real-time Sync
+# Mecha
 
-A lightweight backend architecture combining PostgreSQL CRUD with change data capture and real-time frontend sync. Designed for scale-to-zero environments (Cloud Run, Knative) with at-least-once delivery guarantees.
+Mecha is a **schema-driven backend meta-architecture** that generates a complete CRUD + CDC + real-time sync stack from entity definitions. Given a schema, mecha derives everything: database tables, REST API, change data capture pipeline, real-time sync, stream processing, and object storage bindings.
 
-PostgreSQL is the source of truth for everything — data, events, search, auth, and file metadata. Additional services are layered on top for specific capabilities.
+Multiple implementations (v1, v2, v3) are legitimate. What makes them all "mecha" is adherence to a set of architectural invariants.
 
-## Architecture
+## Invariants
+
+A system is a mecha if and only if it satisfies these properties:
+
+### 1. Schema is the source of truth
+
+A single declarative schema (Protocol Buffers, SQL DDL, CUE) generates all artifacts. No hand-written boilerplate for CRUD operations, database migrations, or API routes. The schema defines entities; the architecture derives behavior.
+
+### 2. Three-path data flow
+
+Every mecha has exactly three data paths:
 
 ```
-              ┌─────────────┐
-              │   Frontend   │
-              └──────┬───────┘
-                     │
-        ┌────────────┼────────────┐
-        ▼            ▼            ▼
-   ┌─────────┐ ┌──────────┐ ┌──────────┐
-   │PostgREST│ │ElectricSQL│ │  SSE /   │
-   │  CRUD   │ │  Shapes   │ │WebSocket │
-   └────┬────┘ └──────────┘ └──────────┘
-        │            ▲            ▲
-        ▼            │            │
-   ┌─────────────────┴────────────┘
-   │       PostgreSQL
-   │  (data, auth, search, events)
-   └────────┬──────────────────────┐
-            │ WAL (logical repl)   │
-            ▼                      │
-      ┌──────────┐                 │
-      │  Boxer   │ (at-least-once) │
-      │ WAL→HTTP │                 │
-      └────┬─────┘                 │
-           │                       │
-           ▼                       │
-      ┌──────────┐                 │
-      │  Your    │   writes back   │
-      │  BFF/API ├─────────────────┘
-      └──────────┘
+                    ┌─── Sync path ──── real-time frontend updates
+                    │
+  User action ──────┼─── CRUD path ──── synchronous read/write
+                    │
+                    └─── CDC path  ──── asynchronous side effects
 ```
 
-### Components
+- **CRUD path**: Direct, synchronous reads and writes. The user gets an immediate response.
+- **CDC path**: Change data capture drives asynchronous processing. Enrichment, analytics, notifications. At-least-once delivery guarantees.
+- **Sync path**: Real-time state synchronization to frontends. No polling. The frontend reflects database state continuously.
 
-**MVP** (default `docker compose up`) — get something working:
+### 3. At-least-once end-to-end
 
-| Component | What it does | Size |
-|-----------|-------------|------|
-| [PostgreSQL 18](https://postgresql.org) | Database, auth (JWT + RLS), full-text search (`tsvector`), vector search (`pgvector`) | 108MB |
-| [PostgREST](https://postgrest.org) | Auto-generated REST API from Postgres schema | 15MB |
-| [Boxer](https://github.com/bonisoft3/boxer) | Postgres WAL consumer with at-least-once HTTP delivery | 5MB |
-| [ElectricSQL](https://electric-sql.com) | Real-time shape streaming from Postgres | 30MB |
-| [Garage](https://garagehq.deuxfleurs.fr) | S3-compatible object storage (swap for real S3/GCS/Azure in prod) | 9MB |
+One user interaction produces either an **immediately consistent** or **eventually consistent** outcome. Never fire-and-forget. Every write that enters the CRUD path will eventually be captured by CDC and processed by all downstream consumers. The only acceptable failure mode is re-delivery (at-least-once), not message loss.
 
-Boxer delivers directly to your BFF. The Postgres replication slot is the durable queue — good enough for development and low-traffic production.
+### 4. Vertical scalability (down and up)
 
-**AI** (`--profile ai`) — add intelligence and streaming:
+The same architecture must run at every scale:
 
-| Component | What it does | Size |
-|-----------|-------------|------|
-| [Bifrost](https://github.com/maximhq/bifrost) | AI gateway — routes to 1000+ LLMs, streaming, caching, fallback | 15MB |
-| [OpenResty](https://openresty.org) | API gateway with Lua — SSE endpoints, custom routing, webhook handling | 25MB |
-| [Arroyo](https://arroyo.dev) | SQL-based stream processing — windowed aggregations, scheduling | 300MB |
-| [Redis](https://redis.io) | Event backbone — SSE streams, Arroyo consumer groups | 12MB |
+| Scale | Environment | Consistency model |
+|-------|------------|-------------------|
+| **Browser** | PGlite + Service Worker + WASM | Best-effort eventual |
+| **CLI** | Native binaries, no containers | Full consistency |
+| **Single machine** | Docker Compose | Full consistency |
+| **Cloud** | Managed services per component | Full consistency |
+| **Edge** | Embedded/SQLite-based | Eventual consistency |
 
-Bifrost is a single Go binary with 11µs overhead at 5K RPS, native on Windows/Mac/Linux, no runtime dependencies. Prompts are stored as files in your repo (git = versioning). For prompt evaluation, consider [PromptFoo](https://github.com/promptfoo/promptfoo) or [Langfuse](https://github.com/langfuse/langfuse).
+Downscaling to zero is a first-class property. When no users are present, stateless components sleep. When a request arrives, the mesh (Dapr or equivalent) wakes dependent services. Upscaling replaces each component with its managed cloud equivalent without architectural changes.
 
-**Unicorn** (`--profile unicorn`) — production-grade at scale:
+### 5. Stateless processing, stateful storage
 
-| Component | What it does | Size |
-|-----------|-------------|------|
-| [Dapr](https://dapr.io) | Service mesh — retry, circuit breaker, observability | 40MB |
-| [Redis](https://redis.io) | Durable pubsub layer for Dapr (Boxer → Redis → Dapr → your BFF) | 12MB |
-| [imgproxy](https://github.com/imgproxy/imgproxy) | On-the-fly image processing (resize, crop, WebP) — transparent to frontend | 30MB |
+Processing components (reverse proxy, CDC reader, transform pipeline, stream processor, API gateway) are **stateless**. They can crash, restart, and scale horizontally without coordination. All durable state lives in purpose-built stores (relational database, message broker, object storage) that have managed cloud equivalents on every major cloud.
 
-Boxer delivers to Dapr instead of directly to your BFF. Redis becomes the durable layer between Boxer and Dapr, replacing the replication slot as the queue. Same Boxer binary, one env var change. imgproxy sits between your CDN and object storage — images are served directly in MVP, processed on-the-fly in unicorn by changing the URL prefix.
+### 6. Declarative over imperative
 
-### Redis Roles
+Configuration lives in YAML, CUE, SQL, or Protocol Buffers. Not in application code. DSLs reduce bugs, enable generation, and make the system auditable. When choosing between a custom service and a declarative pipeline definition, choose the pipeline.
 
-| Profile | Redis role | Why |
-|---------|-----------|-----|
-| **MVP** | Not present | Replication slot is the durable queue |
-| **AI** | Event backbone | CDC events as Redis Streams for SSE handlers and Arroyo (`XREADGROUP`/`XACK`) |
-| **Unicorn** | Dapr pubsub | Durable delivery queue — Boxer publishes, Dapr delivers with retry and circuit breaking |
-| **AI + Unicorn** | Both roles | Event backbone + Dapr pubsub (can be the same Redis instance) |
+### 7. Additive profiles
 
-### Data Paths
+Capabilities are layered incrementally. The base profile is always CRUD. Each subsequent profile adds services without modifying existing ones:
 
-**CRUD Path** — synchronous reads and writes via PostgREST:
 ```
-POST /crud/items → PostgREST → PostgreSQL → 201 Created
-GET  /crud/items → PostgREST → PostgreSQL → JSON response
+crud → offline → events → ai → unicorn
 ```
 
-**CDC Path** — at-least-once event processing via Boxer:
+A team that only needs CRUD runs 4 containers. A team that needs real-time AI runs 12+. Same architecture, same schema, different profiles.
+
+### 8. Portable cloud mapping
+
+Every stateful component maps to at least one managed service on each major cloud provider. The local development stack uses lightweight, open-source equivalents. No vendor lock-in at the architecture level.
+
+### 9. CDC over event sourcing
+
+Mecha uses **change data capture** (reading the database WAL), not event sourcing (storing events as the primary model). This preserves the relational model — tables, rows, SQL — which enables:
+- PostgREST to auto-generate REST APIs from table definitions
+- ElectricSQL to sync table shapes to frontends
+- Standard SQL tooling for migrations, queries, and analytics
+
+Event sourcing requires custom projection logic and breaks the "schema generates everything" invariant. CDC captures the same events without changing the data model.
+
+## Mecha v1
+
+The original implementation, deployed to Cloud Run with Neon (managed PostgreSQL).
+
 ```
-INSERT INTO items → PostgreSQL WAL → Boxer → HTTP POST to your API
+Frontend → nginx/OpenResty → PostgREST → PostgreSQL
+                                              │ WAL
+                                          Boxer (Rust CDC)
+                                              │
+                                          pgstream → Redis Streams → Dapr → Arroyo
+                                              │
+                                          nginx SSE handler (Lua)
+```
+
+| Role | Component | Notes |
+|------|-----------|-------|
+| Reverse proxy | nginx + OpenResty | Lua scripts for webhook/SSE handlers |
+| CDC | Boxer (custom Rust) | Custom WAL parser, maintenance burden per PG version |
+| Message buffer | Redis Streams | Absorbs backpressure, XREADGROUP consumer groups |
+| Service mesh | Dapr | Retry, circuit breaker, pubsub abstraction |
+| SSE | nginx sse_handler.lua | Custom Lua with Last-Event-ID replay |
+| Stream processing | Arroyo | SQL windowed aggregation, SSE source |
+| Real-time sync | pgstream SSE | Fire-and-forget (no at-least-once) |
+| Heartbeat | nginx periodic publish | Advances Arroyo watermarks during activity |
+
+**Limitations that motivated v2:**
+- Boxer requires maintenance per PostgreSQL major version (custom WAL parser)
+- nginx Lua scripts are brittle, hard to test, opaque to observability
+- pgstream advances LSN regardless of delivery success (not at-least-once)
+- No Windows support (nginx, Boxer)
+- SSE handler requires custom Last-Event-ID state management
+- Redis Streams as event buffer adds operational complexity
+
+**Cloud mapping (v1):**
+PostgreSQL → Neon, Redis → ElastiCache, Arroyo → Arroyo Cloud, nginx → Cloud Run, Dapr → Azure Container Apps.
+
+## Mecha v2
+
+Current implementation. Replaces all custom code (Boxer, Lua scripts, pgstream) with off-the-shelf declarative components.
+
+```
+Frontend → Caddy → PostgREST → PostgreSQL
+                                     │ WAL (logical replication)
+                                 Conduit (declarative YAML pipelines)
+                                     │
+                                 Dapr pubsub → NATS JetStream
+                                     │
+                                 rpk (bloblang DSL)
+                                  ┌──┴──┐
+                            PATCH │     │ MQTT publish
+                          PostgREST   Mosquitto → Arroyo
+                                              │
+                                        webhook → PostgREST
+
+                   ElectricSQL ← PostgreSQL (shape streams)
+```
+
+| Role | Component | DSL/Config |
+|------|-----------|-----------|
+| Reverse proxy | Caddy | Caddyfile |
+| CDC | Conduit v0.14.0 | YAML pipeline definitions |
+| Message bus | NATS JetStream | nats-server.conf |
+| MQTT broker | Mosquitto | mosquitto.conf |
+| Service mesh | Dapr | YAML component definitions |
+| Transform | rpk Connect (Benthos) | YAML + bloblang DSL |
+| Stream processing | Arroyo | SQL (CREATE TABLE + INSERT INTO SELECT) |
+| Real-time sync | ElectricSQL | HTTP shape stream API |
+| Object storage | Garage | S3-compatible API |
+| Image processing | imgproxy | URL-based transforms |
+| Heartbeat | rpk generate input | Co-located, scales with activity |
+
+### Key design decisions (v2)
+
+**Conduit over Boxer**: Declarative YAML pipelines replace custom Rust. No code to maintain per PostgreSQL version. Connectors are plugins.
+
+**Caddy over nginx**: Native Windows support. Automatic HTTPS. Caddyfile is simpler than nginx.conf + Lua. No custom scripting.
+
+**NATS JetStream + MQTT**: JetStream for durable CDC delivery (Conduit → rpk). MQTT for Arroyo source (QoS 1 at-least-once, cloud-native managed options).
+
+**rpk bloblang over Lua scripts**: Declarative transform DSL. Fan-out via broker/switch output. Heartbeat via generate input — co-located with processing, scales to zero with it.
+
+**ElectricSQL over pgstream SSE**: Purpose-built for frontend sync. Shape streams with offset-based resumption. No custom SSE handler.
+
+**Three-way routing in rpk**: Heartbeats → MQTT only. Already-enriched records → MQTT only (breaks CDC amplification loop). New records → PATCH enrichment + MQTT.
+
+### Profiles (v2)
+
+| Profile | Services | Cloud equivalent |
+|---------|----------|-----------------|
+| **crud** | PostgreSQL + PostgREST + Caddy + Dapr | Neon + Cloud Run |
+| **offline** | + ElectricSQL | + Electric Cloud |
+| **events** | + Conduit + NATS JetStream + rpk | + Synadia Cloud / MSK + Cloud Run |
+| **ai** | + Arroyo + Mosquitto + Redis | + Arroyo Cloud + AWS IoT Core + ElastiCache |
+| **unicorn** | + Garage + imgproxy | + S3/GCS + imgproxy Cloud |
+
+### Cloud mapping (v2)
+
+| Component | Local | AWS | Azure | GCP |
+|-----------|-------|-----|-------|-----|
+| PostgreSQL | postgres:18 | RDS / Aurora / Neon | Azure DB / Neon | Cloud SQL / AlloyDB / Neon |
+| Message broker | NATS JetStream | MSK Serverless | Event Hubs | Pub/Sub / Confluent |
+| MQTT | Mosquitto | IoT Core | Event Grid | HiveMQ Cloud |
+| Object storage | Garage | S3 | Blob Storage | GCS |
+| Redis | redis:7.4 | ElastiCache | Cache for Redis | Memorystore |
+| Stream processing | Arroyo | Managed Flink | Stream Analytics | Dataflow |
+| CDC | Conduit | DMS / Debezium on MSK | Event Hubs Capture | Datastream |
+
+The Kafka ecosystem (Debezium + Redpanda/MSK + Flink) is a valid cloud-scale substitution for the entire events+ai tier. The architecture is the same; only the component names change.
+
+## Mecha v3 (Proposed)
+
+Three possible directions, each preserving the invariants:
+
+### v3a: MQTT-native
+
+Replace NATS JetStream with MQTT everywhere. Simplifies the stack to a single message protocol.
+
+```
+Conduit → Dapr MQTT pubsub → Mosquitto → rpk + Arroyo
+```
+
+- Fewer moving parts (no NATS)
+- Better cloud mapping (AWS IoT Core, Azure Event Grid)
+- MQTT v5 shared subscriptions for horizontal scaling
+- Dapr bridges CDC to MQTT, preserving trace context
+
+### v3b: Edge-native (Turso/libSQL)
+
+Replace PostgreSQL with Turso (managed libSQL/SQLite) for edge deployments.
+
+```
+Frontend → Turso embedded replica (local SQLite)
+              │ sync
+          Turso primary (managed)
+              │ change stream
+          rpk → MQTT → Arroyo
+```
+
+- SQLite runs everywhere (browser, mobile, edge, embedded)
+- Turso provides managed replication and CDC-like change streams
+- ElectricSQL alternative: **PowerSync** (designed for SQLite sync)
+- Trade-off: loses PostgreSQL extensions (pgvector, pg_cron, PostgREST)
+
+### v3c: Browser mecha
+
+The full stack runs in the browser via JavaScript and WebAssembly.
+
+```
+Browser:
+  PGlite (WASM PostgreSQL) → local storage
+  Service Worker → offline queue + retry (mesh role)
+  Electric protocol shim → sync to server
+  WASM transform → client-side enrichment
+```
+
+- Best-effort eventual consistency (no durable broker in browser)
+- Service Worker acts as the "Dapr" — retry queue, offline buffering
+- PGlite provides full SQL locally
+- Sync to server when online via Electric protocol
+- All processing in JS/WASM — zero server dependency for reads
+
+**The browser mecha degrades gracefully**: online → full consistency via server sync. Offline → local PGlite with queued writes. Reconnect → eventual consistency via conflict resolution.
+
+## The Spectrum
+
+Mecha implementations form a spectrum from fully embedded to fully distributed:
+
+```
+Browser ──── CLI ──── Container ──── Cloud ──── Edge
+  │            │          │            │          │
+PGlite     native     Docker       managed    Turso
+  │        binaries   Compose     services   embedded
+  │            │          │            │      replica
+best-effort  full      full        full     eventual
+eventual   consistent consistent consistent consistent
+```
+
+The invariants hold across the spectrum. What changes is the consistency model (best-effort at the edges, full in the middle) and the component implementations (WASM vs containers vs managed services).
+
+## Schema-Driven Generation
+
+The generation pipeline is the same across all versions:
+
+```
+Protocol Buffers → buf generate → JSON Schema
                                       │
-                          (LSN advances only on 2xx)
+                                  CUE + gomplate
+                                      │
+                    ┌─────────────────┼─────────────────┐
+                    ▼                 ▼                  ▼
+              Atlas HCL         Caddyfile          Arroyo SQL
+           (DB migrations)    (proxy routes)    (stream queries)
 ```
 
-**Sync Path** — real-time frontend updates:
-```
-PostgreSQL → ElectricSQL → shape stream → frontend live query
-```
-
-**Search Path** — full-text and vector search via PostgREST:
-```
-GET /crud/items?tsv=fts.recycling     → Postgres tsvector full-text search
-GET /crud/items?embedding=ov.{vec}    → pgvector similarity search
-```
-
-**Auth Path** — JWT validation + row-level security via PostgREST:
-```
-GET /crud/items (Authorization: Bearer <jwt>) → PostgREST validates JWT
-  → Postgres RLS policy: WHERE user_id = current_setting('request.jwt.claims')::json->>'sub'
-```
-
-### Built-in Postgres Capabilities
-
-These features require no additional services — they're Postgres extensions exposed through PostgREST:
-
-| Capability | Postgres feature | PostgREST exposure |
-|-----------|-----------------|-------------------|
-| **Full-text search** | `tsvector` + `GIN` index | `?column=fts.query` filter |
-| **Vector/semantic search** | `pgvector` extension | `?column=ov.{embedding}` filter |
-| **Auth** | JWT validation + RLS policies | `PGRST_JWT_SECRET` + `ALTER TABLE ENABLE ROW LEVEL SECURITY` |
-| **File metadata** | Regular table with GCS/S3 URLs | CRUD via PostgREST, files in object storage |
-| **Scheduled jobs** | `pg_cron` or Arroyo windows | SQL-based scheduling |
-
-### Frontend Sync Tiers
-
-The architecture supports multiple sync strategies simultaneously. Recommended migration path from least to most capable:
-
-| Tier | Technology | Capabilities |
-|------|-----------|-------------|
-| REST polling | `fetch()` on interval | Simplest, highest latency |
-| SSE / WebSocket | Server-pushed events via OpenResty | Real-time, no offline |
-| ElectricSQL shapes | `@electric-sql/client` | Real-time + partial sync |
-| TanStack DB + offline transactions | `@tanstack/react-db` | Full offline-first, eventually consistent |
-
-All tiers work against the same backend. A legacy REST client and a modern offline-first client coexist.
+One schema change propagates to all layers. No manual synchronization between database, API, CDC pipeline, and stream processing.
 
 ## Local Development
 
 ```bash
-# MVP — just get it working
-docker compose up
+# Install tools
+mise install
 
-# AI — add LLM gateway, stream processing, SSE
-docker compose --profile ai up
+# Generate all artifacts from protobuf
+task generate
 
-# Unicorn — add Dapr mesh, durable Redis layer
-docker compose --profile unicorn up
+# Start crud profile
+docker compose up --build --watch
 
-# Everything
-docker compose --profile ai --profile unicorn up
+# Start with profiles (additive)
+docker compose --profile offline up --build --watch
+docker compose --profile offline --profile events up --build --watch
+docker compose --profile offline --profile events --profile ai up --build --watch
+
+# Run smoke tests
+task integrate                 # CRUD smoke test
+task integrate:events          # CDC pipeline E2E
+task integrate:ai              # Stream analytics E2E
+
+# Full cleanup
+docker compose --profile offline --profile events --profile ai --profile unicorn down -v
 ```
-
-```yaml
-# compose.yaml — all images pinned with multiplatform SHA digests
-services:
-  database:
-    image: postgres:18-alpine  # 108MB, pinned in compose.yml
-    command:  # MVP tuning: fast startup, good enough for dev
-      - "-c", "wal_level=logical"
-      - "-c", "shared_buffers=128MB"
-      - "-c", "max_wal_senders=4"
-      - "-c", "synchronous_commit=off"   # faster writes in dev
-      - "-c", "max_connections=50"        # lightweight
-
-  crud:
-    image: postgrest/postgrest:v12.2.3  # pinned in compose.yml
-
-  boxer:
-    image: ghcr.io/bonisoft3/boxer:0.2.2  # pinned in compose.yml
-    environment:
-      BOXER_DELIVERY_URL: http://your-app:3000/api/webhook
-      BOXER_TABLE: items
-
-  electric:
-    image: electricsql/electric  # pinned in compose.yml
-
-  storage:
-    image: dxflrs/garage:v1.3.1  # 9MB, S3-compatible (Rust)
-    command: ["garage", "server"]
-```
-
-For unicorn/production, tune Postgres for durability and throughput:
-```yaml
-command:
-  - "-c", "wal_level=logical"
-  - "-c", "shared_buffers=1GB"           # 25% of available RAM
-  - "-c", "max_wal_senders=10"
-  - "-c", "synchronous_commit=on"        # durable writes
-  - "-c", "max_connections=200"
-  - "-c", "effective_cache_size=3GB"      # 75% of available RAM
-  - "-c", "work_mem=16MB"
-```
-
-```bash
-# Create the publication (one-time, in your migration)
-psql $DATABASE_URL -c "CREATE PUBLICATION boxer_pub FOR TABLE items;"
-
-# Start
-docker compose up
-```
-
-At-least-once delivery works locally through Boxer's WAL consumer — the replication slot is the durable queue.
-
-## Production
-
-Production typically uses the **unicorn** profile components. The key changes from local dev:
-
-- **Boxer → Dapr** instead of Boxer → BFF directly (retry, circuit breaker, tracing)
-- **Redis** as the durable layer between Boxer and Dapr (replication slot doesn't scale)
-- **Real GCS/S3** instead of fake-gcs-server
-- **PostgREST, ElectricSQL, imgproxy** as separate services (not in the same compose)
-
-```bash
-# MVP → Unicorn: same Boxer binary, one env var change
-BOXER_DELIVERY_URL=http://localhost:3500/v1.0/publish/eventbus/my-topic
-```
-
-```
-Boxer → Dapr sidecar → Redis Streams → Dapr → your API
-        (retry, circuit breaker, tracing)
-```
-
-See `products/iris-mecha` for a complete Cloud Run deployment via Crossplane.
 
 ## Delivery Guarantees
 
-### At-Least-Once (Boxer)
-
-Boxer reads the PostgreSQL WAL via logical replication and only advances the replication slot's `confirmed_flush_lsn` after your HTTP endpoint returns 2xx. If Boxer crashes, PostgreSQL replays from the last confirmed position.
-
 ```
-WAL entry → Boxer reads → HTTP POST → 2xx? → advance LSN
-                                     → fail? → retry with backoff
-                                     → crash? → Postgres replays on reconnect
+User INSERT → PostgREST → PostgreSQL
+                               │
+                          WAL entry created (durable)
+                               │
+                          Conduit reads WAL (logical replication)
+                               │
+                          Dapr pubsub (retry + circuit breaker)
+                               │
+                          NATS JetStream (durable, ack-based)
+                               │
+                          rpk consumes (ack after downstream success)
+                               │
+                    ┌──────────┼──────────┐
+                    ▼                     ▼
+              PATCH PostgREST       MQTT QoS 1
+              (enrichment)          (Arroyo source)
+                    │                     │
+              ack to NATS           Arroyo processes
+                                          │
+                                    webhook POST
+                                    (aggregated result)
 ```
 
-### Comparison with Other CDC Tools
+At every boundary, the upstream waits for downstream acknowledgment before advancing. WAL position advances only after Conduit delivers. NATS acks only after rpk succeeds. MQTT QoS 1 acks only after Arroyo receives. This chain provides end-to-end at-least-once delivery.
 
-| Tool | At-least-once? | Binary size | Dependencies |
-|------|---------------|-------------|-------------|
-| **Boxer** | Yes (WAL slot ack) | 5MB | None |
-| pgstream | No (advances on webhook 500) | 15MB | None |
-| Debezium | Yes | 800MB | JVM, Kafka |
-| Sequin | Yes | 215MB | Postgres, Redis |
+## Production Lessons
 
-## Learnings from Production (iris-mecha)
+These lessons were learned deploying mecha v1 on Cloud Run with Neon:
 
-These lessons were learned deploying mecha on Cloud Run with Neon (managed Postgres):
-
-1. **pgstream doesn't provide at-least-once** — it advances the WAL position regardless of webhook delivery success. This led to creating Boxer.
-
-2. **Scale-to-zero creates cold-start races** — on Cloud Run, Dapr takes ~5s to initialize while CDC events arrive in ~3s. Boxer solves this by retrying within the webhook request or (in production) by delivering through Dapr which handles its own retry.
-
-3. **Dapr's `bindings.redis` is key-value, not streams** — despite the name, it doesn't support Redis Streams consumer groups. Use `pubsub.redis` (which internally uses Redis Streams with XREADGROUP/XACK).
-
-4. **Dapr pubsub response format** — your endpoint must return `{"status": "SUCCESS"}` (not `{"status": "ok"}`), otherwise Dapr retries indefinitely.
-
-5. **ElectricSQL replaces custom SSE** — shape streaming is more efficient than building SSE handlers in Lua. Use it for frontend sync.
-
-6. **TanStack DB + offline transactions** — for the most capable frontend, use `@tanstack/react-db` with `electricCollectionOptions` for real-time sync and `onInsert` callbacks for optimistic local writes.
-
-7. **Neon doesn't support pg_net or PGMQ** — can't use database-level triggers for pipeline wake-up. Use client-side wake pings instead.
-
-8. **Redis AOF on GCS FUSE** — works for durable Redis on Cloud Run, but adds ~2s to cold start for the FUSE mount.
-
-## Reference Implementation
-
-See `guis/iris` and `products/iris-mecha` in this monorepo for a complete implementation:
-
-- **Frontend**: Next.js 15 + TanStack DB + ElectricSQL shapes
-- **BFF**: Next.js API routes for AI classification (Gemini/OpenAI)
-- **CDC**: Boxer consuming `trackrequest` INSERTs → classification pipeline
-- **Deployment**: Cloud Run via Crossplane, 3 Skaffold profiles (preview, staging, production)
+1. **Scale-to-zero creates cold-start races** — Dapr takes ~5s to initialize while CDC events arrive in ~3s. NATS JetStream absorbs the gap.
+2. **Heartbeats must be co-located with activity** — a standalone heartbeat container scales to zero and never wakes. Embed heartbeats in the transform pipeline (rpk generate input).
+3. **CDC amplification loops** — enrichment PATCHes trigger UPDATE CDC events. Break the loop by checking if a record is already enriched before re-PATCHing.
+4. **Table name case sensitivity** — PostgREST preserves the original table name case. `GroupHello` is not `grouphello`. Webhook sinks must match exactly.
+5. **WAL slot position after recreation** — after `docker compose down -v`, the replication slot's confirmed_flush_lsn can be ahead of the current WAL. Always do a full clean restart.
+6. **Dapr CloudEvent format** — Conduit sends the row payload as a JSON string in the CloudEvent `data` field. Not an OpenCDC record with operation/metadata. Parse accordingly.
 
 ## License
 

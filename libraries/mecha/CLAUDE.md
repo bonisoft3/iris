@@ -1,0 +1,247 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Overview
+
+Mecha is a schema-driven backend framework that generates a complete CRUD + CDC + real-time sync stack from Protocol Buffer definitions. It eliminates boilerplate by generating database schemas and API routes from a single source of truth.
+
+## Architecture
+
+Mecha v2 implements a **three-path architecture** with five additive profiles:
+
+1. **CRUD Path** — synchronous reads and writes via PostgREST
+2. **CDC Path** — at-least-once event delivery via Conduit → Dapr → NATS JetStream → rpk
+3. **Sync Path** — real-time frontend updates via ElectricSQL shapes
+
+### Profiles (additive)
+
+| Profile | Services Added | Total |
+|---------|---------------|-------|
+| **crud** (base) | PostgreSQL + PostgREST + Caddy + Dapr | 4 |
+| **offline** | + ElectricSQL | 5 |
+| **events** | + Conduit + NATS JetStream + rpk | 8 |
+| **ai** | + Arroyo + Bifrost + Redis | 11 |
+| **unicorn** | + Garage (S3) + imgproxy | 13 |
+
+### Data Flow (events profile)
+
+```
+Frontend / Test
+     │
+     ├─ POST /crud/* ──────── Caddy ──── PostgREST ──── PostgreSQL
+     │                                                       │
+     │                                                 WAL (logical)
+     │                                                       │
+     │                                                   Conduit
+     │                                                       │
+     │                                              Dapr pubsub API
+     │                                                       │
+     │                                              NATS JetStream
+     │                                                       │
+     │                                              rpk (bloblang)
+     │                                                       │
+     │                                              POST /crud/*
+     │
+     └─ ElectricSQL shapes ── PostgreSQL
+```
+
+| Service | Image/Tool | Role |
+|---------|-----------|------|
+| `database` | `postgres:18-trixie` | PostgreSQL with wal_level=logical |
+| `crud` | `postgrest/postgrest:v12.2.3` | Auto-generated REST API |
+| `caddy` | `caddy:2.9-alpine` | Reverse proxy (replaces OpenResty) |
+| `mesh` | `daprio/daprd:1.16.1` | Dapr sidecar — retry, circuit breaker, pubsub |
+| `electric` | `electricsql/electric:latest` | Real-time shape streaming |
+| `conduit` | `conduit.io/conduitio/conduit:v0.14.0` | PostgreSQL CDC (replaces Boxer) |
+| `nats` | `nats:2.12-alpine` | NATS JetStream durable message bus |
+| `transform` | `redpandadata/connect:4.46.0` | rpk bloblang transformation pipelines |
+| `garage` | `dxflrs/garage:v2.2.0` | S3-compatible object storage |
+| `imgproxy` | `ghcr.io/imgproxy/imgproxy:v3.31.1` | On-the-fly image processing proxy |
+
+## Development Commands
+
+Install tools: `mise install`
+
+### Schema-Driven Generation
+
+```bash
+# Generate all artifacts from protobuf schemas
+task generate
+
+# Individual steps
+task buf:generate      # Proto → JSON Schema
+task cue:generate      # JSON Schema → Atlas HCL (via CUE + gomplate)
+task atlas:hash        # Regenerate atlas.sum after migration changes
+```
+
+### Running the Stack
+
+```bash
+# Start crud profile (sayt verb)
+say launch
+
+# Start with profiles
+task launch              # crud only
+task launch:offline      # + ElectricSQL
+task launch:events       # + CDC pipeline (Conduit, NATS, rpk)
+task launch:ai           # + stream processing (Arroyo, Bifrost, Redis)
+task launch:unicorn      # + S3 storage + image processing (Garage, imgproxy)
+
+# Or directly with docker compose
+docker compose up --build --watch                                    # crud
+docker compose --profile offline up --build --watch                  # + offline
+docker compose --profile offline --profile events up --build --watch # + events
+
+# Full cleanup (removes volumes)
+docker compose --profile offline --profile events --profile ai --profile unicorn down -v
+```
+
+### Native Mac Mode (no Docker)
+
+Prerequisites: PostgreSQL running on localhost:5432, NATS on localhost:4222, ElectricSQL running.
+
+```bash
+# Start all apps via Dapr multi-app
+dapr run -f .
+```
+
+### Testing
+
+```bash
+# Run crud smoke tests
+task integrate
+
+# Run events pipeline smoke tests (CDC end-to-end)
+task integrate:events
+
+# Manual CRUD test (via Caddy proxy on host port 8080)
+curl -X POST http://localhost:8080/crud/Hello \
+  -H "Content-Type: application/json" \
+  -d '{"message": "test"}'
+```
+
+### Benchmarking
+
+```bash
+./scripts/benchmark.sh crud    # Startup + CRUD latency
+./scripts/benchmark.sh events  # + CDC pipeline latency
+```
+
+## Code Generation Workflow
+
+### 1. Define Entity in Protocol Buffers
+
+Create or edit `.proto` files in `proto/` directory:
+
+```protobuf
+// proto/myentity.proto
+syntax = "proto3";
+package mecha.v1;
+
+message MyEntity {
+  string id = 1;
+  string name = 2;
+}
+```
+
+### 2. Update CUE Template Configuration
+
+Add your entity to `tmpl.cue`:
+
+```cue
+MyEntity: _ @embed(file="gen/jsonschema/mecha.v1.MyEntity.jsonschema.json")
+
+Entities: [
+    // ... existing entities ...
+    { name: "MyEntity", schema: MyEntity, lower: "myentity", ... },
+]
+```
+
+### 3. Generate and Deploy
+
+```bash
+task generate
+say launch
+```
+
+## Key Files and Directories
+
+### Schema Definition
+- `proto/*.proto` — Protocol Buffer entity definitions
+- `proto/buf.gen.yaml` — Buf code generation config
+
+### Code Generation
+- `tmpl.cue` — CUE schema embedding and entity list
+- `tmpl_tool.cue` — CUE tool command for gomplate templating
+- `Taskfile.yml` — Task orchestration for generation pipeline
+
+### Services
+- `services/database/` — PostgreSQL 18 + wal2json + Atlas migrations
+- `services/crud/` — PostgREST with microcheck health probe
+- `services/proxy/` — Caddy reverse proxy (Caddyfile)
+- `services/mesh/` — Dapr sidecar with JetStream pubsub + resiliency
+- `services/cdc/` — Conduit CDC (PostgreSQL WAL → HTTP)
+- `services/nats/` — NATS JetStream config
+- `services/transform/` — rpk bloblang pipelines
+
+### Infrastructure
+- `compose.yml` — Docker Compose with additive profiles
+- `dapr.yaml` — Dapr multi-app config for native Mac mode
+- `mise.toml` — Development tool versions
+- `.say.yaml` — sayt verb config (lint)
+- `scripts/benchmark.sh` — Startup + event flow timing
+
+## Troubleshooting
+
+### Database Issues
+
+```bash
+# Check database health
+docker compose exec database pg_isready
+
+# Inspect replication slots (Conduit creates one)
+docker compose exec database psql -U postgres -d mecha \
+  -c "SELECT * FROM pg_replication_slots;"
+
+# Check publication
+docker compose exec database psql -U postgres -d mecha \
+  -c "SELECT * FROM pg_publication;"
+```
+
+### CDC / Conduit Issues
+
+```bash
+# Check conduit logs
+docker compose logs -f conduit
+
+# Check NATS JetStream status (port 8222 is internal; use docker exec)
+docker compose exec nats wget -qO- http://localhost:8222/jsz
+
+# Check rpk transform logs
+docker compose logs -f transform
+```
+
+### Dapr Issues
+
+```bash
+# Check Dapr sidecar logs
+docker compose logs -f mesh
+
+# Test Dapr health (port 3500 is internal; use docker exec)
+docker compose exec mesh /busybox wget -qO- http://localhost:3500/v1.0/healthz
+
+# Test pubsub publish from within the events network
+docker compose exec mesh-events /busybox wget -qO- \
+  --post-data='{"test": true}' \
+  --header='Content-Type: application/json' \
+  http://localhost:3500/v1.0/publish/jetstream/test-topic
+```
+
+### Common Fixes
+
+- **"Migration hash mismatch"**: Run `task atlas:hash` to regenerate `atlas.sum`
+- **Conduit can't connect**: Ensure `conduit_pub` publication exists — migration `003_publication.sql` handles this
+- **NATS not starting**: Check `services/nats/nats-server.conf` and ensure port 4222 is available
+- **rpk not consuming**: nats-init deletes stale durable consumers on startup. If still stuck, check `nats consumer info cdc-events rpk-transform`
+- **Stale state**: Full cleanup with `task clean` then `say launch`

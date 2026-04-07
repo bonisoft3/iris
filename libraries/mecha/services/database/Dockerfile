@@ -1,24 +1,30 @@
-# Database image with Atlas migrations and a pg_isready health probe.
+# Database image with versioned SQL migrations.
+#
+# Atlas is dev-only (see task atlas:diff). At runtime we just drop the .sql
+# migration files into /docker-entrypoint-initdb.d/ — PostgreSQL's entrypoint
+# runs them in alphabetical order on fresh data directories.
+#
+# Healthcheck is provided by compose.yml (with start_interval for fast startup).
+
 FROM postgres:18-trixie@sha256:073e7c8b84e2197f94c8083634640ab37105effe1bc853ca4d5fbece3219b0e8
 
-# Install PostgreSQL extensions and tools
-RUN apt-get update -y && apt-get install -y postgresql-18-wal2json curl && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+# Install wal2json extension for logical decoding output
+RUN apt-get update -y && apt-get install -y postgresql-18-wal2json && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
-# Install Atlas CLI
-RUN curl -sSf https://atlasgo.sh | sh
-
-# Use a non-volume data directory so state is ephemeral.
+# Ephemeral data directory (mounted as tmpfs in compose)
 ENV PGDATA=/postgresql-data
 
-# Copy Atlas declarative schemas and migrations (only .hcl files, not templates)
-COPY schemas/infrastructure.hcl schemas/security.hcl schemas/schema.hcl /schemas/
-COPY migrations/ /migrations/
-COPY atlas.hcl /atlas/atlas.hcl
+# Copy migration SQL files — PostgreSQL runs them in alphabetical order on initdb
+COPY migrations/000_extensions.sql     /docker-entrypoint-initdb.d/000_extensions.sql
+COPY migrations/001_roles.sql          /docker-entrypoint-initdb.d/001_roles.sql
+COPY migrations/002_grants.sql         /docker-entrypoint-initdb.d/002_grants.sql
+COPY migrations/003_publication.sql    /docker-entrypoint-initdb.d/003_publication.sql
+COPY migrations/004_create_tables.sql  /docker-entrypoint-initdb.d/004_create_tables.sql
 
-# Copy migration and helper scripts
-COPY --chmod=755 01-run-atlas-migrations.sh /docker-entrypoint-initdb.d/01-run-atlas-migrations.sh
-COPY --chmod=755 healthcheck.sh /usr/local/bin/healthcheck.sh
-
-CMD ["postgres", "-c", "wal_level=logical"]
-
-HEALTHCHECK --interval=5s --timeout=10s --start-period=5m --retries=6 CMD ["/usr/local/bin/healthcheck.sh"]
+CMD ["postgres", \
+     "-c", "wal_level=logical", \
+     "-c", "fsync=off", \
+     "-c", "synchronous_commit=off", \
+     "-c", "full_page_writes=off", \
+     "-c", "shared_buffers=32MB", \
+     "-c", "max_connections=20"]

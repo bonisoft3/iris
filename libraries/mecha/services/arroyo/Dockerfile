@@ -1,7 +1,7 @@
 # Arroyo stream-processing cluster with auto-bootstrap query loader.
-FROM ghcr.io/arroyosystems/arroyo@sha256:f1e6fe0102505ac33da459da0ee7b06f5c31c9eeacad97534e768d6f65ebf4cd
+FROM ghcr.io/arroyosystems/arroyo:latest@sha256:6562fa23703e2d6c420de887ddf7aae5245f0a934aa65949b9aa117e117a20df
 
-RUN apt-get update -y && apt-get install -y curl netcat-openbsd && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -y && apt-get install -y curl jq netcat-openbsd && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 COPY --chmod=755 services/arroyo/arroyo-init.sh /init-scripts/arroyo-init.sh
 COPY --chmod=755 services/arroyo/healthcheck.sh /usr/local/bin/arroyo-healthcheck.sh

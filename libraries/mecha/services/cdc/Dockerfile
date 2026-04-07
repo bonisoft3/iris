@@ -1,16 +1,17 @@
-# CDC service based on pgstream with self-healing init scripts.
-FROM chainguard/wolfi-base:latest@sha256:9925d3017788558fa8f27e8bb160b791e56202b60c91fbcc5c867de3175986c8
-RUN apk add curl postgresql-client gettext busybox && mkdir -p /usr/local/bin/
+# Conduit CDC service: PostgreSQL WAL to HTTP delivery.
+# Downloads the standalone HTTP connector binary from GitHub releases.
+FROM ghcr.io/conduitio/conduit:v0.14.0@sha256:dffc83f78caddac8fda0bf71b2b34212174e4a8cbe74ee5e1784a97a78b77e60
 
-# Install pgstream
-RUN curl -L -o pgstream https://github.com/xataio/pgstream/releases/download/v0.8.3/pgstream.linux.amd64
-RUN install -m 0755 pgstream /usr/local/bin/ && rm pgstream
+ARG TARGETARCH
+RUN mkdir -p /app/connectors && \
+    ARCH=$(case "${TARGETARCH}" in arm64) echo "arm64" ;; *) echo "x86_64" ;; esac) && \
+    wget -qO- "https://github.com/conduitio-labs/conduit-connector-http/releases/download/v0.4.0/conduit-connector-http_0.4.0_Linux_${ARCH}.tar.gz" \
+    | tar -xzf - -C /app/connectors conduit-connector-http && \
+    chmod +x /app/connectors/conduit-connector-http
 
-# Copy pgstream configuration and scripts
-COPY services/cdc/config/pgstream.yaml /pgstream.yaml
-COPY --chmod=755 services/cdc/start-pgstream.sh /usr/local/bin/start-pgstream.sh
-COPY --chmod=755 services/cdc/healthcheck.sh /usr/local/bin/healthcheck.sh
+COPY --from=tarampampam/microcheck:1@sha256:79c187c05bfa67518078bf4db117771942fa8fe107dc79a905861c75ddf28dfa /bin/httpcheck /bin/httpcheck
 
-ENTRYPOINT ["/usr/local/bin/start-pgstream.sh"]
+COPY services/cdc/pipelines /conduit/pipelines
 
-HEALTHCHECK --interval=5s --timeout=10s --retries=6 --start-period=30s CMD ["/usr/local/bin/healthcheck.sh"]
+HEALTHCHECK --interval=5s --timeout=5s --retries=6 --start-period=30s \
+  CMD ["httpcheck", "http://127.0.0.1:8080/healthz"]

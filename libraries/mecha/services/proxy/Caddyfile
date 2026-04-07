@@ -1,0 +1,35 @@
+{
+	admin off
+}
+
+:8080 {
+	handle /crud/* {
+		uri strip_prefix /crud
+		reverse_proxy crud:3000
+	}
+
+	handle /electric/* {
+		uri strip_prefix /electric
+		reverse_proxy electric:3000 {
+			flush_interval -1
+			transport http {
+				read_timeout 300s
+			}
+		}
+	}
+
+	handle /img/* {
+		uri strip_prefix /img
+		reverse_proxy imgproxy:8081 {
+			flush_interval -1
+		}
+	}
+
+	handle /health {
+		respond "OK" 200
+	}
+
+	handle {
+		respond "Not Found" 404
+	}
+}

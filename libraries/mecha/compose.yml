@@ -1,4 +1,23 @@
+# Mecha v2 — Additive profiles: crud → offline → events → ai → unicorn
+#
+# Startup strategy: all services start in parallel and self-retry connections.
+# No sequential depends_on chain. Only init containers (nats-init, garage-init)
+# wait for their target to be healthy. Services use internal retry logic:
+#   PostgREST retries DB, Caddy returns 502 until upstream ready,
+#   Dapr retries components, Conduit retries WAL, rpk retries JetStream.
+#
+# Usage:
+#   docker compose up                                    # crud only
+#   docker compose --profile offline up                  # + ElectricSQL
+#   docker compose --profile offline --profile events up # + CDC pipeline
+#   docker compose --profile ai up                       # + stream processing
+#   docker compose --profile unicorn up                  # + storage + imaging
+
 services:
+  # ============================================================
+  # CRUD PROFILE (base) — PostgreSQL + PostgREST + Caddy + Dapr
+  # ============================================================
+
   database:
     build:
       context: services/database
@@ -9,16 +28,26 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-mecha}
+      POSTGRES_INITDB_ARGS: "--no-sync --no-locale --encoding=UTF8 --auth=trust"
+    tmpfs:
+      - /postgresql-data
     healthcheck:
       test: ["CMD", "pg_isready", "-h", "localhost", "-p", "5432", "-d", "${POSTGRES_DB:-mecha}", "-U", "${POSTGRES_USER:-postgres}"]
       start_interval: 100ms
       start_period: 5m
 
   crud:
-    image: postgrest/postgrest:v12.2.3@sha256:0a46780309a604cdc8b56c776c6e5e15788ce58174d709e40459ab5a2d44d228
+    build:
+      context: .
+      dockerfile: services/crud/Dockerfile
     depends_on:
       database:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "httpcheck", "http://127.0.0.1:3001/ready"]
+      interval: 5s
+      start_interval: 500ms
+      start_period: 30s
     environment:
       PGRST_DB_URI: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-mecha}
       PGRST_DB_SCHEMA: public
@@ -30,45 +59,190 @@ services:
       - "3000"
       - "3001"
 
-  boxer:
-    image: ghcr.io/bonisoft3/boxer:latest
+  caddy:
+    build:
+      context: .
+      dockerfile: services/proxy/Dockerfile
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "/bin/httpcheck", "http://127.0.0.1:8080/health"]
+      interval: 5s
+      start_interval: 500ms
+      start_period: 10s
+    develop:
+      watch:
+        - action: sync+restart
+          path: services/proxy/Caddyfile
+          target: /etc/caddy/Caddyfile
+
+  mesh:
+    build:
+      context: .
+      dockerfile: services/mesh/Dockerfile
+      target: base
     depends_on:
-      database:
-        condition: service_healthy
-      webhook:
+      caddy:
         condition: service_started
-    environment:
-      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-mecha}
-      BOXER_DELIVERY_URL: http://webhook:8080
-      BOXER_PUBLICATION: boxer_pub
-      BOXER_TABLE: Hello
-    restart: on-failure
+    ports:
+      - "3500"
+    healthcheck:
+      test: ["CMD", "/bin/portcheck", "--port", "3500"]
+      interval: 5s
+      start_interval: 500ms
+      start_period: 30s
+    develop:
+      watch:
+        - action: sync+restart
+          path: services/mesh/dapr/components/httpendpoints.yaml
+          target: /dapr/components/httpendpoints.yaml
+        - action: sync+restart
+          path: services/mesh/dapr/components/resiliency.yaml
+          target: /dapr/components/resiliency.yaml
+
+  # ============================================================
+  # OFFLINE PROFILE — + ElectricSQL
+  # ============================================================
 
   electric:
-    image: electricsql/electric:latest
+    image: electricsql/electric@sha256:f311edc272e227ddaea593c5205a02c3d1e5969c2db0f7655a039a5e24abb176
     depends_on:
       database:
-        condition: service_healthy
+        condition: service_started
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-mecha}
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-mecha}?sslmode=disable"
       ELECTRIC_INSECURE: "true"
     ports:
-      - "5133"
+      - "3000"
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:5133/v1/health || exit 1"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/v1/health"]
       interval: 5s
       timeout: 5s
       retries: 12
-      start_period: 30s
+      start_period: 60s
+      start_interval: 500ms
+    restart: on-failure
+    profiles:
+      - offline
+      - events
+      - ai
 
-  webhook:
-    image: ealen/echo-server:latest
-    environment:
-      PORT: "8080"
+  # ============================================================
+  # EVENTS PROFILE — + Conduit + NATS JetStream + rpk
+  # ============================================================
+
+  # Mesh variant with JetStream pubsub component.
+  mesh-events:
+    build:
+      context: .
+      dockerfile: services/mesh/Dockerfile
+      target: events
+    depends_on:
+      caddy:
+        condition: service_started
+      nats:
+        condition: service_started
     ports:
-      - "8080"
+      - "3500"
+    healthcheck:
+      test: ["CMD", "/bin/portcheck", "--port", "3500"]
+      interval: 5s
+      start_interval: 500ms
+      start_period: 30s
+    restart: on-failure
+    develop:
+      watch:
+        - action: sync+restart
+          path: services/mesh/dapr/components/
+          target: /dapr/components/
+    profiles:
+      - events
 
-  # --- AI profile: stream processing + LLM gateway ---
+  nats:
+    build:
+      context: .
+      dockerfile: services/nats/Dockerfile
+    ports:
+      - "4222"
+      - "8222"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8222/healthz || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+      start_interval: 500ms
+    profiles:
+      - events
+      - ai
+
+  conduit:
+    build:
+      context: .
+      dockerfile: services/cdc/Dockerfile
+    depends_on:
+      database:
+        condition: service_started
+      mesh-events:
+        condition: service_started
+      nats:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-mecha}
+      DAPR_PUBSUB_URL: http://mesh-events:3500/v1.0/publish/jetstream/cdc-events
+      CDC_TABLES: ${CDC_TABLES:-public.Hello}
+      CONDUIT_PIPELINES_PATH: /conduit/pipelines
+      CONDUIT_DB_TYPE: sqlite
+      CONDUIT_DB_SQLITE_PATH: /conduit/conduit.db
+    develop:
+      watch:
+        - action: sync+restart
+          path: services/cdc/pipelines/
+          target: /conduit/pipelines/
+    healthcheck:
+      test: ["CMD", "httpcheck", "http://127.0.0.1:8080/healthz"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 120s
+      start_interval: 500ms
+    restart: on-failure
+    profiles:
+      - events
+
+  # Create JetStream stream before consumers start.
+  nats-init:
+    build:
+      context: .
+      dockerfile: services/nats/Dockerfile.init
+    depends_on:
+      nats:
+        condition: service_healthy
+    restart: "no"
+    profiles:
+      - events
+
+  transform:
+    build:
+      context: .
+      dockerfile: services/transform/Dockerfile
+    depends_on:
+      nats:
+        condition: service_started
+      nats-init:
+        condition: service_completed_successfully
+    restart: on-failure
+    develop:
+      watch:
+        - action: sync+restart
+          path: services/transform/passthrough.yaml
+          target: /pipelines/passthrough.yaml
+    profiles:
+      - events
+
+  # ============================================================
+  # AI PROFILE — + Arroyo + MQTT + Redis
+  # ============================================================
 
   redis:
     image: redis:7.4.1-alpine@sha256:59b6e694653476de2c992937ebe1c64182af4728e54bb49e9b7a6c26614d8933
@@ -80,66 +254,215 @@ services:
       timeout: 5s
       retries: 6
       start_period: 10s
+      start_interval: 500ms
     profiles:
       - ai
-      - unicorn
 
-  proxy:
+  mqtt:
     build:
-      context: services/proxy
-      dockerfile: Dockerfile
-    depends_on:
-      database:
-        condition: service_healthy
-      crud:
-        condition: service_started
-      redis:
-        condition: service_healthy
-    environment:
-      UPSTREAM_HOST: ${UPSTREAM_HOST:-webhook}
-      UPSTREAM_PORT: ${UPSTREAM_PORT:-8080}
+      context: .
+      dockerfile: services/mqtt/Dockerfile
     ports:
-      - "80"
+      - "1883"
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_sub -t '$$SYS/broker/uptime' -C 1 -W 3 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 6
+      start_period: 5s
+      start_interval: 500ms
+    develop:
+      watch:
+        - action: sync+restart
+          path: services/mqtt/mosquitto.conf
+          target: /mosquitto/config/mosquitto.conf
     profiles:
       - ai
-      - unicorn
+
+  # MQTT fan-out: same rpk image as transform, different pipeline (CMD override).
+  mqtt-fanout:
+    build:
+      context: .
+      dockerfile: services/transform/Dockerfile
+    command: ["run", "/pipelines/mqtt-fanout.yaml"]
+    depends_on:
+      nats:
+        condition: service_started
+      nats-init:
+        condition: service_completed_successfully
+      mqtt:
+        condition: service_started
+    restart: on-failure
+    develop:
+      watch:
+        - action: sync+restart
+          path: services/transform/mqtt-fanout.yaml
+          target: /pipelines/mqtt-fanout.yaml
+    profiles:
+      - ai
 
   arroyo:
     build:
-      context: services/arroyo
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/arroyo/Dockerfile
     depends_on:
-      proxy:
+      mqtt:
+        condition: service_started
+      database:
+        condition: service_started
+      redis:
         condition: service_started
     ports:
       - "5115"
+    restart: on-failure
+    develop:
+      watch:
+        - action: sync+restart
+          path: services/arroyo/queries/
+          target: /queries/
     profiles:
       - ai
 
-  # --- Unicorn profile: service mesh + durable delivery ---
+  # ============================================================
+  # UNICORN PROFILE — + Garage (S3) + imgproxy
+  # ============================================================
 
-  mesh:
-    build:
-      context: services/mesh
-      dockerfile: Dockerfile
-    depends_on:
-      proxy:
-        condition: service_started
-      redis:
-        condition: service_healthy
+  garage:
+    image: dxflrs/garage:v2.2.0@sha256:45a61ce3f7c9c24fc23d9ed2b09b27ed560ab87b34605d175d5c588f539c24e4
+    environment:
+      GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
+      GARAGE_RPC_BIND_ADDR: "[::]:3901"
+      GARAGE_RPC_PUBLIC_ADDR: "garage:3901"
+      GARAGE_S3_API_BIND_ADDR: "[::]:3900"
+      GARAGE_S3_WEB_BIND_ADDR: "[::]:3902"
+      GARAGE_ADMIN_API_BIND_ADDR: "[::]:3903"
+      GARAGE_ADMIN_TOKEN: ${GARAGE_ADMIN_TOKEN:-mecha-admin}
+      GARAGE_ALLOW_WORLD_READABLE_SECRETS: "true"
+      GARAGE_REPLICATION_FACTOR: 1
+      GARAGE_DB_ENGINE: sqlite
+      GARAGE_METADATA_DIR: /data/meta
+      GARAGE_DATA_DIR: /data/blocks
     ports:
-      - "3500"
+      - "3900"
+      - "3903"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:3903/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
+      start_interval: 500ms
     profiles:
       - unicorn
 
-  # Smoke test: verify CRUD and CDC delivery end-to-end
+  imgproxy:
+    image: ghcr.io/imgproxy/imgproxy:v3.31.1@sha256:2b7a56dbf9c8a8e12e7109a5bdd27d31a8c1aa49f2116c927c6aedc37e18db98
+    depends_on:
+      garage:
+        condition: service_started
+    environment:
+      IMGPROXY_USE_S3: "true"
+      IMGPROXY_S3_ENDPOINT: http://garage:3900
+      AWS_ACCESS_KEY_ID: ${GARAGE_ACCESS_KEY:-GK00000000000000000000dev}
+      AWS_SECRET_ACCESS_KEY: ${GARAGE_SECRET_KEY:-0000000000000000000000000000000000000000000000000000000000000000}
+      AWS_REGION: garage
+      IMGPROXY_BIND: ":8081"
+      IMGPROXY_MAX_SRC_RESOLUTION: 50
+    ports:
+      - "8081"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8081/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+      start_interval: 500ms
+    restart: on-failure
+    profiles:
+      - unicorn
+
+  garage-init:
+    build:
+      context: .
+      dockerfile: services/garage/Dockerfile.init
+    depends_on:
+      garage:
+        condition: service_healthy
+    environment:
+      GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
+      GARAGE_ACCESS_KEY: ${GARAGE_ACCESS_KEY:-GK00000000000000000000dev}
+      GARAGE_SECRET_KEY: ${GARAGE_SECRET_KEY:-0000000000000000000000000000000000000000000000000000000000000000}
+    restart: "no"
+    profiles:
+      - unicorn
+
+  # ============================================================
+  # NUBOX — Command & control (interactive nushell debug shell)
+  # ============================================================
+  # All profiles share this as a dev convenience — `docker compose
+  # run --rm nubox` drops you into an interactive shell with the
+  # full stack visible over the compose network.
+
+  nubox:
+    image: bonisoft3/lazybox:nubox
+    depends_on:
+      database:
+        condition: service_healthy
+    stdin_open: true
+    tty: true
+    entrypoint: ["nu"]
+
+  # ============================================================
+  # TEST — Smoke tests
+  # ============================================================
+
   integrate:
     build:
       context: .
       dockerfile: tests/Dockerfile
     depends_on:
-      crud:
-        condition: service_started
-      boxer:
-        condition: service_started
+      caddy:
+        condition: service_healthy
     restart: "no"
+    profiles:
+      - test
+
+  integrate-events:
+    build:
+      context: .
+      dockerfile: tests/Dockerfile
+    depends_on:
+      conduit:
+        condition: service_healthy
+    environment:
+      CRUD_URL: http://crud:3000
+    entrypoint: ["/bin/sh", "/entrypoint-events.sh"]
+    restart: "no"
+    profiles:
+      - test-events
+
+  integrate-ai:
+    build:
+      context: .
+      dockerfile: tests/stream-analytics-test/Dockerfile
+    depends_on:
+      arroyo:
+        condition: service_healthy
+    restart: "no"
+    profiles:
+      - test-ai
+
+  integrate-unicorn:
+    build:
+      context: .
+      dockerfile: tests/unicorn-test/Dockerfile
+    depends_on:
+      garage-init:
+        condition: service_completed_successfully
+      imgproxy:
+        condition: service_healthy
+    environment:
+      GARAGE_ADMIN_TOKEN: ${GARAGE_ADMIN_TOKEN:-mecha-admin}
+    restart: "no"
+    profiles:
+      - test-unicorn

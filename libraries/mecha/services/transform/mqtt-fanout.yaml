@@ -1,0 +1,54 @@
+# MQTT fan-out pipeline: tee CDC events + heartbeats to MQTT for Arroyo.
+# Only used when ai profile is active (Mosquitto available).
+# Reads from the same JetStream stream with a separate durable consumer.
+
+input:
+  broker:
+    inputs:
+      - nats_jetstream:
+          urls:
+            - "nats://nats:4222"
+          subject: "cdc-events"
+          stream: "cdc-events"
+          durable: "rpk-mqtt-fanout"
+          deliver: "all"
+          ack_wait: "30s"
+          max_ack_pending: 1024
+      - generate:
+          interval: "5s"
+          mapping: |
+            meta is_heartbeat = "true"
+            root = {"message":"","operation":"heartbeat","collection":""}
+
+pipeline:
+  processors:
+    - bloblang: |
+        let hb = meta("is_heartbeat") | ""
+        let entity = if $hb == "true" { {} } else { this.data.parse_json().catch({}) }
+        let traceparent = if $hb == "true" { "" } else { this.traceparent | "" }
+
+        meta is_heartbeat = $hb
+        meta collection = "Hello"
+        meta operation = if $hb == "true" { "heartbeat" } else { "create" }
+        meta traceparent = $traceparent
+
+        root = if $hb == "true" {
+          this
+        } else if $entity.id != null {
+          $entity
+        } else {
+          deleted()
+        }
+
+    - bloblang: |
+        root.operation = meta("operation")
+        root.collection = meta("collection")
+        root.traceparent = meta("traceparent")
+
+output:
+  mqtt:
+    urls:
+      - "tcp://mqtt:1883"
+    client_id: "rpk-mqtt-fanout"
+    topic: ${! "flat/" + meta("collection").lowercase() }
+    qos: 1

@@ -25,6 +25,7 @@ group "ci" {
     "services_boxer",
     "guis_iris",
     "plugins_sayt",
+    "libraries_mecha",
   ]
 }
 
@@ -102,5 +103,13 @@ target "plugins_sayt" {
   secret     = ["id=host.env,env=HOST_ENV"]
   cache-from = cache_from("plugins-sayt")
   cache-to   = cache_to("plugins-sayt")
+}
+
+target "libraries_mecha" {
+  inherits   = ["ci-defaults"]
+  context    = "./libraries/mecha"
+  dockerfile = "tests/Dockerfile"
+  cache-from = cache_from("libraries-mecha")
+  cache-to   = cache_to("libraries-mecha")
 }
 

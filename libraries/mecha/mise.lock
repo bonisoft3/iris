@@ -39,6 +39,10 @@ checksum = "sha256:b4671213dd37e17fb574ccca7c82bef2b84f9df2c1bc933be0ce14aacf56d
 url = "https://github.com/bufbuild/buf/releases/download/v1.66.1/buf-Windows-x86_64.zip"
 url_api = "https://api.github.com/repos/bufbuild/buf/releases/assets/370326773"
 
+[[tools."github:cue-lang/cue"]]
+version = "0.16.0"
+backend = "github:cue-lang/cue"
+
 [[tools."github:dapr/cli"]]
 version = "1.17.0"
 backend = "github:dapr/cli"
@@ -195,44 +199,83 @@ checksum = "sha256:9df739a49bea6a81b85a80c7ebaef876907923f1af865f54f33a762c1238a
 url = "https://github.com/hairyhenderson/gomplate/releases/download/v5.0.0/gomplate_windows-amd64.zip"
 url_api = "https://api.github.com/repos/hairyhenderson/gomplate/releases/assets/343795592"
 
-[[tools."github:xataio/pgstream"]]
-version = "1.0.1"
-backend = "github:xataio/pgstream"
+[[tools."github:nats-io/nats-server"]]
+version = "2.12.6"
+backend = "github:nats-io/nats-server"
 
-[tools."github:xataio/pgstream"."platforms.linux-arm64"]
-checksum = "sha256:e95f6125697a575f8549d4710125ceade5cabbb3529fc8166a4b5d00b8e16b85"
-url = "https://github.com/xataio/pgstream/releases/download/v1.0.1/pgstream.linux.arm64"
-url_api = "https://api.github.com/repos/xataio/pgstream/releases/assets/356703368"
+[tools."github:nats-io/nats-server"."platforms.linux-arm64"]
+checksum = "sha256:fddaf3f223c7af3f4d0a0d2c2fc084406e6b3ec7adfd1b9e6a37fbd03bfe222f"
+url = "https://github.com/nats-io/nats-server/releases/download/v2.12.6/nats-server-v2.12.6-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/nats-io/nats-server/releases/assets/380545176"
 
-[tools."github:xataio/pgstream"."platforms.linux-arm64-musl"]
-checksum = "sha256:e95f6125697a575f8549d4710125ceade5cabbb3529fc8166a4b5d00b8e16b85"
-url = "https://github.com/xataio/pgstream/releases/download/v1.0.1/pgstream.linux.arm64"
-url_api = "https://api.github.com/repos/xataio/pgstream/releases/assets/356703368"
+[tools."github:nats-io/nats-server"."platforms.linux-arm64-musl"]
+checksum = "sha256:fddaf3f223c7af3f4d0a0d2c2fc084406e6b3ec7adfd1b9e6a37fbd03bfe222f"
+url = "https://github.com/nats-io/nats-server/releases/download/v2.12.6/nats-server-v2.12.6-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/nats-io/nats-server/releases/assets/380545176"
 
-[tools."github:xataio/pgstream"."platforms.linux-x64"]
-checksum = "sha256:6c755fbca793259f14baa74d95d1ae8e08d17b2ecb7290b4618bb02a6e9ea416"
-url = "https://github.com/xataio/pgstream/releases/download/v1.0.1/pgstream.linux.amd64"
-url_api = "https://api.github.com/repos/xataio/pgstream/releases/assets/356703398"
+[tools."github:nats-io/nats-server"."platforms.linux-x64"]
+checksum = "sha256:77fe7dd69ff5144126026b78355900be0ab0bb4339dc61a7621dcc9b9e9d07a6"
+url = "https://github.com/nats-io/nats-server/releases/download/v2.12.6/nats-server-v2.12.6-linux-amd64.tar.gz"
+url_api = "https://api.github.com/repos/nats-io/nats-server/releases/assets/380545212"
 
-[tools."github:xataio/pgstream"."platforms.linux-x64-musl"]
-checksum = "sha256:6c755fbca793259f14baa74d95d1ae8e08d17b2ecb7290b4618bb02a6e9ea416"
-url = "https://github.com/xataio/pgstream/releases/download/v1.0.1/pgstream.linux.amd64"
-url_api = "https://api.github.com/repos/xataio/pgstream/releases/assets/356703398"
+[tools."github:nats-io/nats-server"."platforms.linux-x64-musl"]
+checksum = "sha256:77fe7dd69ff5144126026b78355900be0ab0bb4339dc61a7621dcc9b9e9d07a6"
+url = "https://github.com/nats-io/nats-server/releases/download/v2.12.6/nats-server-v2.12.6-linux-amd64.tar.gz"
+url_api = "https://api.github.com/repos/nats-io/nats-server/releases/assets/380545212"
 
-[tools."github:xataio/pgstream"."platforms.macos-arm64"]
-checksum = "sha256:4d6f4444f06fae99a122dd87dab5af2b02c777a5b2f081c3c96288593c8042e9"
-url = "https://github.com/xataio/pgstream/releases/download/v1.0.1/pgstream.macos.arm64"
-url_api = "https://api.github.com/repos/xataio/pgstream/releases/assets/356703369"
+[tools."github:nats-io/nats-server"."platforms.macos-arm64"]
+checksum = "sha256:b9b287b786e83e783702214d516042f6397f7c1c4916985c6ec5e6d9d490151c"
+url = "https://github.com/nats-io/nats-server/releases/download/v2.12.6/nats-server-v2.12.6-darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/nats-io/nats-server/releases/assets/380545217"
 
-[tools."github:xataio/pgstream"."platforms.macos-x64"]
-checksum = "sha256:3a10211c57fab129bed0e0fef511194e556a8694db691ec104a243e6e429b487"
-url = "https://github.com/xataio/pgstream/releases/download/v1.0.1/pgstream.macos.amd64"
-url_api = "https://api.github.com/repos/xataio/pgstream/releases/assets/356703365"
+[tools."github:nats-io/nats-server"."platforms.macos-x64"]
+checksum = "sha256:d7bc326ebbaf0a032ae1b03b99e4d863d9320ad010f37a22b2e8306ab3272ca0"
+url = "https://github.com/nats-io/nats-server/releases/download/v2.12.6/nats-server-v2.12.6-darwin-amd64.tar.gz"
+url_api = "https://api.github.com/repos/nats-io/nats-server/releases/assets/380545216"
 
-[tools."github:xataio/pgstream"."platforms.windows-x64"]
-checksum = "sha256:ca10eaedc72feb312a39caa4ddec3712124e7f39bd18130e8c190b1a6a2ee297"
-url = "https://github.com/xataio/pgstream/releases/download/v1.0.1/pgstream.win.amd64.exe"
-url_api = "https://api.github.com/repos/xataio/pgstream/releases/assets/356703367"
+[tools."github:nats-io/nats-server"."platforms.windows-x64"]
+checksum = "sha256:35445ebdf3232eeafb866e5c3bca5ac3c189525423367997b81945e9b2ace45b"
+url = "https://github.com/nats-io/nats-server/releases/download/v2.12.6/nats-server-v2.12.6-windows-amd64.zip"
+url_api = "https://api.github.com/repos/nats-io/nats-server/releases/assets/380545205"
+
+[[tools."github:redpanda-data/connect"]]
+version = "4.46.0"
+backend = "github:redpanda-data/connect"
+
+[tools."github:redpanda-data/connect"."platforms.linux-arm64"]
+checksum = "sha256:9ee6be3d9a189e52a853ac01df6095cfa2434797c086f4f508938d2b796c700f"
+url = "https://github.com/redpanda-data/connect/releases/download/v4.46.0/redpanda-connect-cloud_4.46.0_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/redpanda-data/connect/releases/assets/224651927"
+
+[tools."github:redpanda-data/connect"."platforms.linux-arm64-musl"]
+checksum = "sha256:9ee6be3d9a189e52a853ac01df6095cfa2434797c086f4f508938d2b796c700f"
+url = "https://github.com/redpanda-data/connect/releases/download/v4.46.0/redpanda-connect-cloud_4.46.0_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/redpanda-data/connect/releases/assets/224651927"
+
+[tools."github:redpanda-data/connect"."platforms.linux-x64"]
+checksum = "sha256:c32c961642d940af8bc307a86fd21d17f89006397cddcbd5f6bd0d7ee2a6e50e"
+url = "https://github.com/redpanda-data/connect/releases/download/v4.46.0/redpanda-connect-cloud_4.46.0_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/redpanda-data/connect/releases/assets/224651919"
+
+[tools."github:redpanda-data/connect"."platforms.linux-x64-musl"]
+checksum = "sha256:c32c961642d940af8bc307a86fd21d17f89006397cddcbd5f6bd0d7ee2a6e50e"
+url = "https://github.com/redpanda-data/connect/releases/download/v4.46.0/redpanda-connect-cloud_4.46.0_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/redpanda-data/connect/releases/assets/224651919"
+
+[tools."github:redpanda-data/connect"."platforms.macos-arm64"]
+checksum = "sha256:cef49946f883c98e06808b2ec2bc49d00b2e5db208f80cb73cd73f01b7130f48"
+url = "https://github.com/redpanda-data/connect/releases/download/v4.46.0/redpanda-connect-cloud_4.46.0_darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/redpanda-data/connect/releases/assets/224651925"
+
+[tools."github:redpanda-data/connect"."platforms.macos-x64"]
+checksum = "sha256:45dce1e140feda12223b3838ddde5c7e5ddfa933d659a0bedefc788fee833cc4"
+url = "https://github.com/redpanda-data/connect/releases/download/v4.46.0/redpanda-connect-cloud_4.46.0_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/redpanda-data/connect/releases/assets/224651921"
+
+[tools."github:redpanda-data/connect"."platforms.windows-x64"]
+checksum = "sha256:4ab8a06ac3eeb030857a83a7648220361c4602ec2de19a1b3850d379ac85c76b"
+url = "https://github.com/redpanda-data/connect/releases/download/v4.46.0/redpanda-connect_4.46.0_windows_amd64.tar.gz"
+url_api = "https://api.github.com/repos/redpanda-data/connect/releases/assets/224651902"
 
 [[tools."http:atlas"]]
 version = "0.38.0"
@@ -257,4 +300,4 @@ url = "https://release.ariga.io/atlas/atlas-darwin-arm64-v0.38.0"
 url = "https://release.ariga.io/atlas/atlas-darwin-amd64-v0.38.0"
 
 [tools."http:atlas"."platforms.windows-x64"]
-url = "https://release.ariga.io/atlas/atlas-windows-amd64-v0.38.0"
+url = "https://release.ariga.io/atlas/atlas-windows-amd64-v0.38.0.exe"

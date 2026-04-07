@@ -1,4 +1,5 @@
 #!/bin/sh
 set -e
 
-curl -sf "http://crud:3000/grouphello?messages=like.*e2e*test*" | /bin/busybox grep -q ','
+# Verify GroupHello has aggregated results containing e2e test messages
+curl -sf "http://crud:3000/GroupHello?messages=like.*e2e*test*" | /bin/busybox grep -q ','

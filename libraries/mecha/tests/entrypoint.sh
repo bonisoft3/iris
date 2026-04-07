@@ -1,54 +1,34 @@
 #!/bin/sh
-# Smoke test: CRUD write via PostgREST + verify boxer CDC delivery.
+# Smoke test: CRUD write + read via PostgREST through Caddy proxy.
+# Compose ensures caddy (and transitively crud) are healthy before this runs.
 set -eu
 
 CRUD_URL="${CRUD_URL:-http://crud:3000}"
+PROXY_URL="${PROXY_URL:-http://caddy:8080}"
 
-echo "=== Mecha smoke test ==="
+echo "=== Mecha v2 crud smoke test ==="
 
-# 1. Wait for PostgREST to be ready
-echo "Waiting for crud service..."
-i=0
-until curl -sf "$CRUD_URL/" > /dev/null 2>&1; do
-  i=$((i + 1))
-  if [ $i -ge 30 ]; then
-    echo "FAIL: crud not ready after 30s"
-    exit 1
-  fi
-  sleep 1
-done
-echo "crud is ready"
-
-# 2. Insert a record via PostgREST
-echo "Inserting Hello record via CRUD..."
+# Insert via direct CRUD
 RESPONSE=$(curl -sf -X POST "$CRUD_URL/Hello" \
   -H "Content-Type: application/json" \
   -H "Prefer: return=representation" \
-  -d '{"message": "smoke-test"}' 2>&1) || { echo "CRUD insert FAILED: $RESPONSE"; exit 1; }
-echo "$RESPONSE" | grep -q "smoke-test" && echo "CRUD insert OK" || { echo "CRUD insert FAILED: $RESPONSE"; exit 1; }
+  -d '{"message": "smoke-test"}')
+echo "$RESPONSE" | grep -q "smoke-test" || { echo "FAIL: insert"; exit 1; }
+echo "  insert OK"
 
-# 3. Read it back
-echo "Reading Hello records..."
-RESPONSE=$(curl -sf "$CRUD_URL/Hello" 2>&1) || { echo "CRUD read FAILED"; exit 1; }
-echo "$RESPONSE" | grep -q "smoke-test" && echo "CRUD read OK" || { echo "CRUD read FAILED: $RESPONSE"; exit 1; }
+# Read via Caddy proxy
+curl -sf "$PROXY_URL/crud/Hello" | grep -q "smoke-test" || { echo "FAIL: proxy read"; exit 1; }
+echo "  proxy read OK"
 
-# 4. Wait a few seconds for boxer to process CDC event
-echo "Waiting 5s for boxer CDC delivery..."
-sleep 5
-
-# 5. Insert a second record and verify it appears (confirms database + PostgREST pipeline)
-echo "Inserting second Hello record..."
+# Insert second record
 curl -sf -X POST "$CRUD_URL/Hello" \
   -H "Content-Type: application/json" \
-  -d '{"message": "smoke-test-2"}' > /dev/null 2>&1 && echo "Second insert OK" || { echo "Second insert FAILED"; exit 1; }
+  -d '{"message": "smoke-test-2"}' > /dev/null
+echo "  second insert OK"
 
-# 6. Count records
-COUNT=$(curl -sf "$CRUD_URL/Hello" 2>&1 | grep -c "smoke-test" || true)
-if [ "$COUNT" -ge 2 ]; then
-  echo "Record count OK ($COUNT records)"
-else
-  echo "FAIL: expected at least 2 records, got $COUNT"
-  exit 1
-fi
+# Count records
+COUNT=$(curl -sf "$CRUD_URL/Hello" | grep -c "smoke-test")
+[ "$COUNT" -ge 2 ] || { echo "FAIL: expected ≥2, got $COUNT"; exit 1; }
+echo "  $COUNT records found"
 
-echo "=== All smoke tests passed ==="
+echo "=== passed ==="

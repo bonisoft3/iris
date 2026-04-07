@@ -1,36 +1,42 @@
 -- vim: set filetype=sql:
--- Windowed aggregation query for concatenating last 3 hello messages
--- Uses updating semantics for immediate emission when COUNT >= 3
+-- Windowed aggregation: concatenate hello messages arriving within a window.
+-- Source: flat entity events from rpk via MQTT (at-least-once, QoS 1).
+-- Deduplicates by id within each window to handle CDC amplification.
 
--- Create source table from SSE
+-- Source: read flat entity events from Mosquitto via MQTT
 CREATE TABLE hello_events (
-    message_value TEXT,
-    table_name TEXT,
-    action TEXT,
-    timestamp BIGINT,
-    stream_id TEXT
+    id TEXT,
+    message TEXT,
+    operation TEXT,
+    collection TEXT,
+    traceparent TEXT
 ) WITH (
-    connector = 'sse',
-    endpoint = 'http://proxy/stream/sse/hello',
-    format = 'json'
+    type = 'source',
+    connector = 'mqtt',
+    url = 'tcp://mqtt:1883',
+    topic = 'flat/hello',
+    format = 'json',
+    'qos' = 'AtLeastOnce'
 );
 
--- Create output sink for aggregated results (using webhook to call PostgREST)
+-- Sink: write aggregated results to PostgREST (GroupHello table)
 CREATE TABLE grouphello_output (
     messages TEXT
 ) WITH (
     connector = 'webhook',
-    endpoint = 'http://crud:3000/grouphello',
+    endpoint = 'http://crud:3000/GroupHello',
     headers = 'Content-Type:application/json',
     format = 'json'
 );
 
--- Count-based aggregation - emits final result when window closes
--- Uses hop window to create non-updating append-only output
+-- Tumbling 30s window: collect distinct messages by id, emit when >= 2 unique records
 INSERT INTO grouphello_output
 SELECT
-    string_agg(message_value, ', ') as messages
-FROM hello_events
-WHERE action = 'I' AND table_name = 'hello'
-GROUP BY hop(interval '1' second, interval '1' second)
+    string_agg(message, ', ') as messages
+FROM (
+    SELECT DISTINCT id, message
+    FROM hello_events
+    WHERE operation = 'create' AND collection = 'Hello'
+)
+GROUP BY hop(interval '30' second, interval '30' second)
 HAVING COUNT(*) >= 2;

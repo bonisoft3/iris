@@ -5,6 +5,10 @@ vars:
   GEN_DIR: gen
 
 tasks:
+  # ================================================================
+  # Code generation pipeline
+  # ================================================================
+
   buf:generate:
     desc: "Generate JSON Schema from protobuf"
     dir: "{{.PROTO_DIR}}"
@@ -37,49 +41,122 @@ tasks:
     cmds:
       - echo "Generated all artifacts"
 
-  build:
-    desc: "Build artifacts (delegates to generate)"
-    deps: [generate]
-    cmds:
-      - echo "Build complete"
+  # ================================================================
+  # Launch — start the stack with hot reload (--watch)
+  # ================================================================
+  # `task launch` brings up ALL profiles (crud + offline + events + ai
+  # + unicorn). Use launch:crud/offline/events/ai for narrower slices.
 
   launch:
-    desc: "Start the local dev stack with hot reload"
+    desc: "Start the full stack (all profiles) with hot reload"
+    deps: [generate]
+    cmds:
+      - docker compose --profile offline --profile events --profile ai --profile unicorn up --build --watch
+
+  launch:crud:
+    desc: "crud profile only (PostgreSQL + PostgREST + Caddy + Dapr)"
     deps: [generate]
     cmds:
       - docker compose up --build --watch
 
+  launch:offline:
+    desc: "+ ElectricSQL"
+    deps: [generate]
+    cmds:
+      - docker compose --profile offline up --build --watch
+
+  launch:events:
+    desc: "+ Conduit + NATS + rpk"
+    deps: [generate]
+    cmds:
+      - docker compose --profile offline --profile events up --build --watch
+
+  launch:ai:
+    desc: "+ Arroyo + MQTT + Redis"
+    deps: [generate]
+    cmds:
+      - docker compose --profile offline --profile events --profile ai up --build --watch
+
+  # ================================================================
+  # Unit tests — pure, fast, offline (no network, no Docker daemon)
+  # ================================================================
+
+  test:
+    desc: "Run unit tests: cue vet + buf lint (pure, cross-platform)"
+    deps: [buf:generate]
+    cmds:
+      - cue vet ./...
+      - buf lint proto
+
+  # ================================================================
+  # Smoke tests
+  # ================================================================
+
   integrate:
-    desc: "Run CRUD + CDC smoke tests"
+    desc: "Run crud smoke tests"
     cmds:
-      - docker compose run --build integrate
+      - docker compose --profile test run --build integrate
 
-  clean:
-    desc: "Clean generated files and Docker state"
+  integrate:events:
+    desc: "Run events pipeline smoke tests"
     cmds:
-      - docker compose down -v || true
-      - rm -rf gen/*
-      - echo "Cleaned generated files and Docker volumes"
+      - docker compose --profile offline --profile events --profile test-events run --build integrate-events
 
-  status:
-    desc: "Show health of running services"
+  integrate:ai:
+    desc: "Run stream analytics smoke tests (Arroyo E2E)"
+    cmds:
+      - docker compose --profile offline --profile events --profile ai --profile test-ai run --build integrate-ai
+
+  integrate:unicorn:
+    desc: "Run unicorn profile smoke tests (Garage S3 + imgproxy)"
+    cmds:
+      - docker compose --profile unicorn --profile test-unicorn run --build integrate-unicorn
+
+  # ================================================================
+  # Benchmarks (events + ai profiles)
+  # ================================================================
+
+  benchmark:
+    desc: "Run startup + CRUD + CDC benchmarks (events profile)"
+    cmds:
+      - nu scripts/benchmark.nu
+
+  benchmark:ai:
+    desc: "Run startup + CRUD + CDC benchmarks (ai profile)"
+    cmds:
+      - nu scripts/benchmark.nu --profile ai
+
+  # ================================================================
+  # Atlas — dev-time migration generation from HCL schema
+  # ================================================================
+
+  atlas:diff:
+    desc: "Generate versioned migration from HCL schema changes"
     cmds:
       - |
-        echo "Service health checks:"
-        curl -s --connect-timeout 1 http://localhost:3000/ > /dev/null && echo "crud (PostgREST) OK" || echo "crud (PostgREST) not responding"
-        curl -s --connect-timeout 1 http://localhost:5133/v1/health > /dev/null && echo "electric OK" || echo "electric not responding"
+        atlas migrate diff {{.CLI_ARGS | default "schema_change"}} \
+          --dir "file://services/database/migrations" \
+          --dev-url "docker://postgres/18/dev" \
+          --to "file://services/database/schemas/"
+        atlas migrate hash --dir file://services/database/migrations
+    sources:
+      - "services/database/schemas/*.hcl"
 
   atlas:hash:
-    desc: "Generate migration checksums for atlas.sum file"
+    desc: "Regenerate atlas.sum after migration changes"
     cmds:
-      - |
-        if command -v atlas >/dev/null 2>&1; then
-          atlas migrate hash --dir file://services/database/migrations
-        else
-          echo "Atlas not found in PATH, skipping migration hash generation"
-          touch services/database/migrations/atlas.sum
-        fi
+      - atlas migrate hash --dir file://services/database/migrations
     sources:
       - "services/database/migrations/*.sql"
     generates:
       - "services/database/migrations/atlas.sum"
+
+  # ================================================================
+  # Utility
+  # ================================================================
+
+  clean:
+    desc: "Stop all services and remove generated files"
+    cmds:
+      - docker compose --profile offline --profile events --profile ai --profile unicorn down -v || true
+      - rm -rf gen/*

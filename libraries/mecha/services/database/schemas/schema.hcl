@@ -26,6 +26,16 @@ table "Hello" {
     null = false
   }
 
+  // Enrichment columns for rpk bloblang pipeline output
+  column "processed_at" {
+    type = timestamptz
+    null = true
+  }
+  column "source" {
+    type = varchar(100)
+    null = true
+  }
+
   primary_key {
     columns = [column.id]
   }
@@ -51,6 +61,16 @@ table "GroupHello" {
   column "messages" {
     type = varchar(2000)
     null = false
+  }
+
+  // Enrichment columns for rpk bloblang pipeline output
+  column "processed_at" {
+    type = timestamptz
+    null = true
+  }
+  column "source" {
+    type = varchar(100)
+    null = true
   }
 
   primary_key {
