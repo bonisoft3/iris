@@ -133,7 +133,6 @@ just integrate     # Run integration tests with Testcontainers
 ### CLI Environment
 ```bash
 just setup         # Install development tools for current service
-just vet           # Verify environment and generated code
 ```
 
 ### IDE Environment
@@ -145,14 +144,15 @@ just test          # Run unit tests (delegates to .vscode/tasks.json)
 ### Kubernetes/Preview Environment
 ```bash
 # Requires kind cluster: kind create cluster -n iris
-just preview       # Full stack deployment via Skaffold
-just verify        # E2E tests against preview
+skaffold dev -p preview   # Full stack deployment via Skaffold
+just verify               # E2E tests against preview
 ```
 
 ### Cloud Environment
 ```bash
-just stage         # Deploy to staging (skaffold run -p staging)
-just publish       # Deploy to production (manual approval required)
+skaffold run -p staging      # Deploy to staging
+skaffold run -p production   # Deploy to production (manual approval required)
+just release                 # Publish release artifacts / images
 ```
 
 ### Frontend Development (guis/web, guis/shelfie)

@@ -15,8 +15,8 @@ doctor:
 generate:
   just sayt generate
 [no-cd]
-vet:
-  just sayt vet
+lint:
+  just sayt lint
 
 [no-cd]
 build:
@@ -29,38 +29,15 @@ test:
 launch:
   just sayt launch
 [no-cd]
-develop:
-  just sayt develop
-[no-cd]
 integrate:
   just sayt integrate
 
 [no-cd]
-preview:
-  just sayt preview
-[no-cd]
-verify:
-  just sayt verify
-
-[no-cd]
-stage:
-  just sayt stage
-[no-cd]
-loadtest:
-  just sayt acceptance
-
-[no-cd]
-publish:
-  just sayt release
-[no-cd]
 release:
   just sayt release
 [no-cd]
-observe:
-  just sayt observe
-[no-cd]
-setup-butler:
-  just sayt setup-butler
+verify:
+  just sayt verify
 
 [private]
 [no-cd]
