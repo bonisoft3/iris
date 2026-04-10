@@ -34,14 +34,20 @@ pipeline:
         }
 
 output:
-  http_client:
-    url: http://crud:3000/${! meta("collection") }?id=eq.${! meta("record_id") }
-    verb: PATCH
-    headers:
-      Content-Type: application/json
-      Prefer: return=representation
-    retries: 3
-    retry_period: "1s"
-    successful_on:
-      - 200
-      - 204
+  retry:
+    max_retries: 3
+    backoff:
+      initial_interval: 2s
+      max_interval: 30s
+      max_elapsed_time: 3m
+    output:
+      http_client:
+        url: http://crud:3000/${! meta("collection") }?id=eq.${! meta("record_id") }
+        verb: PATCH
+        headers:
+          Content-Type: application/json
+          Prefer: return=representation
+        timeout: 30s
+        successful_on:
+          - 200
+          - 204

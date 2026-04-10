@@ -22,7 +22,7 @@ Mecha v2 implements a **three-path architecture** with five additive profiles:
 | **offline** | + ElectricSQL | 5 |
 | **events** | + Conduit + NATS JetStream + rpk | 8 |
 | **ai** | + Arroyo + Bifrost + Redis | 11 |
-| **unicorn** | + Garage (S3) + imgproxy | 13 |
+| **unicorn** | + rclone-s3 + imgproxy | 12 |
 
 ### Data Flow (events profile)
 
@@ -50,14 +50,20 @@ Frontend / Test
 |---------|-----------|------|
 | `database` | `postgres:18-trixie` | PostgreSQL with wal_level=logical |
 | `crud` | `postgrest/postgrest:v12.2.3` | Auto-generated REST API |
-| `caddy` | `caddy:2.9-alpine` | Reverse proxy (replaces OpenResty) |
+| `caddy` | `caddy:2.9-alpine` | Reverse proxy with idempotent CRUD inserts (replaces OpenResty) |
 | `mesh` | `daprio/daprd:1.16.1` | Dapr sidecar — retry, circuit breaker, pubsub |
 | `electric` | `electricsql/electric:latest` | Real-time shape streaming |
 | `conduit` | `conduit.io/conduitio/conduit:v0.14.0` | PostgreSQL CDC (replaces Boxer) |
 | `nats` | `nats:2.12-alpine` | NATS JetStream durable message bus |
-| `transform` | `redpandadata/connect:4.46.0` | rpk bloblang transformation pipelines |
-| `garage` | `dxflrs/garage:v2.2.0` | S3-compatible object storage |
+| `transform` | `redpandadata/connect:4.46.0` | rpk bloblang transformation pipelines (retry wrapper with exponential backoff) |
+| `rclone-s3` | `rclone/rclone:1.71.0` | S3-compatible object storage (rclone serve s3) |
 | `imgproxy` | `ghcr.io/imgproxy/imgproxy:v3.31.1` | On-the-fly image processing proxy |
+
+### Production Patterns
+
+- **Retry with exponential backoff**: The rpk `passthrough.yaml` pipeline wraps its `http_client` output in a `retry` block (3 retries, 2s-30s backoff, 3m max). This replaces the older flat `retries`/`retry_period` fields.
+- **Idempotent CRUD inserts**: Caddy injects `Prefer: return=representation,resolution=ignore-duplicates` on POST requests to `/crud/*`. Duplicate inserts with the same primary key are silently absorbed by PostgREST, making at-least-once delivery safe.
+- **rclone-s3 replaces Garage**: The unicorn profile uses `rclone serve s3` for S3-compatible object storage. Simpler than Garage (no init container, no admin API, no cluster setup).
 
 ## Development Commands
 
@@ -86,7 +92,7 @@ task launch              # crud only
 task launch:offline      # + ElectricSQL
 task launch:events       # + CDC pipeline (Conduit, NATS, rpk)
 task launch:ai           # + stream processing (Arroyo, Bifrost, Redis)
-task launch:unicorn      # + S3 storage + image processing (Garage, imgproxy)
+task launch:unicorn      # + S3 storage + image processing (rclone-s3, imgproxy)
 
 # Or directly with docker compose
 docker compose up --build --watch                                    # crud

@@ -1,4 +1,4 @@
-# Unicorn profile smoke tester — verifies Garage S3 + imgproxy.
+# Unicorn profile smoke tester — verifies rclone S3 + imgproxy.
 FROM busybox:1.36.1-musl@sha256:2f9af5cf39068ec3a9e124feceaa11910c511e23a1670dcfdff0bc16793545fb
 
 COPY --chmod=755 tests/unicorn-test/entrypoint.sh /entrypoint.sh

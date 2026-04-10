@@ -1,7 +1,7 @@
 # Mecha v2 — Additive profiles: crud → offline → events → ai → unicorn
 #
 # Startup strategy: all services start in parallel and self-retry connections.
-# No sequential depends_on chain. Only init containers (nats-init, garage-init)
+# No sequential depends_on chain. Only init containers (nats-init)
 # wait for their target to be healthy. Services use internal retry logic:
 #   PostgREST retries DB, Caddy returns 502 until upstream ready,
 #   Dapr retries components, Conduit retries WAL, rpk retries JetStream.
@@ -324,33 +324,30 @@ services:
       - ai
 
   # ============================================================
-  # UNICORN PROFILE — + Garage (S3) + imgproxy
+  # UNICORN PROFILE — + rclone-s3 + imgproxy
   # ============================================================
 
-  garage:
-    image: dxflrs/garage:v2.2.0@sha256:45a61ce3f7c9c24fc23d9ed2b09b27ed560ab87b34605d175d5c588f539c24e4
+  rclone-s3:
+    build:
+      context: .
+      dockerfile: services/rclone-s3/Dockerfile
     environment:
-      GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
-      GARAGE_RPC_BIND_ADDR: "[::]:3901"
-      GARAGE_RPC_PUBLIC_ADDR: "garage:3901"
-      GARAGE_S3_API_BIND_ADDR: "[::]:3900"
-      GARAGE_S3_WEB_BIND_ADDR: "[::]:3902"
-      GARAGE_ADMIN_API_BIND_ADDR: "[::]:3903"
-      GARAGE_ADMIN_TOKEN: ${GARAGE_ADMIN_TOKEN:-mecha-admin}
-      GARAGE_ALLOW_WORLD_READABLE_SECRETS: "true"
-      GARAGE_REPLICATION_FACTOR: 1
-      GARAGE_DB_ENGINE: sqlite
-      GARAGE_METADATA_DIR: /data/meta
-      GARAGE_DATA_DIR: /data/blocks
+      RCLONE_LOCAL_BUCKET: mecha-objects
+    command:
+      - serve
+      - s3
+      - --addr=0.0.0.0:3900
+      - --auth-key=${RCLONE_ACCESS_KEY:-GK000000000000000000000000},${RCLONE_SECRET_KEY:-0000000000000000000000000000000000000000000000000000000000000000}
+      - --vfs-cache-mode=off
+      - /data
     ports:
       - "3900"
-      - "3903"
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:3903/health || exit 1"]
+      test: ["CMD-SHELL", "wget -qO /dev/null http://127.0.0.1:3900/ 2>&1 || [ $? -eq 8 ]"]
       interval: 5s
       timeout: 5s
       retries: 6
-      start_period: 15s
+      start_period: 10s
       start_interval: 500ms
     profiles:
       - unicorn
@@ -358,14 +355,14 @@ services:
   imgproxy:
     image: ghcr.io/imgproxy/imgproxy:v3.31.1@sha256:2b7a56dbf9c8a8e12e7109a5bdd27d31a8c1aa49f2116c927c6aedc37e18db98
     depends_on:
-      garage:
+      rclone-s3:
         condition: service_started
     environment:
       IMGPROXY_USE_S3: "true"
-      IMGPROXY_S3_ENDPOINT: http://garage:3900
-      AWS_ACCESS_KEY_ID: ${GARAGE_ACCESS_KEY:-GK00000000000000000000dev}
-      AWS_SECRET_ACCESS_KEY: ${GARAGE_SECRET_KEY:-0000000000000000000000000000000000000000000000000000000000000000}
-      AWS_REGION: garage
+      IMGPROXY_S3_ENDPOINT: http://rclone-s3:3900
+      AWS_ACCESS_KEY_ID: ${RCLONE_ACCESS_KEY:-GK000000000000000000000000}
+      AWS_SECRET_ACCESS_KEY: ${RCLONE_SECRET_KEY:-0000000000000000000000000000000000000000000000000000000000000000}
+      AWS_REGION: rclone
       IMGPROXY_BIND: ":8081"
       IMGPROXY_MAX_SRC_RESOLUTION: 50
     ports:
@@ -378,21 +375,6 @@ services:
       start_period: 10s
       start_interval: 500ms
     restart: on-failure
-    profiles:
-      - unicorn
-
-  garage-init:
-    build:
-      context: .
-      dockerfile: services/garage/Dockerfile.init
-    depends_on:
-      garage:
-        condition: service_healthy
-    environment:
-      GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
-      GARAGE_ACCESS_KEY: ${GARAGE_ACCESS_KEY:-GK00000000000000000000dev}
-      GARAGE_SECRET_KEY: ${GARAGE_SECRET_KEY:-0000000000000000000000000000000000000000000000000000000000000000}
-    restart: "no"
     profiles:
       - unicorn
 
@@ -457,12 +439,10 @@ services:
       context: .
       dockerfile: tests/unicorn-test/Dockerfile
     depends_on:
-      garage-init:
-        condition: service_completed_successfully
+      rclone-s3:
+        condition: service_healthy
       imgproxy:
         condition: service_healthy
-    environment:
-      GARAGE_ADMIN_TOKEN: ${GARAGE_ADMIN_TOKEN:-mecha-admin}
     restart: "no"
     profiles:
       - test-unicorn

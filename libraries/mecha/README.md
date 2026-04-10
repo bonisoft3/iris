@@ -28,9 +28,11 @@ Every mecha has exactly three data paths:
 - **CDC path**: Change data capture drives asynchronous processing. Enrichment, analytics, notifications. At-least-once delivery guarantees.
 - **Sync path**: Real-time state synchronization to frontends. No polling. The frontend reflects database state continuously.
 
-### 3. At-least-once end-to-end
+### 3. At-least-once end-to-end with sink idempotency
 
 One user interaction produces either an **immediately consistent** or **eventually consistent** outcome. Never fire-and-forget. Every write that enters the CRUD path will eventually be captured by CDC and processed by all downstream consumers. The only acceptable failure mode is re-delivery (at-least-once), not message loss.
+
+**Idempotency at the sink is a default infrastructure concern**, not application logic. The implementation: every entity table has a UNIQUE constraint on its request ID column. PostgREST sinks use `Prefer: resolution=ignore-duplicates` to absorb duplicate CDC events at the database level. This makes at-least-once delivery safe by default — duplicate events from retries, redeliveries, or bus rebalancing are silently absorbed. This applies in both dev and production environments.
 
 ### 4. Vertical scalability (down and up)
 
@@ -115,7 +117,9 @@ PostgreSQL → Neon, Redis → ElastiCache, Arroyo → Arroyo Cloud, nginx → C
 
 ## Mecha v2
 
-Current implementation. Replaces all custom code (Boxer, Lua scripts, pgstream) with off-the-shelf declarative components.
+Current implementation. Replaces all custom code (Boxer, Lua scripts, pgstream) with off-the-shelf declarative components. The architecture has two variants: a dev stack for local development and a production stack for cloud deployment.
+
+### Dev architecture (Docker Compose)
 
 ```
 Frontend → Caddy → PostgREST → PostgreSQL
@@ -134,19 +138,61 @@ Frontend → Caddy → PostgREST → PostgreSQL
                    ElectricSQL ← PostgreSQL (shape streams)
 ```
 
-| Role | Component | DSL/Config |
-|------|-----------|-----------|
-| Reverse proxy | Caddy | Caddyfile |
-| CDC | Conduit v0.14.0 | YAML pipeline definitions |
-| Message bus | NATS JetStream | nats-server.conf |
-| MQTT broker | Mosquitto | mosquitto.conf |
-| Service mesh | Dapr | YAML component definitions |
-| Transform | rpk Connect (Benthos) | YAML + bloblang DSL |
-| Stream processing | Arroyo | SQL (CREATE TABLE + INSERT INTO SELECT) |
-| Real-time sync | ElectricSQL | HTTP shape stream API |
-| Object storage | Garage | S3-compatible API |
-| Image processing | imgproxy | URL-based transforms |
-| Heartbeat | rpk generate input | Co-located, scales with activity |
+### Production architecture (Cloud Run)
+
+In production, NATS JetStream is replaced by the cloud provider's native pubsub service. The proven GCP deployment uses:
+
+```
+Frontend → Caddy → PostgREST → PostgreSQL (Neon)
+                                     │ WAL (logical replication)
+                                 Conduit (sidecar)
+                                     │
+                                 Dapr pubsub → GCP Pub/Sub
+                                     │
+                                 rpk (sidecar, pulls from Pub/Sub subscription)
+                                  ┌──┴──┐
+                            PATCH │     │ MQTT publish
+                          PostgREST   Mosquitto → Arroyo
+                                              │
+                                        webhook → PostgREST
+
+                   ElectricSQL ← PostgreSQL (shape streams)
+```
+
+The key difference: Dapr publishes to a cloud-native topic instead of NATS JetStream, and rpk pulls from a cloud-native subscription instead of a NATS consumer. The bloblang transform pipelines are identical between dev and prod.
+
+### Sidecar bundling for scale-to-zero
+
+In production on Cloud Run, Conduit, rpk (transform), and Dapr are bundled as sidecars of a single multi-container service. This ties their lifetimes together: the whole pipeline wakes on the first user request and scales to zero as a unit.
+
+The key insight: CDC consumers (Conduit WAL reader) and stream consumers (rpk Pub/Sub pull) need continuous CPU, but by bundling them with the ingress container (Dapr), they get CPU only while the pod is alive. One public-facing ingress container (Dapr) receives the first request, which wakes all sidecars. When traffic stops, the entire unit scales to zero — no orphaned CDC readers burning CPU on an idle database.
+
+```
+Cloud Run multi-container service
+┌─────────────────────────────────────────────┐
+│  Dapr (ingress, public)                     │
+│  Conduit (sidecar, CDC from Neon WAL)       │
+│  rpk transform (sidecar, Pub/Sub consumer)  │
+│                                             │
+│  Lifecycle: wake together, sleep together   │
+└─────────────────────────────────────────────┘
+```
+
+### Components (v2)
+
+| Role | Component | DSL/Config | Dev | Prod (GCP) |
+|------|-----------|-----------|-----|-------------|
+| Reverse proxy | Caddy | Caddyfile | same | same |
+| CDC | Conduit v0.14.0 | YAML pipeline definitions | container | sidecar |
+| Message bus | NATS JetStream / GCP Pub/Sub | nats-server.conf / topic+subscription | NATS JetStream | GCP Pub/Sub |
+| MQTT broker | Mosquitto | mosquitto.conf | same | same |
+| Service mesh | Dapr | YAML component definitions | container | ingress sidecar |
+| Transform | rpk Connect (Benthos) | YAML + bloblang DSL | container | sidecar |
+| Stream processing | Arroyo | SQL (CREATE TABLE + INSERT INTO SELECT) | same | same |
+| Real-time sync | ElectricSQL | HTTP shape stream API | same | Cloud Run |
+| Object storage | rclone-s3 | rclone.conf | local filesystem | GCS |
+| Image processing | imgproxy | URL-based transforms | same | Cloud Run |
+| Heartbeat | rpk generate input | Co-located, scales with activity | same | same |
 
 ### Key design decisions (v2)
 
@@ -154,7 +200,7 @@ Frontend → Caddy → PostgREST → PostgreSQL
 
 **Caddy over nginx**: Native Windows support. Automatic HTTPS. Caddyfile is simpler than nginx.conf + Lua. No custom scripting.
 
-**NATS JetStream + MQTT**: JetStream for durable CDC delivery (Conduit → rpk). MQTT for Arroyo source (QoS 1 at-least-once, cloud-native managed options).
+**NATS JetStream (dev) + cloud pubsub (prod)**: JetStream for durable CDC delivery in local development. In production, the cloud provider's native pubsub (GCP Pub/Sub, Amazon SNS+SQS, Azure Service Bus) replaces NATS — same Dapr pubsub abstraction, zero code changes. MQTT for Arroyo source (QoS 1 at-least-once, cloud-native managed options).
 
 **rpk bloblang over Lua scripts**: Declarative transform DSL. Fan-out via broker/switch output. Heartbeat via generate input — co-located with processing, scales to zero with it.
 
@@ -162,29 +208,126 @@ Frontend → Caddy → PostgREST → PostgreSQL
 
 **Three-way routing in rpk**: Heartbeats → MQTT only. Already-enriched records → MQTT only (breaks CDC amplification loop). New records → PATCH enrichment + MQTT.
 
+**rclone-s3 over Garage**: rclone fronts any storage backend with an S3-compatible API. In dev, it uses the local filesystem. In prod, it uses GCS (or S3, or Azure Blob). Simpler and more portable than running a distributed object store like Garage for dev purposes.
+
+**Sink idempotency by default**: UNIQUE constraint on request ID + PostgREST `Prefer: resolution=ignore-duplicates`. Duplicate CDC events are absorbed at the database level, making at-least-once delivery safe without application-level deduplication.
+
+### Delivery guarantees (v2)
+
+The delivery pipeline has three layers of retry before a message is considered undeliverable:
+
+```
+User INSERT → PostgREST → PostgreSQL
+                               │
+                          WAL entry created (durable)
+                               │
+                          Conduit reads WAL (logical replication)
+                               │
+                          Dapr pubsub (retry + circuit breaker)
+                               │
+                      ┌── Dev: NATS JetStream (durable, ack-based)
+                      │
+                      └── Prod: GCP Pub/Sub (topic + subscription)
+                               │
+                          rpk consumes (ack after downstream success)
+                               │
+                    ┌──────────┼──────────┐
+                    ▼                     ▼
+              PATCH PostgREST       MQTT QoS 1
+              (enrichment)          (Arroyo source)
+                    │                     │
+              ack to bus            Arroyo processes
+                    │                     │
+              UNIQUE constraint     webhook POST
+              absorbs duplicates    (aggregated result)
+                    │
+              ✓ idempotent sink
+```
+
+**Three-layer retry strategy:**
+
+| Layer | Mechanism | Configuration | Scope |
+|-------|-----------|---------------|-------|
+| **Layer 1: Transform retry** | rpk/Benthos `retry` block with exponential backoff | 2s initial, 30s max, 3 retries, 3m total timeout | Transient HTTP failures (PostgREST down, network blip) |
+| **Layer 2: Bus redelivery** | NATS `maxDeliver` / Pub/Sub `retryPolicy` | Configurable per subscription | Consumer crashes, unacked messages |
+| **Layer 3: Dead-letter** | NATS dead-letter subject / Pub/Sub dead-letter topic | After Layer 2 exhaustion | Poison messages, persistent failures |
+
+At every boundary, the upstream waits for downstream acknowledgment before advancing. WAL position advances only after Conduit delivers. The bus acks only after rpk succeeds. MQTT QoS 1 acks only after Arroyo receives. This chain provides end-to-end at-least-once delivery with idempotent sinks absorbing duplicates.
+
+**Dead-letter queues** are configured by default in both dev and prod. Messages that exhaust all retry layers land in a DLQ for manual inspection and replay. This is an infrastructure default, not an opt-in feature.
+
 ### Profiles (v2)
 
 | Profile | Services | Cloud equivalent |
 |---------|----------|-----------------|
 | **crud** | PostgreSQL + PostgREST + Caddy + Dapr | Neon + Cloud Run |
 | **offline** | + ElectricSQL | + Electric Cloud |
-| **events** | + Conduit + NATS JetStream + rpk | + Synadia Cloud / MSK + Cloud Run |
+| **events** | + Conduit + NATS JetStream + rpk | + GCP Pub/Sub + Cloud Run sidecars |
 | **ai** | + Arroyo + Mosquitto + Redis | + Arroyo Cloud + AWS IoT Core + ElastiCache |
-| **unicorn** | + Garage + imgproxy | + S3/GCS + imgproxy Cloud |
+| **unicorn** | + rclone-s3 + imgproxy | + GCS/S3 + imgproxy Cloud |
 
 ### Cloud mapping (v2)
 
 | Component | Local | AWS | Azure | GCP |
 |-----------|-------|-----|-------|-----|
 | PostgreSQL | postgres:18 | RDS / Aurora / Neon | Azure DB / Neon | Cloud SQL / AlloyDB / Neon |
-| Message broker | NATS JetStream | MSK Serverless | Event Hubs | Pub/Sub / Confluent |
+| Message broker | NATS JetStream | SNS + SQS | Service Bus | Pub/Sub |
 | MQTT | Mosquitto | IoT Core | Event Grid | HiveMQ Cloud |
-| Object storage | Garage | S3 | Blob Storage | GCS |
+| Object storage | rclone-s3 (local fs) | S3 (native) | Blob Storage via rclone-s3 | GCS via rclone-s3 |
 | Redis | redis:7.4 | ElastiCache | Cache for Redis | Memorystore |
 | Stream processing | Arroyo | Managed Flink | Stream Analytics | Dataflow |
 | CDC | Conduit | DMS / Debezium on MSK | Event Hubs Capture | Datastream |
 
 The Kafka ecosystem (Debezium + Redpanda/MSK + Flink) is a valid cloud-scale substitution for the entire events+ai tier. The architecture is the same; only the component names change.
+
+## Production Deployment
+
+Concrete deployment proposals for the three major clouds. GCP is proven with iris-mecha v2; AWS and Azure are proposed mappings that preserve the same architecture.
+
+### GCP (proven with iris)
+
+| Role | Service |
+|------|---------|
+| Compute | Cloud Run multi-container (Dapr ingress + Conduit + rpk transform as sidecars) |
+| Database | Neon (managed PostgreSQL with logical replication) |
+| Message bus | GCP Pub/Sub (topics + subscriptions with retryPolicy + dead-letter topic) |
+| Real-time sync | ElectricSQL on Cloud Run |
+| Object storage | GCS via rclone-s3 on Cloud Run |
+| Image processing | imgproxy on Cloud Run |
+| Infrastructure as Code | Crossplane GCP providers |
+
+### AWS (proposed)
+
+| Role | Service |
+|------|---------|
+| Compute | ECS Fargate or App Runner (sidecar pattern) |
+| Database | RDS PostgreSQL or Neon |
+| Message bus | Amazon SNS + SQS (fan-out + dead-letter queue) |
+| Real-time sync | ElectricSQL on ECS |
+| Object storage | S3 (native, no rclone needed) |
+| Image processing | imgproxy on ECS or Lambda |
+| Infrastructure as Code | Crossplane AWS providers or CDK |
+
+### Azure (proposed)
+
+| Role | Service |
+|------|---------|
+| Compute | Azure Container Apps (built-in Dapr integration) |
+| Database | Azure Database for PostgreSQL Flexible Server or Neon |
+| Message bus | Azure Service Bus (topics + subscriptions + dead-letter queue) |
+| Real-time sync | ElectricSQL on Container Apps |
+| Object storage | Azure Blob Storage via rclone-s3 |
+| Image processing | imgproxy on Container Apps |
+| Infrastructure as Code | Crossplane Azure providers |
+
+### Sidecar bundling pattern (all clouds)
+
+Regardless of cloud provider, the deployment pattern is the same: bundle the CDC reader (Conduit), transform pipeline (rpk), and service mesh (Dapr) as sidecars of a single compute unit. This ensures:
+
+1. **Scale-to-zero as a unit** — no orphaned CDC readers or idle stream consumers
+2. **Shared lifecycle** — all components wake on the first request and sleep together
+3. **Simplified networking** — sidecars communicate over localhost, no service discovery needed
+4. **Cost efficiency** — CPU is allocated only while the pod is alive and serving traffic
 
 ## Mecha v3 (Proposed)
 
@@ -299,37 +442,11 @@ task integrate:ai              # Stream analytics E2E
 docker compose --profile offline --profile events --profile ai --profile unicorn down -v
 ```
 
-## Delivery Guarantees
-
-```
-User INSERT → PostgREST → PostgreSQL
-                               │
-                          WAL entry created (durable)
-                               │
-                          Conduit reads WAL (logical replication)
-                               │
-                          Dapr pubsub (retry + circuit breaker)
-                               │
-                          NATS JetStream (durable, ack-based)
-                               │
-                          rpk consumes (ack after downstream success)
-                               │
-                    ┌──────────┼──────────┐
-                    ▼                     ▼
-              PATCH PostgREST       MQTT QoS 1
-              (enrichment)          (Arroyo source)
-                    │                     │
-              ack to NATS           Arroyo processes
-                                          │
-                                    webhook POST
-                                    (aggregated result)
-```
-
-At every boundary, the upstream waits for downstream acknowledgment before advancing. WAL position advances only after Conduit delivers. NATS acks only after rpk succeeds. MQTT QoS 1 acks only after Arroyo receives. This chain provides end-to-end at-least-once delivery.
-
 ## Production Lessons
 
-These lessons were learned deploying mecha v1 on Cloud Run with Neon:
+These lessons were learned deploying mecha v1 and v2 on Cloud Run with Neon:
+
+### v1 lessons
 
 1. **Scale-to-zero creates cold-start races** — Dapr takes ~5s to initialize while CDC events arrive in ~3s. NATS JetStream absorbs the gap.
 2. **Heartbeats must be co-located with activity** — a standalone heartbeat container scales to zero and never wakes. Embed heartbeats in the transform pipeline (rpk generate input).
@@ -337,6 +454,15 @@ These lessons were learned deploying mecha v1 on Cloud Run with Neon:
 4. **Table name case sensitivity** — PostgREST preserves the original table name case. `GroupHello` is not `grouphello`. Webhook sinks must match exactly.
 5. **WAL slot position after recreation** — after `docker compose down -v`, the replication slot's confirmed_flush_lsn can be ahead of the current WAL. Always do a full clean restart.
 6. **Dapr CloudEvent format** — Conduit sends the row payload as a JSON string in the CloudEvent `data` field. Not an OpenCDC record with operation/metadata. Parse accordingly.
+
+### v2 lessons (GCP Cloud Run + Neon)
+
+7. **Dapr publish URL path segment = cloud pubsub topic name** — when Dapr publishes to GCP Pub/Sub, the topic in the URL path (`/v1.0/publish/pubsub/my-topic`) must exactly match the Pub/Sub topic name. No implicit mapping or renaming.
+8. **Neon replication slot zombies on scale-to-zero** — when Cloud Run scales to zero, Conduit disconnects without cleaning up its replication slot on Neon. On next wake, slot creation fails because the old slot still exists. Solution: a startup cleanup script that drops stale replication slots before Conduit starts.
+9. **Cloud Run multi-container: `latest` tag doesn't force re-pull** — Cloud Run caches container images aggressively. Using the `latest` tag does not guarantee the newest image is pulled on deploy. Solution: pin container images by digest (sha256) in the Cloud Run service definition.
+10. **ElectricSQL needs public invoker IAM binding for browser access** — ElectricSQL shape streams must be accessible from browser clients. On Cloud Run, this requires a `roles/run.invoker` IAM binding for `allUsers` on the ElectricSQL service, since browsers cannot attach service account credentials.
+11. **Conduit HTTP connector sends flat row JSON, Dapr wraps as CloudEvents with `datacontenttype: text/plain`** — Conduit's HTTP destination sends the CDC payload as a flat JSON body. When Dapr receives this and republishes to Pub/Sub, it wraps it as a CloudEvent with `datacontenttype: text/plain` (not `application/json`). Downstream consumers (rpk) must parse the `data` field as a JSON string, not assume structured JSON.
+12. **Wake-on-request: one public ingress container wakes all sidecars** — in the multi-container sidecar model, only the Dapr ingress container needs to be public. The first HTTP request to Dapr wakes the entire service unit, including Conduit (CDC) and rpk (transform) sidecars. No separate wake mechanism needed.
 
 ## License
 

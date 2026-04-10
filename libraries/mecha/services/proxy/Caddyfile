@@ -5,6 +5,12 @@
 :8080 {
 	handle /crud/* {
 		uri strip_prefix /crud
+		# Idempotent inserts by default — duplicate POSTs with the same
+		# primary key are silently absorbed by PostgREST instead of returning
+		# 409 Conflict. This makes at-least-once delivery safe at the CRUD
+		# boundary.
+		@post method POST
+		request_header @post Prefer "return=representation,resolution=ignore-duplicates"
 		reverse_proxy crud:3000
 	}
 
