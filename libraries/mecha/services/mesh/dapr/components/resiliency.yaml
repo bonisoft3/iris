@@ -27,7 +27,7 @@ spec:
       crud: 10s
   targets:
     components:
-      jetstream:
+      redis-streams:
         outbound:
           retry: publish
           circuitBreaker: default-breaker

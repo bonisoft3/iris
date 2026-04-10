@@ -4,6 +4,7 @@ set -e
 # Event-driven dependency checks - blocks until dependencies are ready
 nc -w 5 -z database 5432
 nc -w 5 -z redis 6379
+nc -w 5 -z redpanda 9092
 
 # Event-driven port check - blocks until Arroyo port is open
 nc -w 5 -z localhost 5115

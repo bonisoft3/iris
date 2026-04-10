@@ -1,9 +1,9 @@
 -- vim: set filetype=sql:
 -- Windowed aggregation: concatenate hello messages arriving within a window.
--- Source: flat entity events from rpk via MQTT (at-least-once, QoS 1).
+-- Source: flat entity events from rpk via Kafka/Redpanda (at-least-once).
 -- Deduplicates by id within each window to handle CDC amplification.
 
--- Source: read flat entity events from Mosquitto via MQTT
+-- Source: read flat entity events from Redpanda via Kafka protocol
 CREATE TABLE hello_events (
     id TEXT,
     message TEXT,
@@ -12,11 +12,11 @@ CREATE TABLE hello_events (
     traceparent TEXT
 ) WITH (
     type = 'source',
-    connector = 'mqtt',
-    url = 'tcp://mqtt:1883',
-    topic = 'flat/hello',
+    connector = 'kafka',
+    bootstrap_servers = 'redpanda:9092',
+    topic = 'flat-Hello',
     format = 'json',
-    'qos' = 'AtLeastOnce'
+    'source.offset' = 'earliest'
 );
 
 -- Sink: write aggregated results to PostgREST (GroupHello table)

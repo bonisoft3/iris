@@ -66,13 +66,13 @@ tasks:
       - docker compose --profile offline up --build --watch
 
   launch:events:
-    desc: "+ Conduit + NATS + rpk"
+    desc: "+ Conduit + Redis Streams + rpk"
     deps: [generate]
     cmds:
       - docker compose --profile offline --profile events up --build --watch
 
   launch:ai:
-    desc: "+ Arroyo + MQTT + Redis"
+    desc: "+ Arroyo + Redpanda + Redis"
     deps: [generate]
     cmds:
       - docker compose --profile offline --profile events --profile ai up --build --watch

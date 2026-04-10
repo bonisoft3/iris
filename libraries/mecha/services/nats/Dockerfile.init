@@ -1,6 +1,0 @@
-# JetStream stream initialization via nats-box CLI.
-FROM natsio/nats-box:0.14.5@sha256:0784ab710aefaf6ef037ed797ee7dcde613c6ad208c4dbff1945fc7c1b5b5375
-
-COPY services/nats/init-streams.sh /init-streams.sh
-
-ENTRYPOINT ["/bin/sh", "/init-streams.sh"]

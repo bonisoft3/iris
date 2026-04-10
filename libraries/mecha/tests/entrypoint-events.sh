@@ -1,5 +1,5 @@
 #!/bin/sh
-# Smoke test: full CDC pipeline (insert → Conduit → Dapr → JetStream → rpk → PATCH).
+# Smoke test: full CDC pipeline (insert → Conduit → Dapr → Redis Streams → rpk → PATCH).
 # Compose ensures conduit is healthy before this runs.
 set -eu
 

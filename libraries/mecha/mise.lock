@@ -43,6 +43,41 @@ url_api = "https://api.github.com/repos/bufbuild/buf/releases/assets/370326773"
 version = "0.16.0"
 backend = "github:cue-lang/cue"
 
+[tools."github:cue-lang/cue"."platforms.linux-arm64"]
+checksum = "sha256:5c5a59bcb31d53c81feee58774752df14baef5c412138f49c208ab15608ac981"
+url = "https://github.com/cue-lang/cue/releases/download/v0.16.0/cue_v0.16.0_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/cue-lang/cue/releases/assets/366079210"
+
+[tools."github:cue-lang/cue"."platforms.linux-arm64-musl"]
+checksum = "sha256:5c5a59bcb31d53c81feee58774752df14baef5c412138f49c208ab15608ac981"
+url = "https://github.com/cue-lang/cue/releases/download/v0.16.0/cue_v0.16.0_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/cue-lang/cue/releases/assets/366079210"
+
+[tools."github:cue-lang/cue"."platforms.linux-x64"]
+checksum = "sha256:bbe0c5e85bc101cd1f95e68242f5ad48c3db73bad72be94fe2dc79d3f1ef0d4c"
+url = "https://github.com/cue-lang/cue/releases/download/v0.16.0/cue_v0.16.0_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/cue-lang/cue/releases/assets/366079211"
+
+[tools."github:cue-lang/cue"."platforms.linux-x64-musl"]
+checksum = "sha256:bbe0c5e85bc101cd1f95e68242f5ad48c3db73bad72be94fe2dc79d3f1ef0d4c"
+url = "https://github.com/cue-lang/cue/releases/download/v0.16.0/cue_v0.16.0_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/cue-lang/cue/releases/assets/366079211"
+
+[tools."github:cue-lang/cue"."platforms.macos-arm64"]
+checksum = "sha256:83ba7485cbad5f031ffc3e0142bc4f3ab26b53fd4491548939bfa9d5b00f6b66"
+url = "https://github.com/cue-lang/cue/releases/download/v0.16.0/cue_v0.16.0_darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/cue-lang/cue/releases/assets/366079213"
+
+[tools."github:cue-lang/cue"."platforms.macos-x64"]
+checksum = "sha256:451495b46684fd78120741e1d325f9b21e6843f05ec455d3fb5073ba2a9311db"
+url = "https://github.com/cue-lang/cue/releases/download/v0.16.0/cue_v0.16.0_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/cue-lang/cue/releases/assets/366079209"
+
+[tools."github:cue-lang/cue"."platforms.windows-x64"]
+checksum = "sha256:e57180a908a5e35d8a2be00ba620b52fc6fdfc6e1400799d25bb53a115555b03"
+url = "https://github.com/cue-lang/cue/releases/download/v0.16.0/cue_v0.16.0_windows_amd64.zip"
+url_api = "https://api.github.com/repos/cue-lang/cue/releases/assets/366079214"
+
 [[tools."github:dapr/cli"]]
 version = "1.17.0"
 backend = "github:dapr/cli"
@@ -199,45 +234,6 @@ checksum = "sha256:9df739a49bea6a81b85a80c7ebaef876907923f1af865f54f33a762c1238a
 url = "https://github.com/hairyhenderson/gomplate/releases/download/v5.0.0/gomplate_windows-amd64.zip"
 url_api = "https://api.github.com/repos/hairyhenderson/gomplate/releases/assets/343795592"
 
-[[tools."github:nats-io/nats-server"]]
-version = "2.12.6"
-backend = "github:nats-io/nats-server"
-
-[tools."github:nats-io/nats-server"."platforms.linux-arm64"]
-checksum = "sha256:fddaf3f223c7af3f4d0a0d2c2fc084406e6b3ec7adfd1b9e6a37fbd03bfe222f"
-url = "https://github.com/nats-io/nats-server/releases/download/v2.12.6/nats-server-v2.12.6-linux-arm64.tar.gz"
-url_api = "https://api.github.com/repos/nats-io/nats-server/releases/assets/380545176"
-
-[tools."github:nats-io/nats-server"."platforms.linux-arm64-musl"]
-checksum = "sha256:fddaf3f223c7af3f4d0a0d2c2fc084406e6b3ec7adfd1b9e6a37fbd03bfe222f"
-url = "https://github.com/nats-io/nats-server/releases/download/v2.12.6/nats-server-v2.12.6-linux-arm64.tar.gz"
-url_api = "https://api.github.com/repos/nats-io/nats-server/releases/assets/380545176"
-
-[tools."github:nats-io/nats-server"."platforms.linux-x64"]
-checksum = "sha256:77fe7dd69ff5144126026b78355900be0ab0bb4339dc61a7621dcc9b9e9d07a6"
-url = "https://github.com/nats-io/nats-server/releases/download/v2.12.6/nats-server-v2.12.6-linux-amd64.tar.gz"
-url_api = "https://api.github.com/repos/nats-io/nats-server/releases/assets/380545212"
-
-[tools."github:nats-io/nats-server"."platforms.linux-x64-musl"]
-checksum = "sha256:77fe7dd69ff5144126026b78355900be0ab0bb4339dc61a7621dcc9b9e9d07a6"
-url = "https://github.com/nats-io/nats-server/releases/download/v2.12.6/nats-server-v2.12.6-linux-amd64.tar.gz"
-url_api = "https://api.github.com/repos/nats-io/nats-server/releases/assets/380545212"
-
-[tools."github:nats-io/nats-server"."platforms.macos-arm64"]
-checksum = "sha256:b9b287b786e83e783702214d516042f6397f7c1c4916985c6ec5e6d9d490151c"
-url = "https://github.com/nats-io/nats-server/releases/download/v2.12.6/nats-server-v2.12.6-darwin-arm64.tar.gz"
-url_api = "https://api.github.com/repos/nats-io/nats-server/releases/assets/380545217"
-
-[tools."github:nats-io/nats-server"."platforms.macos-x64"]
-checksum = "sha256:d7bc326ebbaf0a032ae1b03b99e4d863d9320ad010f37a22b2e8306ab3272ca0"
-url = "https://github.com/nats-io/nats-server/releases/download/v2.12.6/nats-server-v2.12.6-darwin-amd64.tar.gz"
-url_api = "https://api.github.com/repos/nats-io/nats-server/releases/assets/380545216"
-
-[tools."github:nats-io/nats-server"."platforms.windows-x64"]
-checksum = "sha256:35445ebdf3232eeafb866e5c3bca5ac3c189525423367997b81945e9b2ace45b"
-url = "https://github.com/nats-io/nats-server/releases/download/v2.12.6/nats-server-v2.12.6-windows-amd64.zip"
-url_api = "https://api.github.com/repos/nats-io/nats-server/releases/assets/380545205"
-
 [[tools."github:redpanda-data/connect"]]
 version = "4.46.0"
 backend = "github:redpanda-data/connect"
@@ -301,3 +297,4 @@ url = "https://release.ariga.io/atlas/atlas-darwin-amd64-v0.38.0"
 
 [tools."http:atlas"."platforms.windows-x64"]
 url = "https://release.ariga.io/atlas/atlas-windows-amd64-v0.38.0.exe"
+

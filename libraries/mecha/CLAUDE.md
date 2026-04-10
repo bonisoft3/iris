@@ -11,7 +11,7 @@ Mecha is a schema-driven backend framework that generates a complete CRUD + CDC 
 Mecha v2 implements a **three-path architecture** with five additive profiles:
 
 1. **CRUD Path** — synchronous reads and writes via PostgREST
-2. **CDC Path** — at-least-once event delivery via Conduit → Dapr → NATS JetStream → rpk
+2. **CDC Path** — at-least-once event delivery via Conduit → Dapr → Redis Streams → rpk
 3. **Sync Path** — real-time frontend updates via ElectricSQL shapes
 
 ### Profiles (additive)
@@ -20,8 +20,8 @@ Mecha v2 implements a **three-path architecture** with five additive profiles:
 |---------|---------------|-------|
 | **crud** (base) | PostgreSQL + PostgREST + Caddy + Dapr | 4 |
 | **offline** | + ElectricSQL | 5 |
-| **events** | + Conduit + NATS JetStream + rpk | 8 |
-| **ai** | + Arroyo + Bifrost + Redis | 11 |
+| **events** | + Conduit + Redis Streams + rpk | 8 |
+| **ai** | + Arroyo + Redpanda + Redis | 11 |
 | **unicorn** | + rclone-s3 + imgproxy | 12 |
 
 ### Data Flow (events profile)
@@ -37,7 +37,7 @@ Frontend / Test
      │                                                       │
      │                                              Dapr pubsub API
      │                                                       │
-     │                                              NATS JetStream
+     │                                              Redis Streams
      │                                                       │
      │                                              rpk (bloblang)
      │                                                       │
@@ -54,7 +54,7 @@ Frontend / Test
 | `mesh` | `daprio/daprd:1.16.1` | Dapr sidecar — retry, circuit breaker, pubsub |
 | `electric` | `electricsql/electric:latest` | Real-time shape streaming |
 | `conduit` | `conduit.io/conduitio/conduit:v0.14.0` | PostgreSQL CDC (replaces Boxer) |
-| `nats` | `nats:2.12-alpine` | NATS JetStream durable message bus |
+| `redis` | `redis:7.4.1-alpine` | Redis Streams durable message bus |
 | `transform` | `redpandadata/connect:4.46.0` | rpk bloblang transformation pipelines (retry wrapper with exponential backoff) |
 | `rclone-s3` | `rclone/rclone:1.71.0` | S3-compatible object storage (rclone serve s3) |
 | `imgproxy` | `ghcr.io/imgproxy/imgproxy:v3.31.1` | On-the-fly image processing proxy |
@@ -90,8 +90,8 @@ say launch
 # Start with profiles
 task launch              # crud only
 task launch:offline      # + ElectricSQL
-task launch:events       # + CDC pipeline (Conduit, NATS, rpk)
-task launch:ai           # + stream processing (Arroyo, Bifrost, Redis)
+task launch:events       # + CDC pipeline (Conduit, Redis Streams, rpk)
+task launch:ai           # + stream processing (Arroyo, Redpanda, Redis)
 task launch:unicorn      # + S3 storage + image processing (rclone-s3, imgproxy)
 
 # Or directly with docker compose
@@ -105,7 +105,7 @@ docker compose --profile offline --profile events --profile ai --profile unicorn
 
 ### Native Mac Mode (no Docker)
 
-Prerequisites: PostgreSQL running on localhost:5432, NATS on localhost:4222, ElectricSQL running.
+Prerequisites: PostgreSQL running on localhost:5432, Redis on localhost:6379, ElectricSQL running.
 
 ```bash
 # Start all apps via Dapr multi-app
@@ -186,9 +186,8 @@ say launch
 - `services/database/` — PostgreSQL 18 + wal2json + Atlas migrations
 - `services/crud/` — PostgREST with microcheck health probe
 - `services/proxy/` — Caddy reverse proxy (Caddyfile)
-- `services/mesh/` — Dapr sidecar with JetStream pubsub + resiliency
+- `services/mesh/` — Dapr sidecar with Redis Streams pubsub + resiliency
 - `services/cdc/` — Conduit CDC (PostgreSQL WAL → HTTP)
-- `services/nats/` — NATS JetStream config
 - `services/transform/` — rpk bloblang pipelines
 
 ### Infrastructure
@@ -221,8 +220,8 @@ docker compose exec database psql -U postgres -d mecha \
 # Check conduit logs
 docker compose logs -f conduit
 
-# Check NATS JetStream status (port 8222 is internal; use docker exec)
-docker compose exec nats wget -qO- http://localhost:8222/jsz
+# Check Redis Streams status
+docker compose exec redis redis-cli XINFO GROUPS cdc-events
 
 # Check rpk transform logs
 docker compose logs -f transform
@@ -241,13 +240,13 @@ docker compose exec mesh /busybox wget -qO- http://localhost:3500/v1.0/healthz
 docker compose exec mesh-events /busybox wget -qO- \
   --post-data='{"test": true}' \
   --header='Content-Type: application/json' \
-  http://localhost:3500/v1.0/publish/jetstream/test-topic
+  http://localhost:3500/v1.0/publish/redis-streams/test-topic
 ```
 
 ### Common Fixes
 
 - **"Migration hash mismatch"**: Run `task atlas:hash` to regenerate `atlas.sum`
 - **Conduit can't connect**: Ensure `conduit_pub` publication exists — migration `003_publication.sql` handles this
-- **NATS not starting**: Check `services/nats/nats-server.conf` and ensure port 4222 is available
-- **rpk not consuming**: nats-init deletes stale durable consumers on startup. If still stuck, check `nats consumer info cdc-events rpk-transform`
+- **Redis not starting**: Check that port 6379 is available and no other Redis instance is running
+- **rpk not consuming**: Check consumer group status with `docker compose exec redis redis-cli XINFO GROUPS cdc-events`
 - **Stale state**: Full cleanup with `task clean` then `say launch`

@@ -16,8 +16,10 @@ aqua.minisign = false
 "github:dapr/dapr" = "1.17.3"
 "github:dapr/cli" = "1.17.0"
 "github:redpanda-data/connect" = "4.46.0"
-"github:nats-io/nats-server" = "2.12.6"
 
 [tools."http:atlas"]
 version = "0.38.0"
 url = 'https://release.ariga.io/atlas/atlas-{{ os(macos="darwin") }}-{{ arch(x64="amd64") }}-v{{ version }}{% if os() == "windows" %}.exe{% endif %}'
+
+# Redis runs in Docker (events profile). Native Windows binary available at
+# https://github.com/redis-windows/redis-windows if needed for native dev.

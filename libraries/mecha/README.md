@@ -126,12 +126,12 @@ Frontend → Caddy → PostgREST → PostgreSQL
                                      │ WAL (logical replication)
                                  Conduit (declarative YAML pipelines)
                                      │
-                                 Dapr pubsub → NATS JetStream
+                                 Dapr pubsub → Redis Streams
                                      │
                                  rpk (bloblang DSL)
                                   ┌──┴──┐
-                            PATCH │     │ MQTT publish
-                          PostgREST   Mosquitto → Arroyo
+                            PATCH │     │ Kafka produce
+                          PostgREST   Redpanda → Arroyo
                                               │
                                         webhook → PostgREST
 
@@ -140,7 +140,7 @@ Frontend → Caddy → PostgREST → PostgreSQL
 
 ### Production architecture (Cloud Run)
 
-In production, NATS JetStream is replaced by the cloud provider's native pubsub service. The proven GCP deployment uses:
+In production, Redis Streams is replaced by the cloud provider's native pubsub service. The proven GCP deployment uses:
 
 ```
 Frontend → Caddy → PostgREST → PostgreSQL (Neon)
@@ -151,15 +151,15 @@ Frontend → Caddy → PostgREST → PostgreSQL (Neon)
                                      │
                                  rpk (sidecar, pulls from Pub/Sub subscription)
                                   ┌──┴──┐
-                            PATCH │     │ MQTT publish
-                          PostgREST   Mosquitto → Arroyo
+                            PATCH │     │ Kafka produce
+                          PostgREST   Managed Kafka → Arroyo
                                               │
                                         webhook → PostgREST
 
                    ElectricSQL ← PostgreSQL (shape streams)
 ```
 
-The key difference: Dapr publishes to a cloud-native topic instead of NATS JetStream, and rpk pulls from a cloud-native subscription instead of a NATS consumer. The bloblang transform pipelines are identical between dev and prod.
+The key difference: Dapr publishes to a cloud-native topic instead of Redis Streams, and rpk pulls from a cloud-native subscription instead of a Redis consumer group. The bloblang transform pipelines are identical between dev and prod.
 
 ### Sidecar bundling for scale-to-zero
 
@@ -184,8 +184,8 @@ Cloud Run multi-container service
 |------|-----------|-----------|-----|-------------|
 | Reverse proxy | Caddy | Caddyfile | same | same |
 | CDC | Conduit v0.14.0 | YAML pipeline definitions | container | sidecar |
-| Message bus | NATS JetStream / GCP Pub/Sub | nats-server.conf / topic+subscription | NATS JetStream | GCP Pub/Sub |
-| MQTT broker | Mosquitto | mosquitto.conf | same | same |
+| Message bus | Redis Streams / GCP Pub/Sub | redis.conf / topic+subscription | Redis Streams | GCP Pub/Sub |
+| Kafka broker | Redpanda | --mode=dev-container | container | Managed Kafka / Confluent / MSK |
 | Service mesh | Dapr | YAML component definitions | container | ingress sidecar |
 | Transform | rpk Connect (Benthos) | YAML + bloblang DSL | container | sidecar |
 | Stream processing | Arroyo | SQL (CREATE TABLE + INSERT INTO SELECT) | same | same |
@@ -200,13 +200,13 @@ Cloud Run multi-container service
 
 **Caddy over nginx**: Native Windows support. Automatic HTTPS. Caddyfile is simpler than nginx.conf + Lua. No custom scripting.
 
-**NATS JetStream (dev) + cloud pubsub (prod)**: JetStream for durable CDC delivery in local development. In production, the cloud provider's native pubsub (GCP Pub/Sub, Amazon SNS+SQS, Azure Service Bus) replaces NATS — same Dapr pubsub abstraction, zero code changes. MQTT for Arroyo source (QoS 1 at-least-once, cloud-native managed options).
+**Redis Streams (dev) + cloud pubsub (prod)**: Redis Streams for durable CDC delivery in local development. Redis is already required by the ai profile (Arroyo), so reusing it for events eliminates an extra service (NATS). In production, the cloud provider's native pubsub (GCP Pub/Sub, Amazon SNS+SQS, Azure Service Bus) replaces Redis Streams — same Dapr pubsub abstraction, zero code changes. Kafka protocol (via Redpanda) for Arroyo source, giving true end-to-end at-least-once and uniform protocol for dev/prod.
 
 **rpk bloblang over Lua scripts**: Declarative transform DSL. Fan-out via broker/switch output. Heartbeat via generate input — co-located with processing, scales to zero with it.
 
 **ElectricSQL over pgstream SSE**: Purpose-built for frontend sync. Shape streams with offset-based resumption. No custom SSE handler.
 
-**Three-way routing in rpk**: Heartbeats → MQTT only. Already-enriched records → MQTT only (breaks CDC amplification loop). New records → PATCH enrichment + MQTT.
+**Three-way routing in rpk**: Heartbeats → Kafka only. Already-enriched records → Kafka only (breaks CDC amplification loop). New records → PATCH enrichment + Kafka.
 
 **rclone-s3 over Garage**: rclone fronts any storage backend with an S3-compatible API. In dev, it uses the local filesystem. In prod, it uses GCS (or S3, or Azure Blob). Simpler and more portable than running a distributed object store like Garage for dev purposes.
 
@@ -225,7 +225,7 @@ User INSERT → PostgREST → PostgreSQL
                                │
                           Dapr pubsub (retry + circuit breaker)
                                │
-                      ┌── Dev: NATS JetStream (durable, ack-based)
+                      ┌── Dev: Redis Streams (durable, consumer groups)
                       │
                       └── Prod: GCP Pub/Sub (topic + subscription)
                                │
@@ -233,7 +233,7 @@ User INSERT → PostgREST → PostgreSQL
                                │
                     ┌──────────┼──────────┐
                     ▼                     ▼
-              PATCH PostgREST       MQTT QoS 1
+              PATCH PostgREST       Kafka produce
               (enrichment)          (Arroyo source)
                     │                     │
               ack to bus            Arroyo processes
@@ -249,10 +249,10 @@ User INSERT → PostgREST → PostgreSQL
 | Layer | Mechanism | Configuration | Scope |
 |-------|-----------|---------------|-------|
 | **Layer 1: Transform retry** | rpk/Benthos `retry` block with exponential backoff | 2s initial, 30s max, 3 retries, 3m total timeout | Transient HTTP failures (PostgREST down, network blip) |
-| **Layer 2: Bus redelivery** | NATS `maxDeliver` / Pub/Sub `retryPolicy` | Configurable per subscription | Consumer crashes, unacked messages |
-| **Layer 3: Dead-letter** | NATS dead-letter subject / Pub/Sub dead-letter topic | After Layer 2 exhaustion | Poison messages, persistent failures |
+| **Layer 2: Bus redelivery** | Redis `maxRetries` / Pub/Sub `retryPolicy` | Configurable per component | Consumer crashes, unacked messages |
+| **Layer 3: Dead-letter** | Redis dead-letter stream / Pub/Sub dead-letter topic | After Layer 2 exhaustion | Poison messages, persistent failures |
 
-At every boundary, the upstream waits for downstream acknowledgment before advancing. WAL position advances only after Conduit delivers. The bus acks only after rpk succeeds. MQTT QoS 1 acks only after Arroyo receives. This chain provides end-to-end at-least-once delivery with idempotent sinks absorbing duplicates.
+At every boundary, the upstream waits for downstream acknowledgment before advancing. WAL position advances only after Conduit delivers. The bus acks only after rpk succeeds. Kafka acks only after Arroyo commits the offset. This chain provides end-to-end at-least-once delivery with idempotent sinks absorbing duplicates.
 
 **Dead-letter queues** are configured by default in both dev and prod. Messages that exhaust all retry layers land in a DLQ for manual inspection and replay. This is an infrastructure default, not an opt-in feature.
 
@@ -262,8 +262,8 @@ At every boundary, the upstream waits for downstream acknowledgment before advan
 |---------|----------|-----------------|
 | **crud** | PostgreSQL + PostgREST + Caddy + Dapr | Neon + Cloud Run |
 | **offline** | + ElectricSQL | + Electric Cloud |
-| **events** | + Conduit + NATS JetStream + rpk | + GCP Pub/Sub + Cloud Run sidecars |
-| **ai** | + Arroyo + Mosquitto + Redis | + Arroyo Cloud + AWS IoT Core + ElastiCache |
+| **events** | + Conduit + Redis Streams + rpk | + GCP Pub/Sub + Cloud Run sidecars |
+| **ai** | + Arroyo + Redpanda + Redis | + Arroyo Cloud + Managed Kafka + ElastiCache |
 | **unicorn** | + rclone-s3 + imgproxy | + GCS/S3 + imgproxy Cloud |
 
 ### Cloud mapping (v2)
@@ -271,8 +271,8 @@ At every boundary, the upstream waits for downstream acknowledgment before advan
 | Component | Local | AWS | Azure | GCP |
 |-----------|-------|-----|-------|-----|
 | PostgreSQL | postgres:18 | RDS / Aurora / Neon | Azure DB / Neon | Cloud SQL / AlloyDB / Neon |
-| Message broker | NATS JetStream | SNS + SQS | Service Bus | Pub/Sub |
-| MQTT | Mosquitto | IoT Core | Event Grid | HiveMQ Cloud |
+| Message broker | Redis Streams | SNS + SQS | Service Bus | Pub/Sub |
+| Kafka broker | Redpanda | MSK / Confluent | Event Hubs | Managed Kafka |
 | Object storage | rclone-s3 (local fs) | S3 (native) | Blob Storage via rclone-s3 | GCS via rclone-s3 |
 | Redis | redis:7.4 | ElastiCache | Cache for Redis | Memorystore |
 | Stream processing | Arroyo | Managed Flink | Stream Analytics | Dataflow |
@@ -335,13 +335,13 @@ Three possible directions, each preserving the invariants:
 
 ### v3a: MQTT-native
 
-Replace NATS JetStream with MQTT everywhere. Simplifies the stack to a single message protocol.
+Replace Redis Streams with MQTT everywhere. Simplifies the stack to a single message protocol.
 
 ```
 Conduit → Dapr MQTT pubsub → Mosquitto → rpk + Arroyo
 ```
 
-- Fewer moving parts (no NATS)
+- Fewer moving parts (no Redis for messaging)
 - Better cloud mapping (AWS IoT Core, Azure Event Grid)
 - MQTT v5 shared subscriptions for horizontal scaling
 - Dapr bridges CDC to MQTT, preserving trace context
@@ -448,7 +448,7 @@ These lessons were learned deploying mecha v1 and v2 on Cloud Run with Neon:
 
 ### v1 lessons
 
-1. **Scale-to-zero creates cold-start races** — Dapr takes ~5s to initialize while CDC events arrive in ~3s. NATS JetStream absorbs the gap.
+1. **Scale-to-zero creates cold-start races** — Dapr takes ~5s to initialize while CDC events arrive in ~3s. Redis Streams absorbs the gap.
 2. **Heartbeats must be co-located with activity** — a standalone heartbeat container scales to zero and never wakes. Embed heartbeats in the transform pipeline (rpk generate input).
 3. **CDC amplification loops** — enrichment PATCHes trigger UPDATE CDC events. Break the loop by checking if a record is already enriched before re-PATCHing.
 4. **Table name case sensitivity** — PostgREST preserves the original table name case. `GroupHello` is not `grouphello`. Webhook sinks must match exactly.

@@ -16,6 +16,6 @@ ENTRYPOINT ["/entrypoint.sh"]
 HEALTHCHECK --interval=5s --timeout=5s --retries=6 --start-period=30s \
   CMD ["portcheck", "--port", "3500"]
 
-# Events target: adds JetStream pubsub component.
+# Events target: adds Redis Streams pubsub component.
 FROM base AS events
-COPY services/mesh/dapr/components/jetstream.yaml /dapr/components/
+COPY services/mesh/dapr/components/redis-streams.yaml /dapr/components/

@@ -1,12 +1,12 @@
 # Dapr multi-app configuration for native Mac development.
-# Prerequisites: PostgreSQL running on localhost:5432, NATS on localhost:4222
+# Prerequisites: PostgreSQL running on localhost:5432, Redis on localhost:6379
 # Usage: dapr run -f .
 version: 1
 common:
   resourcesPath: ./services/mesh/dapr/components
   env:
     DATABASE_URL: "postgres://postgres:postgres@localhost:5432/mecha"
-    NATS_URL: "nats://localhost:4222"
+    REDIS_URL: "redis://localhost:6379"
   logLevel: info
 apps:
   - appID: crud

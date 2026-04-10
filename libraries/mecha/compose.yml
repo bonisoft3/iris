@@ -1,10 +1,10 @@
 # Mecha v2 — Additive profiles: crud → offline → events → ai → unicorn
 #
 # Startup strategy: all services start in parallel and self-retry connections.
-# No sequential depends_on chain. Only init containers (nats-init)
-# wait for their target to be healthy. Services use internal retry logic:
+# No sequential depends_on chain. Services use internal retry logic:
 #   PostgREST retries DB, Caddy returns 502 until upstream ready,
-#   Dapr retries components, Conduit retries WAL, rpk retries JetStream.
+#   Dapr retries components, Conduit retries WAL, rpk retries Redis Streams,
+#   Arroyo retries Redpanda.
 #
 # Usage:
 #   docker compose up                                    # crud only
@@ -128,10 +128,10 @@ services:
       - ai
 
   # ============================================================
-  # EVENTS PROFILE — + Conduit + NATS JetStream + rpk
+  # EVENTS PROFILE — + Conduit + Redis Streams + rpk
   # ============================================================
 
-  # Mesh variant with JetStream pubsub component.
+  # Mesh variant with Redis Streams pubsub component.
   mesh-events:
     build:
       context: .
@@ -140,7 +140,7 @@ services:
     depends_on:
       caddy:
         condition: service_started
-      nats:
+      redis:
         condition: service_started
     ports:
       - "3500"
@@ -158,15 +158,12 @@ services:
     profiles:
       - events
 
-  nats:
-    build:
-      context: .
-      dockerfile: services/nats/Dockerfile
+  redis:
+    image: redis:7.4.1-alpine@sha256:59b6e694653476de2c992937ebe1c64182af4728e54bb49e9b7a6c26614d8933
     ports:
-      - "4222"
-      - "8222"
+      - "6379"
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8222/healthz || exit 1"]
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
       interval: 5s
       timeout: 5s
       retries: 6
@@ -185,11 +182,9 @@ services:
         condition: service_started
       mesh-events:
         condition: service_started
-      nats:
-        condition: service_started
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-mecha}
-      DAPR_PUBSUB_URL: http://mesh-events:3500/v1.0/publish/jetstream/cdc-events
+      DAPR_PUBSUB_URL: http://mesh-events:3500/v1.0/publish/redis-streams/cdc-events
       CDC_TABLES: ${CDC_TABLES:-public.Hello}
       CONDUIT_PIPELINES_PATH: /conduit/pipelines
       CONDUIT_DB_TYPE: sqlite
@@ -210,27 +205,13 @@ services:
     profiles:
       - events
 
-  # Create JetStream stream before consumers start.
-  nats-init:
-    build:
-      context: .
-      dockerfile: services/nats/Dockerfile.init
-    depends_on:
-      nats:
-        condition: service_healthy
-    restart: "no"
-    profiles:
-      - events
-
   transform:
     build:
       context: .
       dockerfile: services/transform/Dockerfile
     depends_on:
-      nats:
-        condition: service_started
-      nats-init:
-        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
     restart: on-failure
     develop:
       watch:
@@ -241,63 +222,49 @@ services:
       - events
 
   # ============================================================
-  # AI PROFILE — + Arroyo + MQTT + Redis
+  # AI PROFILE — + Arroyo + Redpanda (Kafka-compatible)
   # ============================================================
 
-  redis:
-    image: redis:7.4.1-alpine@sha256:59b6e694653476de2c992937ebe1c64182af4728e54bb49e9b7a6c26614d8933
+  redpanda:
+    image: redpandadata/redpanda:v24.3.7
+    command:
+      - redpanda
+      - start
+      - --kafka-addr=internal://0.0.0.0:9092
+      - --advertise-kafka-addr=internal://redpanda:9092
+      - --mode=dev-container
+      - --smp=1
+      - --memory=100M
+      - --default-log-level=warn
     ports:
-      - "6379"
+      - "9092"
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      test: ["CMD-SHELL", "rpk cluster health --api-urls=localhost:9644 | grep -q 'is healthy'"]
       interval: 5s
       timeout: 5s
       retries: 6
-      start_period: 10s
+      start_period: 15s
       start_interval: 500ms
     profiles:
       - ai
 
-  mqtt:
-    build:
-      context: .
-      dockerfile: services/mqtt/Dockerfile
-    ports:
-      - "1883"
-    healthcheck:
-      test: ["CMD-SHELL", "mosquitto_sub -t '$$SYS/broker/uptime' -C 1 -W 3 || exit 1"]
-      interval: 5s
-      timeout: 5s
-      retries: 6
-      start_period: 5s
-      start_interval: 500ms
-    develop:
-      watch:
-        - action: sync+restart
-          path: services/mqtt/mosquitto.conf
-          target: /mosquitto/config/mosquitto.conf
-    profiles:
-      - ai
-
-  # MQTT fan-out: same rpk image as transform, different pipeline (CMD override).
-  mqtt-fanout:
+  # Kafka fan-out: same rpk image as transform, different pipeline (CMD override).
+  kafka-fanout:
     build:
       context: .
       dockerfile: services/transform/Dockerfile
-    command: ["run", "/pipelines/mqtt-fanout.yaml"]
+    command: ["run", "/pipelines/kafka-fanout.yaml"]
     depends_on:
-      nats:
-        condition: service_started
-      nats-init:
-        condition: service_completed_successfully
-      mqtt:
-        condition: service_started
+      redis:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
     restart: on-failure
     develop:
       watch:
         - action: sync+restart
-          path: services/transform/mqtt-fanout.yaml
-          target: /pipelines/mqtt-fanout.yaml
+          path: services/transform/kafka-fanout.yaml
+          target: /pipelines/kafka-fanout.yaml
     profiles:
       - ai
 
@@ -306,8 +273,8 @@ services:
       context: .
       dockerfile: services/arroyo/Dockerfile
     depends_on:
-      mqtt:
-        condition: service_started
+      redpanda:
+        condition: service_healthy
       database:
         condition: service_started
       redis:
@@ -415,6 +382,8 @@ services:
       dockerfile: tests/Dockerfile
     depends_on:
       conduit:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     environment:
       CRUD_URL: http://crud:3000

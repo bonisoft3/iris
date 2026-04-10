@@ -1,4 +1,4 @@
-# CDC enrichment pipeline: consume Dapr CloudEvents from JetStream and PATCH
+# CDC enrichment pipeline: consume Dapr CloudEvents from Redis Streams and PATCH
 # back to PostgREST with processed_at/source. Skips already-enriched rows
 # to break the CDC amplification loop.
 #
@@ -6,15 +6,15 @@
 # (the "data" field is a JSON-encoded string of the row)
 
 input:
-  nats_jetstream:
-    urls:
-      - "nats://nats:4222"
-    subject: "cdc-events"
-    stream: "cdc-events"
-    durable: "rpk-transform"
-    deliver: "all"
-    ack_wait: "30s"
-    max_ack_pending: 1024
+  redis_streams:
+    url: "redis://redis:6379"
+    body_key: "data"
+    streams:
+      - "cdc-events"
+    consumer_group: "rpk-transform"
+    create_streams: true
+    commit_period: "1s"
+    limit: 10
 
 pipeline:
   processors:
