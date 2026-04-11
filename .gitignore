@@ -272,3 +272,5 @@ service-account.json
 .worktrees/
 
 services/shelfie/shelfie
+plugins/omnishell/.omc/
+plugins/omnishell/test-results/

@@ -1,0 +1,7 @@
+services:
+  integrate:
+    build:
+      context: ../..
+      dockerfile: plugins/omnishell/Dockerfile
+      target: integrate
+    network_mode: host

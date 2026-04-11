@@ -26,6 +26,7 @@ group "ci" {
     "guis_iris",
     "plugins_sayt",
     "libraries_mecha",
+    "plugins_omnishell",
   ]
 }
 
@@ -111,5 +112,13 @@ target "libraries_mecha" {
   dockerfile = "tests/Dockerfile"
   cache-from = cache_from("libraries-mecha")
   cache-to   = cache_to("libraries-mecha")
+}
+
+target "plugins_omnishell" {
+  inherits   = ["ci-defaults"]
+  dockerfile = "./plugins/omnishell/Dockerfile"
+  target     = "integrate"
+  cache-from = cache_from("plugins-omnishell")
+  cache-to   = cache_to("plugins-omnishell")
 }
 
