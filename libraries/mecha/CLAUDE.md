@@ -19,12 +19,13 @@ Mecha v2 implements a **three-path architecture** with five additive profiles:
 | Profile | Services Added | Total |
 |---------|---------------|-------|
 | **crud** (base) | PostgreSQL + PostgREST + Caddy + Dapr | 4 |
-| **offline** | + ElectricSQL | 5 |
-| **events** | + Conduit + Redis Streams + rpk | 8 |
-| **ai** | + Arroyo + Redpanda + Redis | 11 |
-| **unicorn** | + rclone-s3 + imgproxy | 12 |
+| **sync** | + ElectricSQL | 5 |
+| **cdc** | + Conduit + Redis Streams + rpk | 8 |
+| **stream** | + Arroyo + Redpanda + Redis | 11 |
+| **ai** | + Bifrost (AI gateway) | 12 |
+| **blobs** | + rclone-s3 + imgproxy | 14 |
 
-### Data Flow (events profile)
+### Data Flow (cdc profile)
 
 ```
 Frontend / Test
@@ -56,6 +57,7 @@ Frontend / Test
 | `conduit` | `conduit.io/conduitio/conduit:v0.14.0` | PostgreSQL CDC (replaces Boxer) |
 | `redis` | `redis:7.4.1-alpine` | Redis Streams durable message bus |
 | `transform` | `redpandadata/connect:4.46.0` | rpk bloblang transformation pipelines (retry wrapper with exponential backoff) |
+| `bifrost` | `maximhq/bifrost` | AI gateway — routes to 1000+ LLMs, 11µs overhead |
 | `rclone-s3` | `rclone/rclone:1.71.0` | S3-compatible object storage (rclone serve s3) |
 | `imgproxy` | `ghcr.io/imgproxy/imgproxy:v3.31.1` | On-the-fly image processing proxy |
 
@@ -63,7 +65,7 @@ Frontend / Test
 
 - **Retry with exponential backoff**: The rpk `passthrough.yaml` pipeline wraps its `http_client` output in a `retry` block (3 retries, 2s-30s backoff, 3m max). This replaces the older flat `retries`/`retry_period` fields.
 - **Idempotent CRUD inserts**: Caddy injects `Prefer: return=representation,resolution=ignore-duplicates` on POST requests to `/crud/*`. Duplicate inserts with the same primary key are silently absorbed by PostgREST, making at-least-once delivery safe.
-- **rclone-s3 replaces Garage**: The unicorn profile uses `rclone serve s3` for S3-compatible object storage. Simpler than Garage (no init container, no admin API, no cluster setup).
+- **rclone-s3 replaces Garage**: The blobs profile uses `rclone serve s3` for S3-compatible object storage. Simpler than Garage (no init container, no admin API, no cluster setup).
 
 ## Development Commands
 
@@ -89,18 +91,19 @@ say launch
 
 # Start with profiles
 task launch              # crud only
-task launch:offline      # + ElectricSQL
-task launch:events       # + CDC pipeline (Conduit, Redis Streams, rpk)
-task launch:ai           # + stream processing (Arroyo, Redpanda, Redis)
-task launch:unicorn      # + S3 storage + image processing (rclone-s3, imgproxy)
+task launch:sync         # + ElectricSQL
+task launch:cdc          # + CDC pipeline (Conduit, Redis Streams, rpk)
+task launch:stream       # + stream processing (Arroyo, Redpanda, Redis)
+task launch:ai           # + AI gateway (Bifrost)
+task launch:blobs        # + S3 storage + image processing (rclone-s3, imgproxy)
 
 # Or directly with docker compose
 docker compose up --build --watch                                    # crud
-docker compose --profile offline up --build --watch                  # + offline
-docker compose --profile offline --profile events up --build --watch # + events
+docker compose --profile sync up --build --watch                 # + sync
+docker compose --profile sync --profile cdc up --build --watch   # + cdc
 
 # Full cleanup (removes volumes)
-docker compose --profile offline --profile events --profile ai --profile unicorn down -v
+docker compose --profile sync --profile cdc --profile stream --profile blobs down -v
 ```
 
 ### Native Mac Mode (no Docker)
@@ -118,8 +121,8 @@ dapr run -f .
 # Run crud smoke tests
 task integrate
 
-# Run events pipeline smoke tests (CDC end-to-end)
-task integrate:events
+# Run CDC pipeline smoke tests (CDC end-to-end)
+task integrate:cdc
 
 # Manual CRUD test (via Caddy proxy on host port 8080)
 curl -X POST http://localhost:8080/crud/Hello \
@@ -131,7 +134,7 @@ curl -X POST http://localhost:8080/crud/Hello \
 
 ```bash
 ./scripts/benchmark.sh crud    # Startup + CRUD latency
-./scripts/benchmark.sh events  # + CDC pipeline latency
+./scripts/benchmark.sh cdc     # + CDC pipeline latency
 ```
 
 ## Code Generation Workflow

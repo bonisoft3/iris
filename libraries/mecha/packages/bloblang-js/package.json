@@ -1,0 +1,24 @@
+{
+  "name": "@mecha/bloblang-js",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build:wasm": "GOOS=js GOARCH=wasm go build -o dist/blobl.wasm . && cp \"$(go env GOROOT)/lib/wasm/wasm_exec.js\" dist/",
+    "build": "mkdir -p dist && bun run build:wasm && tsc",
+    "test": "vitest --run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}

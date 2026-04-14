@@ -44,14 +44,14 @@ tasks:
   # ================================================================
   # Launch — start the stack with hot reload (--watch)
   # ================================================================
-  # `task launch` brings up ALL profiles (crud + offline + events + ai
-  # + unicorn). Use launch:crud/offline/events/ai for narrower slices.
+  # `task launch` brings up ALL profiles (crud + sync + cdc + stream
+  # + blobs). Use launch:crud/sync/cdc/stream for narrower slices.
 
   launch:
     desc: "Start the full stack (all profiles) with hot reload"
     deps: [generate]
     cmds:
-      - docker compose --profile offline --profile events --profile ai --profile unicorn up --build --watch
+      - docker compose --profile sync --profile cdc --profile stream --profile blobs up --build --watch
 
   launch:crud:
     desc: "crud profile only (PostgreSQL + PostgREST + Caddy + Dapr)"
@@ -59,23 +59,23 @@ tasks:
     cmds:
       - docker compose up --build --watch
 
-  launch:offline:
+  launch:sync:
     desc: "+ ElectricSQL"
     deps: [generate]
     cmds:
-      - docker compose --profile offline up --build --watch
+      - docker compose --profile sync up --build --watch
 
-  launch:events:
+  launch:cdc:
     desc: "+ Conduit + Redis Streams + rpk"
     deps: [generate]
     cmds:
-      - docker compose --profile offline --profile events up --build --watch
+      - docker compose --profile sync --profile cdc up --build --watch
 
-  launch:ai:
+  launch:stream:
     desc: "+ Arroyo + Redpanda + Redis"
     deps: [generate]
     cmds:
-      - docker compose --profile offline --profile events --profile ai up --build --watch
+      - docker compose --profile sync --profile cdc --profile stream up --build --watch
 
   # ================================================================
   # Unit tests — pure, fast, offline (no network, no Docker daemon)
@@ -97,34 +97,34 @@ tasks:
     cmds:
       - docker compose --profile test run --build integrate
 
-  integrate:events:
-    desc: "Run events pipeline smoke tests"
+  integrate:cdc:
+    desc: "Run CDC pipeline smoke tests"
     cmds:
-      - docker compose --profile offline --profile events --profile test-events run --build integrate-events
+      - docker compose --profile sync --profile cdc --profile test-cdc run --build integrate-cdc
 
-  integrate:ai:
+  integrate:stream:
     desc: "Run stream analytics smoke tests (Arroyo E2E)"
     cmds:
-      - docker compose --profile offline --profile events --profile ai --profile test-ai run --build integrate-ai
+      - docker compose --profile sync --profile cdc --profile stream --profile test-stream run --build integrate-stream
 
-  integrate:unicorn:
-    desc: "Run unicorn profile smoke tests (Garage S3 + imgproxy)"
+  integrate:blobs:
+    desc: "Run blobs profile smoke tests (rclone-s3 + imgproxy)"
     cmds:
-      - docker compose --profile unicorn --profile test-unicorn run --build integrate-unicorn
+      - docker compose --profile blobs --profile test-blobs run --build integrate-blobs
 
   # ================================================================
-  # Benchmarks (events + ai profiles)
+  # Benchmarks (cdc + stream profiles)
   # ================================================================
 
   benchmark:
-    desc: "Run startup + CRUD + CDC benchmarks (events profile)"
+    desc: "Run startup + CRUD + CDC benchmarks (cdc profile)"
     cmds:
       - nu scripts/benchmark.nu
 
-  benchmark:ai:
-    desc: "Run startup + CRUD + CDC benchmarks (ai profile)"
+  benchmark:stream:
+    desc: "Run startup + CRUD + CDC benchmarks (stream profile)"
     cmds:
-      - nu scripts/benchmark.nu --profile ai
+      - nu scripts/benchmark.nu --profile stream
 
   # ================================================================
   # Atlas — dev-time migration generation from HCL schema
@@ -158,5 +158,5 @@ tasks:
   clean:
     desc: "Stop all services and remove generated files"
     cmds:
-      - docker compose --profile offline --profile events --profile ai --profile unicorn down -v || true
+      - docker compose --profile sync --profile cdc --profile stream --profile blobs down -v || true
       - rm -rf gen/*

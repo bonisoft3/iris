@@ -61,7 +61,7 @@ Configuration lives in YAML, CUE, SQL, or Protocol Buffers. Not in application c
 Capabilities are layered incrementally. The base profile is always CRUD. Each subsequent profile adds services without modifying existing ones:
 
 ```
-crud → offline → events → ai → unicorn
+crud → sync → cdc → stream → ai → blobs
 ```
 
 A team that only needs CRUD runs 4 containers. A team that needs real-time AI runs 12+. Same architecture, same schema, different profiles.
@@ -200,7 +200,7 @@ Cloud Run multi-container service
 
 **Caddy over nginx**: Native Windows support. Automatic HTTPS. Caddyfile is simpler than nginx.conf + Lua. No custom scripting.
 
-**Redis Streams (dev) + cloud pubsub (prod)**: Redis Streams for durable CDC delivery in local development. Redis is already required by the ai profile (Arroyo), so reusing it for events eliminates an extra service (NATS). In production, the cloud provider's native pubsub (GCP Pub/Sub, Amazon SNS+SQS, Azure Service Bus) replaces Redis Streams — same Dapr pubsub abstraction, zero code changes. Kafka protocol (via Redpanda) for Arroyo source, giving true end-to-end at-least-once and uniform protocol for dev/prod.
+**Redis Streams (dev) + cloud pubsub (prod)**: Redis Streams for durable CDC delivery in local development. Redis is already required by the stream profile (Arroyo), so reusing it for cdc eliminates an extra service (NATS). In production, the cloud provider's native pubsub (GCP Pub/Sub, Amazon SNS+SQS, Azure Service Bus) replaces Redis Streams — same Dapr pubsub abstraction, zero code changes. Kafka protocol (via Redpanda) for Arroyo source, giving true end-to-end at-least-once and uniform protocol for dev/prod.
 
 **rpk bloblang over Lua scripts**: Declarative transform DSL. Fan-out via broker/switch output. Heartbeat via generate input — co-located with processing, scales to zero with it.
 
@@ -261,10 +261,10 @@ At every boundary, the upstream waits for downstream acknowledgment before advan
 | Profile | Services | Cloud equivalent |
 |---------|----------|-----------------|
 | **crud** | PostgreSQL + PostgREST + Caddy + Dapr | Neon + Cloud Run |
-| **offline** | + ElectricSQL | + Electric Cloud |
-| **events** | + Conduit + Redis Streams + rpk | + GCP Pub/Sub + Cloud Run sidecars |
-| **ai** | + Arroyo + Redpanda + Redis | + Arroyo Cloud + Managed Kafka + ElastiCache |
-| **unicorn** | + rclone-s3 + imgproxy | + GCS/S3 + imgproxy Cloud |
+| **sync** | + ElectricSQL | + Electric Cloud |
+| **cdc** | + Conduit + Redis Streams + rpk | + GCP Pub/Sub + Cloud Run sidecars |
+| **stream** | + Arroyo + Redpanda + Redis | + Arroyo Cloud + Managed Kafka + ElastiCache |
+| **blobs** | + rclone-s3 + imgproxy | + GCS/S3 + imgproxy Cloud |
 
 ### Cloud mapping (v2)
 
@@ -278,7 +278,7 @@ At every boundary, the upstream waits for downstream acknowledgment before advan
 | Stream processing | Arroyo | Managed Flink | Stream Analytics | Dataflow |
 | CDC | Conduit | DMS / Debezium on MSK | Event Hubs Capture | Datastream |
 
-The Kafka ecosystem (Debezium + Redpanda/MSK + Flink) is a valid cloud-scale substitution for the entire events+ai tier. The architecture is the same; only the component names change.
+The Kafka ecosystem (Debezium + Redpanda/MSK + Flink) is a valid cloud-scale substitution for the entire cdc+stream tier. The architecture is the same; only the component names change.
 
 ## Production Deployment
 
@@ -429,17 +429,17 @@ task generate
 docker compose up --build --watch
 
 # Start with profiles (additive)
-docker compose --profile offline up --build --watch
-docker compose --profile offline --profile events up --build --watch
-docker compose --profile offline --profile events --profile ai up --build --watch
+docker compose --profile sync up --build --watch
+docker compose --profile sync --profile cdc up --build --watch
+docker compose --profile sync --profile cdc --profile stream up --build --watch
 
 # Run smoke tests
 task integrate                 # CRUD smoke test
-task integrate:events          # CDC pipeline E2E
-task integrate:ai              # Stream analytics E2E
+task integrate:cdc             # CDC pipeline E2E
+task integrate:stream          # Stream analytics E2E
 
 # Full cleanup
-docker compose --profile offline --profile events --profile ai --profile unicorn down -v
+docker compose --profile sync --profile cdc --profile stream --profile blobs down -v
 ```
 
 ## Production Lessons

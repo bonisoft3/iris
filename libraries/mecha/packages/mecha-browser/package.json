@@ -1,0 +1,36 @@
+{
+  "name": "@mecha/browser",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "dev": "bun src/dev-server.ts",
+    "test": "vitest --run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@mecha/postgrest-js": "workspace:*",
+    "@mecha/tanstackdb-pglite": "workspace:*",
+    "@mecha/bloblang-js": "workspace:*",
+    "@mecha/conduit-js": "workspace:*",
+    "@mecha/caddy-js": "workspace:*",
+    "@mecha/rclone-js": "workspace:*",
+    "@electric-sql/pglite": "^0.4.0",
+    "@tanstack/db": "^0.6.0",
+    "msw": "^2.7.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}

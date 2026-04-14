@@ -1,8 +1,8 @@
 #!/usr/bin/env nu
 # Benchmark: stack startup time + CRUD + CDC pipeline latency.
 # Usage:
-#   nu scripts/benchmark.nu                 # events profile, 3 iterations
-#   nu scripts/benchmark.nu --profile ai
+#   nu scripts/benchmark.nu                    # cdc profile, 3 iterations
+#   nu scripts/benchmark.nu --profile stream
 #   nu scripts/benchmark.nu --iterations 10
 #
 # Runs natively on Windows, macOS, and Linux via Nushell.
@@ -10,8 +10,8 @@
 def profile-args [name: string] {
     match $name {
         "crud"   => []
-        "events" => [--profile offline --profile events]
-        "ai"     => [--profile offline --profile events --profile ai]
+        "cdc"    => [--profile sync --profile cdc]
+        "stream" => [--profile sync --profile cdc --profile stream]
         _ => (error make {msg: $"unknown profile: ($name)"})
     }
 }
@@ -35,9 +35,9 @@ def time-block [block: closure] {
 
 # --- Stack startup ---------------------------------------------------
 
-def "main startup" [--profile: string = "events"] {
+def "main startup" [--profile: string = "cdc"] {
     let args = profile-args $profile
-    let all = [--profile offline --profile events --profile ai --profile unicorn]
+    let all = [--profile sync --profile cdc --profile stream --profile blobs]
 
     print $"=== Startup ((ansi cyan))($profile)(ansi reset) ==="
     ^docker compose ...$all down -v out+err> (if $nu.os-info.name == "windows" { "nul" } else { "/dev/null" })
@@ -110,7 +110,7 @@ def "main cdc" [--iterations: int = 5] {
 # --- Run everything --------------------------------------------------
 
 def main [
-    --profile: string = "events"    # crud | events | ai
+    --profile: string = "cdc"       # crud | cdc | stream
     --iterations: int = 5            # number of iterations for each benchmark
 ] {
     print $"Mecha v2 Benchmark"

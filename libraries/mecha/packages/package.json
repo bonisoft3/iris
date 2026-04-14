@@ -1,0 +1,18 @@
+{
+  "private": true,
+  "name": "@mecha/packages",
+  "workspaces": [
+    "postgrest-js",
+    "tanstackdb-pglite",
+    "caddy-js",
+    "conduit-js",
+    "bloblang-js",
+    "rclone-js",
+    "mecha-browser"
+  ],
+  "scripts": {
+    "build": "bun run --filter '*' build",
+    "test": "bun run --filter '*' test",
+    "test:watch": "bun run --filter '*' test:watch"
+  }
+}

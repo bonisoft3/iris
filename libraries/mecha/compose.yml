@@ -1,4 +1,7 @@
-# Mecha v2 — Additive profiles: crud → offline → events → ai → unicorn
+# Mecha v2 — Additive profiles: crud → sync → cdc → stream → ai → blobs
+#
+# AI profile adds Bifrost (github.com/maximhq/bifrost) — single Go binary,
+# 11µs overhead, routes to 1000+ LLM providers.
 #
 # Startup strategy: all services start in parallel and self-retry connections.
 # No sequential depends_on chain. Services use internal retry logic:
@@ -7,11 +10,12 @@
 #   Arroyo retries Redpanda.
 #
 # Usage:
-#   docker compose up                                    # crud only
-#   docker compose --profile offline up                  # + ElectricSQL
-#   docker compose --profile offline --profile events up # + CDC pipeline
-#   docker compose --profile ai up                       # + stream processing
-#   docker compose --profile unicorn up                  # + storage + imaging
+#   docker compose up                                  # crud only
+#   docker compose --profile sync up                   # + ElectricSQL
+#   docker compose --profile sync --profile cdc up     # + CDC pipeline
+#   docker compose --profile stream up                 # + stream processing
+#   docker compose --profile ai up                     # + AI gateway (Bifrost)
+#   docker compose --profile blobs up                  # + storage + imaging
 
 services:
   # ============================================================
@@ -101,7 +105,7 @@ services:
           target: /dapr/components/resiliency.yaml
 
   # ============================================================
-  # OFFLINE PROFILE — + ElectricSQL
+  # SYNC PROFILE — + ElectricSQL
   # ============================================================
 
   electric:
@@ -123,12 +127,12 @@ services:
       start_interval: 500ms
     restart: on-failure
     profiles:
-      - offline
-      - events
-      - ai
+      - sync
+      - cdc
+      - stream
 
   # ============================================================
-  # EVENTS PROFILE — + Conduit + Redis Streams + rpk
+  # CDC PROFILE — + Conduit + Redis Streams + rpk
   # ============================================================
 
   # Mesh variant with Redis Streams pubsub component.
@@ -156,7 +160,7 @@ services:
           path: services/mesh/dapr/components/
           target: /dapr/components/
     profiles:
-      - events
+      - cdc
 
   redis:
     image: redis:7.4.1-alpine@sha256:59b6e694653476de2c992937ebe1c64182af4728e54bb49e9b7a6c26614d8933
@@ -170,8 +174,8 @@ services:
       start_period: 10s
       start_interval: 500ms
     profiles:
-      - events
-      - ai
+      - cdc
+      - stream
 
   conduit:
     build:
@@ -203,7 +207,7 @@ services:
       start_interval: 500ms
     restart: on-failure
     profiles:
-      - events
+      - cdc
 
   transform:
     build:
@@ -219,10 +223,10 @@ services:
           path: services/transform/passthrough.yaml
           target: /pipelines/passthrough.yaml
     profiles:
-      - events
+      - cdc
 
   # ============================================================
-  # AI PROFILE — + Arroyo + Redpanda (Kafka-compatible)
+  # STREAM PROFILE — + Arroyo + Redpanda (Kafka-compatible)
   # ============================================================
 
   redpanda:
@@ -246,7 +250,7 @@ services:
       start_period: 15s
       start_interval: 500ms
     profiles:
-      - ai
+      - stream
 
   # Kafka fan-out: same rpk image as transform, different pipeline (CMD override).
   kafka-fanout:
@@ -266,7 +270,7 @@ services:
           path: services/transform/kafka-fanout.yaml
           target: /pipelines/kafka-fanout.yaml
     profiles:
-      - ai
+      - stream
 
   arroyo:
     build:
@@ -288,10 +292,22 @@ services:
           path: services/arroyo/queries/
           target: /queries/
     profiles:
+      - stream
+
+  # ============================================================
+  # AI PROFILE — + Bifrost (AI gateway)
+  # ============================================================
+
+  bifrost:
+    build:
+      context: services/bifrost
+    ports:
+      - "8090:8090"
+    profiles:
       - ai
 
   # ============================================================
-  # UNICORN PROFILE — + rclone-s3 + imgproxy
+  # BLOBS PROFILE — + rclone-s3 + imgproxy
   # ============================================================
 
   rclone-s3:
@@ -317,7 +333,7 @@ services:
       start_period: 10s
       start_interval: 500ms
     profiles:
-      - unicorn
+      - blobs
 
   imgproxy:
     image: ghcr.io/imgproxy/imgproxy:v3.31.1@sha256:2b7a56dbf9c8a8e12e7109a5bdd27d31a8c1aa49f2116c927c6aedc37e18db98
@@ -343,7 +359,7 @@ services:
       start_interval: 500ms
     restart: on-failure
     profiles:
-      - unicorn
+      - blobs
 
   # ============================================================
   # NUBOX — Command & control (interactive nushell debug shell)
@@ -362,6 +378,20 @@ services:
     entrypoint: ["nu"]
 
   # ============================================================
+  # SAYT ENTRY POINTS
+  # ============================================================
+
+  launch:
+    image: alpine/curl:latest
+    depends_on:
+      crud:
+        condition: service_healthy
+      caddy:
+        condition: service_healthy
+    restart: "no"
+    command: ["echo", "mecha is healthy"]
+
+  # ============================================================
   # TEST — Smoke tests
   # ============================================================
 
@@ -370,13 +400,15 @@ services:
       context: .
       dockerfile: tests/Dockerfile
     depends_on:
+      crud:
+        condition: service_healthy
       caddy:
         condition: service_healthy
     restart: "no"
     profiles:
       - test
 
-  integrate-events:
+  integrate-cdc:
     build:
       context: .
       dockerfile: tests/Dockerfile
@@ -390,9 +422,9 @@ services:
     entrypoint: ["/bin/sh", "/entrypoint-events.sh"]
     restart: "no"
     profiles:
-      - test-events
+      - test-cdc
 
-  integrate-ai:
+  integrate-stream:
     build:
       context: .
       dockerfile: tests/stream-analytics-test/Dockerfile
@@ -401,9 +433,9 @@ services:
         condition: service_healthy
     restart: "no"
     profiles:
-      - test-ai
+      - test-stream
 
-  integrate-unicorn:
+  integrate-blobs:
     build:
       context: .
       dockerfile: tests/unicorn-test/Dockerfile
@@ -414,4 +446,4 @@ services:
         condition: service_healthy
     restart: "no"
     profiles:
-      - test-unicorn
+      - test-blobs
