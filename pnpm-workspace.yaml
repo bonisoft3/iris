@@ -4,3 +4,4 @@ packages:
   - guis/iris/
   - guis/shelfie/
   - guis/flashcards/
+  - plugins/omnishell/

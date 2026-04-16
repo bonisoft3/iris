@@ -1,5 +1,5 @@
 import type { PipelineMessage, ProcessorFn, PipelineContext } from "../types.js"
-import { createMessage, injectMetadata, extractMetadata } from "../message.js"
+import { createMessage } from "../message.js"
 
 /** Interface matching BloblangRuntime.execute() */
 interface BloblangExecutor {
@@ -17,41 +17,47 @@ export function setBloblangRuntime(runtime: BloblangExecutor): void {
 }
 
 /**
- * Preprocess bloblang mapping to replace meta() references with _meta field access.
+ * Rewrite meta() references and meta assignments so the WASM runtime
+ * (which has no message-metadata concept) can evaluate everything.
  *
- * The WASM runtime can't handle meta() (no message context). We inject metadata
- * as ._meta into the input and rewrite the mapping:
- *   meta("key")        → this._meta.key  (read)
- *   meta key = expr    → root._meta.key = expr  (set, handled post-execution)
+ *   meta("key")         → this._meta.key         (read)
+ *   meta key = expr     → root._meta.key = expr  (write)
+ *
+ * After WASM execution, `_meta` is extracted from the output back into
+ * the PipelineMessage.metadata record. If the mapping had only meta
+ * assignments (no `root = …`), we still need a `root = this` so the
+ * content passes through.
  */
-function preprocessMapping(mapping: string): { rewritten: string; metaAssignments: Array<{ key: string; expr: string }> } {
-  const metaAssignments: Array<{ key: string; expr: string }> = []
+function rewriteMetaOps(mapping: string): { rewritten: string; hasRootAssignment: boolean } {
   const lines = mapping.split("\n")
-  const rewritten: string[] = []
+  const out: string[] = []
+  let hasRootAssignment = false
 
   for (const line of lines) {
     const trimmed = line.trim()
 
-    // meta KEY = EXPR → track and remove (we handle in pre/post processing)
-    const metaSetMatch = trimmed.match(/^meta\s+(\w+)\s*=\s*(.+)$/)
-    if (metaSetMatch) {
-      metaAssignments.push({ key: metaSetMatch[1], expr: metaSetMatch[2] })
+    // meta KEY = EXPR  →  root._meta.KEY = EXPR
+    const metaSet = trimmed.match(/^meta\s+(\w+)\s*=\s*(.+)$/)
+    if (metaSet) {
+      const [, key, expr] = metaSet
+      out.push(`root._meta.${key} = ${expr.replace(/meta\(\s*"(\w+)"\s*\)/g, 'this._meta.$1')}`)
       continue
     }
 
-    // Replace meta("key") with this._meta.key in expressions
+    // meta("key") reads anywhere in the line
     const replaced = line.replace(/meta\(\s*"(\w+)"\s*\)/g, 'this._meta.$1')
-    rewritten.push(replaced)
+    if (/^\s*root\b/.test(replaced)) hasRootAssignment = true
+    out.push(replaced)
   }
 
-  return { rewritten: rewritten.join("\n"), metaAssignments }
+  return { rewritten: out.join("\n"), hasRootAssignment }
 }
 
 /**
  * Create a bloblang processor backed by the WASM runtime.
  *
- * Handles meta() by preprocessing: inject _meta into input, rewrite
- * meta() references, extract _meta from output.
+ * Meta ops are rewritten into regular bloblang against a `_meta` field.
+ * That field is injected into the WASM input and extracted from the output.
  */
 export function createBloblangProcessor(mapping: string): ProcessorFn {
   return async (msg: PipelineMessage, _ctx: PipelineContext): Promise<PipelineMessage[]> => {
@@ -59,61 +65,28 @@ export function createBloblangProcessor(mapping: string): ProcessorFn {
       throw new Error("[pipeline] Bloblang WASM runtime not initialized. Call setBloblangRuntime() first.")
     }
 
-    // Preprocess: extract meta assignments, rewrite meta() reads
-    const { rewritten, metaAssignments } = preprocessMapping(mapping)
-    const metadata = { ...msg.metadata }
+    const { rewritten, hasRootAssignment } = rewriteMetaOps(mapping)
 
-    // Process meta assignments first (they reference `this` = original content)
+    // If the source had only meta ops, make sure content passes through.
+    const finalMapping = hasRootAssignment ? rewritten : `root = this\n${rewritten}`
+
     const content = (typeof msg.content === "object" && msg.content !== null)
       ? msg.content as Record<string, unknown>
       : {}
+    const input = { ...content, _meta: { ...msg.metadata } }
 
-    for (const { key, expr } of metaAssignments) {
-      // Evaluate simple meta assignment expressions
-      if (expr.startsWith("this.")) {
-        const field = expr.slice(5)
-        const val = getNestedField(content, field)
-        metadata[key] = String(val ?? "")
-      } else if (expr.startsWith('meta("')) {
-        const ref = expr.match(/meta\("(\w+)"\)/)
-        if (ref) metadata[key] = metadata[ref[1]] ?? ""
-      } else if (expr.startsWith('"') && expr.endsWith('"')) {
-        metadata[key] = expr.slice(1, -1)
-      } else {
-        // Complex expression with concatenation
-        metadata[key] = expr
-          .replace(/meta\(\s*"(\w+)"\s*\)/g, (_, k) => metadata[k] ?? "")
-          .replace(/^"/, "").replace(/"$/, "")
-          .replace(/" \+ "/g, "")
-          .replace(/" \+ /g, "")
-          .replace(/ \+ "/g, "")
+    const result = await _runtime.execute(finalMapping, input)
+
+    // Extract _meta back out of the result
+    const outMeta: Record<string, string> = { ...msg.metadata }
+    if (result && typeof result._meta === "object" && result._meta !== null) {
+      for (const [k, v] of Object.entries(result._meta as Record<string, unknown>)) {
+        outMeta[k] = String(v ?? "")
       }
     }
+    const outContent = { ...(result as Record<string, unknown>) }
+    delete outContent._meta
 
-    // If mapping only had meta assignments and no root =, pass through
-    const hasRoot = rewritten.split("\n").some(l => l.trim().startsWith("root"))
-    if (!hasRoot || rewritten.trim() === "") {
-      return [createMessage(msg.content, metadata)]
-    }
-
-    // Inject _meta into input for WASM
-    const input = { ...content, _meta: { ...metadata } }
-
-    // Execute via WASM
-    const result = await _runtime.execute(rewritten, input)
-
-    // Extract _meta from result
-    const outMsg = createMessage(result, metadata)
-    return [extractMetadata(outMsg)]
+    return [createMessage(outContent, outMeta)]
   }
-}
-
-function getNestedField(obj: Record<string, unknown>, path: string): unknown {
-  const parts = path.split(".")
-  let current: unknown = obj
-  for (const part of parts) {
-    if (current == null || typeof current !== "object") return undefined
-    current = (current as Record<string, unknown>)[part]
-  }
-  return current
 }

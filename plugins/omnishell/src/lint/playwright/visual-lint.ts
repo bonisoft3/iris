@@ -8,11 +8,28 @@ import { checkViewportBounds } from "./checks/viewport-bounds"
 import { checkTouchTargets } from "./checks/touch-targets"
 import { checkFocusOrder } from "./checks/focus-order"
 import { checkThemeStability } from "./checks/theme-stability"
+import type { ConsoleCapture } from "./checks/console-messages"
+import { analyzeConsole } from "./checks/console-messages"
 
 export type { VisualBug, VisualLintResult } from "./types"
 export { checkCLS } from "./checks/cls"
+export {
+  captureConsole,
+  analyzeConsole,
+  checkConsoleMessages,
+  type ConsoleCapture,
+} from "./checks/console-messages"
 
-export async function visualLint(page: Page): Promise<VisualLintResult> {
+/**
+ * Run the standard DOM-based visual lint battery.
+ * Pass a `consoleCapture` (from `captureConsole(page)` before navigation) to
+ * include console errors/warnings in the result. If omitted, console checks
+ * are skipped.
+ */
+export async function visualLint(
+  page: Page,
+  consoleCapture?: ConsoleCapture,
+): Promise<VisualLintResult> {
   const results = await Promise.all([
     checkInteractiveOverlap(page),
     checkHorizontalOverflow(page),
@@ -25,6 +42,9 @@ export async function visualLint(page: Page): Promise<VisualLintResult> {
     // Use checkCLS(page) separately in tests that care about layout shift
   ])
   const bugs = results.flat()
+  if (consoleCapture) {
+    bugs.push(...analyzeConsole(consoleCapture))
+  }
   return { passed: bugs.length === 0, bugs }
 }
 

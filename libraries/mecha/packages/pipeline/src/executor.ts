@@ -18,8 +18,8 @@ export async function executePipeline(
         const results = await proc(msg, ctx)
         nextMessages.push(...results)
       } catch (err) {
-        console.error(`[pipeline] Processor error:`, err instanceof Error ? err.message : err)
-        nextMessages.push(msg)
+        console.error(`[pipeline] Processor error, dropping message:`, err instanceof Error ? err.message : err)
+        // Message is dropped — not forwarded. Silent data corruption is worse than data loss.
       }
     }
     messages = nextMessages

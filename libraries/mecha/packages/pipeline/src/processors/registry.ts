@@ -22,5 +22,22 @@ export function resolveProcessor(step: ProcessorStep): ProcessorFn {
     const subProcessors = step.branch.processors.map(resolveProcessor)
     return createBranchProcessor(step.branch, subProcessors)
   }
+  // retry: no-op in the browser — rpk's retry is a server-side concept.
+  // We just run the inner processors in sequence; the executor's own
+  // drop-on-error path handles failures. A shared YAML file can therefore
+  // use retry: for the container pipeline without breaking browser loading.
+  if ("retry" in step) {
+    const subs = (step as unknown as { retry: { processors: ProcessorStep[] } })
+      .retry.processors.map(resolveProcessor)
+    return async (msg, ctx) => {
+      let msgs = [msg]
+      for (const proc of subs) {
+        const next = []
+        for (const m of msgs) next.push(...await proc(m, ctx))
+        msgs = next
+      }
+      return msgs
+    }
+  }
   throw new Error(`Unknown processor: ${JSON.stringify(Object.keys(step))}`)
 }

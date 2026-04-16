@@ -28,7 +28,9 @@ describe("CDC pipeline listener", () => {
     input: { cdc: { table: "test_input" } },
     pipeline: {
       processors: [
-        { jq: 'select(.status == "pending")' },
+        // cdc.ts wraps the row in {data: JSON.stringify(row)} to match rpk's
+        // CloudEvents-from-Dapr envelope. Pipelines must unwrap with .data | fromjson.
+        { jq: '.data | fromjson | select(.status == "pending")' },
         { jq: '{id: .id, result: (.value | ascii_upcase)}' },
       ],
     },
