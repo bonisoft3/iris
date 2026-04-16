@@ -25,6 +25,9 @@
       "@types/react-dom": "^19.1.0"
     }
   },
+  "workspaces": [
+    "libraries/mecha/packages/*"
+  ],
   "dependencies": {
     "turbo": "^1.12.4"
   },

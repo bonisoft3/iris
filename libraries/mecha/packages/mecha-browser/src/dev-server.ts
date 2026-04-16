@@ -3,7 +3,7 @@ import { live } from '@electric-sql/pglite/live'
 import { createRestHandler } from '@mecha/postgrest-js'
 import { BloblangRuntime } from '@mecha/bloblang-js'
 import { PipelineRegistry, createCDCListener } from '@mecha/conduit-js'
-import type { MechaConfig } from './types.js'
+import type { BrowserConfig } from './types.js'
 
 /**
  * Minimal dev server entry point.

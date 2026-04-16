@@ -1,71 +1,117 @@
 import { PGlite } from '@electric-sql/pglite'
 import { live } from '@electric-sql/pglite/live'
-import { createCollection } from '@tanstack/db'
 import { createRestHandler } from '@mecha/postgrest-js'
 import { pgliteCollectionOptions } from '@mecha/tanstackdb-pglite'
-import { BloblangRuntime } from '@mecha/bloblang-js'
-import { PipelineRegistry, createCDCListener } from '@mecha/conduit-js'
-import type { MechaConfig } from './types.js'
+import type { PlatformContext, CollectionAdapter } from '@mecha/collections'
+import type { BrowserConfig } from './types.js'
 
-export interface MechaCollections {
-  [tableName: string]: any
-  /** Shut down PGlite, CDC listener, bloblang runtime. */
-  destroy: () => Promise<void>
-  /** The PGlite instance (for advanced use). */
-  pglite: PGlite
-  /** The rest handler (for MSW wiring). */
-  restHandler: (req: Request) => Promise<Response>
-}
-
-export async function createMechaCollections(
-  config: MechaConfig
-): Promise<MechaCollections> {
-  // 1. Initialize PGlite with live extension
+/**
+ * Boot the browser platform — async, heavy.
+ *
+ * Creates PGlite, loads schema, optionally wires CDC + MSW + seed data.
+ * Returns PlatformContext with adapter backed by pgliteCollectionOptions.
+ */
+export async function bootPlatform(config: BrowserConfig): Promise<PlatformContext> {
+  // 1. Create PGlite with live extension
   const pglite = await PGlite.create('idb://mecha', {
     extensions: { live },
   })
   await pglite.exec(config.schema)
 
-  // 2. Initialize BloblangRuntime
-  const runtime = await BloblangRuntime.fromUrls(
-    config.wasmUrl,
-    config.wasmUrl.replace('blobl.wasm', 'wasm_exec.js')
-  )
-
-  // 3. Register CDC pipelines
-  const registry = new PipelineRegistry()
-  for (const p of config.pipelines) {
-    registry.register(p)
-  }
-
-  // 4. Start CDC listener
-  const cdcCleanup = await createCDCListener({ pglite, registry, runtime })
-
-  // 5. Create rest handler (synchronous)
+  // 2. Create rest handler
   const restHandler = createRestHandler(pglite)
 
-  // 6. Create TanStack DB collections
-  // pgliteCollectionOptions returns { getKey, sync: fn }
-  // createCollection expects { getKey, sync: { sync: fn } }
-  const collections: Record<string, any> = {}
-  for (const table of config.tables) {
-    const opts = pgliteCollectionOptions({ pglite, table, key: 'id' })
-    collections[table] = createCollection({
-      id: `mecha:${table}`,
-      getKey: opts.getKey,
-      sync: { sync: opts.sync },
-    })
+  // 3. Create adapter
+  const adapter: CollectionAdapter = {
+    collectionOptions(table: string, key: string) {
+      return pgliteCollectionOptions({ pglite, table, key })
+    },
   }
 
-  // 7. Return collections + lifecycle
+  // 4. Wire CDC pipelines if configured
+  let cdcCleanup: (() => void) | undefined
+  if (config.pipelineConfigs && config.pipelineConfigs.length > 0) {
+    const { createCDCPipelineListener, setBloblangRuntime } = await import('@mecha/pipeline')
+
+    // Load bloblang WASM for pipelines that use bloblang processors
+    if (config.wasmUrl) {
+      const { BloblangRuntime } = await import('@mecha/bloblang-js')
+      const runtime = await BloblangRuntime.fromUrls(
+        config.wasmUrl,
+        config.wasmUrl.replace('blobl.wasm', 'wasm_exec.js')
+      )
+      setBloblangRuntime(runtime)
+    }
+
+    const pipelineCtx = {
+      httpHandler: async (req: Request) => {
+        return fetch(req)
+      },
+      env: config.env ?? {},
+    }
+
+    cdcCleanup = await createCDCPipelineListener(pglite, config.pipelineConfigs, pipelineCtx)
+  } else if (config.pipelines && config.pipelines.length > 0 && config.wasmUrl) {
+    // Legacy bloblang pipeline engine (deprecated)
+    const { BloblangRuntime } = await import('@mecha/bloblang-js')
+    const { PipelineRegistry, createCDCListener } = await import('@mecha/conduit-js')
+
+    const runtime = await BloblangRuntime.fromUrls(
+      config.wasmUrl,
+      config.wasmUrl.replace('blobl.wasm', 'wasm_exec.js')
+    )
+
+    const registry = new PipelineRegistry()
+    for (const p of config.pipelines) {
+      registry.register(p)
+    }
+
+    const cleanup = await createCDCListener({ pglite, registry, runtime })
+    const legacyCleanup = async () => {
+      await cleanup()
+      runtime.destroy()
+    }
+    cdcCleanup = () => { legacyCleanup() }
+  }
+
+  // 5. Start MSW worker
+  const { setupWorker } = await import('msw/browser')
+  const { http, HttpResponse } = await import('msw')
+
+  const crudHandler = http.all('/crud/*', async ({ request }) => {
+    const url = new URL(request.url)
+    const downstream = url.pathname.replace(/^\/crud/, '') + url.search
+    const mechaUrl = `http://mecha${downstream}`
+    const forwarded = new Request(mechaUrl, {
+      method: request.method,
+      headers: request.headers,
+      body: request.body,
+      // @ts-expect-error -- duplex
+      duplex: 'half',
+    })
+    const res = await restHandler(forwarded)
+    return new HttpResponse(res.body, {
+      status: res.status,
+      statusText: res.statusText,
+      headers: Object.fromEntries(res.headers.entries()),
+    })
+  })
+
+  const worker = setupWorker(crudHandler)
+  await worker.start({ onUnhandledRequest: 'bypass' })
+
+  // 6. Load seed data if configured
+  if (config.seedData) {
+    await config.seedData(pglite)
+  }
+
   return {
-    ...collections,
-    pglite,
+    adapter,
     restHandler,
     destroy: async () => {
-      await cdcCleanup()
-      runtime.destroy()
+      worker.stop()
+      if (cdcCleanup) await cdcCleanup()
       await pglite.close()
     },
-  } as MechaCollections
+  }
 }

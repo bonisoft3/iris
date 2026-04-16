@@ -75,6 +75,28 @@ The `scaffold/` directory is a working TanStack Start app demonstrating all patt
 cd scaffold && bun run dev  # starts app (port 3000) + Storybook (port 6006)
 ```
 
+## TODO: Distribution
+
+Omnishell is consumed as TypeScript source, which is ideal for HMR (edit a lint rule, see the change immediately). But ESLint under Node ESM can't resolve extensionless `.ts` inter-module imports. Current workaround: `bun build` a bundle on demand, but this breaks HMR.
+
+The right fix: make omnishell a **workspace package** so bun/pnpm resolve imports natively.
+
+**Monorepo (bun workspace):**
+1. Add omnishell to the root `package.json` workspaces: `"plugins/omnishell"`
+2. Consumers depend on `"@omnishell/core": "workspace:*"`
+3. Import directly from source: `import { omnishellLint } from "@omnishell/core/lint/eslint"`
+4. Bun resolves `.ts` imports natively — no build step, full HMR
+5. ESLint must run via `bun eslint` (not `npx eslint`) so bun's resolver handles `.ts`
+6. Add proper `"exports"` field to package.json mapping subpath patterns to source files
+
+**External (copybara-published repo):**
+1. Copybara syncs omnishell to its own repo
+2. CI runs `tsup` or `bun build` to produce ESM+CJS bundles
+3. Publish to npm as `@omnishell/core`
+4. External consumers install from npm — same import paths, built output
+
+**Also affected:** `createLayout` and `createAuth` — the scaffold imports these via relative paths (`../../../src/...`) which break in worktrees. With workspace linking, these become `@omnishell/core/layout` and `@omnishell/core/auth`.
+
 ## Development
 
 ```bash

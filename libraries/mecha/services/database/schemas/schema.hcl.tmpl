@@ -25,23 +25,24 @@ table "{{ $entity.name }}" {
     default = sql("NOW()")
   }
 {{- range $propName, $propSchema := $entity.schema.properties }}
-{{- if and (ne $propName "id") (ne $propName "createdAt") (ne $propName "updatedAt") (ne $propName "created_at") (ne $propName "updated_at") }}
+{{- if and (ne $propName "id") (ne $propName "createdAt") (ne $propName "updatedAt") (ne $propName "created_at") (ne $propName "updated_at") (not (has $propSchema "$ref")) }}
   column "{{ $propName }}" {
-{{- if eq $propSchema.type "string" }}
-    type = varchar({{ $propSchema.maxLength | default 255 }})
-{{- else if eq $propSchema.type "integer" }}
+{{- if has $propSchema "anyOf" }}
     type = integer
-{{- else if eq $propSchema.type "number" }}
+{{- else if eq (index $propSchema "type") "string" }}
+    type = varchar({{ if has $propSchema "maxLength" }}{{ $propSchema.maxLength }}{{ else }}255{{ end }})
+{{- else if eq (index $propSchema "type") "integer" }}
+    type = integer
+{{- else if eq (index $propSchema "type") "number" }}
     type = decimal
-{{- else if eq $propSchema.type "boolean" }}
+{{- else if eq (index $propSchema "type") "boolean" }}
     type = boolean
+{{- else if eq (index $propSchema "type") "array" }}
+    type = jsonb
 {{- else }}
     type = text
 {{- end }}
     null = false
-{{- if $propSchema.default }}
-    default = "{{ $propSchema.default }}"
-{{- end }}
   }
 {{- end }}
 {{- end }}

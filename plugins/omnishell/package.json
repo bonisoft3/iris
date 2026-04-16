@@ -10,8 +10,9 @@
     "check": "bun x tsc --noEmit"
   },
   "dependencies": {
-    "@simplewebauthn/server": "^13.1.1",
+    "@anthropic-ai/sdk": "^0.89.0",
     "@simplewebauthn/browser": "^13.1.0",
+    "@simplewebauthn/server": "^13.1.1",
     "jose": "^6.0.11"
   },
   "devDependencies": {
@@ -27,13 +28,18 @@
     "@tanstack/react-router": "^1.121.0"
   },
   "peerDependencies": {
-    "@anthropic-ai/sdk": ">=0.39.0",
-    "react": ">=19.0.0",
-    "@tanstack/react-router": ">=1.121.0"
+    "@tanstack/react-router": ">=1.121.0",
+    "react": ">=19.0.0"
   },
   "peerDependenciesMeta": {
-    "@anthropic-ai/sdk": { "optional": true },
-    "react": { "optional": false },
-    "@tanstack/react-router": { "optional": true }
+    "@anthropic-ai/sdk": {
+      "optional": true
+    },
+    "react": {
+      "optional": false
+    },
+    "@tanstack/react-router": {
+      "optional": true
+    }
   }
 }

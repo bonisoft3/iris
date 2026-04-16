@@ -8,7 +8,10 @@
     "conduit-js",
     "bloblang-js",
     "rclone-js",
-    "mecha-browser"
+    "mecha-browser",
+    "collections",
+    "client",
+    "pipeline"
   ],
   "scripts": {
     "build": "bun run --filter '*' build",

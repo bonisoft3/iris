@@ -1,25 +1,23 @@
+import type { PipelineConfig as JqPipelineConfig } from '@mecha/pipeline'
+import type { PipelineConfig as BloblangPipelineConfig } from '@mecha/conduit-js'
 import type { PGlite } from '@electric-sql/pglite'
-import type { PipelineConfig } from '@mecha/conduit-js'
 
-/** Backend mapping for Caddy -> MSW route generation. */
-export interface BackendMap {
-  [upstream: string]: ((req: Request) => Promise<Response>) | null
-}
-
-/** Configuration for createMechaCollections(). */
-export interface MechaConfig {
+/** Configuration for browser platform boot. */
+export interface BrowserConfig {
   /** SQL string to initialize PGlite (migrations + triggers). */
   schema: string
-  /** Table names to create TanStack DB collections for. */
+  /** Table names for CDC listener. */
   tables: string[]
-  /** CDC pipeline definitions. */
-  pipelines: PipelineConfig[]
-  /** URL or path to the blobl.wasm binary. */
-  wasmUrl: string
-  /** Caddy JSON config (output of `caddy adapt`). */
-  caddyConfig?: Record<string, unknown>
-  /** Backend mapping for MSW route generation. */
-  backendMap?: BackendMap
+  /** @deprecated Use pipelineConfigs instead. CDC pipeline definitions (bloblang WASM). */
+  pipelines?: BloblangPipelineConfig[]
+  /** @deprecated Use pipelineConfigs instead. URL or path to the blobl.wasm binary. */
+  wasmUrl?: string
+  /** jq-based pipeline configs for CDC processing. */
+  pipelineConfigs?: JqPipelineConfig[]
+  /** Environment variables for pipeline interpolation (e.g. GEMINI_API_KEY). */
+  env?: Record<string, string>
+  /** Optional seed data loader (called after schema init). */
+  seedData?: (pglite: PGlite) => Promise<void>
 }
 
-export type { PipelineConfig }
+export type { BloblangPipelineConfig as PipelineConfig, JqPipelineConfig }

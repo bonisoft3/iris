@@ -1,5 +1,5 @@
 {
-  "name": "@mecha/rclone-js",
+  "name": "@mecha/client",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
@@ -8,10 +8,6 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    },
-    "./node": {
-      "types": "./dist/node.d.ts",
-      "import": "./dist/node.js"
     }
   },
   "files": ["dist"],
@@ -20,8 +16,12 @@
     "test": "vitest --run",
     "test:watch": "vitest"
   },
+  "dependencies": {
+    "@mecha/collections": "workspace:*",
+    "@electric-sql/client": "^1.0.0"
+  },
   "devDependencies": {
-    "typescript": "^5.7.0",
-    "vitest": "^3.0.0"
+    "typescript": "^5.8.0",
+    "vitest": "^4.1.4"
   }
 }

@@ -12,20 +12,34 @@ import { requireErrorBoundary } from "./rules/require-error-boundary"
 
 const FILES = ["**/*.{ts,tsx,js,jsx}"]
 
+// Define each plugin ONCE with all its rules (ESLint 9 flat config requirement)
+const railsPlugin = {
+  rules: {
+    "no-raw-zindex": noRawZindex,
+    "no-raw-spacing": noRawSpacing,
+    "no-raw-colors": noRawColors,
+    "no-inline-style": noInlineStyle,
+    "no-apply": noApply,
+    "require-ui-primitive": requireUiPrimitive,
+    "no-unconstrained-position": noUnconstrainedPosition,
+    "no-fetch-in-components": noFetchInComponents,
+  },
+}
+
+const lintPlugin = {
+  rules: {
+    "no-nested-scroll": noNestedScroll,
+    "require-error-boundary": requireErrorBoundary,
+  },
+}
+
 export const omnishellLint: Linter.Config[] = [
   {
     name: "@omnishell/rails/locked-tokens",
     files: FILES,
     plugins: {
-      "@omnishell/rails": {
-        rules: {
-          "no-raw-zindex": noRawZindex,
-          "no-raw-spacing": noRawSpacing,
-          "no-raw-colors": noRawColors,
-          "no-inline-style": noInlineStyle,
-          "no-apply": noApply,
-        },
-      },
+      "@omnishell/rails": railsPlugin,
+      "@omnishell/lint": lintPlugin,
     },
     rules: {
       "@omnishell/rails/no-raw-zindex": "error",
@@ -38,14 +52,6 @@ export const omnishellLint: Linter.Config[] = [
   {
     name: "@omnishell/rails/ui-primitives",
     files: FILES,
-    plugins: {
-      "@omnishell/rails": {
-        rules: {
-          "require-ui-primitive": requireUiPrimitive,
-          "no-unconstrained-position": noUnconstrainedPosition,
-        },
-      },
-    },
     rules: {
       "@omnishell/rails/require-ui-primitive": "error",
       "@omnishell/rails/no-unconstrained-position": "warn",
@@ -54,13 +60,6 @@ export const omnishellLint: Linter.Config[] = [
   {
     name: "@omnishell/rails/logic-separation",
     files: FILES,
-    plugins: {
-      "@omnishell/rails": {
-        rules: {
-          "no-fetch-in-components": noFetchInComponents,
-        },
-      },
-    },
     rules: {
       "@omnishell/rails/no-fetch-in-components": "error",
     },
@@ -68,14 +67,6 @@ export const omnishellLint: Linter.Config[] = [
   {
     name: "@omnishell/lint/structural",
     files: FILES,
-    plugins: {
-      "@omnishell/lint": {
-        rules: {
-          "no-nested-scroll": noNestedScroll,
-          "require-error-boundary": requireErrorBoundary,
-        },
-      },
-    },
     rules: {
       "@omnishell/lint/no-nested-scroll": "warn",
       "@omnishell/lint/require-error-boundary": "error",

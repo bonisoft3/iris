@@ -18,8 +18,10 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@mecha/collections": "workspace:*",
     "@mecha/postgrest-js": "workspace:*",
     "@mecha/tanstackdb-pglite": "workspace:*",
+    "@mecha/pipeline": "workspace:*",
     "@mecha/bloblang-js": "workspace:*",
     "@mecha/conduit-js": "workspace:*",
     "@mecha/caddy-js": "workspace:*",
