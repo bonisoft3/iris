@@ -6,6 +6,7 @@ import { createUnarchiveProcessor } from "./unarchive.js"
 import { createTryProcessor, createCatchProcessor } from "./try-catch.js"
 import { createLogProcessor } from "./log.js"
 import { createBloblangProcessor } from "./bloblang.js"
+import { createSwitchProcessor, type SwitchCase } from "./switch.js"
 
 export function resolveProcessor(step: ProcessorStep): ProcessorFn {
   if ("jq" in step) {
@@ -21,6 +22,11 @@ export function resolveProcessor(step: ProcessorStep): ProcessorFn {
   if ("branch" in step) {
     const subProcessors = step.branch.processors.map(resolveProcessor)
     return createBranchProcessor(step.branch, subProcessors)
+  }
+  if ("switch" in step) {
+    const cases = (step as unknown as { switch: SwitchCase[] }).switch
+    const resolvedCases = cases.map((c) => c.processors.map(resolveProcessor))
+    return createSwitchProcessor(cases, resolvedCases)
   }
   // retry: no-op in the browser — rpk's retry is a server-side concept.
   // We just run the inner processors in sequence; the executor's own

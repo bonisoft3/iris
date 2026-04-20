@@ -9,8 +9,9 @@ export function createHttpProcessor(config: HttpProcessorConfig): ProcessorFn {
   return async (msg: PipelineMessage, ctx: PipelineContext): Promise<PipelineMessage[]> => {
     const url = interpolate(config.url, msg, ctx.env)
 
-    // Make URL absolute if relative (for browser fetch)
-    const fullUrl = url.startsWith("http") ? url : `http://localhost${url}`
+    // Make URL absolute if relative — use page origin in browser so MSW can intercept
+    const base = typeof globalThis.location !== 'undefined' ? globalThis.location.origin : 'http://localhost'
+    const fullUrl = url.startsWith("http") ? url : `${base}${url}`
 
     const req = new Request(fullUrl, {
       method: config.verb.toUpperCase(),

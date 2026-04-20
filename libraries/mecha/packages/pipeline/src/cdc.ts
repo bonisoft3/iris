@@ -34,7 +34,8 @@ export async function createCDCPipelineListener(
         async (outputMsg: PipelineMessage) => {
           const outputConfig = pipeline.output.http_client
           const url = interpolate(outputConfig.url, outputMsg, ctx.env)
-          const fullUrl = url.startsWith("http") ? url : `http://localhost${url}`
+          const base = typeof globalThis.location !== 'undefined' ? globalThis.location.origin : 'http://localhost'
+          const fullUrl = url.startsWith("http") ? url : `${base}${url}`
 
           const req = new Request(fullUrl, {
             method: outputConfig.verb.toUpperCase(),

@@ -16,6 +16,13 @@ export class BloblangRuntime {
    * allow 'unsafe-eval' for this module to work.
    */
   static async create(options: BloblangCreateOptions): Promise<BloblangRuntime> {
+    // Ensure process.cwd exists — Go WASM's syscall/js needs it, but bundlers
+    // like Vite provide their own `process` object that omits cwd().
+    const proc = (globalThis as any).process
+    if (proc && typeof proc.cwd !== 'function') {
+      proc.cwd = () => '/'
+    }
+
     const fn = new Function(options.wasmExecJs)
     fn()
 

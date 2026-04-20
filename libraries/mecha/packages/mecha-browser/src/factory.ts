@@ -4,6 +4,7 @@ import { createRestHandler } from '@mecha/postgrest-js'
 import { pgliteCollectionOptions } from '@mecha/tanstackdb-pglite'
 import type { PlatformContext, CollectionAdapter } from '@mecha/collections'
 import type { BrowserConfig } from './types.js'
+import { createModelHandler } from './model-handler.js'
 
 /**
  * Boot the browser platform — async, heavy.
@@ -44,9 +45,15 @@ export async function bootPlatform(config: BrowserConfig): Promise<PlatformConte
     }
 
     const pipelineCtx = {
-      httpHandler: async (req: Request) => {
-        return fetch(req)
-      },
+      httpHandler: createModelHandler(
+        {
+          textModel: config.textModel,
+          imageModel: config.imageModel,
+          textModelUrl: config.env?.TEXT_MODEL_URL,
+          imageModelUrl: config.env?.IMAGE_MODEL_URL,
+        },
+        async (req: Request) => fetch(req)
+      ),
       env: config.env ?? {},
     }
 

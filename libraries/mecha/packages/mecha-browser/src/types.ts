@@ -1,9 +1,14 @@
 import type { PipelineConfig as JqPipelineConfig } from '@mecha/pipeline'
 import type { PipelineConfig as BloblangPipelineConfig } from '@mecha/conduit-js'
 import type { PGlite } from '@electric-sql/pglite'
+import type { TextModel, ImageModel } from './model-handler.js'
 
 /** Configuration for browser platform boot. */
 export interface BrowserConfig {
+  /** Optional text model for in-browser inference (WebLLM, etc.). */
+  textModel?: TextModel
+  /** Optional image model for in-browser inference (ONNX SD, etc.). */
+  imageModel?: ImageModel
   /** SQL string to initialize PGlite (migrations + triggers). */
   schema: string
   /** Table names for CDC listener. */

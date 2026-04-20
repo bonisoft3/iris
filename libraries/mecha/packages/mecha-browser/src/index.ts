@@ -2,6 +2,10 @@
 export { bootPlatform } from './factory.js'
 export type { BrowserConfig } from './types.js'
 
+// Model handler
+export { createModelHandler } from './model-handler.js'
+export type { TextModel, ImageModel, ModelHandlerConfig } from './model-handler.js'
+
 // Re-export shared types
 export type { PlatformContext, CollectionAdapter, CollectionTableConfig } from '@mecha/collections'
 export { createCollections } from '@mecha/collections'

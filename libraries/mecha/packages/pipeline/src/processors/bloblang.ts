@@ -30,27 +30,40 @@ export function setBloblangRuntime(runtime: BloblangExecutor): void {
  */
 function rewriteMetaOps(mapping: string): { rewritten: string; hasRootAssignment: boolean } {
   const lines = mapping.split("\n")
-  const out: string[] = []
+  const nonMeta: string[] = []
+  const metaSets: string[] = []
   let hasRootAssignment = false
 
   for (const line of lines) {
     const trimmed = line.trim()
 
-    // meta KEY = EXPR  →  root._meta.KEY = EXPR
+    // meta KEY = EXPR  →  root._meta.KEY = EXPR (deferred to end)
+    //
+    // Deferred because a subsequent `root = {...}` in the same mapping would
+    // otherwise clobber `_meta`. Putting meta writes after all root writes
+    // guarantees they survive regardless of mapping order.
     const metaSet = trimmed.match(/^meta\s+(\w+)\s*=\s*(.+)$/)
     if (metaSet) {
       const [, key, expr] = metaSet
-      out.push(`root._meta.${key} = ${expr.replace(/meta\(\s*"(\w+)"\s*\)/g, 'this._meta.$1')}`)
+      metaSets.push(`root._meta.${key} = ${expr.replace(/meta\(\s*"(\w+)"\s*\)/g, 'this._meta.$1')}`)
       continue
     }
 
     // meta("key") reads anywhere in the line
     const replaced = line.replace(/meta\(\s*"(\w+)"\s*\)/g, 'this._meta.$1')
     if (/^\s*root\b/.test(replaced)) hasRootAssignment = true
-    out.push(replaced)
+    nonMeta.push(replaced)
   }
 
-  return { rewritten: out.join("\n"), hasRootAssignment }
+  // Preserve any pre-existing _meta so earlier assignments aren't dropped
+  // by a `root = …` clobber.
+  const preservePrefix = metaSets.length > 0 ? ["let _prev_meta = this._meta.or({})"] : []
+  const preserveSuffix = metaSets.length > 0 ? ["root._meta = $_prev_meta.merge(root._meta.or({}))"] : []
+
+  return {
+    rewritten: [...preservePrefix, ...nonMeta, ...metaSets, ...preserveSuffix].join("\n"),
+    hasRootAssignment,
+  }
 }
 
 /**
