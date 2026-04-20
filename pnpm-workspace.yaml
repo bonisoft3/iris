@@ -1,5 +1,6 @@
 packages:
   - libraries/xproto/
+  - libraries/mecha-browser/
   - guis/web/
   - guis/iris/
   - guis/shelfie/
