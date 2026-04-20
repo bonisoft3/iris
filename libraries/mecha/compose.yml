@@ -369,7 +369,9 @@ services:
   # full stack visible over the compose network.
 
   nubox:
-    image: bonisoft3/lazybox:nubox
+    build:
+      context: ../../plugins/lazybox
+      target: nubox
     depends_on:
       database:
         condition: service_healthy
