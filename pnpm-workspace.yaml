@@ -1,7 +1,10 @@
 packages:
   - libraries/xproto/
+  - libraries/mecha/packages/
+  - libraries/mecha/packages/*
   - guis/web/
   - guis/iris/
   - guis/shelfie/
   - guis/flashcards/
+  - guis/snapcards/
   - plugins/omnishell/
