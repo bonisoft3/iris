@@ -1,4 +1,21 @@
 say:
+  build:
+    do: "run-task bayt:build"
+    use: "./tools.nu [run-task]"
+  test:
+    do: "run-task bayt:test"
+    use: "./tools.nu [run-task]"
+  # The integrate stage's RUN already executes the integration test via
+  # `task bayt:integrate` — bake's exit code IS the test verdict.
+  # Skipping the compose-up that follows in default mode (which only
+  # runs the entrypoint and exits) saves the runtime overhead.
+  # Container builder pairs naturally because nothing gets loaded into
+  # docker (cacheonly is its default), eliminating the per-stage docker
+  # image export tax — which matters more here than tracker since
+  # guis/web doesn't run any local container at all (no testcontainers,
+  # no dind).
+  integrate:
+    args: "--bake --builder container"
   generate:
     rulemap:
       nuxt-prepare:

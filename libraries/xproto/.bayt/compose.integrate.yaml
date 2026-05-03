@@ -1,0 +1,15 @@
+secrets:
+  host.env:
+    file: ${BAYT_HOST_ENV_FILE}
+services:
+  libraries_xproto-integrate:
+    build:
+      additional_contexts:
+        libraries_xproto-build: service:libraries_xproto-build
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate
+      secrets:
+      - host.env
+      target: integrate
+    secrets:
+    - host.env

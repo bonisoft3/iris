@@ -1,0 +1,36 @@
+include:
+- path: ./compose.setup.yaml
+  required: false
+- path: ./compose.build.yaml
+  required: false
+- path: ./compose.release-artifact.yaml
+  required: false
+- path: ./compose.release-layers.yaml
+  required: false
+- path: ./compose.release.yaml
+  required: false
+- path: ./compose.launch.yaml
+  required: false
+- path: ./compose.integrate.yaml
+  required: false
+- path: ../../../.bayt/compose.bayt.yaml
+  required: false
+- path: ../../../libraries/logs/.bayt/compose.bayt.yaml
+  required: false
+- path: ../../../libraries/pbtables/.bayt/compose.bayt.yaml
+  required: false
+- path: ../../../libraries/xproto/.bayt/compose.bayt.yaml
+  required: false
+- path: ../../../plugins/libstoml/.bayt/compose.bayt.yaml
+  required: false
+- path: ../../../plugins/jvm/.bayt/compose.bayt.yaml
+  required: false
+- path: ../../../plugins/micronaut/.bayt/compose.bayt.yaml
+  required: false
+services:
+  bayt-runtime-stub:
+    build:
+      context: ../../../plugins/bayt/runtime
+      dockerfile_inline: |
+        FROM scratch
+        COPY . /

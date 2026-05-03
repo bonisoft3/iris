@@ -1,0 +1,12 @@
+tasks:
+  default:
+    deps:
+    - ::bayt:release
+    status:
+    - mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu hash-check --manifest {{.TASKFILE_DIR}}/bayt.verify.json
+    vars:
+      BAYTW: mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/cache.nu run --manifest {{.TASKFILE_DIR}}/bayt.verify.json -- mise x --
+    cmds:
+    - '{{.BAYTW}} ./gradlew --init-script .bayt/init.gradle.kts check'
+    - defer: '{{if not .EXIT_CODE}}mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu hash-stamp --manifest {{.TASKFILE_DIR}}/bayt.verify.json{{end}}'
+version: '3'

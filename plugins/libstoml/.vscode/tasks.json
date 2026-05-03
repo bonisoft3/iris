@@ -1,31 +1,40 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "build",
-            "type": "shell",
-            "command": "./gradlew",
-            "args": [
-                "assemble"
-            ],
-            "problemMatcher": [],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        },
-        {
-            "label": "test",
-            "type": "shell",
-            "command": "./gradlew",
-            "args": [
-                "test"
-            ],
-            "group": {
-                "kind": "test",
-                "isDefault": true
-            },
-            "problemMatcher": []
-        }
-    ]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "label": "plugins_libstoml build",
+      "type": "shell",
+      "command": "task bayt:build",
+      "options": {
+        "cwd": "${workspaceFolder}/plugins/libstoml"
+      }
+    },
+    {
+      "group": {
+        "kind": "none"
+      },
+      "label": "plugins_libstoml doctor",
+      "type": "shell",
+      "command": "task bayt:doctor",
+      "options": {
+        "cwd": "${workspaceFolder}/plugins/libstoml"
+      }
+    },
+    {
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "label": "plugins_libstoml test",
+      "type": "shell",
+      "command": "task bayt:test",
+      "options": {
+        "cwd": "${workspaceFolder}/plugins/libstoml"
+      }
+    }
+  ]
 }

@@ -1,0 +1,107 @@
+{
+  "compose": {},
+  "dockerfile": {
+    "preamble": [],
+    "from": {
+      "ref": ":build",
+      "name": "plugins_libstoml-build",
+      "context": "service:plugins_libstoml-build"
+    },
+    "secrets": [
+      "host.env"
+    ],
+    "mounts": [
+      {
+        "type": "cache",
+        "target": "/root/.gradle",
+        "sharing": "shared",
+        "required": false
+      },
+      {
+        "type": "cache",
+        "target": ".gradle/configuration-cache",
+        "sharing": "locked",
+        "required": false
+      }
+    ],
+    "epilogue": [],
+    "expose": [],
+    "entrypoint": null,
+    "incremental": false
+  },
+  "name": "integrate",
+  "project": "plugins_libstoml",
+  "dir": "plugins/libstoml",
+  "activate": "mise x --",
+  "srcs": {
+    "globs": [
+      "src/it/**/*.java",
+      "src/it/**/*.kt",
+      "src/it/resources/**/*"
+    ],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [
+      "build/test-results/integrationTest/**/*.xml",
+      "build/reports/tests/integrationTest/**/*"
+    ],
+    "exclude": []
+  },
+  "env": {},
+  "taskfile": {
+    "run": "when_changed",
+    "silent": false,
+    "preconditions": []
+  },
+  "visibility": "internal",
+  "deps": [
+    "build"
+  ],
+  "transitiveDeps": [
+    "build",
+    "setup"
+  ],
+  "transitiveCrossDeps": [],
+  "chainedDeps": [
+    {
+      "name": "build",
+      "project": "plugins_libstoml",
+      "dir": "plugins/libstoml",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    }
+  ],
+  "cmds": [
+    {
+      "srcs": {
+        "globs": [
+          "src/it/**/*.java",
+          "src/it/**/*.kt",
+          "src/it/resources/**/*"
+        ],
+        "exclude": [],
+        "defaultGlobs": null,
+        "defaultExclude": null
+      },
+      "dockerfile": {
+        "wrap": "dind.sh"
+      },
+      "do": "./gradlew --init-script .bayt/init.gradle.kts integrationTest --rerun",
+      "name": "builtin",
+      "shell": "exec",
+      "stop": false
+    }
+  ],
+  "cache": {
+    "full": true,
+    "similar": false
+  }
+}

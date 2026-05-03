@@ -1,0 +1,90 @@
+{
+  "name": "verify",
+  "project": "guis_web",
+  "dir": "guis/web",
+  "activate": "mise x --",
+  "srcs": {
+    "globs": [],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [
+      "build/verify-results/**/*"
+    ],
+    "exclude": []
+  },
+  "env": {},
+  "taskfile": {
+    "run": "when_changed",
+    "silent": false,
+    "preconditions": []
+  },
+  "visibility": "internal",
+  "deps": [
+    "release"
+  ],
+  "transitiveDeps": [
+    "release",
+    "build",
+    "setup"
+  ],
+  "transitiveCrossDeps": [
+    {
+      "name": "setup",
+      "project": "workspaceroot",
+      "dir": "",
+      "outs": {
+        "globs": [
+          ".mise.toml",
+          "mise.lock",
+          "pnpm-lock.yaml",
+          "pnpm-workspace.yaml",
+          "package.json",
+          "gradle/libs.versions.toml",
+          "plugins/devserver/dind.sh",
+          ".task/bayt/setup.hash"
+        ],
+        "exclude": []
+      }
+    }
+  ],
+  "chainedDeps": [
+    {
+      "name": "release",
+      "project": "guis_web",
+      "dir": "guis/web",
+      "outs": {
+        "globs": [],
+        "exclude": []
+      }
+    }
+  ],
+  "cmds": [
+    {
+      "srcs": {
+        "globs": [],
+        "exclude": [],
+        "defaultGlobs": null,
+        "defaultExclude": null
+      },
+      "do": "mise x -- pnpm test:e2e",
+      "dockerfile": {
+        "mounts": [
+          {
+            "type": "cache",
+            "target": "/root/.local/share/pnpm/store",
+            "sharing": "locked",
+            "required": false
+          }
+        ]
+      },
+      "name": "builtin",
+      "shell": "exec",
+      "stop": false
+    }
+  ],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

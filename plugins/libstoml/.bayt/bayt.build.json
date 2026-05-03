@@ -1,0 +1,135 @@
+{
+  "dockerfile": {
+    "preamble": [],
+    "from": {
+      "ref": ":setup",
+      "name": "plugins_libstoml-setup",
+      "context": "service:plugins_libstoml-setup"
+    },
+    "incremental": true,
+    "mounts": [],
+    "secrets": [],
+    "epilogue": [],
+    "expose": [],
+    "entrypoint": null
+  },
+  "name": "build",
+  "project": "plugins_libstoml",
+  "dir": "plugins/libstoml",
+  "activate": "mise x --",
+  "srcs": {
+    "globs": [
+      "build.gradle.kts",
+      "src/main/**/*.gradle.kts",
+      "gradle.properties",
+      "gradle/wrapper/gradle-wrapper.jar",
+      "gradlew",
+      "src/main/**/*.java",
+      "src/main/**/*.kt",
+      "gradle/libs.versions.toml",
+      "settings.gradle.kts",
+      "src/main/**/*.sq",
+      "src/main/**/*.sql",
+      "src/main/**/*.sqm"
+    ],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [
+      "**/*"
+    ],
+    "exclude": [
+      ".bayt/**",
+      ".git/**"
+    ]
+  },
+  "env": {},
+  "taskfile": {
+    "run": "when_changed",
+    "silent": false,
+    "preconditions": []
+  },
+  "visibility": "public",
+  "deps": [
+    "setup"
+  ],
+  "transitiveDeps": [
+    "setup"
+  ],
+  "transitiveCrossDeps": [],
+  "chainedDeps": [
+    {
+      "name": "setup",
+      "project": "plugins_libstoml",
+      "dir": "plugins/libstoml",
+      "outs": {
+        "globs": [
+          "gradle/wrapper/gradle-wrapper.properties",
+          ".mise.toml",
+          "mise.lock",
+          ".task/bayt/setup.hash"
+        ],
+        "exclude": []
+      }
+    }
+  ],
+  "cmds": [
+    {
+      "srcs": {
+        "globs": [
+          "build.gradle.kts",
+          "src/main/**/*.gradle.kts",
+          "gradle.properties",
+          "gradle/wrapper/gradle-wrapper.jar",
+          "gradlew",
+          "src/main/**/*.java",
+          "src/main/**/*.kt",
+          "gradle/libs.versions.toml",
+          "settings.gradle.kts",
+          "src/main/**/*.sq",
+          "src/main/**/*.sql",
+          "src/main/**/*.sqm"
+        ],
+        "exclude": [],
+        "defaultGlobs": null,
+        "defaultExclude": null
+      },
+      "do": "./gradlew --init-script .bayt/init.gradle.kts assemble",
+      "windows": {
+        "do": ".\\gradlew.bat --init-script .bayt/init.gradle.kts assemble",
+        "shell": "pwsh"
+      },
+      "dockerfile": {
+        "mounts": [
+          {
+            "type": "cache",
+            "target": "/root/.gradle",
+            "sharing": "shared",
+            "required": false
+          },
+          {
+            "type": "cache",
+            "target": ".gradle/configuration-cache",
+            "sharing": "locked",
+            "required": false
+          }
+        ]
+      },
+      "name": "builtin",
+      "shell": "exec",
+      "stop": false
+    }
+  ],
+  "cache": {
+    "full": true,
+    "similar": false
+  },
+  "vscode": {
+    "group": {
+      "kind": "build",
+      "isDefault": true
+    },
+    "dependsOn": [],
+    "dependsOrder": "sequence"
+  }
+}

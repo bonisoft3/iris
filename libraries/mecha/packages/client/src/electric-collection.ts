@@ -19,39 +19,60 @@ export function electricCollectionOptions(config: ElectricCollectionConfig) {
       markReady: () => void
       truncate: () => void
     }) => {
-      const { begin, write, commit, markReady } = params
+      const { begin, write, commit, markReady, truncate } = params
+      let stream: ShapeStream | null = null
+      let destroyed = false
 
-      const stream = new ShapeStream({
-        url: `${config.electricUrl}/v1/shape`,
-        params: {
-          table: config.table,
-          ...(config.where ? { where: config.where } : {}),
-        },
-      })
+      function createStream() {
+        if (destroyed) return
 
-      stream.subscribe((messages: any[]) => {
-        if (messages.length === 0) return
-        begin()
-        for (const msg of messages) {
-          if (msg.headers?.operation === "insert" || msg.headers?.operation === "update") {
-            write({ type: msg.headers.operation, value: msg.value })
-          } else if (msg.headers?.operation === "delete") {
-            write({ type: "delete", key: msg.value?.[config.key] })
-          } else if (msg.headers?.control === "up-to-date") {
-            // Snapshot complete
+        stream = new ShapeStream({
+          url: `${config.electricUrl}/v1/shape`,
+          params: {
+            table: config.table,
+            ...(config.where ? { where: config.where } : {}),
+          },
+          onError: (error: any) => {
+            const msg = String(error?.message ?? error)
+            const is409 = error?.status === 409 || msg.includes("409")
+            if (is409) {
+              console.warn(`[electric] 409 for ${config.table}, resetting shape`)
+              stream?.unsubscribeAll()
+              truncate()
+              // Recreate with a fresh stream after a short delay
+              setTimeout(createStream, 500)
+              return
+            }
+            // Rethrow non-409 errors
+            throw error
+          },
+        })
+
+        stream.subscribe((messages: any[]) => {
+          if (messages.length === 0) return
+          begin()
+          for (const msg of messages) {
+            if (msg.headers?.operation === "insert" || msg.headers?.operation === "update") {
+              write({ type: msg.headers.operation, value: msg.value })
+            } else if (msg.headers?.operation === "delete") {
+              write({ type: "delete", key: msg.value?.[config.key] })
+            }
           }
-        }
-        commit()
+          commit()
 
-        // Check if we got an up-to-date control message
-        const upToDate = messages.some((m: any) => m.headers?.control === "up-to-date")
-        if (upToDate) {
-          markReady()
-        }
-      })
+          const upToDate = messages.some((m: any) => m.headers?.control === "up-to-date")
+          if (upToDate) {
+            markReady()
+          }
+        })
+      }
+
+      createStream()
 
       return () => {
-        stream.unsubscribeAll()
+        destroyed = true
+        stream?.unsubscribeAll()
+        stream = null
       }
     },
   }

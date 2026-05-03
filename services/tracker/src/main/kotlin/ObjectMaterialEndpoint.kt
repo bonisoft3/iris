@@ -19,3 +19,8 @@ class ObjectMaterialEndpoint(
     return objectMaterialResponse { objectMaterial = material}
   }
 }
+// jdk25 verify: 1777209910
+// jdk25 retry: 1777210061
+// jdk25 retry 2: 1777210151
+// AppCDS jdk25 attempt: 1777210518
+// post-AppCDS revert: 1777210619

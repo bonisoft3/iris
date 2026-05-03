@@ -1,0 +1,175 @@
+{
+  "compose": {
+    "runtime": {
+      "environment": {},
+      "ports": [],
+      "volumes": [],
+      "depends_on": []
+    },
+    "develop": {
+      "watch": [
+        {
+          "action": "sync",
+          "path": "./",
+          "target": "/app",
+          "ignore": [
+            "node_modules",
+            ".nuxt",
+            ".output"
+          ]
+        },
+        {
+          "action": "rebuild",
+          "path": "./package.json",
+          "target": "/app/package.json"
+        },
+        {
+          "action": "rebuild",
+          "path": "./pnpm-lock.yaml",
+          "target": "/app/pnpm-lock.yaml"
+        }
+      ]
+    }
+  },
+  "dockerfile": {
+    "preamble": [
+      "COPY --from=bonitao/lazybox:0.8.0@sha256:98414753b9ae2e90b096a1e3a9f7598ac2477e10fa3e5384083d9e29dde3c499 /lazybox/ /root/.local/share/lazybox/",
+      "ENV PATH=/root/.local/bin:/root/.local/share/lazybox/bin:$PATH",
+      "ENV MISE_TRUSTED_CONFIG_PATHS=/monorepo"
+    ],
+    "expose": [
+      3000
+    ],
+    "from": {
+      "name": "opensuse/leap:15.6@sha256:99c3ce36da52de669d5fd6663528438b0579cafa7efeab2e9e6d610a3c4b6c9e",
+      "context": "docker-image://opensuse/leap:15.6@sha256:99c3ce36da52de669d5fd6663528438b0579cafa7efeab2e9e6d610a3c4b6c9e"
+    },
+    "mounts": [],
+    "secrets": [],
+    "epilogue": [],
+    "entrypoint": null,
+    "incremental": false
+  },
+  "name": "launch",
+  "project": "guis_web",
+  "dir": "guis/web",
+  "activate": "mise x --",
+  "skaffold": {
+    "profiles": {
+      "bayt-dev": {
+        "name": "bayt-dev",
+        "activation": [
+          {
+            "command": "dev"
+          }
+        ],
+        "build": {
+          "artifact": {
+            "image": "gcr.io/trash-362115/guis.web",
+            "context": "../",
+            "sync": {
+              "manual": [],
+              "auto": false
+            },
+            "docker": {
+              "dockerfile": ".bayt/Dockerfile.launch"
+            }
+          },
+          "local": {
+            "useBuildkit": true,
+            "concurrency": 64,
+            "push": false
+          },
+          "platforms": [],
+          "tagPolicy": {
+            "gitCommit": {
+              "variant": "AbbrevCommitSha"
+            }
+          }
+        },
+        "manifests": {},
+        "test": [],
+        "verify": [],
+        "portForward": []
+      }
+    }
+  },
+  "srcs": {
+    "globs": [],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [],
+    "exclude": []
+  },
+  "env": {},
+  "visibility": "internal",
+  "deps": [
+    "build"
+  ],
+  "transitiveDeps": [
+    "build",
+    "setup"
+  ],
+  "transitiveCrossDeps": [
+    {
+      "name": "setup",
+      "project": "workspaceroot",
+      "dir": "",
+      "outs": {
+        "globs": [
+          ".mise.toml",
+          "mise.lock",
+          "pnpm-lock.yaml",
+          "pnpm-workspace.yaml",
+          "package.json",
+          "gradle/libs.versions.toml",
+          "plugins/devserver/dind.sh",
+          ".task/bayt/setup.hash"
+        ],
+        "exclude": []
+      }
+    }
+  ],
+  "chainedDeps": [
+    {
+      "name": "build",
+      "project": "guis_web",
+      "dir": "guis/web",
+      "outs": {
+        "globs": [
+          ".output/**/*"
+        ],
+        "exclude": []
+      }
+    }
+  ],
+  "cmds": [
+    {
+      "srcs": {
+        "globs": [],
+        "exclude": [],
+        "defaultGlobs": null,
+        "defaultExclude": null
+      },
+      "do": "mise x -- pnpm dev",
+      "dockerfile": {
+        "mounts": [
+          {
+            "type": "cache",
+            "target": "/root/.local/share/pnpm/store",
+            "sharing": "locked",
+            "required": false
+          }
+        ]
+      },
+      "name": "builtin",
+      "shell": "exec",
+      "stop": false
+    }
+  ],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

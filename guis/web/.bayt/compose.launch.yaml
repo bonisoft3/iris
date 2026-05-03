@@ -1,0 +1,25 @@
+services:
+  guis_web-launch:
+    build:
+      additional_contexts:
+        guis_web-build: service:guis_web-build
+        workspaceroot-setup: service:workspaceroot-setup
+        opensuse/leap:15.6@sha256:99c3ce36da52de669d5fd6663528438b0579cafa7efeab2e9e6d610a3c4b6c9e: docker-image://opensuse/leap:15.6@sha256:99c3ce36da52de669d5fd6663528438b0579cafa7efeab2e9e6d610a3c4b6c9e
+      context: ..
+      dockerfile: .bayt/Dockerfile.launch
+      target: launch
+    develop:
+      watch:
+      - action: sync
+        path: ./
+        target: /app
+        ignore:
+        - node_modules
+        - .nuxt
+        - .output
+      - action: rebuild
+        path: ./package.json
+        target: /app/package.json
+      - action: rebuild
+        path: ./pnpm-lock.yaml
+        target: /app/pnpm-lock.yaml

@@ -1,0 +1,8 @@
+services:
+  guis_web-release:
+    build:
+      additional_contexts:
+        guis_web-build: service:guis_web-build
+      context: ..
+      dockerfile: .bayt/Dockerfile.release
+      target: release

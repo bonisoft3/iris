@@ -1,0 +1,7 @@
+# syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
+FROM services_tracker-release-artifact AS release-layers
+WORKDIR /monorepo/services/tracker
+RUN zypper -n install tar gzip && zypper clean -a
+RUN mise x -- mkdir -p build/jib && tar xf build/jib-image.tar -C build/jib && mkdir -p build/layers && for tb in build/jib/*.tar.gz; do tar xzf "$tb" -C build/layers; done
+COPY --link Taskfile.yml ./Taskfile.yml
+COPY --link .bayt/Taskfile.yml .bayt/bayt.release-layers.json .bayt/init.gradle.kts ./.bayt/

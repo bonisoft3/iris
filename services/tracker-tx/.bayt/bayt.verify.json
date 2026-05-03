@@ -1,0 +1,61 @@
+{
+  "name": "verify",
+  "project": "services_tracker-tx",
+  "dir": "services/tracker-tx",
+  "activate": "mise x --",
+  "srcs": {
+    "globs": [],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [
+      "build/verify-results/**/*"
+    ],
+    "exclude": []
+  },
+  "env": {},
+  "taskfile": {
+    "run": "when_changed",
+    "silent": false,
+    "preconditions": []
+  },
+  "visibility": "internal",
+  "deps": [
+    "release"
+  ],
+  "transitiveDeps": [
+    "release",
+    "build",
+    "setup"
+  ],
+  "transitiveCrossDeps": [],
+  "chainedDeps": [
+    {
+      "name": "release",
+      "project": "services_tracker-tx",
+      "dir": "services/tracker-tx",
+      "outs": {
+        "globs": [],
+        "exclude": []
+      }
+    }
+  ],
+  "cmds": [
+    {
+      "srcs": {
+        "globs": [],
+        "exclude": [],
+        "defaultGlobs": null,
+        "defaultExclude": null
+      },
+      "do": "nu sayt.nu verify",
+      "name": "builtin",
+      "shell": "exec",
+      "stop": false
+    }
+  ],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

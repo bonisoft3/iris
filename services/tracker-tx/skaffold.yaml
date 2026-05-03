@@ -1,25 +1,39 @@
+# services/tracker-tx/skaffold.yaml — user-owned project skaffold config.
+#
+# Bayt emits per-target fragments under .bayt/; this file glues them
+# together. Project-specific concerns (port-forwards, additional
+# manifests) belong here, not in stack defaults.
+#
+# Cross-project orchestration lives at products/iris/skaffold.yaml;
+# this file supports `cd services/tracker-tx && skaffold dev` for
+# tracker-tx-only iteration, and is what iris's `requires:` chain
+# pulls in.
 apiVersion: skaffold/v4beta11
 kind: Config
 metadata:
   name: services_tracker-tx
-build:
-  artifacts:
-    - image: gcr.io/trash-362115/services.tracker-tx-gcp
-      custom:
-        buildCommand: docker buildx bake --allow=fs.read=../.. release
-  local:
-    useBuildkit: true
-    concurrency: 64
 
+# Pass-through profiles for activeProfiles propagation from iris.
+# See services/tracker/skaffold.yaml for the full explanation.
 profiles:
-- name: production
-  build:
-    platforms: ["linux/amd64"]
-    local:
-      push: true
+- name: bayt-dev
+- name: bayt-build
 
-test:
- - image: gcr.io/trash-362115/services.tracker-tx
-   custom:
-   - command: just integrate
-     timeoutSeconds: 3000
+requires:
+- path: .bayt/skaffold.launch.yaml
+  activeProfiles:
+  - name: bayt-dev
+    activatedBy: [bayt-dev]
+- path: .bayt/skaffold.release.yaml
+  activeProfiles:
+  - name: bayt-build
+    activatedBy: [bayt-build]
+
+# Project-authored k8s manifests for solo `skaffold dev` against a
+# kind cluster. Iris's preview profile supplies its own manifests
+# when tracker-tx comes up via iris; this block is for the
+# tracker-tx-only dev loop.
+#manifests:
+#  rawYaml:
+#  - dev/deployment.yaml
+#  - dev/service.yaml

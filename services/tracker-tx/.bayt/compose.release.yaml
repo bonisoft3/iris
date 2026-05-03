@@ -1,0 +1,9 @@
+services:
+  services_tracker-tx-release:
+    build:
+      additional_contexts:
+        services_tracker-tx-build: service:services_tracker-tx-build
+        busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223: docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223
+      context: ..
+      dockerfile: .bayt/Dockerfile.release
+      target: release

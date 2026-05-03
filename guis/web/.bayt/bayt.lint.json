@@ -1,0 +1,53 @@
+{
+  "name": "lint",
+  "project": "guis_web",
+  "dir": "guis/web",
+  "activate": "mise x --",
+  "srcs": {
+    "globs": [],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [],
+    "exclude": []
+  },
+  "env": {},
+  "taskfile": {
+    "run": "always",
+    "silent": false,
+    "preconditions": []
+  },
+  "visibility": "internal",
+  "deps": [],
+  "transitiveDeps": [],
+  "transitiveCrossDeps": [],
+  "chainedDeps": [],
+  "cmds": [
+    {
+      "srcs": {
+        "globs": [],
+        "exclude": [],
+        "defaultGlobs": null,
+        "defaultExclude": null
+      },
+      "do": "mise x -- pnpm lint",
+      "dockerfile": {
+        "mounts": [
+          {
+            "type": "cache",
+            "target": "/root/.local/share/pnpm/store",
+            "sharing": "locked",
+            "required": false
+          }
+        ]
+      },
+      "name": "builtin",
+      "shell": "exec",
+      "stop": false
+    }
+  ],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

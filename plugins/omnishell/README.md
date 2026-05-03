@@ -24,6 +24,44 @@ Browser-only mode (no server):
 import { LocalStorageAdapter, createBrowserSessionManager } from "@omnishell/core"
 ```
 
+### Firebase adapter
+
+Snapcards (and any mecha-v2 app using Firebase Auth) can plug `FirebaseAdapter` in as the omnishell biometric adapter. The adapter treats a Firebase ID token as the "biometric response" — server-side verification is delegated to `firebase-admin`.
+
+#### Server wiring
+
+```ts
+import { createAuth, FirebaseAdapter, MemoryStorage } from "@omnishell/core"
+import { initializeApp, cert } from "firebase-admin/app"
+import { getAuth } from "firebase-admin/auth"
+
+const app = initializeApp({ credential: cert(serviceAccountJson) })
+
+export const auth = createAuth({
+  biometric: new FirebaseAdapter({ auth: getAuth(app) }),
+  storage: new MemoryStorage(),
+  secret: process.env.OMNISHELL_SESSION_SECRET!,
+})
+```
+
+#### Client wiring
+
+The UI obtains a Firebase ID token using the Firebase Web SDK directly — anonymous sign-in, email/password, Google popup, or phone are all supported as long as they produce a `firebase.User` whose `getIdToken()` method works. The `exchangeFirebaseToken` helper exchanges that token for an omnishell session cookie:
+
+```ts
+import { getAuth, signInAnonymously } from "firebase/auth"
+import { exchangeFirebaseToken } from "@omnishell/core"
+
+async function continueAsGuest() {
+  const cred = await signInAnonymously(getAuth())
+  const idToken = await cred.user.getIdToken()
+  const { userId } = await exchangeFirebaseToken(idToken)
+  // omnishell session cookie is now set; userId matches cred.user.uid
+}
+```
+
+The same helper is used for every Firebase sign-in method — `signInWithEmailAndPassword`, `signInWithPopup(new GoogleAuthProvider())`, phone auth, etc. Only the Firebase Web SDK call differs; the exchange step is identical.
+
 ### Layout
 
 Config-driven sidebar/bottom-nav with responsive breakpoints.

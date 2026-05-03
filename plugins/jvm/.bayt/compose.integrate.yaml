@@ -1,0 +1,15 @@
+secrets:
+  host.env:
+    file: ${BAYT_HOST_ENV_FILE}
+services:
+  plugins_jvm-integrate:
+    build:
+      additional_contexts:
+        plugins_jvm-build: service:plugins_jvm-build
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate
+      secrets:
+      - host.env
+      target: integrate
+    secrets:
+    - host.env

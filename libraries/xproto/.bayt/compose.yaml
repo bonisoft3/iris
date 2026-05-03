@@ -1,0 +1,16 @@
+include:
+- path: ./compose.bayt.yaml
+  required: false
+services:
+  build:
+    extends:
+      file: ./compose.build.yaml
+      service: libraries_xproto-build
+  setup:
+    extends:
+      file: ./compose.setup.yaml
+      service: libraries_xproto-setup
+  integrate:
+    extends:
+      file: ./compose.integrate.yaml
+      service: libraries_xproto-integrate

@@ -1,3 +1,31 @@
 say:
+  generate:
+    rulemap:
+      auto-cue: null
+  build:
+    do: "run-task bayt:build"
+    use: "./tools.nu [run-task]"
+  test:
+    do: "run-task bayt:test"
+    use: "./tools.nu [run-task]"
+  launch:
+    do: "docker compose up develop --build"
+    use: ""
+  # The integrate stage's RUN already executes `./gradlew integrationTest`
+  # via dind.sh — bake's exit code IS the test verdict. Skipping the
+  # compose-up that follows in default mode (which only runs an
+  # entrypoint that prints host.env and exits 0) saves ~10s/cycle on
+  # this project.
+  integrate:
+    args: "--bake"
+  # Goreleaser-OSS doesn't understand sayt's path-prefixed monorepo
+  # tags (services/tracker/v0.2.1) — that's a pro feature. --snapshot
+  # keeps goreleaser in dev mode (skips the strict tag-on-HEAD
+  # validation), --clean wipes dist/ so re-runs are idempotent.
+  # Matches CI's invocation in .github/workflows/ci.yml. Real
+  # tag-push releases (refs/tags/*) drop --snapshot in CI.
+  release:
+    args: "--snapshot --clean"
   verify:
     do: "skaffold verify"
+    use: ""

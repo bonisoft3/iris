@@ -1,0 +1,16 @@
+include:
+- path: ./compose.bayt.yaml
+  required: false
+services:
+  build:
+    extends:
+      file: ./compose.build.yaml
+      service: libraries_logs-build
+  setup:
+    extends:
+      file: ./compose.setup.yaml
+      service: libraries_logs-setup
+  integrate:
+    extends:
+      file: ./compose.integrate.yaml
+      service: libraries_logs-integrate

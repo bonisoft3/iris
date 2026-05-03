@@ -14,7 +14,7 @@ plugins {
     `maven-publish`
     id("idea")
     id("com.dorongold.task-tree") version "2.1.1"
-    id("com.osacky.doctor") version "0.8.1"
+    id("com.osacky.doctor") version "0.12.0"
 }
 
 idea {

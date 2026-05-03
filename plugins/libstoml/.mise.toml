@@ -5,10 +5,13 @@ github.github_attestations = false
 lockfile = true
 experimental = true
 paranoid = false
+github_attestations = false
+slsa = false
 aqua.github_attestations = false
 aqua.cosign = false
 aqua.slsa = false
 aqua.minisign = false
 
 [tools]
-java = "openjdk-21.0"
+java = "openjdk-25.0"
+"github:go-task/task" = "v3.49.1"

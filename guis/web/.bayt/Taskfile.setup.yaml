@@ -1,0 +1,35 @@
+tasks:
+  default:
+    deps:
+    - pnpm
+    cmds:
+    - defer: '{{if not .EXIT_CODE}}mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu hash-stamp --manifest {{.TASKFILE_DIR}}/bayt.setup.json{{end}}'
+  builtin:
+    env:
+      SHARP_IGNORE_GLOBAL_LIBVIPS: '1'
+    internal: true
+    vars:
+      BAYTW: mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/cache.nu run --manifest {{.TASKFILE_DIR}}/bayt.setup.json --cmd builtin --
+    status:
+    - mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu hash-check --manifest {{.TASKFILE_DIR}}/bayt.setup.json --cmd builtin
+    generates:
+    - .task/bayt/setup.builtin.hash
+    cmds:
+    - '{{.BAYTW}} mise install'
+    - defer: '{{if not .EXIT_CODE}}mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu hash-stamp --manifest {{.TASKFILE_DIR}}/bayt.setup.json --cmd builtin{{end}}'
+  pnpm:
+    deps:
+    - builtin
+    env:
+      SHARP_IGNORE_GLOBAL_LIBVIPS: '1'
+    internal: true
+    vars:
+      BAYTW: mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/cache.nu run --manifest {{.TASKFILE_DIR}}/bayt.setup.json --cmd pnpm --
+    status:
+    - mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu hash-check --manifest {{.TASKFILE_DIR}}/bayt.setup.json --cmd pnpm
+    generates:
+    - .task/bayt/setup.pnpm.hash
+    cmds:
+    - '{{.BAYTW}} mise x -- pnpm install --frozen-lockfile'
+    - defer: '{{if not .EXIT_CODE}}mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu hash-stamp --manifest {{.TASKFILE_DIR}}/bayt.setup.json --cmd pnpm{{end}}'
+version: '3'

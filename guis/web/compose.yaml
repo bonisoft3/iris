@@ -1,5 +1,14 @@
+# Hand-maintained root for develop/release; integrate now comes from
+# the bayt-generated federated graph (guis_web-integrate uses
+# .bayt/integrate.Dockerfile with bayt.incremental for in-container
+# task-based chain short-circuiting). sayt integrate targets the
+# qualified service name via the .say.yaml override.
+include:
+  - path: ./.bayt/compose.yaml
+
 volumes:
   root-dot-docker-cache-mount: {}
+
 services:
   develop:
     command: pnpm dev
@@ -20,20 +29,12 @@ services:
     secrets:
       - host.env
     network_mode: host
-  integrate:
-    command: "true"
-    build:
-      network: host
-      context: ../..
-      dockerfile: guis/web/Dockerfile
-      secrets:
-        - host.env
-      target: integrate
   release:
     build:
       context: ../..
       dockerfile: guis/web/Dockerfile
       target: release
+
 secrets:
   host.env:
     environment: HOST_ENV

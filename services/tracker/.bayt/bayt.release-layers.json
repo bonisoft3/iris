@@ -1,0 +1,175 @@
+{
+  "dockerfile": {
+    "preamble": [
+      "RUN zypper -n install tar gzip && zypper clean -a"
+    ],
+    "from": {
+      "ref": ":release-artifact",
+      "name": "services_tracker-release-artifact",
+      "context": "service:services_tracker-release-artifact"
+    },
+    "mounts": [],
+    "secrets": [],
+    "epilogue": [],
+    "expose": [],
+    "entrypoint": null,
+    "incremental": false
+  },
+  "name": "release-layers",
+  "project": "services_tracker",
+  "dir": "services/tracker",
+  "activate": "mise x --",
+  "srcs": {
+    "globs": [],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [],
+    "exclude": []
+  },
+  "env": {},
+  "visibility": "internal",
+  "deps": [
+    "release-artifact"
+  ],
+  "transitiveDeps": [
+    "release-artifact",
+    "build",
+    "setup"
+  ],
+  "transitiveCrossDeps": [
+    {
+      "name": "setup",
+      "project": "workspaceroot",
+      "dir": "",
+      "outs": {
+        "globs": [
+          ".mise.toml",
+          "mise.lock",
+          "pnpm-lock.yaml",
+          "pnpm-workspace.yaml",
+          "package.json",
+          "gradle/libs.versions.toml",
+          "plugins/devserver/dind.sh",
+          ".task/bayt/setup.hash"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "build",
+      "project": "libraries_logs",
+      "dir": "libraries/logs",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "libraries_pbtables",
+      "dir": "libraries/pbtables",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "libraries_xproto",
+      "dir": "libraries/xproto",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "plugins_libstoml",
+      "dir": "plugins/libstoml",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "plugins_jvm",
+      "dir": "plugins/jvm",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "plugins_micronaut",
+      "dir": "plugins/micronaut",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    }
+  ],
+  "chainedDeps": [
+    {
+      "name": "release-artifact",
+      "project": "services_tracker",
+      "dir": "services/tracker",
+      "outs": {
+        "globs": [
+          "build/jib-image.tar"
+        ],
+        "exclude": []
+      }
+    }
+  ],
+  "cmds": [
+    {
+      "srcs": {
+        "globs": [],
+        "exclude": [],
+        "defaultGlobs": null,
+        "defaultExclude": null
+      },
+      "shell": "sh",
+      "do": "mkdir -p build/jib && tar xf build/jib-image.tar -C build/jib && mkdir -p build/layers && for tb in build/jib/*.tar.gz; do tar xzf \"$tb\" -C build/layers; done",
+      "name": "builtin",
+      "stop": false
+    }
+  ],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

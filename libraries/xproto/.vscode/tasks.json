@@ -1,0 +1,40 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "label": "libraries_xproto build",
+      "type": "shell",
+      "command": "task bayt:build",
+      "options": {
+        "cwd": "${workspaceFolder}/libraries/xproto"
+      }
+    },
+    {
+      "group": {
+        "kind": "none"
+      },
+      "label": "libraries_xproto doctor",
+      "type": "shell",
+      "command": "task bayt:doctor",
+      "options": {
+        "cwd": "${workspaceFolder}/libraries/xproto"
+      }
+    },
+    {
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "label": "libraries_xproto test",
+      "type": "shell",
+      "command": "task bayt:test",
+      "options": {
+        "cwd": "${workspaceFolder}/libraries/xproto"
+      }
+    }
+  ]
+}

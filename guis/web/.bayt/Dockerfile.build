@@ -1,0 +1,9 @@
+# syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
+FROM guis_web-setup AS build
+WORKDIR /monorepo/guis/web
+COPY --link --parents --exclude=node_modules/** --exclude=.nuxt/** --exclude=.output/** --exclude=dist/** --exclude=coverage/** --exclude=.bayt/** --exclude=.task/** --exclude=.git/** --exclude=**/*.test.* --exclude=**/*.spec.* --exclude=tests/** **/* ./
+COPY --link Taskfile.yml ./Taskfile.yml
+COPY --link .bayt/Taskfile.yml .bayt/Taskfile.build.yaml .bayt/bayt.build.json .bayt/init.gradle.kts ./.bayt/
+COPY --from=bayt-runtime --link . /monorepo/plugins/bayt/runtime/
+COPY --link .bayt/Taskfile.setup.yaml .bayt/bayt.setup.json ./.bayt/
+RUN --mount=type=cache,id=bayt-cache,target=/root/.cache/bayt,sharing=shared --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked ["task", "bayt:build"]

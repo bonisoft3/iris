@@ -1,0 +1,12 @@
+# syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
+FROM libraries_xproto-setup AS build
+WORKDIR /monorepo/libraries/xproto
+COPY --from=workspaceroot-setup --link --parents /monorepo/.mise.toml /monorepo/mise.lock /monorepo/pnpm-lock.yaml /monorepo/pnpm-workspace.yaml /monorepo/package.json /monorepo/gradle/libs.versions.toml /monorepo/plugins/devserver/dind.sh /monorepo/.task/bayt/setup.hash /
+COPY --from=plugins_libstoml-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/plugins/libstoml/**/* /
+COPY --from=libraries_logs-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/libraries/logs/**/* /
+COPY --link --parents build.gradle.kts src/main/**/*.gradle.kts gradle.properties gradle/wrapper/gradle-wrapper.jar gradlew src/main/**/*.java src/main/**/*.kt gradle/libs.versions.toml settings.gradle.kts src/main/**/*.sq src/main/**/*.sql src/main/**/*.sqm src/**/*.kt src/**/*.gradle.kts src/**/*.java src/**/*.sql src/**/*.sq src/**/*.sqm build.gradle.kts settings.gradle.kts gradle.properties gradlew gradle/wrapper/gradle-wrapper.jar gradle/libs.versions.toml trash/**/*.proto buf.gradle.gen.yaml buf.yaml buf.lock ./
+COPY --link Taskfile.yml ./Taskfile.yml
+COPY --link .bayt/Taskfile.yml .bayt/Taskfile.build.yaml .bayt/bayt.build.json .bayt/init.gradle.kts ./.bayt/
+COPY --from=bayt-runtime --link . /monorepo/plugins/bayt/runtime/
+COPY --link .bayt/Taskfile.setup.yaml .bayt/bayt.setup.json ./.bayt/
+RUN --mount=type=cache,id=bayt-cache,target=/root/.cache/bayt,sharing=shared --mount=type=cache,target=/root/.gradle,sharing=shared --mount=type=cache,target=.gradle/configuration-cache,sharing=locked ["task", "bayt:build"]

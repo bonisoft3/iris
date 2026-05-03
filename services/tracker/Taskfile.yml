@@ -1,0 +1,34 @@
+version: '3'
+includes:
+  bayt:
+    taskfile: ./.bayt/Taskfile.yml
+    dir: ./
+    optional: true
+  libraries_logs:
+    taskfile: ../../libraries/logs/Taskfile.yml
+    dir: ../../libraries/logs/
+    optional: true
+  libraries_pbtables:
+    taskfile: ../../libraries/pbtables/Taskfile.yml
+    dir: ../../libraries/pbtables/
+    optional: true
+  libraries_xproto:
+    taskfile: ../../libraries/xproto/Taskfile.yml
+    dir: ../../libraries/xproto/
+    optional: true
+  plugins_libstoml:
+    taskfile: ../../plugins/libstoml/Taskfile.yml
+    dir: ../../plugins/libstoml/
+    optional: true
+  plugins_jvm:
+    taskfile: ../../plugins/jvm/Taskfile.yml
+    dir: ../../plugins/jvm/
+    optional: true
+  plugins_micronaut:
+    taskfile: ../../plugins/micronaut/Taskfile.yml
+    dir: ../../plugins/micronaut/
+    optional: true
+  workspaceroot:
+    taskfile: ../../Taskfile.yml
+    dir: ../../
+    optional: true

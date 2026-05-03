@@ -3,10 +3,10 @@ plugins {
     java
     application
     id("jvm-project-conventions")
-    id("com.google.devtools.ksp") version "1.9.21-1.0.15"
+    id("com.google.devtools.ksp") version "2.2.21-2.0.5"
     id("io.micronaut.minimal.library") version "4.5.4"
-    kotlin("plugin.serialization") version "1.9.21"
-    id("com.google.cloud.tools.jib") version "3.3.2"
+    kotlin("plugin.serialization") version "2.2.21"
+    id("com.google.cloud.tools.jib") version "3.5.3"
 }
 
 group = "com.trash"
@@ -97,7 +97,10 @@ tasks.matching { it.name in setOf("nativeCompile", "nativeTest", "jibBuildTar", 
 jib {
   from {
     // pinned multiplatform sha256: https://stackoverflow.com/a/74764298
-    image = "eclipse-temurin:21-jre-jammy@sha256:c5310f3a86eafc0d53d53fac9c7d35c08db401eb4294f992d958c0f0b537a3c7"
+    // Java 25 to match the compile-time JDK (mise.toml says
+    // openjdk-25.0). With Java 21 here jib refused the build:
+    // "Your project is using Java 25 but the base image is for Java 21".
+    image = "eclipse-temurin:25-jre-jammy@sha256:d36843a6f1af5d0aca01ef3d926e2220444eb19fe38e1b23cef3d663ef29b306"
   }
 }
 

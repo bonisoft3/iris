@@ -1,0 +1,207 @@
+{
+  "name": "test",
+  "project": "services_tracker",
+  "dir": "services/tracker",
+  "activate": "mise x --",
+  "srcs": {
+    "globs": [
+      "src/test/**/*.java",
+      "src/test/**/*.kt",
+      "src/test/resources/**/*",
+      "src/test/**/*.sql"
+    ],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [
+      "build/test-results/test/**/*.xml",
+      "build/reports/tests/test/**/*"
+    ],
+    "exclude": []
+  },
+  "env": {},
+  "taskfile": {
+    "run": "when_changed",
+    "silent": false,
+    "preconditions": []
+  },
+  "visibility": "internal",
+  "deps": [
+    "build"
+  ],
+  "transitiveDeps": [
+    "build",
+    "setup"
+  ],
+  "transitiveCrossDeps": [
+    {
+      "name": "setup",
+      "project": "workspaceroot",
+      "dir": "",
+      "outs": {
+        "globs": [
+          ".mise.toml",
+          "mise.lock",
+          "pnpm-lock.yaml",
+          "pnpm-workspace.yaml",
+          "package.json",
+          "gradle/libs.versions.toml",
+          "plugins/devserver/dind.sh",
+          ".task/bayt/setup.hash"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "build",
+      "project": "libraries_logs",
+      "dir": "libraries/logs",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "libraries_pbtables",
+      "dir": "libraries/pbtables",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "libraries_xproto",
+      "dir": "libraries/xproto",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "plugins_libstoml",
+      "dir": "plugins/libstoml",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "plugins_jvm",
+      "dir": "plugins/jvm",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "plugins_micronaut",
+      "dir": "plugins/micronaut",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    }
+  ],
+  "chainedDeps": [
+    {
+      "name": "build",
+      "project": "services_tracker",
+      "dir": "services/tracker",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    }
+  ],
+  "cmds": [
+    {
+      "srcs": {
+        "globs": [
+          "src/test/**/*.java",
+          "src/test/**/*.kt",
+          "src/test/resources/**/*",
+          "src/test/**/*.sql"
+        ],
+        "exclude": [],
+        "defaultGlobs": null,
+        "defaultExclude": null
+      },
+      "do": "./gradlew --init-script .bayt/init.gradle.kts test",
+      "windows": {
+        "do": ".\\gradlew.bat --init-script .bayt/init.gradle.kts test",
+        "shell": "pwsh"
+      },
+      "dockerfile": {
+        "mounts": [
+          {
+            "type": "cache",
+            "target": "/root/.gradle",
+            "sharing": "shared",
+            "required": false
+          },
+          {
+            "type": "cache",
+            "target": ".gradle/configuration-cache",
+            "sharing": "locked",
+            "required": false
+          }
+        ]
+      },
+      "name": "builtin",
+      "shell": "exec",
+      "stop": false
+    }
+  ],
+  "cache": {
+    "full": false,
+    "similar": false
+  },
+  "vscode": {
+    "group": {
+      "kind": "test",
+      "isDefault": true
+    },
+    "dependsOn": [],
+    "dependsOrder": "sequence"
+  }
+}

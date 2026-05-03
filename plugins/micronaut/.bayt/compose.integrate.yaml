@@ -1,0 +1,15 @@
+secrets:
+  host.env:
+    file: ${BAYT_HOST_ENV_FILE}
+services:
+  plugins_micronaut-integrate:
+    build:
+      additional_contexts:
+        plugins_micronaut-build: service:plugins_micronaut-build
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate
+      secrets:
+      - host.env
+      target: integrate
+    secrets:
+    - host.env

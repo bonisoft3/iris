@@ -1,0 +1,166 @@
+{
+  "name": "verify",
+  "project": "services_tracker",
+  "dir": "services/tracker",
+  "activate": "mise x --",
+  "srcs": {
+    "globs": [],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [
+      "build/verify-results/**/*"
+    ],
+    "exclude": []
+  },
+  "env": {},
+  "taskfile": {
+    "run": "when_changed",
+    "silent": false,
+    "preconditions": []
+  },
+  "visibility": "internal",
+  "deps": [
+    "release"
+  ],
+  "transitiveDeps": [
+    "release",
+    "release-layers",
+    "release-artifact",
+    "build",
+    "setup"
+  ],
+  "transitiveCrossDeps": [
+    {
+      "name": "setup",
+      "project": "workspaceroot",
+      "dir": "",
+      "outs": {
+        "globs": [
+          ".mise.toml",
+          "mise.lock",
+          "pnpm-lock.yaml",
+          "pnpm-workspace.yaml",
+          "package.json",
+          "gradle/libs.versions.toml",
+          "plugins/devserver/dind.sh",
+          ".task/bayt/setup.hash"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "build",
+      "project": "libraries_logs",
+      "dir": "libraries/logs",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "libraries_pbtables",
+      "dir": "libraries/pbtables",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "libraries_xproto",
+      "dir": "libraries/xproto",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "plugins_libstoml",
+      "dir": "plugins/libstoml",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "plugins_jvm",
+      "dir": "plugins/jvm",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "plugins_micronaut",
+      "dir": "plugins/micronaut",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    }
+  ],
+  "chainedDeps": [
+    {
+      "name": "release",
+      "project": "services_tracker",
+      "dir": "services/tracker",
+      "outs": {
+        "globs": [],
+        "exclude": []
+      }
+    }
+  ],
+  "cmds": [
+    {
+      "srcs": {
+        "globs": [],
+        "exclude": [],
+        "defaultGlobs": null,
+        "defaultExclude": null
+      },
+      "do": "./gradlew --init-script .bayt/init.gradle.kts check",
+      "name": "builtin",
+      "shell": "exec",
+      "stop": false
+    }
+  ],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

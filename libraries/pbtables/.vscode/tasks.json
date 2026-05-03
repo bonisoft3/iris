@@ -1,31 +1,40 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "build",
-            "type": "shell",
-            "command": "./gradlew",
-            "args": [
-                "assemble"
-            ],
-            "problemMatcher": [],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        },
-        {
-            "label": "test",
-            "type": "shell",
-            "command": "./gradlew",
-            "args": [
-                "test"
-            ],
-            "group": {
-                "kind": "test",
-                "isDefault": true
-            },
-            "problemMatcher": []
-        }
-    ]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "label": "libraries_pbtables build",
+      "type": "shell",
+      "command": "task bayt:build",
+      "options": {
+        "cwd": "${workspaceFolder}/libraries/pbtables"
+      }
+    },
+    {
+      "group": {
+        "kind": "none"
+      },
+      "label": "libraries_pbtables doctor",
+      "type": "shell",
+      "command": "task bayt:doctor",
+      "options": {
+        "cwd": "${workspaceFolder}/libraries/pbtables"
+      }
+    },
+    {
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "label": "libraries_pbtables test",
+      "type": "shell",
+      "command": "task bayt:test",
+      "options": {
+        "cwd": "${workspaceFolder}/libraries/pbtables"
+      }
+    }
+  ]
 }

@@ -47,7 +47,7 @@ dependencies {
 tasks.register<Sync>("copyBufCli") {
     from(bufcli.files.single().toPath())
     into("${project.layout.buildDirectory.get()}/bufbuild/cli")
-    fileMode = "755".toInt(radix = 8)
+    filePermissions { unix("755") }
 }
 
 // Run buf generate
@@ -65,11 +65,11 @@ tasks.register<Exec>("bufGenerate") {
 // We do a big indirection to split the generated kotlin and java code
 // and then we compile them independently. Without this, the intellij
 // import/navigate support does not work properly for the java classes.
-tasks.create("bufGenerateKotlinSourceSet") {
+tasks.register("bufGenerateKotlinSourceSet") {
     inputs.dir(tasks.named("bufGenerate"))
     outputs.dir("${project.layout.buildDirectory.get()}/bufbuild/generate/kotlin")
 }
-tasks.create("bufGenerateJavaSourceSet") {
+tasks.register("bufGenerateJavaSourceSet") {
     inputs.dir(tasks.named("bufGenerate"))
     outputs.dir("${project.layout.buildDirectory.get()}/bufbuild/generate/java")
 }

@@ -1,29 +1,40 @@
 {
-	"version": "2.0.0",
-	"tasks": [
-		{
-			"label": "build",
-			"type": "shell",
-			"command": "./gradlew",
-			"windows": { "command": ".\\gradlew.bat" },
-			"args": [ "assemble" ],
-			"problemMatcher": [],
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			}
-		},
-		{
-			"label": "test",
-			"type": "shell",
-			"command": "./gradlew",
-			"windows": { "command": ".\\gradlew.bat" },
-			"args": [ "test" ],
-			"group": {
-				"kind": "test",
-				"isDefault": true
-			},
-			"problemMatcher": []
-		}
-	]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "label": "services_tracker build",
+      "type": "shell",
+      "command": "task bayt:build",
+      "options": {
+        "cwd": "${workspaceFolder}/services/tracker"
+      }
+    },
+    {
+      "group": {
+        "kind": "none"
+      },
+      "label": "services_tracker doctor",
+      "type": "shell",
+      "command": "task bayt:doctor",
+      "options": {
+        "cwd": "${workspaceFolder}/services/tracker"
+      }
+    },
+    {
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "label": "services_tracker test",
+      "type": "shell",
+      "command": "task bayt:test",
+      "options": {
+        "cwd": "${workspaceFolder}/services/tracker"
+      }
+    }
+  ]
 }

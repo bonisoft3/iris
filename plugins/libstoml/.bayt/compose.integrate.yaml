@@ -1,0 +1,15 @@
+secrets:
+  host.env:
+    file: ${BAYT_HOST_ENV_FILE}
+services:
+  plugins_libstoml-integrate:
+    build:
+      additional_contexts:
+        plugins_libstoml-build: service:plugins_libstoml-build
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate
+      secrets:
+      - host.env
+      target: integrate
+    secrets:
+    - host.env

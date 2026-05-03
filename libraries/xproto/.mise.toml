@@ -4,6 +4,8 @@ github.slsa = false
 lockfile = true
 experimental = true
 paranoid = false
+github_attestations = false
+slsa = false
 github.github_attestations = false
 aqua.github_attestations = false
 aqua.cosign = false
@@ -11,5 +13,6 @@ aqua.slsa = false
 aqua.minisign = false
 
 [tools]
+java = "openjdk-25.0"
 "github:go-task/task" = "v3.49.1"
 "github:bufbuild/buf" = "1.66.1"

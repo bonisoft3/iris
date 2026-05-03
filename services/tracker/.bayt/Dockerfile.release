@@ -1,0 +1,12 @@
+# syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
+FROM scratch AS release
+WORKDIR /monorepo/services/tracker
+ENV PATH=/opt/java/openjdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV JAVA_HOME=/opt/java/openjdk
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
+COPY --link Taskfile.yml ./Taskfile.yml
+COPY --link .bayt/Taskfile.yml .bayt/bayt.release.json .bayt/init.gradle.kts ./.bayt/
+ENTRYPOINT ["java", "-cp", "@/app/jib-classpath-file", "com.trash.services.tracker.ApplicationKt"]
+COPY --link --from=services_tracker-release-layers /monorepo/services/tracker/build/layers/ /

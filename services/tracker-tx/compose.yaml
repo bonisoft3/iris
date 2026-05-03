@@ -1,39 +1,6 @@
-volumes:
-  root-dot-docker-cache-mount: {}
-
-services:
-  develop:
-    volumes:
-      - //var/run/docker.sock:/var/run/docker.sock
-      - ${DIND:+/root/.dcm}${DIND:-root-dot-docker-cache-mount}:/root/.dcm
-    command: "sh -c 'task build && envoy -c <(envsubst < transcoding.yaml | yq -o json)'"
-    healthcheck:
-      test: curl http://localhost:18080/
-      interval: 40s
-      timeout: 30s
-      retries: 3
-      start_period: 60s
-    ports:
-      - "8080"
-    build:
-      context: ../..
-      dockerfile: services/tracker-tx/Dockerfile
-      target: debug
-
-  integrate:   
-    build:
-      context: ../..
-      dockerfile: services/tracker-tx/Dockerfile
-      network: host
-      target: integrate
-      secrets:
-        - host.env
-
-  release:
-    build:
-      context: ../..
-      dockerfile: services/tracker-tx/Dockerfile
-      target: release
-secrets:
-  host.env:
-    environment: HOST_ENV
+# Compose discovery looks for ./compose.yaml at the project root by
+# default, so this top-level file just federates the bayt-emitted
+# graph. Every service (launch, build, integrate, release) is now
+# bayt-modeled — see services/tracker-tx/bayt.cue.
+include:
+  - path: ./.bayt/compose.yaml

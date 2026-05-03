@@ -1,0 +1,232 @@
+{
+  "bake": {
+    "image": "gcr.io/trash-362115/services.tracker",
+    "push": false,
+    "cacheScope": "",
+    "platforms": [
+      "linux/amd64"
+    ],
+    "tags": [],
+    "args": {},
+    "cacheFrom": [],
+    "cacheTo": []
+  },
+  "dockerfile": {
+    "preamble": [],
+    "entrypoint": [
+      "java",
+      "-cp",
+      "@/app/jib-classpath-file",
+      "com.trash.services.tracker.ApplicationKt"
+    ],
+    "epilogue": [
+      "COPY --link --from=services_tracker-release-layers /monorepo/services/tracker/build/layers/ /"
+    ],
+    "from": null,
+    "mounts": [],
+    "secrets": [],
+    "expose": [],
+    "incremental": false
+  },
+  "name": "release",
+  "project": "services_tracker",
+  "dir": "services/tracker",
+  "activate": "",
+  "skaffold": {
+    "profiles": {
+      "bayt-build": {
+        "name": "bayt-build",
+        "activation": [
+          {
+            "command": "build"
+          }
+        ],
+        "build": {
+          "artifact": {
+            "image": "gcr.io/trash-362115/services.tracker",
+            "context": "..",
+            "sync": {
+              "manual": [],
+              "auto": false
+            },
+            "custom": {
+              "buildCommand": "docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.release.hcl release"
+            }
+          },
+          "local": {
+            "useBuildkit": true,
+            "concurrency": 64,
+            "push": true
+          },
+          "platforms": [
+            "linux/amd64"
+          ],
+          "tagPolicy": {
+            "gitCommit": {
+              "variant": "AbbrevCommitSha"
+            }
+          }
+        },
+        "manifests": {},
+        "test": [
+          {
+            "image": "gcr.io/trash-362115/services.tracker",
+            "custom": [
+              {
+                "command": "task bayt:integrate"
+              }
+            ]
+          }
+        ],
+        "verify": [],
+        "portForward": []
+      },
+      "bayt-run": null
+    }
+  },
+  "srcs": {
+    "globs": [],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [],
+    "exclude": []
+  },
+  "env": {
+    "PATH": "/opt/java/openjdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+    "JAVA_HOME": "/opt/java/openjdk",
+    "LANG": "en_US.UTF-8",
+    "LANGUAGE": "en_US:en",
+    "LC_ALL": "en_US.UTF-8"
+  },
+  "visibility": "internal",
+  "deps": [
+    "release-layers"
+  ],
+  "transitiveDeps": [
+    "release-layers",
+    "release-artifact",
+    "build",
+    "setup"
+  ],
+  "transitiveCrossDeps": [
+    {
+      "name": "setup",
+      "project": "workspaceroot",
+      "dir": "",
+      "outs": {
+        "globs": [
+          ".mise.toml",
+          "mise.lock",
+          "pnpm-lock.yaml",
+          "pnpm-workspace.yaml",
+          "package.json",
+          "gradle/libs.versions.toml",
+          "plugins/devserver/dind.sh",
+          ".task/bayt/setup.hash"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "build",
+      "project": "libraries_logs",
+      "dir": "libraries/logs",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "libraries_pbtables",
+      "dir": "libraries/pbtables",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "libraries_xproto",
+      "dir": "libraries/xproto",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "plugins_libstoml",
+      "dir": "plugins/libstoml",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "plugins_jvm",
+      "dir": "plugins/jvm",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "plugins_micronaut",
+      "dir": "plugins/micronaut",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    }
+  ],
+  "chainedDeps": [
+    {
+      "name": "release-layers",
+      "project": "services_tracker",
+      "dir": "services/tracker",
+      "outs": {
+        "globs": [],
+        "exclude": []
+      }
+    }
+  ],
+  "cmds": [],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

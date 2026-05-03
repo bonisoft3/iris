@@ -32,6 +32,9 @@
     "turbo": "^1.12.4"
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "^0.90.0",
+    "@playwright/test": "1.59.1",
+    "playwright": "1.59.1",
     "re2": "1.23.2"
   },
   "packageManager": "pnpm@10.32.1"

@@ -1,0 +1,138 @@
+{
+  "dockerfile": {
+    "preamble": [],
+    "incremental": true,
+    "from": {
+      "ref": ":setup",
+      "name": "guis_web-setup",
+      "context": "service:guis_web-setup"
+    },
+    "mounts": [],
+    "secrets": [],
+    "epilogue": [],
+    "expose": [],
+    "entrypoint": null
+  },
+  "name": "build",
+  "project": "guis_web",
+  "dir": "guis/web",
+  "activate": "mise x --",
+  "srcs": {
+    "globs": [
+      "**/*"
+    ],
+    "exclude": [
+      "node_modules/**",
+      ".nuxt/**",
+      ".output/**",
+      "dist/**",
+      "coverage/**",
+      ".bayt/**",
+      ".task/**",
+      ".git/**",
+      "**/*.test.*",
+      "**/*.spec.*",
+      "tests/**"
+    ]
+  },
+  "outs": {
+    "globs": [
+      ".output/**/*"
+    ],
+    "exclude": []
+  },
+  "env": {},
+  "taskfile": {
+    "run": "when_changed",
+    "silent": false,
+    "preconditions": []
+  },
+  "visibility": "internal",
+  "deps": [
+    "setup"
+  ],
+  "transitiveDeps": [
+    "setup"
+  ],
+  "transitiveCrossDeps": [
+    {
+      "name": "setup",
+      "project": "workspaceroot",
+      "dir": "",
+      "outs": {
+        "globs": [
+          ".mise.toml",
+          "mise.lock",
+          "pnpm-lock.yaml",
+          "pnpm-workspace.yaml",
+          "package.json",
+          "gradle/libs.versions.toml",
+          "plugins/devserver/dind.sh",
+          ".task/bayt/setup.hash"
+        ],
+        "exclude": []
+      }
+    }
+  ],
+  "chainedDeps": [
+    {
+      "name": "setup",
+      "project": "guis_web",
+      "dir": "guis/web",
+      "outs": {
+        "globs": [],
+        "exclude": []
+      }
+    }
+  ],
+  "cmds": [
+    {
+      "srcs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          "node_modules/**",
+          ".nuxt/**",
+          ".output/**",
+          "dist/**",
+          "coverage/**",
+          ".bayt/**",
+          ".task/**",
+          ".git/**",
+          "**/*.test.*",
+          "**/*.spec.*",
+          "tests/**"
+        ],
+        "defaultGlobs": null,
+        "defaultExclude": null
+      },
+      "do": "mise x -- pnpm build",
+      "dockerfile": {
+        "mounts": [
+          {
+            "type": "cache",
+            "target": "/root/.local/share/pnpm/store",
+            "sharing": "locked",
+            "required": false
+          }
+        ]
+      },
+      "name": "builtin",
+      "shell": "exec",
+      "stop": false
+    }
+  ],
+  "cache": {
+    "full": false,
+    "similar": false
+  },
+  "vscode": {
+    "group": {
+      "kind": "build",
+      "isDefault": true
+    },
+    "dependsOn": [],
+    "dependsOrder": "sequence"
+  }
+}

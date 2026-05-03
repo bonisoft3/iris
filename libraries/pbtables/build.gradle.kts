@@ -3,7 +3,7 @@
 plugins {
     `java-library`
     id("jvm-project-conventions")
-    id("com.google.devtools.ksp") version "1.9.21-1.0.15"
+    id("com.google.devtools.ksp") version "2.2.21-2.0.5"
     id("io.micronaut.minimal.library") version "4.5.4"
     id("app.cash.sqldelight") version "2.0.1"
 }
@@ -85,12 +85,12 @@ afterEvaluate {
         // dependsOn(tasks.findByName("deleteMainPbTablesInterface"))
     // }
     tasks.compileKotlin {
-        dependsOn(tasks.findByName("generateMainPbTablesInterface"))
+        dependsOn(tasks.named("generateMainPbTablesInterface"))
     }
     tasks.processResources {
-        dependsOn(tasks.findByName("generateMainPbTablesMigrations"))
+        dependsOn(tasks.named("generateMainPbTablesMigrations"))
     }
     tasks.inspectRuntimeClasspath {
-        dependsOn(tasks.findByName("generateMainPbTablesMigrations"))
+        dependsOn(tasks.named("generateMainPbTablesMigrations"))
     }
 }

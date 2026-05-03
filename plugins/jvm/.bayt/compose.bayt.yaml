@@ -1,0 +1,18 @@
+include:
+- path: ./compose.build.yaml
+  required: false
+- path: ./compose.setup.yaml
+  required: false
+- path: ./compose.integrate.yaml
+  required: false
+- path: ../../../.bayt/compose.bayt.yaml
+  required: false
+- path: ../../../plugins/libstoml/.bayt/compose.bayt.yaml
+  required: false
+services:
+  bayt-runtime-stub:
+    build:
+      context: ../../../plugins/bayt/runtime
+      dockerfile_inline: |
+        FROM scratch
+        COPY . /

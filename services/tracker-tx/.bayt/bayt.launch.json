@@ -1,0 +1,140 @@
+{
+  "compose": {
+    "runtime": {
+      "command": [
+        "bash",
+        "-c",
+        "envoy -c <(envsubst < transcoding.yaml | yq -o json)"
+      ],
+      "environment": {},
+      "ports": [
+        "8080"
+      ],
+      "volumes": [
+        "//var/run/docker.sock:/var/run/docker.sock"
+      ],
+      "depends_on": [],
+      "healthcheck": {
+        "test": "curl http://localhost:18080/",
+        "interval": "40s",
+        "timeout": "30s",
+        "retries": 3,
+        "start_period": "60s"
+      }
+    }
+  },
+  "dockerfile": {
+    "preamble": [
+      "COPY --from=envoyproxy/envoy:v1.35.3@sha256:4d496918618a7ebd6c71ae8285e31ebff092f3a0a5ad642d50decf4a54eb2456 /usr/local/bin/envoy /usr/local/bin/envoy",
+      "RUN zypper -n install gettext-runtime && zypper clean -a",
+      "ENV PATH=/root/.local/share/mise/shims:$PATH"
+    ],
+    "from": {
+      "ref": ":build",
+      "name": "services_tracker-tx-build",
+      "context": "service:services_tracker-tx-build"
+    },
+    "expose": [
+      8080
+    ],
+    "mounts": [],
+    "secrets": [],
+    "epilogue": [],
+    "entrypoint": null,
+    "incremental": false
+  },
+  "name": "launch",
+  "project": "services_tracker-tx",
+  "dir": "services/tracker-tx",
+  "activate": "mise x --",
+  "skaffold": {
+    "profiles": {
+      "bayt-dev": {
+        "name": "bayt-dev",
+        "activation": [
+          {
+            "command": "dev"
+          }
+        ],
+        "build": {
+          "artifact": {
+            "image": "gcr.io/trash-362115/services.tracker-tx-gcp",
+            "context": "../",
+            "sync": {
+              "manual": [],
+              "auto": false
+            },
+            "docker": {
+              "dockerfile": ".bayt/Dockerfile.launch"
+            }
+          },
+          "local": {
+            "useBuildkit": true,
+            "concurrency": 64,
+            "push": false
+          },
+          "platforms": [],
+          "tagPolicy": {
+            "gitCommit": {
+              "variant": "AbbrevCommitSha"
+            }
+          }
+        },
+        "manifests": {},
+        "test": [],
+        "verify": [],
+        "portForward": []
+      }
+    }
+  },
+  "srcs": {
+    "globs": [],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [],
+    "exclude": []
+  },
+  "env": {},
+  "visibility": "internal",
+  "deps": [
+    "build"
+  ],
+  "transitiveDeps": [
+    "build",
+    "setup"
+  ],
+  "transitiveCrossDeps": [],
+  "chainedDeps": [
+    {
+      "name": "build",
+      "project": "services_tracker-tx",
+      "dir": "services/tracker-tx",
+      "outs": {
+        "globs": [
+          "out/transcoding.yaml.tpl",
+          "out/transcoding.yaml.gcp.tpl"
+        ],
+        "exclude": []
+      }
+    }
+  ],
+  "cmds": [
+    {
+      "srcs": {
+        "globs": [],
+        "exclude": [],
+        "defaultGlobs": null,
+        "defaultExclude": null
+      },
+      "do": "true",
+      "name": "builtin",
+      "shell": "exec",
+      "stop": false
+    }
+  ],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

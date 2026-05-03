@@ -1,0 +1,22 @@
+services:
+  services_tracker-tx-launch:
+    build:
+      additional_contexts:
+        services_tracker-tx-build: service:services_tracker-tx-build
+      context: ..
+      dockerfile: .bayt/Dockerfile.launch
+      target: launch
+    command:
+    - bash
+    - -c
+    - envoy -c <(envsubst < transcoding.yaml | yq -o json)
+    healthcheck:
+      test: curl http://localhost:18080/
+      interval: 40s
+      timeout: 30s
+      retries: 3
+      start_period: 60s
+    ports:
+    - '8080'
+    volumes:
+    - //var/run/docker.sock:/var/run/docker.sock

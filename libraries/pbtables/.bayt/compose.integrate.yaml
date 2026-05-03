@@ -1,0 +1,15 @@
+secrets:
+  host.env:
+    file: ${BAYT_HOST_ENV_FILE}
+services:
+  libraries_pbtables-integrate:
+    build:
+      additional_contexts:
+        libraries_pbtables-build: service:libraries_pbtables-build
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate
+      secrets:
+      - host.env
+      target: integrate
+    secrets:
+    - host.env

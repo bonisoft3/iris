@@ -120,6 +120,7 @@ url = "https://github.com/mikefarah/yq/releases/download/v4.52.5/yq_linux_amd64"
 url = "https://github.com/mikefarah/yq/releases/download/v4.52.5/yq_linux_amd64"
 
 [tools."http:yq"."platforms.macos-arm64"]
+checksum = "blake3:3d200a5827df3f701e647bb94b2e586d3f362ba068462fc79120fc60ad8a5ea0"
 url = "https://github.com/mikefarah/yq/releases/download/v4.52.5/yq_darwin_arm64"
 
 [tools."http:yq"."platforms.macos-x64"]

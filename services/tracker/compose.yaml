@@ -1,5 +1,16 @@
-volumes:
-  root-dot-docker-cache-mount: {}
+# Hand-maintained root for develop; integrate and release now come from
+# the bayt-generated federated graph (services_tracker-integrate uses
+# .bayt/integrate.Dockerfile with bayt.incremental for in-container
+# task-based chain short-circuiting). sayt integrate targets the
+# qualified service name via the .say.yaml override.
+#
+# Top-level `secrets: host.env:` is emitted by bayt for every target
+# carrying dockerfile.secrets (see compose.integrate.yaml) and surfaces
+# at the project root via compose's include federation — so we don't
+# re-declare it here.
+include:
+  - path: ./.bayt/compose.yaml
+
 services:
   develop:
     command: ./gradlew dev -t
@@ -20,20 +31,3 @@ services:
     secrets:
       - host.env
     network_mode: host
-  integrate:
-    command: "true"
-    build:
-      network: host
-      context: ../..
-      dockerfile: services/tracker/Dockerfile
-      secrets:
-        - host.env
-      target: integrate
-  release:
-    build:
-      context: ../..
-      dockerfile: services/tracker/Dockerfile
-      target: release
-secrets:
-  host.env:
-    environment: HOST_ENV

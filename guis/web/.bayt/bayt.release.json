@@ -1,0 +1,153 @@
+{
+  "bake": {
+    "image": "gcr.io/trash-362115/guis.web",
+    "push": false,
+    "cacheScope": "",
+    "platforms": [
+      "linux/amd64"
+    ],
+    "tags": [],
+    "args": {},
+    "cacheFrom": [],
+    "cacheTo": []
+  },
+  "dockerfile": {
+    "preamble": [],
+    "from": {
+      "ref": ":build",
+      "name": "guis_web-build",
+      "context": "service:guis_web-build"
+    },
+    "mounts": [],
+    "secrets": [],
+    "epilogue": [],
+    "expose": [],
+    "entrypoint": null,
+    "incremental": false
+  },
+  "name": "release",
+  "project": "guis_web",
+  "dir": "guis/web",
+  "activate": "mise x --",
+  "skaffold": {
+    "profiles": {
+      "bayt-build": {
+        "name": "bayt-build",
+        "activation": [
+          {
+            "command": "build"
+          }
+        ],
+        "build": {
+          "artifact": {
+            "image": "gcr.io/trash-362115/guis.web",
+            "context": "../",
+            "sync": {
+              "manual": [],
+              "auto": false
+            },
+            "custom": {
+              "buildCommand": "docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.release.hcl release"
+            }
+          },
+          "local": {
+            "useBuildkit": true,
+            "concurrency": 64,
+            "push": true
+          },
+          "platforms": [
+            "linux/amd64"
+          ],
+          "tagPolicy": {
+            "gitCommit": {
+              "variant": "AbbrevCommitSha"
+            }
+          }
+        },
+        "manifests": {},
+        "test": [
+          {
+            "image": "gcr.io/trash-362115/guis.web",
+            "custom": [
+              {
+                "command": "task bayt:integrate",
+                "timeoutSeconds": 3000
+              }
+            ]
+          }
+        ],
+        "verify": [],
+        "portForward": []
+      },
+      "bayt-run": null
+    }
+  },
+  "srcs": {
+    "globs": [],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [],
+    "exclude": []
+  },
+  "env": {},
+  "visibility": "internal",
+  "deps": [
+    "build"
+  ],
+  "transitiveDeps": [
+    "build",
+    "setup"
+  ],
+  "transitiveCrossDeps": [
+    {
+      "name": "setup",
+      "project": "workspaceroot",
+      "dir": "",
+      "outs": {
+        "globs": [
+          ".mise.toml",
+          "mise.lock",
+          "pnpm-lock.yaml",
+          "pnpm-workspace.yaml",
+          "package.json",
+          "gradle/libs.versions.toml",
+          "plugins/devserver/dind.sh",
+          ".task/bayt/setup.hash"
+        ],
+        "exclude": []
+      }
+    }
+  ],
+  "chainedDeps": [
+    {
+      "name": "build",
+      "project": "guis_web",
+      "dir": "guis/web",
+      "outs": {
+        "globs": [
+          ".output/**/*"
+        ],
+        "exclude": []
+      }
+    }
+  ],
+  "cmds": [
+    {
+      "srcs": {
+        "globs": [],
+        "exclude": [],
+        "defaultGlobs": null,
+        "defaultExclude": null
+      },
+      "do": "true",
+      "name": "builtin",
+      "shell": "exec",
+      "stop": false
+    }
+  ],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

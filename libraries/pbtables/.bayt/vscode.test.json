@@ -1,0 +1,17 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "label": "libraries_pbtables test",
+      "type": "shell",
+      "command": "task bayt:test",
+      "options": {
+        "cwd": "${workspaceFolder}/libraries/pbtables"
+      }
+    }
+  ]
+}

@@ -12,3 +12,5 @@
 **/.turbo
 **/.pnpm-store
 **/.aider.*
+.worktrees/
+.playwright-mcp/

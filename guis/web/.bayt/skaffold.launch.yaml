@@ -1,0 +1,20 @@
+apiVersion: skaffold/v4beta11
+kind: Config
+metadata:
+  name: guis_web-launch
+profiles:
+- activation:
+  - command: dev
+  name: bayt-dev
+  build:
+    artifacts:
+    - docker:
+        dockerfile: .bayt/Dockerfile.launch
+      image: gcr.io/trash-362115/guis.web
+      context: ../
+    local:
+      useBuildkit: true
+      concurrency: 64
+    tagPolicy:
+      gitCommit:
+        variant: AbbrevCommitSha

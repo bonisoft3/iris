@@ -1,0 +1,27 @@
+apiVersion: skaffold/v4beta11
+kind: Config
+metadata:
+  name: services_tracker-release
+profiles:
+- activation:
+  - command: build
+  name: bayt-build
+  build:
+    artifacts:
+    - custom:
+        buildCommand: docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.release.hcl release
+      image: gcr.io/trash-362115/services.tracker
+      context: ..
+    local:
+      push: true
+      useBuildkit: true
+      concurrency: 64
+    platforms:
+    - linux/amd64
+    tagPolicy:
+      gitCommit:
+        variant: AbbrevCommitSha
+  test:
+  - image: gcr.io/trash-362115/services.tracker
+    custom:
+    - command: task bayt:integrate

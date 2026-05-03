@@ -1,0 +1,9 @@
+services:
+  plugins_libstoml-build:
+    build:
+      additional_contexts:
+        bayt-runtime: service:bayt-runtime-stub
+        plugins_libstoml-setup: service:plugins_libstoml-setup
+      context: ..
+      dockerfile: .bayt/Dockerfile.build
+      target: build

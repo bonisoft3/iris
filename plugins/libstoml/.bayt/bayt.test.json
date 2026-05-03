@@ -1,0 +1,104 @@
+{
+  "name": "test",
+  "project": "plugins_libstoml",
+  "dir": "plugins/libstoml",
+  "activate": "mise x --",
+  "srcs": {
+    "globs": [
+      "src/test/**/*.java",
+      "src/test/**/*.kt",
+      "src/test/resources/**/*",
+      "src/test/**/*.sql"
+    ],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [
+      "build/test-results/test/**/*.xml",
+      "build/reports/tests/test/**/*"
+    ],
+    "exclude": []
+  },
+  "env": {},
+  "taskfile": {
+    "run": "when_changed",
+    "silent": false,
+    "preconditions": []
+  },
+  "visibility": "internal",
+  "deps": [
+    "build"
+  ],
+  "transitiveDeps": [
+    "build",
+    "setup"
+  ],
+  "transitiveCrossDeps": [],
+  "chainedDeps": [
+    {
+      "name": "build",
+      "project": "plugins_libstoml",
+      "dir": "plugins/libstoml",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    }
+  ],
+  "cmds": [
+    {
+      "srcs": {
+        "globs": [
+          "src/test/**/*.java",
+          "src/test/**/*.kt",
+          "src/test/resources/**/*",
+          "src/test/**/*.sql"
+        ],
+        "exclude": [],
+        "defaultGlobs": null,
+        "defaultExclude": null
+      },
+      "do": "./gradlew --init-script .bayt/init.gradle.kts test",
+      "windows": {
+        "do": ".\\gradlew.bat --init-script .bayt/init.gradle.kts test",
+        "shell": "pwsh"
+      },
+      "dockerfile": {
+        "mounts": [
+          {
+            "type": "cache",
+            "target": "/root/.gradle",
+            "sharing": "shared",
+            "required": false
+          },
+          {
+            "type": "cache",
+            "target": ".gradle/configuration-cache",
+            "sharing": "locked",
+            "required": false
+          }
+        ]
+      },
+      "name": "builtin",
+      "shell": "exec",
+      "stop": false
+    }
+  ],
+  "cache": {
+    "full": false,
+    "similar": false
+  },
+  "vscode": {
+    "group": {
+      "kind": "test",
+      "isDefault": true
+    },
+    "dependsOn": [],
+    "dependsOrder": "sequence"
+  }
+}

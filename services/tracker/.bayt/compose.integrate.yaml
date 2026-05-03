@@ -1,0 +1,29 @@
+secrets:
+  host.env:
+    file: ${BAYT_HOST_ENV_FILE}
+services:
+  services_tracker-integrate:
+    build:
+      additional_contexts:
+        bayt-runtime: service:bayt-runtime-stub
+        services_tracker-build: service:services_tracker-build
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate
+      secrets:
+      - host.env
+      target: integrate
+    entrypoint:
+    - find
+    - build/test-results/integrationTest
+    - -name
+    - '*.xml'
+    - -exec
+    - cat
+    - '{}'
+    - +
+    network_mode: host
+    secrets:
+    - host.env
+    volumes:
+    - //var/run/docker.sock:/var/run/docker.sock
+    - ${HOME:-~}/.skaffold/cache:/root/.skaffold/cache

@@ -12,8 +12,8 @@ describe('BloblangRuntime', () => {
   let runtime: BloblangRuntime
 
   beforeAll(async () => {
-    const wasmPath = resolve(__dirname, '../dist/blobl.wasm')
-    const wasmExecPath = resolve(__dirname, '../dist/wasm_exec.js')
+    const wasmPath = resolve(__dirname, 'blobl.wasm')
+    const wasmExecPath = resolve(__dirname, 'wasm_exec.js')
     runtime = await BloblangRuntime.create({
       wasmBinary: readFileSync(wasmPath),
       wasmExecJs: readFileSync(wasmExecPath, 'utf-8'),

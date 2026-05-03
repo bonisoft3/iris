@@ -1,0 +1,10 @@
+# syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
+FROM plugins_jvm-setup AS build
+WORKDIR /monorepo/plugins/jvm
+COPY --from=plugins_libstoml-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/plugins/libstoml/**/* /
+COPY --link --parents build.gradle.kts src/main/**/*.gradle.kts gradle.properties gradle/wrapper/gradle-wrapper.jar gradlew src/main/**/*.java src/main/**/*.kt gradle/libs.versions.toml settings.gradle.kts src/main/**/*.sq src/main/**/*.sql src/main/**/*.sqm ./
+COPY --link Taskfile.yml ./Taskfile.yml
+COPY --link .bayt/Taskfile.yml .bayt/Taskfile.build.yaml .bayt/bayt.build.json .bayt/init.gradle.kts ./.bayt/
+COPY --from=bayt-runtime --link . /monorepo/plugins/bayt/runtime/
+COPY --link .bayt/Taskfile.setup.yaml .bayt/bayt.setup.json ./.bayt/
+RUN --mount=type=cache,id=bayt-cache,target=/root/.cache/bayt,sharing=shared --mount=type=cache,target=/root/.gradle,sharing=shared --mount=type=cache,target=.gradle/configuration-cache,sharing=locked ["task", "bayt:build"]

@@ -10,6 +10,7 @@
 *.webp binary
 *.jar binary
 *.ico binary
+*.wasm binary
 
 
 # Use bd merge for beads JSONL files

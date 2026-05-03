@@ -1,0 +1,24 @@
+include:
+- path: ./compose.bayt.yaml
+  required: false
+services:
+  setup:
+    extends:
+      file: ./compose.setup.yaml
+      service: guis_web-setup
+  build:
+    extends:
+      file: ./compose.build.yaml
+      service: guis_web-build
+  release:
+    extends:
+      file: ./compose.release.yaml
+      service: guis_web-release
+  launch:
+    extends:
+      file: ./compose.launch.yaml
+      service: guis_web-launch
+  integrate:
+    extends:
+      file: ./compose.integrate.yaml
+      service: guis_web-integrate

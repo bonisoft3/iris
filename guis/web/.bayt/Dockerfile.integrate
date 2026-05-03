@@ -1,0 +1,10 @@
+# syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
+FROM guis_web-build AS integrate
+WORKDIR /monorepo/guis/web
+COPY --link --parents --exclude=node_modules/** --exclude=.nuxt/** --exclude=.output/** --exclude=dist/** --exclude=coverage/** **/*.spec.ts **/*.spec.tsx tests/**/* vitest.config.* vitest.integration.config.* ./
+COPY --link Taskfile.yml ./Taskfile.yml
+COPY --link .bayt/Taskfile.yml .bayt/Taskfile.integrate.yaml .bayt/bayt.integrate.json .bayt/init.gradle.kts ./.bayt/
+COPY --from=bayt-runtime --link . /monorepo/plugins/bayt/runtime/
+COPY --link .bayt/Taskfile.build.yaml .bayt/bayt.build.json ./.bayt/
+COPY --link .bayt/Taskfile.setup.yaml .bayt/bayt.setup.json ./.bayt/
+RUN --mount=type=cache,id=bayt-cache,target=/root/.cache/bayt,sharing=shared --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked ["task", "bayt:integrate"]

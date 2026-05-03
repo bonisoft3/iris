@@ -1,0 +1,20 @@
+say:
+  generate:
+    rulemap:
+      auto-cue: null
+  build:
+    do: "run-task bayt:build"
+    use: "./tools.nu [run-task]"
+  test:
+    do: "run-task bayt:test"
+    use: "./tools.nu [run-task]"
+  # launch: bayt models the launch service end-to-end (envoy COPY'd
+  # from envoyproxy/envoy, envsubst from leap, runtime command in
+  # bayt.cue). Default sayt launch.nu (compose-vrun launch) targets
+  # the bayt-emitted `launch` service alias from .bayt/compose.yaml.
+  # The integrate stage's RUN executes `task bayt:integrate` (yq
+  # against the rendered envoy templates) — bake's exit code is the
+  # test verdict; no need for compose-up. Container builder skips
+  # per-stage docker image loads.
+  integrate:
+    args: "--bake --builder container"

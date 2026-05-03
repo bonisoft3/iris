@@ -1,33 +1,62 @@
+# services/tracker/skaffold.yaml — user-owned project skaffold config.
+#
+# Bayt emits per-target fragments under .bayt/; this file glues them
+# together with project-specific concerns (port-forwards, additional
+# manifests, custom profiles) that don't belong in a stack default.
+#
+# Cross-project orchestration lives one level up at products/iris/
+# skaffold.yaml; this file is for `cd services/tracker && skaffold dev`
+# (tracker alone) or for iris's `requires:` to pull tracker into a
+# composite graph.
 apiVersion: skaffold/v4beta11
 kind: Config
 metadata:
   name: services_tracker
-build:
-  artifacts:
-    - image: gcr.io/trash-362115/services.tracker
-      custom:
-        buildCommand: docker buildx bake --allow=fs.read=../.. release
-  local:
-    useBuildkit: true
-    concurrency: 64
 
+# Pass-through profiles. Skaffold's `activeProfiles:` propagation
+# requires the profile name to exist in the file being required —
+# it doesn't auto-cascade into transitive includes. So this file
+# declares empty bayt-dev and bayt-build profiles solely so iris
+# (which requires this file via configs filter) can activate them
+# by name; the actual artifact + sync + push content lives in the
+# bayt-emitted fragments below.
 profiles:
-- name: production
-  build:
-    platforms: ["linux/amd64"]
-    local:
-      push: true
+- name: bayt-dev
+- name: bayt-build
 
-test:
-  - image: gcr.io/trash-362115/services.tracker
-    custom:
-    - command: just integrate
+# Bayt-emitted fragments. Each fragment carries a profile of the
+# same name that holds the real content; this file's requires-entry
+# propagates activation downward. `command:` activation in the
+# fragments still fires for solo `cd services/tracker && skaffold
+# dev` invocations — that path doesn't need the propagation chain.
+requires:
+- path: .bayt/skaffold.launch.yaml
+  activeProfiles:
+  - name: bayt-dev
+    activatedBy: [bayt-dev]
+- path: .bayt/skaffold.release.yaml
+  activeProfiles:
+  - name: bayt-build
+    activatedBy: [bayt-build]
 
-verify:
-  - name: health-check
-    container:
-      name: health-check
-      image: gcr.io/trash-362115/curl
-      command: ["/bin/sh", "-c", "curl --retry 10 --retry-delay 3 --retry-connrefused -sf http://services-tracker-svc:9090/health || exit 1"]
-    executionMode:
-      kubernetesCluster: {}
+# Local k8s manifests for solo `skaffold dev` against a kind cluster.
+# When tracker comes up under products/iris's preview profile, iris's
+# kustomize overlays supply manifests instead — this block is for the
+# tracker-only dev loop. Manifests are project-authored and not bayt-
+# emitted; uncomment + populate `dev/` with Deployment + Service yaml
+# when wiring up a tracker-only kind cluster.
+#manifests:
+#  rawYaml:
+#  - dev/deployment.yaml
+#  - dev/service.yaml
+
+# Convenience port-forwards for solo dev.
+portForward:
+- resourceType: service
+  resourceName: services-tracker-svc
+  port: 50051        # grpc
+  address: 0.0.0.0
+- resourceType: service
+  resourceName: services-tracker-svc
+  port: 9090         # admin / health
+  address: 0.0.0.0

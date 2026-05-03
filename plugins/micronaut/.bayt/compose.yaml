@@ -1,0 +1,16 @@
+include:
+- path: ./compose.bayt.yaml
+  required: false
+services:
+  build:
+    extends:
+      file: ./compose.build.yaml
+      service: plugins_micronaut-build
+  setup:
+    extends:
+      file: ./compose.setup.yaml
+      service: plugins_micronaut-setup
+  integrate:
+    extends:
+      file: ./compose.integrate.yaml
+      service: plugins_micronaut-integrate

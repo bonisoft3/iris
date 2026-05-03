@@ -1,0 +1,10 @@
+version: '3'
+includes:
+  bayt:
+    taskfile: ./.bayt/Taskfile.yml
+    dir: ./
+    optional: true
+  workspaceroot:
+    taskfile: ../../Taskfile.yml
+    dir: ../../
+    optional: true

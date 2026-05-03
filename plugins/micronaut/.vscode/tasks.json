@@ -1,0 +1,40 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "label": "plugins_micronaut build",
+      "type": "shell",
+      "command": "task bayt:build",
+      "options": {
+        "cwd": "${workspaceFolder}/plugins/micronaut"
+      }
+    },
+    {
+      "group": {
+        "kind": "none"
+      },
+      "label": "plugins_micronaut doctor",
+      "type": "shell",
+      "command": "task bayt:doctor",
+      "options": {
+        "cwd": "${workspaceFolder}/plugins/micronaut"
+      }
+    },
+    {
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "label": "plugins_micronaut test",
+      "type": "shell",
+      "command": "task bayt:test",
+      "options": {
+        "cwd": "${workspaceFolder}/plugins/micronaut"
+      }
+    }
+  ]
+}

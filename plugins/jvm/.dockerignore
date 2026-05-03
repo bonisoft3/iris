@@ -1,0 +1,11 @@
+# Bayt's emitted Dockerfiles use specific COPY --link patterns (no COPY . /),
+# so these never end up in the image — but BuildKit still ENUMERATES the
+# whole context directory before applying COPY filters. Excluding here drops
+# the file enumeration that gets serialized into the gRPC frontend message.
+build/
+.gradle/
+.task/
+node_modules/
+.idea/
+.vscode/
+target/

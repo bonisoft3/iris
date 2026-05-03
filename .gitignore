@@ -271,6 +271,10 @@ service-account.json
 # Git worktrees
 .worktrees/
 
+# go-task's per-project checksum cache (status:/sources: fingerprints)
+**/.task/
+
 services/shelfie/shelfie
 plugins/omnishell/.omc/
 plugins/omnishell/test-results/
+.gstack/

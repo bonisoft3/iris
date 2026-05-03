@@ -1,0 +1,240 @@
+{
+  "compose": {
+    "runtime": {
+      "entrypoint": [
+        "find",
+        "build/test-results/integrationTest",
+        "-name",
+        "*.xml",
+        "-exec",
+        "cat",
+        "{}",
+        "+"
+      ],
+      "environment": {},
+      "ports": [],
+      "volumes": [
+        "//var/run/docker.sock:/var/run/docker.sock",
+        "${HOME:-~}/.skaffold/cache:/root/.skaffold/cache"
+      ],
+      "depends_on": [],
+      "network_mode": "host"
+    }
+  },
+  "dockerfile": {
+    "preamble": [],
+    "from": {
+      "ref": ":build",
+      "name": "services_tracker-build",
+      "context": "service:services_tracker-build"
+    },
+    "secrets": [
+      "host.env"
+    ],
+    "incremental": true,
+    "mounts": [
+      {
+        "type": "cache",
+        "target": "/root/.gradle",
+        "sharing": "shared",
+        "required": false
+      },
+      {
+        "type": "cache",
+        "target": ".gradle/configuration-cache",
+        "sharing": "locked",
+        "required": false
+      }
+    ],
+    "epilogue": [],
+    "expose": [],
+    "entrypoint": null
+  },
+  "name": "integrate",
+  "project": "services_tracker",
+  "dir": "services/tracker",
+  "activate": "mise x --",
+  "srcs": {
+    "globs": [
+      "src/it/**/*.java",
+      "src/it/**/*.kt",
+      "src/it/resources/**/*",
+      "src/test/resources/**/*"
+    ],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [
+      "build/test-results/integrationTest/**/*.xml",
+      "build/reports/tests/integrationTest/**/*"
+    ],
+    "exclude": []
+  },
+  "env": {},
+  "taskfile": {
+    "run": "when_changed",
+    "silent": false,
+    "preconditions": []
+  },
+  "visibility": "internal",
+  "deps": [
+    "build"
+  ],
+  "transitiveDeps": [
+    "build",
+    "setup"
+  ],
+  "transitiveCrossDeps": [
+    {
+      "name": "setup",
+      "project": "workspaceroot",
+      "dir": "",
+      "outs": {
+        "globs": [
+          ".mise.toml",
+          "mise.lock",
+          "pnpm-lock.yaml",
+          "pnpm-workspace.yaml",
+          "package.json",
+          "gradle/libs.versions.toml",
+          "plugins/devserver/dind.sh",
+          ".task/bayt/setup.hash"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "build",
+      "project": "libraries_logs",
+      "dir": "libraries/logs",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "libraries_pbtables",
+      "dir": "libraries/pbtables",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "libraries_xproto",
+      "dir": "libraries/xproto",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "plugins_libstoml",
+      "dir": "plugins/libstoml",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "plugins_jvm",
+      "dir": "plugins/jvm",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    },
+    {
+      "name": "build",
+      "project": "plugins_micronaut",
+      "dir": "plugins/micronaut",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    }
+  ],
+  "chainedDeps": [
+    {
+      "name": "build",
+      "project": "services_tracker",
+      "dir": "services/tracker",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
+    }
+  ],
+  "cmds": [
+    {
+      "srcs": {
+        "globs": [
+          "src/it/**/*.java",
+          "src/it/**/*.kt",
+          "src/it/resources/**/*",
+          "src/test/resources/**/*"
+        ],
+        "exclude": [],
+        "defaultGlobs": null,
+        "defaultExclude": null
+      },
+      "dockerfile": {
+        "wrap": "/monorepo/plugins/devserver/dind.sh",
+        "mounts": [
+          {
+            "type": "secret",
+            "id": "host.env",
+            "required": true
+          }
+        ]
+      },
+      "do": "./gradlew --init-script .bayt/init.gradle.kts integrationTest --rerun",
+      "name": "builtin",
+      "shell": "exec",
+      "stop": false
+    }
+  ],
+  "cache": {
+    "full": true,
+    "similar": false
+  }
+}

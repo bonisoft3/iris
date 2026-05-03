@@ -98,7 +98,9 @@ export def --wrapped run-docker [...args] {
 
 export def --wrapped run-docker-compose [...args] {
   let stub = stub-path "docker"
-  with-env { MISE_LOCKED: "0" } { run-mise tool-stub $stub compose ...$args }
+  # COMPOSE_BAKE=true → compose builds via `buildx bake`: parallel
+  # cross-service builds + better cache sharing.
+  with-env { MISE_LOCKED: "0", COMPOSE_BAKE: "true" } { run-mise tool-stub $stub compose ...$args }
 }
 
 export def --wrapped run-git-cliff [...args] {
@@ -113,10 +115,19 @@ export def --wrapped run-goreleaser [...args] {
 
 export def --wrapped run-task [...args] {
   let stub = stub-path "task"
-  with-env { MISE_LOCKED: "0" } { run-mise tool-stub $stub ...$args }
+  # Put mise's own directory on PATH so commands inside Taskfiles
+  # (e.g., `mise x -- pnpm build`) can find the mise binary.
+  # PATH stays a list — string-interpolating $env.PATH would render
+  # `[entry1, entry2, ...]` literally (nu list display form), which
+  # tools that split PATH on `:` parse as garbage entries with
+  # brackets/commas and downstream child-process spawns (notably
+  # pnpm postinstall scripts) silently abort with exit -2.
+  let mise_dir = (mise-bin | path dirname)
+  with-env { MISE_LOCKED: "0", PATH: ([$mise_dir] ++ $env.PATH) } { run-mise tool-stub $stub ...$args }
 }
 
 export def --wrapped run-nu [...args] {
   let stub = stub-path "nu"
   with-env { MISE_LOCKED: "0" } { run-mise tool-stub $stub ...$args }
 }
+

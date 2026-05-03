@@ -1,25 +1,37 @@
+# guis/web/skaffold.yaml — user-owned project skaffold config.
+#
+# Bayt emits per-target fragments under .bayt/; this file glues them
+# together. Project-specific concerns belong here, not in stack
+# defaults.
+#
+# Cross-project orchestration lives at products/iris/skaffold.yaml;
+# this file supports `cd guis/web && skaffold dev` for web-only
+# iteration, and is what iris's `requires:` chain pulls in.
 apiVersion: skaffold/v4beta11
 kind: Config
 metadata:
   name: guis_web
-build:
-  artifacts:
-    - image: gcr.io/trash-362115/guis.web
-      custom:
-        buildCommand: docker buildx bake release
-  local:
-    useBuildkit: true
-    concurrency: 64
 
+# Pass-through profiles for activeProfiles propagation from iris.
+# See services/tracker/skaffold.yaml for the full explanation.
 profiles:
-- name: production
-  build:
-    platforms: ["linux/amd64"]
-    local:
-      push: true
+- name: bayt-dev
+- name: bayt-build
 
-test:
-  - image: gcr.io/trash-362115/guis.web
-    custom:
-    - command: just integrate
-      timeoutSeconds: 3000
+requires:
+- path: .bayt/skaffold.launch.yaml
+  activeProfiles:
+  - name: bayt-dev
+    activatedBy: [bayt-dev]
+- path: .bayt/skaffold.release.yaml
+  activeProfiles:
+  - name: bayt-build
+    activatedBy: [bayt-build]
+
+# Project-authored k8s manifests for solo `skaffold dev` against a
+# kind cluster. Iris's preview profile supplies manifests when web
+# comes up via iris; this block is for the web-only dev loop.
+#manifests:
+#  rawYaml:
+#  - dev/deployment.yaml
+#  - dev/service.yaml

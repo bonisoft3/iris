@@ -3,6 +3,8 @@ import { DefaultAuthProvider } from "./auth/provider"
 import { createSessionManager } from "./auth/session"
 
 export { WebAuthnAdapter } from "./auth/adapters/webauthn"
+export { FirebaseAdapter } from "./auth/adapters/firebase"
+export type { FirebaseAdapterConfig } from "./auth/adapters/firebase"
 export { MemoryStorage } from "./auth/storage/memory"
 export type {
   AuthProvider,
@@ -20,6 +22,8 @@ export type {
 export { LocalStorageAdapter } from "./auth/storage/local-storage"
 export { createBrowserSessionManager } from "./auth/session-browser"
 export type { BrowserSessionManager } from "./auth/session-browser"
+export { exchangeFirebaseToken } from "./auth/client/firebase-exchange"
+export type { ExchangeOptions, ExchangeResult } from "./auth/client/firebase-exchange"
 
 export { createLayout } from "./layout/create-layout"
 export type { NavItem, LayoutConfig, LayoutComponents, ResolvedLayoutConfig } from "./layout/types"

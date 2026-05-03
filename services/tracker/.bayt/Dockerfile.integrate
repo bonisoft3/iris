@@ -1,0 +1,10 @@
+# syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
+FROM services_tracker-build AS integrate
+WORKDIR /monorepo/services/tracker
+COPY --link --parents src/it/**/*.java src/it/**/*.kt src/it/resources/**/* src/test/resources/**/* ./
+COPY --link Taskfile.yml ./Taskfile.yml
+COPY --link .bayt/Taskfile.yml .bayt/Taskfile.integrate.yaml .bayt/bayt.integrate.json .bayt/init.gradle.kts ./.bayt/
+COPY --from=bayt-runtime --link . /monorepo/plugins/bayt/runtime/
+COPY --link .bayt/Taskfile.build.yaml .bayt/bayt.build.json ./.bayt/
+COPY --link .bayt/Taskfile.setup.yaml .bayt/bayt.setup.json ./.bayt/
+RUN --mount=type=cache,id=bayt-cache,target=/root/.cache/bayt,sharing=shared --mount=type=cache,target=/root/.gradle,sharing=shared --mount=type=cache,target=.gradle/configuration-cache,sharing=locked --mount=type=secret,id=host.env,required=true ["/monorepo/plugins/devserver/dind.sh", "task", "bayt:integrate"]

@@ -1,42 +1,40 @@
 {
-	"version": "2.0.0",
-	"tasks": [
-		{
-			"label": "build",
-			"type": "shell",
-			"command": "task build",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			}
-		},
-		{
-			"label": "test",
-			"type": "shell",
-			"command": "task test",
-			"group": {
-				"kind": "test",
-				"isDefault": true
-			},
-			"problemMatcher": []
-		},
-		{
-			"label": "docker-build",
-      "type": "docker-build",
-			"dockerBuild": {
-				"context": "${workspaceFolder}/../..",
-				"dockerfile": "${workspaceFolder}/Dockerfile",
-				"target": "debug"
-			}
-		},
-		{
-			"label": "docker-run: debug",
-			"dependsOn": ["docker-build"],
-			"type": "docker-run",
-			"dockerRun": {
-				"command": "envoy -c <(envsubst < out/*.tpl | yq -o json)"
-			}
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "group": {
+        "kind": "none"
+      },
+      "label": "services_tracker-tx doctor",
+      "type": "shell",
+      "command": "task bayt:doctor",
+      "options": {
+        "cwd": "${workspaceFolder}/services/tracker-tx"
+      }
+    },
+    {
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "label": "services_tracker-tx build",
+      "type": "shell",
+      "command": "task bayt:build",
+      "options": {
+        "cwd": "${workspaceFolder}/services/tracker-tx"
+      }
+    },
+    {
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "label": "services_tracker-tx test",
+      "type": "shell",
+      "command": "task bayt:test",
+      "options": {
+        "cwd": "${workspaceFolder}/services/tracker-tx"
+      }
     }
-
-	]
+  ]
 }

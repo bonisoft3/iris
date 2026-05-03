@@ -1,0 +1,8 @@
+services:
+  libraries_pbtables-setup:
+    build:
+      additional_contexts:
+        plugins_jvm-build: service:plugins_jvm-build
+      context: ..
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup

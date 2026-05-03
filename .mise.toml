@@ -3,6 +3,12 @@ locked = true
 lockfile = true
 experimental = true
 paranoid = false
+# Global verification toggles must be set alongside the backend-scoped
+# ones below; the backend settings don't override the globals. With a
+# complete lockfile, downloads verify via the embedded sha256 — no
+# attestation API calls needed.
+github_attestations = false
+slsa = false
 github.slsa = false
 github.github_attestations = false
 aqua.github_attestations = false

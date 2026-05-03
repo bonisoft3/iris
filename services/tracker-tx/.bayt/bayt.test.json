@@ -1,0 +1,77 @@
+{
+  "name": "test",
+  "project": "services_tracker-tx",
+  "dir": "services/tracker-tx",
+  "activate": "mise x --",
+  "srcs": {
+    "globs": [
+      "transcoding.yaml",
+      "cloud_run_tls.yaml"
+    ],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [
+      "build/test-results/**/*.xml"
+    ],
+    "exclude": []
+  },
+  "env": {},
+  "taskfile": {
+    "run": "when_changed",
+    "silent": false,
+    "preconditions": []
+  },
+  "visibility": "internal",
+  "deps": [
+    "build"
+  ],
+  "transitiveDeps": [
+    "build",
+    "setup"
+  ],
+  "transitiveCrossDeps": [],
+  "chainedDeps": [
+    {
+      "name": "build",
+      "project": "services_tracker-tx",
+      "dir": "services/tracker-tx",
+      "outs": {
+        "globs": [
+          "out/transcoding.yaml.tpl",
+          "out/transcoding.yaml.gcp.tpl"
+        ],
+        "exclude": []
+      }
+    }
+  ],
+  "cmds": [
+    {
+      "srcs": {
+        "globs": [
+          "transcoding.yaml",
+          "cloud_run_tls.yaml"
+        ],
+        "exclude": [],
+        "defaultGlobs": null,
+        "defaultExclude": null
+      },
+      "shell": "sh",
+      "do": "yq . < out/transcoding.yaml.gcp.tpl",
+      "name": "builtin",
+      "stop": false
+    }
+  ],
+  "cache": {
+    "full": false,
+    "similar": false
+  },
+  "vscode": {
+    "group": {
+      "kind": "test",
+      "isDefault": true
+    },
+    "dependsOn": [],
+    "dependsOrder": "sequence"
+  }
+}

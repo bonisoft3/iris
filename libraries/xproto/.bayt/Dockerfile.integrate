@@ -1,0 +1,7 @@
+# syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
+FROM libraries_xproto-build AS integrate
+WORKDIR /monorepo/libraries/xproto
+COPY --link --parents src/it/**/*.java src/it/**/*.kt src/it/resources/**/* ./
+RUN --mount=type=cache,target=/root/.gradle,sharing=shared --mount=type=cache,target=.gradle/configuration-cache,sharing=locked ["dind.sh", "mise", "x", "--", "./gradlew", "--init-script", ".bayt/init.gradle.kts", "integrationTest", "--rerun"]
+COPY --link Taskfile.yml ./Taskfile.yml
+COPY --link .bayt/Taskfile.yml .bayt/Taskfile.integrate.yaml .bayt/bayt.integrate.json .bayt/init.gradle.kts ./.bayt/

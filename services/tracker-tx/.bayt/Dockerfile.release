@@ -1,0 +1,6 @@
+# syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
+FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223 AS release
+WORKDIR /monorepo/services/tracker-tx
+COPY --from=services_tracker-tx-build --link --parents /monorepo/services/tracker-tx/out/transcoding.yaml.tpl /monorepo/services/tracker-tx/out/transcoding.yaml.gcp.tpl /
+COPY --link Taskfile.yml ./Taskfile.yml
+COPY --link .bayt/Taskfile.yml .bayt/bayt.release.json .bayt/init.gradle.kts ./.bayt/

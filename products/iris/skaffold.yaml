@@ -1,15 +1,32 @@
 apiVersion: skaffold/v4beta11
 kind: Config
+metadata:
+  name: trash
+
+# Children supply their own bayt-emitted skaffold fragments via their
+# project-root skaffold.yaml. activeProfiles propagation makes iris's
+# `preview` profile activate the children's `bayt-dev` profiles
+# (which carry the launch dockerfile + sync rules emitted by bayt's
+# stacks/sayt verb fragment). The redundant `command: dev` activation
+# inside each bayt-dev still works for solo `cd <project> && skaffold
+# dev` invocations; iris's name-based propagation is the explicit
+# orchestrator-level wire.
 requires:
   - configs: [ "services_tracker" ]
     path: ../../services/tracker/skaffold.yaml
+    activeProfiles:
+      - name: bayt-dev
+        activatedBy: [preview]
   - configs: [ "services_tracker-tx" ]
     path: ../../services/tracker-tx/skaffold.yaml
+    activeProfiles:
+      - name: bayt-dev
+        activatedBy: [preview]
   - configs: [ "guis_web" ]
     path: ../../guis/web/skaffold.yaml
-  #only uncomment guis/web when in development mode
-metadata:
-  name: trash
+    activeProfiles:
+      - name: bayt-dev
+        activatedBy: [preview]
 
 portForward:
 - resourceType: service

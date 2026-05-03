@@ -1,0 +1,16 @@
+services:
+  services_tracker-launch:
+    build:
+      additional_contexts:
+        services_tracker-build: service:services_tracker-build
+        workspaceroot-setup: service:workspaceroot-setup
+        libraries_logs-build: service:libraries_logs-build
+        libraries_pbtables-build: service:libraries_pbtables-build
+        libraries_xproto-build: service:libraries_xproto-build
+        plugins_libstoml-build: service:plugins_libstoml-build
+        plugins_jvm-build: service:plugins_jvm-build
+        plugins_micronaut-build: service:plugins_micronaut-build
+        opensuse/leap:15.6@sha256:99c3ce36da52de669d5fd6663528438b0579cafa7efeab2e9e6d610a3c4b6c9e: docker-image://opensuse/leap:15.6@sha256:99c3ce36da52de669d5fd6663528438b0579cafa7efeab2e9e6d610a3c4b6c9e
+      context: ..
+      dockerfile: .bayt/Dockerfile.launch
+      target: launch

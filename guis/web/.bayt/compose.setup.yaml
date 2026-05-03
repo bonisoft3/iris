@@ -1,0 +1,8 @@
+services:
+  guis_web-setup:
+    build:
+      additional_contexts:
+        workspaceroot-setup: service:workspaceroot-setup
+      context: ..
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup

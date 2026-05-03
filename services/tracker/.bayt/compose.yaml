@@ -1,0 +1,32 @@
+include:
+- path: ./compose.bayt.yaml
+  required: false
+services:
+  setup:
+    extends:
+      file: ./compose.setup.yaml
+      service: services_tracker-setup
+  build:
+    extends:
+      file: ./compose.build.yaml
+      service: services_tracker-build
+  release-artifact:
+    extends:
+      file: ./compose.release-artifact.yaml
+      service: services_tracker-release-artifact
+  release-layers:
+    extends:
+      file: ./compose.release-layers.yaml
+      service: services_tracker-release-layers
+  release:
+    extends:
+      file: ./compose.release.yaml
+      service: services_tracker-release
+  launch:
+    extends:
+      file: ./compose.launch.yaml
+      service: services_tracker-launch
+  integrate:
+    extends:
+      file: ./compose.integrate.yaml
+      service: services_tracker-integrate

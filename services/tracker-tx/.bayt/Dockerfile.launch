@@ -1,0 +1,10 @@
+# syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
+FROM services_tracker-tx-build AS launch
+WORKDIR /monorepo/services/tracker-tx
+COPY --from=envoyproxy/envoy:v1.35.3@sha256:4d496918618a7ebd6c71ae8285e31ebff092f3a0a5ad642d50decf4a54eb2456 /usr/local/bin/envoy /usr/local/bin/envoy
+RUN zypper -n install gettext-runtime && zypper clean -a
+ENV PATH=/root/.local/share/mise/shims:$PATH
+RUN ["mise", "x", "--", "true"]
+COPY --link Taskfile.yml ./Taskfile.yml
+COPY --link .bayt/Taskfile.yml .bayt/bayt.launch.json .bayt/init.gradle.kts ./.bayt/
+EXPOSE 8080

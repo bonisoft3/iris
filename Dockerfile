@@ -16,7 +16,7 @@ RUN printf '{"act":true}\n' > /tmp/act-event.json
 RUN --mount=type=bind,target=/monorepo \
     --mount=type=secret,id=host.env,required \
     cp /monorepo/plugins/devserver/dind.sh /usr/local/bin/ && chmod +x /usr/local/bin/dind.sh && \
-    cd /monorepo && dind.sh act -j all \
+    cd /monorepo && dind.sh act -j ci \
       --container-options "--user root" \
       --use-gitignore=false \
       --matrix os:ubuntu-latest \

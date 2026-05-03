@@ -1,0 +1,9 @@
+services:
+  services_tracker-tx-integrate:
+    build:
+      additional_contexts:
+        services_tracker-tx-build: service:services_tracker-tx-build
+        opensuse/leap:15.6@sha256:99c3ce36da52de669d5fd6663528438b0579cafa7efeab2e9e6d610a3c4b6c9e: docker-image://opensuse/leap:15.6@sha256:99c3ce36da52de669d5fd6663528438b0579cafa7efeab2e9e6d610a3c4b6c9e
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate

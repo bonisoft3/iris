@@ -1,0 +1,93 @@
+{
+  "dockerfile": {
+    "preamble": [
+      "COPY --from=bonitao/lazybox:0.8.0@sha256:98414753b9ae2e90b096a1e3a9f7598ac2477e10fa3e5384083d9e29dde3c499 /lazybox/ /root/.local/share/lazybox/",
+      "ENV PATH=/root/.local/bin:/root/.local/share/lazybox/bin:$PATH",
+      "ENV MISE_TRUSTED_CONFIG_PATHS=/monorepo"
+    ],
+    "from": {
+      "name": "opensuse/leap:15.6@sha256:99c3ce36da52de669d5fd6663528438b0579cafa7efeab2e9e6d610a3c4b6c9e",
+      "context": "docker-image://opensuse/leap:15.6@sha256:99c3ce36da52de669d5fd6663528438b0579cafa7efeab2e9e6d610a3c4b6c9e"
+    },
+    "mounts": [],
+    "secrets": [],
+    "epilogue": [],
+    "expose": [],
+    "entrypoint": null,
+    "incremental": false
+  },
+  "name": "build",
+  "project": "services_tracker-tx",
+  "dir": "services/tracker-tx",
+  "activate": "mise x --",
+  "srcs": {
+    "globs": [
+      "transcoding.yaml",
+      "cloud_run_tls.yaml",
+      "edge.yaml"
+    ],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [
+      "out/transcoding.yaml.tpl",
+      "out/transcoding.yaml.gcp.tpl"
+    ],
+    "exclude": []
+  },
+  "env": {},
+  "taskfile": {
+    "run": "when_changed",
+    "silent": false,
+    "preconditions": []
+  },
+  "visibility": "internal",
+  "deps": [
+    "setup"
+  ],
+  "transitiveDeps": [
+    "setup"
+  ],
+  "transitiveCrossDeps": [],
+  "chainedDeps": [
+    {
+      "name": "setup",
+      "project": "services_tracker-tx",
+      "dir": "services/tracker-tx",
+      "outs": {
+        "globs": [],
+        "exclude": []
+      }
+    }
+  ],
+  "cmds": [
+    {
+      "srcs": {
+        "globs": [
+          "transcoding.yaml",
+          "cloud_run_tls.yaml",
+          "edge.yaml"
+        ],
+        "exclude": [],
+        "defaultGlobs": null,
+        "defaultExclude": null
+      },
+      "shell": "sh",
+      "do": "mkdir -p out && cat transcoding.yaml cloud_run_tls.yaml > out/transcoding.yaml.gcp.tpl && cat transcoding.yaml > out/transcoding.yaml.tpl",
+      "name": "builtin",
+      "stop": false
+    }
+  ],
+  "cache": {
+    "full": false,
+    "similar": false
+  },
+  "vscode": {
+    "group": {
+      "kind": "build",
+      "isDefault": true
+    },
+    "dependsOn": [],
+    "dependsOrder": "sequence"
+  }
+}
