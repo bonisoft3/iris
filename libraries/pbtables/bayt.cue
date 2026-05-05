@@ -13,10 +13,7 @@ _pbtables: sayt.gradle & {
 		// Public: consumed by services/tracker.
 		"build": visibility: "public"
 		// REPRODUCER: see plugins/jvm/bayt.cue for the gRPC limit context.
-		"setup": {
-			deps: ["plugins_jvm:build"]
-			dockerfile: from: ref: "plugins_jvm:build"
-		}
+		"setup": dockerfile: from: ref: "plugins_jvm:build"
 		// pluginManagement includes libstoml+jvm+micronaut; top-level includeBuild("../../libraries/xproto").
 		// xproto's settings.gradle.kts includes logs, so logs dir must also be in the build container.
 		"build": deps: [":setup", "workspaceroot:setup", "plugins_libstoml:build", "plugins_jvm:build", "plugins_micronaut:build", "libraries_xproto:build", "libraries_logs:build"]

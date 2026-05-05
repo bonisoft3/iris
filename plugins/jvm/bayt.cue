@@ -23,10 +23,7 @@ _jvm: sayt.gradle & {
 		// baseline. Left here intentionally as a reproducer.
 		"build": visibility: "public"
 		"setup": visibility: "public"
-		"setup": {
-			deps: ["workspaceroot:setup"]
-			dockerfile: from: ref: "workspaceroot:setup"
-		}
+		"setup": dockerfile: from: ref: "workspaceroot:setup"
 		// settings.gradle.kts includes libstoml via pluginManagement
 		// includeBuild — that directory must exist in the build container.
 		"build": deps: [":setup", "workspaceroot:setup", "plugins_libstoml:build"]

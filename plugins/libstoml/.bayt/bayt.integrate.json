@@ -1,5 +1,10 @@
 {
-  "compose": {},
+  "compose": {
+    "environment": {},
+    "ports": [],
+    "volumes": [],
+    "depends_on": {}
+  },
   "dockerfile": {
     "preamble": [],
     "from": {
@@ -25,9 +30,12 @@
       }
     ],
     "epilogue": [],
+    "copy": [],
+    "healthcheck": null,
     "expose": [],
     "entrypoint": null,
-    "incremental": false
+    "incremental": false,
+    "cmd": null
   },
   "name": "integrate",
   "project": "plugins_libstoml",
@@ -62,7 +70,27 @@
     "build",
     "setup"
   ],
-  "transitiveCrossDeps": [],
+  "transitiveCrossDeps": [
+    {
+      "name": "setup",
+      "project": "workspaceroot",
+      "dir": "",
+      "outs": {
+        "globs": [
+          ".mise.toml",
+          "mise.lock",
+          "pnpm-lock.yaml",
+          "pnpm-workspace.yaml",
+          "package.json",
+          "gradle/libs.versions.toml",
+          "plugins/devserver/dind.sh",
+          "**/package.json",
+          ".task/bayt/setup.hash"
+        ],
+        "exclude": []
+      }
+    }
+  ],
   "chainedDeps": [
     {
       "name": "build",

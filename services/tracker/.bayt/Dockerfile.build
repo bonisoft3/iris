@@ -1,7 +1,6 @@
 # syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
 FROM services_tracker-setup AS build
 WORKDIR /monorepo/services/tracker
-COPY --from=workspaceroot-setup --link --parents /monorepo/.mise.toml /monorepo/mise.lock /monorepo/pnpm-lock.yaml /monorepo/pnpm-workspace.yaml /monorepo/package.json /monorepo/gradle/libs.versions.toml /monorepo/plugins/devserver/dind.sh /monorepo/.task/bayt/setup.hash /
 COPY --from=libraries_logs-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/libraries/logs/**/* /
 COPY --from=libraries_pbtables-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/libraries/pbtables/**/* /
 COPY --from=libraries_xproto-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/libraries/xproto/**/* /

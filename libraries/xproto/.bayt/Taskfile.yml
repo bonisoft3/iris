@@ -7,6 +7,10 @@ includes:
     taskfile: ./Taskfile.setup.yaml
     dir: ../
     optional: true
+  descriptor:
+    taskfile: ./Taskfile.descriptor.yaml
+    dir: ../
+    optional: true
   doctor:
     taskfile: ./Taskfile.doctor.yaml
     dir: ../

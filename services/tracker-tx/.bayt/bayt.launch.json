@@ -1,32 +1,30 @@
 {
   "compose": {
-    "runtime": {
-      "command": [
-        "bash",
-        "-c",
-        "envoy -c <(envsubst < transcoding.yaml | yq -o json)"
-      ],
-      "environment": {},
-      "ports": [
-        "8080"
-      ],
-      "volumes": [
-        "//var/run/docker.sock:/var/run/docker.sock"
-      ],
-      "depends_on": [],
-      "healthcheck": {
-        "test": "curl http://localhost:18080/",
-        "interval": "40s",
-        "timeout": "30s",
-        "retries": 3,
-        "start_period": "60s"
-      }
+    "command": [
+      "bash",
+      "-c",
+      "envoy -c <(envsubst < transcoding.yaml | yq -o json)"
+    ],
+    "environment": {},
+    "ports": [
+      "8080"
+    ],
+    "volumes": [
+      "//var/run/docker.sock:/var/run/docker.sock"
+    ],
+    "depends_on": {},
+    "healthcheck": {
+      "test": "curl http://localhost:18080/",
+      "interval": "40s",
+      "timeout": "30s",
+      "retries": 3,
+      "start_period": "60s"
     }
   },
   "dockerfile": {
     "preamble": [
       "COPY --from=envoyproxy/envoy:v1.35.3@sha256:4d496918618a7ebd6c71ae8285e31ebff092f3a0a5ad642d50decf4a54eb2456 /usr/local/bin/envoy /usr/local/bin/envoy",
-      "RUN zypper -n install gettext-runtime && zypper clean -a",
+      "RUN zypper -n install gettext-runtime=0.22.5-160000.2.2 && zypper clean -a",
       "ENV PATH=/root/.local/share/mise/shims:$PATH"
     ],
     "from": {
@@ -40,8 +38,11 @@
     "mounts": [],
     "secrets": [],
     "epilogue": [],
+    "copy": [],
+    "healthcheck": null,
     "entrypoint": null,
-    "incremental": false
+    "incremental": false,
+    "cmd": null
   },
   "name": "launch",
   "project": "services_tracker-tx",
@@ -59,7 +60,7 @@
         "build": {
           "artifact": {
             "image": "gcr.io/trash-362115/services.tracker-tx-gcp",
-            "context": "../",
+            "context": ".",
             "sync": {
               "manual": [],
               "auto": false
@@ -95,16 +96,38 @@
     "globs": [],
     "exclude": []
   },
-  "env": {},
+  "env": {
+    "GRPC_ADDRESS": "127.0.0.1",
+    "GRPC_PORT": "50051",
+    "GRPC_TRACKER_SERVICE": "trash.tracker.v1.TrackerService",
+    "GRPC_NEWS_SERVICE": "trash.tracker.v1.NewsService",
+    "GRPC_OBJECT_MATERIAL_SERVICE": "trash.tracker.v1.ObjectMaterialService",
+    "GRPC_DISPOSAL_PLACE_SERVICE": "trash.tracker.v1.DisposalPlaceService",
+    "PROTO_DESCRIPTOR_PB": "/monorepo/libraries/xproto/out/xproto.desc.pb",
+    "ENVOY_UID": "0"
+  },
   "visibility": "internal",
   "deps": [
-    "build"
+    "build",
+    "descriptor"
   ],
   "transitiveDeps": [
     "build",
     "setup"
   ],
-  "transitiveCrossDeps": [],
+  "transitiveCrossDeps": [
+    {
+      "name": "descriptor",
+      "project": "libraries_xproto",
+      "dir": "libraries/xproto",
+      "outs": {
+        "globs": [
+          "out/xproto.desc.pb"
+        ],
+        "exclude": []
+      }
+    }
+  ],
   "chainedDeps": [
     {
       "name": "build",
@@ -114,6 +137,17 @@
         "globs": [
           "out/transcoding.yaml.tpl",
           "out/transcoding.yaml.gcp.tpl"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "descriptor",
+      "project": "libraries_xproto",
+      "dir": "libraries/xproto",
+      "outs": {
+        "globs": [
+          "out/xproto.desc.pb"
         ],
         "exclude": []
       }

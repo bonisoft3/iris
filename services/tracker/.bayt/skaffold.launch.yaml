@@ -11,7 +11,7 @@ profiles:
     - docker:
         dockerfile: .bayt/Dockerfile.launch
       image: gcr.io/trash-362115/services.tracker
-      context: ../
+      context: .
     local:
       useBuildkit: true
       concurrency: 64

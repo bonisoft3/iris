@@ -10,8 +10,11 @@
     "mounts": [],
     "secrets": [],
     "epilogue": [],
+    "copy": [],
+    "healthcheck": null,
     "expose": [],
-    "entrypoint": null
+    "entrypoint": null,
+    "cmd": null
   },
   "name": "build",
   "project": "guis_web",
@@ -68,6 +71,7 @@
           "package.json",
           "gradle/libs.versions.toml",
           "plugins/devserver/dind.sh",
+          "**/package.json",
           ".task/bayt/setup.hash"
         ],
         "exclude": []

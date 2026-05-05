@@ -21,9 +21,12 @@
     "mounts": [],
     "secrets": [],
     "epilogue": [],
+    "copy": [],
+    "healthcheck": null,
     "expose": [],
     "entrypoint": null,
-    "incremental": false
+    "incremental": false,
+    "cmd": null
   },
   "name": "release",
   "project": "guis_web",
@@ -41,7 +44,7 @@
         "build": {
           "artifact": {
             "image": "gcr.io/trash-362115/guis.web",
-            "context": "../",
+            "context": ".",
             "sync": {
               "manual": [],
               "auto": false
@@ -113,6 +116,7 @@
           "package.json",
           "gradle/libs.versions.toml",
           "plugins/devserver/dind.sh",
+          "**/package.json",
           ".task/bayt/setup.hash"
         ],
         "exclude": []

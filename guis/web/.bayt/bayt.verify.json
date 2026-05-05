@@ -42,6 +42,7 @@
           "package.json",
           "gradle/libs.versions.toml",
           "plugins/devserver/dind.sh",
+          "**/package.json",
           ".task/bayt/setup.hash"
         ],
         "exclude": []

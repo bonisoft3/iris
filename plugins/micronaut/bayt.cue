@@ -13,10 +13,7 @@ _micronaut: sayt.gradle & {
 		// Public: consumed by libraries and services downstream.
 		"build": visibility: "public"
 		// REPRODUCER: see plugins/jvm/bayt.cue for the gRPC limit context.
-		"setup": {
-			deps: ["plugins_jvm:build"]
-			dockerfile: from: ref: "plugins_jvm:build"
-		}
+		"setup": dockerfile: from: ref: "plugins_jvm:build"
 		// settings.gradle.kts pluginManagement includes both libstoml
 		// and jvm via includeBuild — both must exist in the build container.
 		"build": deps: [":setup", "workspaceroot:setup", "plugins_libstoml:build", "plugins_jvm:build"]

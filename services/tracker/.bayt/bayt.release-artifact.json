@@ -9,9 +9,12 @@
     "mounts": [],
     "secrets": [],
     "epilogue": [],
+    "copy": [],
+    "healthcheck": null,
     "expose": [],
     "entrypoint": null,
-    "incremental": false
+    "incremental": false,
+    "cmd": null
   },
   "name": "release-artifact",
   "project": "services_tracker",
@@ -50,6 +53,7 @@
           "package.json",
           "gradle/libs.versions.toml",
           "plugins/devserver/dind.sh",
+          "**/package.json",
           ".task/bayt/setup.hash"
         ],
         "exclude": []

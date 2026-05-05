@@ -71,24 +71,40 @@ _tx: bayt.#project & {
 			}
 		}
 		"launch": sayt.launch & mise.exec & {
-			// Launch target — envoy with the transcoding config. Chains
-			// off :build so the rendered templates (out/*.tpl) and the
-			// mise toolchain are already present; runtime only adds
-			// envoy and envsubst.
+			// envoy with the transcoding config; chains off :build for
+			// rendered templates (out/*.tpl) and mise toolchain. Runtime
+			// adds envoy (COPY from envoyproxy/envoy; glibc binary, leap
+			// provides it) and envsubst (leap gettext-runtime). PATH
+			// includes mise shims so the runtime command can call `task`
+			// and `yq` without an explicit `mise x --` prefix.
 			//
-			// envoy: COPY'd from envoyproxy/envoy. The binary links only
-			// against glibc, which leap already provides — no cross-
-			// distro library shimming needed.
-			//
-			// envsubst: from leap's gettext-runtime package.
-			//
-			// mise shims: added to PATH so the runtime command can call
-			// `task` and `yq` without an explicit `mise x --` prefix.
+			// GRPC_ADDRESS=127.0.0.1:50051 lets envoy boot its proto-
+			// validating bootstrap with no real backend reachable; the
+			// cluster fails at request time, not at boot.
+			env: {
+				GRPC_ADDRESS:                  "127.0.0.1"
+				GRPC_PORT:                     "50051"
+				GRPC_TRACKER_SERVICE:          "trash.tracker.v1.TrackerService"
+				GRPC_NEWS_SERVICE:             "trash.tracker.v1.NewsService"
+				GRPC_OBJECT_MATERIAL_SERVICE:  "trash.tracker.v1.ObjectMaterialService"
+				GRPC_DISPOSAL_PLACE_SERVICE:   "trash.tracker.v1.DisposalPlaceService"
+				PROTO_DESCRIPTOR_PB:           "/monorepo/libraries/xproto/out/xproto.desc.pb"
+				ENVOY_UID:                     "0"
+			}
+			// libraries_xproto:descriptor produces /monorepo/libraries/
+			// xproto/out/xproto.desc.pb (buf-built FileDescriptorSet)
+			// that envoy's grpc_json_transcoder loads at runtime per
+			// PROTO_DESCRIPTOR_PB above. Dep flows the file in via
+			// the auto-COPY-from chain. Cross-project federation
+			// pulls in xproto's compose.bayt.deps.yaml (build/setup/
+			// release/descriptor only — no integrate composes that
+			// would conflict on top-level secrets).
+			deps: [":build", "libraries_xproto:descriptor"]
 			dockerfile: {
 				from: ref: ":build"
 				preamble: [
 					"COPY --from=\(bayt.lock.images.envoy) /usr/local/bin/envoy /usr/local/bin/envoy",
-					"RUN zypper -n install gettext-runtime && zypper clean -a",
+					"RUN zypper -n install gettext-runtime=0.22.5-160000.2.2 && zypper clean -a",
 					"ENV PATH=/root/.local/share/mise/shims:$PATH",
 				]
 				expose: [8080]
@@ -101,7 +117,7 @@ _tx: bayt.#project & {
 			// Activation rule + dockerfile path (.bayt/Dockerfile.launch)
 			// come from stacks/sayt's launch verb fragment.
 			skaffold: profiles: "bayt-dev": build: artifact: image: "gcr.io/trash-362115/services.tracker-tx-gcp"
-			compose: runtime: {
+			compose: {
 				// envoy reads transcoding.yaml directly (envsubst expands
 				// env vars, yq converts to JSON via process substitution).
 				command: ["bash", "-c", "envoy -c <(envsubst < transcoding.yaml | yq -o json)"]
@@ -159,14 +175,9 @@ _tx: bayt.#project & {
 				artifact: {
 					image: "gcr.io/trash-362115/services.tracker-tx-gcp"
 					// `docker compose config` flattens the federated bayt
-					// graph; bake then uses additional_contexts from the
-					// flattened compose to resolve cross-Dockerfile FROM
-					// refs (Dockerfile.release does
-					// `COPY --from=services_tracker-tx-build`, which is a
-					// sibling target's image — not a stage in this
-					// Dockerfile). Without the flatten, bake errors with
-					// "pull access denied" looking for a non-existent
-					// docker.io/library/services_tracker-tx-build image.
+					// graph so bake can resolve cross-Dockerfile FROM refs
+					// (Dockerfile.release `COPY --from=services_tracker-tx-build`
+					// is a sibling target, not a local stage).
 					custom: buildCommand: "docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.release.hcl release"
 				}
 				platforms: ["linux/amd64"]

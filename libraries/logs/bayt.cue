@@ -17,10 +17,7 @@ _logs: sayt.gradle & {
 		// the same chain on pbtables/xproto/micronaut/tracker, this pushes
 		// BuildKit's frontend gRPC payload past its ~4 MB ceiling. See
 		// plugins/jvm/bayt.cue for the full story.
-		"setup": {
-			deps: ["plugins_jvm:build"]
-			dockerfile: from: ref: "plugins_jvm:build"
-		}
+		"setup": dockerfile: from: ref: "plugins_jvm:build"
 		// settings.gradle.kts uses id("catalog") from libstoml plugin; pluginManagement also includes jvm.
 		"build": deps: [":setup", "workspaceroot:setup", "plugins_libstoml:build", "plugins_jvm:build"]
 

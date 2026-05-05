@@ -3,7 +3,6 @@ services:
     build:
       additional_contexts:
         bayt-runtime: service:bayt-runtime-stub
-        workspaceroot-setup: service:workspaceroot-setup
         libraries_logs-build: service:libraries_logs-build
         libraries_pbtables-build: service:libraries_pbtables-build
         libraries_xproto-build: service:libraries_xproto-build

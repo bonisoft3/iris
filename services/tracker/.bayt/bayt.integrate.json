@@ -1,25 +1,23 @@
 {
   "compose": {
-    "runtime": {
-      "entrypoint": [
-        "find",
-        "build/test-results/integrationTest",
-        "-name",
-        "*.xml",
-        "-exec",
-        "cat",
-        "{}",
-        "+"
-      ],
-      "environment": {},
-      "ports": [],
-      "volumes": [
-        "//var/run/docker.sock:/var/run/docker.sock",
-        "${HOME:-~}/.skaffold/cache:/root/.skaffold/cache"
-      ],
-      "depends_on": [],
-      "network_mode": "host"
-    }
+    "entrypoint": [
+      "find",
+      "build/test-results/integrationTest",
+      "-name",
+      "*.xml",
+      "-exec",
+      "cat",
+      "{}",
+      "+"
+    ],
+    "environment": {},
+    "ports": [],
+    "volumes": [
+      "//var/run/docker.sock:/var/run/docker.sock",
+      "${HOME:-~}/.skaffold/cache:/root/.skaffold/cache"
+    ],
+    "depends_on": {},
+    "network_mode": "host"
   },
   "dockerfile": {
     "preamble": [],
@@ -47,8 +45,11 @@
       }
     ],
     "epilogue": [],
+    "copy": [],
+    "healthcheck": null,
     "expose": [],
-    "entrypoint": null
+    "entrypoint": null,
+    "cmd": null
   },
   "name": "integrate",
   "project": "services_tracker",
@@ -98,6 +99,7 @@
           "package.json",
           "gradle/libs.versions.toml",
           "plugins/devserver/dind.sh",
+          "**/package.json",
           ".task/bayt/setup.hash"
         ],
         "exclude": []

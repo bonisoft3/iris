@@ -25,8 +25,11 @@
     "from": null,
     "mounts": [],
     "secrets": [],
+    "copy": [],
+    "healthcheck": null,
     "expose": [],
-    "incremental": false
+    "incremental": false,
+    "cmd": null
   },
   "name": "release",
   "project": "services_tracker",
@@ -44,7 +47,7 @@
         "build": {
           "artifact": {
             "image": "gcr.io/trash-362115/services.tracker",
-            "context": "..",
+            "context": ".",
             "sync": {
               "manual": [],
               "auto": false
@@ -123,6 +126,7 @@
           "package.json",
           "gradle/libs.versions.toml",
           "plugins/devserver/dind.sh",
+          "**/package.json",
           ".task/bayt/setup.hash"
         ],
         "exclude": []

@@ -5,6 +5,8 @@ include:
   required: false
 - path: ./compose.integrate.yaml
   required: false
+- path: ../../../.bayt/compose.bayt.deps.yaml
+  required: false
 services:
   bayt-runtime-stub:
     build:

@@ -15,10 +15,7 @@ _xproto: sayt.gradle & {
 		// Public: consumed by libraries/pbtables and services/tracker.
 		"build": visibility: "public"
 		// REPRODUCER: see plugins/jvm/bayt.cue for the gRPC limit context.
-		"setup": {
-			deps: ["plugins_jvm:build"]
-			dockerfile: from: ref: "plugins_jvm:build"
-		}
+		"setup": dockerfile: from: ref: "plugins_jvm:build"
 		// catalog plugin requires libstoml+jvm; top-level includeBuild("../../libraries/logs") needs logs.
 		// Proto source dir (input to bufGenerate task) must be in the build container.
 		"build": {
@@ -42,6 +39,28 @@ _xproto: sayt.gradle & {
 				"buf.lock",
 			]
 			deps: [":setup", "workspaceroot:setup", "plugins_libstoml:build", "plugins_jvm:build", "libraries_logs:build"]
+		}
+
+		// descriptor — single-artifact buf-built FileDescriptorSet,
+		// consumed by services that wire envoy's grpc_json_transcoder
+		// (e.g. services/tracker-tx's launch). Separate from the main
+		// gradle/bufGenerate build so consumers don't pull the whole
+		// JVM toolchain stack just to get a binpb file. Public so
+		// cross-project deps can reference it.
+		"descriptor": sayt.generate & {
+			visibility: "public"
+			deps: ["workspaceroot:setup"]
+			srcs: globs: [
+				"buf.yaml",
+				"buf.lock",
+				"trash/**/*.proto",
+			]
+			outs: globs: ["out/xproto.desc.pb"]
+			cmd: "builtin": {
+				shell: "sh"
+				do:    "mkdir -p out && mise x -- buf build --as-file-descriptor-set --exclude-source-info -o 'out/xproto.desc.pb#format=binpb' ."
+			}
+			dockerfile: bayt.nubox
 		}
 
 		// Library: not deployed standalone, no dev server, no e2e

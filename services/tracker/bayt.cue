@@ -41,14 +41,23 @@ _tracker: sayt.gradle & {
 		// only project in the monorepo that runs integrate-with-dind;
 		// other gradle projects (libraries/*, plugins/*) keep their
 		// setup lean. Pinned to a specific socat version so layer
-		// cache keys don't churn on upstream package updates. The
-		// integrate stage's preamble repeats the install for
-		// correctness — no-op when this setup has already provided
-		// socat via the FROM-chain.
-		"setup": dockerfile: preamble: [
-			"RUN zypper -n install socat=1.8.0.0-150600.20.6.1",
-			"RUN docker --help",
-		]
+		// cache keys don't churn on upstream package updates within
+		// a leap release. Bump alongside the leap pin in
+		// images.lock.cue — query with `zypper info socat` against
+		// the new leap base to find the matching version.
+		"setup": {
+			// Chain FROM workspaceroot:setup so lazybox + GNU shell utils
+			// (findutils, which) come in via the FROM chain — only this
+			// project's extra dind deps (socat, docker smoke) get added
+			// here.
+			dockerfile: {
+				from: ref: "workspaceroot:setup"
+				preamble: [
+					"RUN zypper -n install socat=1.8.0.2-160000.2.3",
+					"RUN docker --help",
+				]
+			}
+		}
 
 		// Incremental build inside Docker: `task build:build` wraps the
 		// gradle invocation so go-task's status: hook short-circuits
@@ -120,7 +129,7 @@ _tracker: sayt.gradle & {
 				// nubox/leap doesn't ship `tar` by default, and lazybox's
 				// busybox subset doesn't include it either. zypper-install
 				// before the cmd RUN so the extraction can find /usr/bin/tar.
-				preamble: ["RUN zypper -n install tar gzip && zypper clean -a"]
+				preamble: ["RUN zypper -n install tar=1.35-160000.3.1 gzip=1.13-160000.2.2 && zypper clean -a"]
 			}
 		}
 
@@ -178,16 +187,11 @@ _tracker: sayt.gradle & {
 			_releaseBuild: {
 				artifact: {
 					image: "gcr.io/trash-362115/services.tracker"
-					// context: ".." lands cwd at services/tracker/ where
-					// the bake's `-f .bayt/bake.release.hcl` and
-					// `docker compose config` resolve.
-					context: ".."
 					// `compose config` flattens the federated bayt graph
-					// (deduping bayt-runtime-stub declared in multiple
-					// per-target compose files). Bake then reads both
-					// the flattened compose (for additional_contexts
-					// cross-Dockerfile FROM wiring) and the bake HCL
-					// (for output / cache / push settings).
+					// (dedupes bayt-runtime-stub across per-target files).
+					// Bake reads the flattened compose for additional_contexts
+					// cross-Dockerfile FROM wiring and the HCL for output /
+					// cache / push settings.
 					custom: buildCommand: "docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.release.hcl release"
 				}
 				platforms: ["linux/amd64"]
@@ -224,26 +228,22 @@ _tracker: sayt.gradle & {
 		// Iris's hand-written products/iris/skaffold.yaml or this
 		// project's services/tracker/skaffold.yaml `requires:` the
 		// emitted .bayt/skaffold.launch.yaml to wire everything in.
-		"launch": skaffold: profiles: "bayt-dev": build: artifact: image: "gcr.io/trash-362115/services.tracker"
+		"launch": {
+			dockerfile: bayt.nubox
+			skaffold: profiles: "bayt-dev": build: artifact: image: "gcr.io/trash-362115/services.tracker"
+		}
 
-		// Integration test runs under docker-in-docker for testcontainers
-		// isolation. `bayt.hostenv` provides the generic secret
-		// infrastructure (host.env mount + compose secrets federation);
-		// the docker-in-docker specifics (dind.sh wrap + entrypoint,
-		// docker socket + skaffold cache volumes, host networking) stay
-		// inline here since dind.sh is a sayt concept, not a bayt one.
-		// bayt.incremental lets the Dockerfile RUN invoke
-		// `task integrate:integrate`, which walks :setup:setup →
-		// :build:build → :integrate:integrate with stamps COPY'd from
-		// the build stage; fingerprint.nu comes in via the bayt-runtime
-		// additional_contexts wiring.
+		// Integration tests under docker-in-docker for testcontainers
+		// isolation. `bayt.hostenv` provides the host.env secret + compose
+		// federation; dind.sh wrap + docker socket + skaffold cache
+		// volumes + host networking stay inline (dind.sh is sayt, not
+		// bayt). bayt.incremental lets the Dockerfile RUN invoke `task
+		// integrate:integrate`, walking the setup→build→integrate chain
+		// with stamps COPY'd from the build stage.
 		//
-		// integrate.nu drives this exclusively through `docker buildx
-		// bake --builder container` with cacheonly outputs — the test
-		// executes during this stage's RUN, the build's exit code IS
-		// the test verdict, no compose-up / no image load. So this
-		// stage being heavy doesn't cost anything: nothing gets exported
-		// to the docker image store.
+		// integrate.nu drives this through `docker buildx bake` with
+		// --set=*.output=type=cacheonly — tests run during this stage's
+		// RUN, build exit code is the test verdict, no compose-up.
 		"integrate": bayt.hostenv & bayt.incremental & {
 			// TrackerEndpointIT reads bottle_test.txt from src/test/resources/
 			// via a filesystem path (not classpath), so it must be present
@@ -252,7 +252,7 @@ _tracker: sayt.gradle & {
 			// it here too would emit two COPY lines for the same tree.
 			srcs: globs: ["src/test/resources/**/*"]
 			cmd: "builtin": dockerfile: wrap: "/monorepo/plugins/devserver/dind.sh"
-			compose: runtime: {
+			compose: {
 				// Runtime entrypoint cats every junit XML the gradle RUN
 				// produced at build-time. Useful when the user opts out
 				// of bake (compose-up mode) — they get the test reports

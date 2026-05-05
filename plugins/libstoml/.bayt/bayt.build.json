@@ -10,8 +10,11 @@
     "mounts": [],
     "secrets": [],
     "epilogue": [],
+    "copy": [],
+    "healthcheck": null,
     "expose": [],
-    "entrypoint": null
+    "entrypoint": null,
+    "cmd": null
   },
   "name": "build",
   "project": "plugins_libstoml",
@@ -56,7 +59,27 @@
   "transitiveDeps": [
     "setup"
   ],
-  "transitiveCrossDeps": [],
+  "transitiveCrossDeps": [
+    {
+      "name": "setup",
+      "project": "workspaceroot",
+      "dir": "",
+      "outs": {
+        "globs": [
+          ".mise.toml",
+          "mise.lock",
+          "pnpm-lock.yaml",
+          "pnpm-workspace.yaml",
+          "package.json",
+          "gradle/libs.versions.toml",
+          "plugins/devserver/dind.sh",
+          "**/package.json",
+          ".task/bayt/setup.hash"
+        ],
+        "exclude": []
+      }
+    }
+  ],
   "chainedDeps": [
     {
       "name": "setup",

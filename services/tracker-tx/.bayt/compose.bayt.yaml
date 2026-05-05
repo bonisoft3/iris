@@ -9,3 +9,5 @@ include:
   required: false
 - path: ./compose.release.yaml
   required: false
+- path: ../../../libraries/xproto/.bayt/compose.bayt.deps.yaml
+  required: false

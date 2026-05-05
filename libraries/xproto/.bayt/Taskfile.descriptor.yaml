@@ -1,0 +1,10 @@
+tasks:
+  default:
+    status:
+    - mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu hash-check --manifest {{.TASKFILE_DIR}}/bayt.descriptor.json
+    vars:
+      BAYTW: mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/cache.nu run --manifest {{.TASKFILE_DIR}}/bayt.descriptor.json -- mise x -- sh -c
+    cmds:
+    - '{{.BAYTW}} "mkdir -p out && mise x -- buf build --as-file-descriptor-set --exclude-source-info -o ''out/xproto.desc.pb#format=binpb'' ."'
+    - defer: '{{if not .EXIT_CODE}}mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu hash-stamp --manifest {{.TASKFILE_DIR}}/bayt.descriptor.json{{end}}'
+version: '3'

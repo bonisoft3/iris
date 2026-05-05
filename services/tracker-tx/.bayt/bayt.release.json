@@ -20,9 +20,12 @@
     "mounts": [],
     "secrets": [],
     "epilogue": [],
+    "copy": [],
+    "healthcheck": null,
     "expose": [],
     "entrypoint": null,
-    "incremental": false
+    "incremental": false,
+    "cmd": null
   },
   "name": "release",
   "project": "services_tracker-tx",
@@ -40,7 +43,7 @@
         "build": {
           "artifact": {
             "image": "gcr.io/trash-362115/services.tracker-tx-gcp",
-            "context": "../",
+            "context": ".",
             "sync": {
               "manual": [],
               "auto": false

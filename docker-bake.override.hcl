@@ -21,17 +21,12 @@ group "ci" {
   targets = [
     "services_tracker_tx",
     "plugins_devserver",
-    "services_shelfie",
-    "services_boxer",
     "plugins_sayt",
     "libraries_mecha",
-    # guis_iris* removed — Ollama image is too large for shared CI runner
-    # disk (ResourceExhausted on libcublasLt). Restore once moved to a
-    # larger runner or split into a separate workflow.
-    # plugins_omnishell removed temporarily — its `bun run check` step
-    # fails (typecheck or lint) on a pre-existing issue unrelated to
-    # bayt scope. Restore once it's fixed (likely by bayt-enabling it
-    # too, mirroring the iris pattern).
+    # guis_iris: ollama-mock uses mockserver:5.15.0, x86_64-only despite
+    # multi-arch manifest. Apple Silicon dev loop runs it under qemu and
+    # times out. Restore after migrating the mock to mockoon.
+    # plugins_omnishell: `bun run check` fails on a pre-existing issue.
   ]
 }
 
@@ -91,15 +86,6 @@ target "guis_iris" {
   target     = "release"
   cache-from = cache_from("guis-iris")
   cache-to   = cache_to("guis-iris")
-}
-
-target "services_boxer" {
-  inherits   = ["ci-defaults"]
-  context    = "./services/boxer"
-  dockerfile = "./Dockerfile"
-  target     = "release"
-  cache-from = cache_from("services-boxer")
-  cache-to   = cache_to("services-boxer")
 }
 
 target "plugins_sayt" {

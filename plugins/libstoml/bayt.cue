@@ -1,4 +1,4 @@
-// libstoml — TOML manipulation helpers for gradle configs. JVM. Leaf.
+// libstoml — TOML manipulation helpers for gradle configs. JVM.
 package libstoml
 
 import (
@@ -13,6 +13,10 @@ _libstoml: sayt.gradle & {
 		// Public: consumed by plugins/jvm and plugins/micronaut (gradle
 		// composite-build) and downstream services.
 		"build": visibility: "public"
+
+		// Chain FROM workspaceroot:setup — lazybox + GNU shell utils flow
+		// in via the FROM chain instead of running zypper here.
+		"setup": dockerfile: from: ref: "workspaceroot:setup"
 
 		// Library: not deployed standalone, no dev server, no e2e
 		// preview.

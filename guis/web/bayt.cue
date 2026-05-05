@@ -21,10 +21,7 @@ _web: sayt.pnpm & {
 		// This project then only adds its own pnpm install on top
 		// (no repeat of the workspace tools mise install). Cuts ~10-15s
 		// off cold setup builds.
-		"setup": {
-			deps: ["workspaceroot:setup"]
-			dockerfile: from: ref: "workspaceroot:setup"
-		}
+		"setup": dockerfile: from: ref: "workspaceroot:setup"
 
 		// Incremental build inside Docker: `task build:build` wraps
 		// the pnpm invocation so fingerprint.nu's status hook short-
@@ -74,6 +71,7 @@ _web: sayt.pnpm & {
 		// skaffold.image enables the bayt-dev profile so iris's
 		// preview chain or `cd guis/web && skaffold dev` brings it up.
 		"launch": {
+			dockerfile: bayt.nubox
 			dockerfile: expose: [3000]
 			skaffold: profiles: "bayt-dev": build: artifact: image: "gcr.io/trash-362115/guis.web"
 		}
