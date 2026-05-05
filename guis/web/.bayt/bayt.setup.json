@@ -86,7 +86,7 @@
         "defaultGlobs": null,
         "defaultExclude": null
       },
-      "do": "mise x -- pnpm install --frozen-lockfile",
+      "do": "mise x -- pnpm install --frozen-lockfile --filter Iris...",
       "dockerfile": {
         "mounts": [
           {

@@ -21,7 +21,16 @@ _web: sayt.pnpm & {
 		// This project then only adds its own pnpm install on top
 		// (no repeat of the workspace tools mise install). Cuts ~10-15s
 		// off cold setup builds.
-		"setup": dockerfile: from: ref: "workspaceroot:setup"
+		"setup": {
+			dockerfile: from: ref: "workspaceroot:setup"
+			// Filter by package name to web's transitive deps.
+			// Path-based `--filter ./guis/web...` doesn't resolve from
+			// /monorepo/guis/web (relative to cwd, not workspace root).
+			// Without the filter, sibling workspace members' postinstalls
+			// run inside web's container (e.g. flashcards' `prisma
+			// generate` fails because its schema isn't COPYed in).
+			cmd: "pnpm": do: "mise x -- pnpm install --frozen-lockfile --filter Iris..."
+		}
 
 		// Incremental build inside Docker: `task build:build` wraps
 		// the pnpm invocation so fingerprint.nu's status hook short-

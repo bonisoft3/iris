@@ -30,6 +30,6 @@ tasks:
     generates:
     - .task/bayt/setup.pnpm.hash
     cmds:
-    - '{{.BAYTW}} mise x -- pnpm install --frozen-lockfile'
+    - '{{.BAYTW}} mise x -- pnpm install --frozen-lockfile --filter Iris...'
     - defer: '{{if not .EXIT_CODE}}mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu hash-stamp --manifest {{.TASKFILE_DIR}}/bayt.setup.json --cmd pnpm{{end}}'
 version: '3'
