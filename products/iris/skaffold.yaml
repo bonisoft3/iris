@@ -3,29 +3,16 @@ kind: Config
 metadata:
   name: trash
 
-# Children supply their own bayt-emitted skaffold fragments via their
-# project-root skaffold.yaml. activeProfiles propagation makes iris's
-# `preview` profile activate the children's `bayt-build` profiles —
-# preview deploys the optimized release artifact for each child (one
-# image identity per project; skaffold rejects duplicate images across
-# configs, so launch doesn't get its own skaffold artifact). Local
-# debugging stays on `docker compose up launch` per child.
-requires:
-  - configs: [ "services_tracker" ]
-    path: ../../services/tracker/skaffold.yaml
-    activeProfiles:
-      - name: bayt-build
-        activatedBy: [preview]
-  - configs: [ "services_tracker-tx" ]
-    path: ../../services/tracker-tx/skaffold.yaml
-    activeProfiles:
-      - name: bayt-build
-        activatedBy: [preview]
-  - configs: [ "guis_web" ]
-    path: ../../guis/web/skaffold.yaml
-    activeProfiles:
-      - name: bayt-build
-        activatedBy: [preview]
+# This file hand-consumes the bayt-emitted assets in each child
+# project. We deliberately don't `requires:` the children's
+# bayt-emitted skaffold fragments — skaffold's customBuild context
+# resolves relative to invocation cwd, so a `requires:` chain breaks
+# `cd products/iris && skaffold build` (the bake HCL would be looked
+# up relative to products/iris instead of the child project). Instead,
+# the preview profile below hand-declares each child's release
+# artifact with `context: ../../<project>` so the bake HCL path
+# resolves correctly regardless of caller. Local debugging stays on
+# `docker compose up launch` per child.
 
 portForward:
 - resourceType: service
@@ -93,6 +80,23 @@ profiles:
       useDockerCLI: true
       concurrency: 64
     artifacts:
+      # Bayt-emitted children — `context: ../../<project>` so customBuild's
+      # cwd lands at the project root, where `.bayt/bake.release.hcl` lives.
+      - image: gcr.io/trash-362115/services.tracker
+        context: ../../services/tracker
+        custom:
+          buildCommand: |
+            docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.release.hcl release
+      - image: gcr.io/trash-362115/services.tracker-tx-gcp
+        context: ../../services/tracker-tx
+        custom:
+          buildCommand: |
+            docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.release.hcl release
+      - image: gcr.io/trash-362115/guis.web
+        context: ../../guis/web
+        custom:
+          buildCommand: |
+            docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.release.hcl release
       - image: gcr.io/trash-362115/shimmy
         context: images/shimmy
         docker:
