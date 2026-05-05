@@ -221,17 +221,12 @@ _tracker: sayt.gradle & {
 			}
 		}
 
-		// Cluster-side dev loop. Setting skaffold.image opts the launch
-		// target into the bayt-dev profile (auto-fires on `skaffold dev`).
-		// Activation rules + dockerfile path come from stacks/sayt's
-		// launch verb fragment; the image is the project-local dial.
-		// Iris's hand-written products/iris/skaffold.yaml or this
-		// project's services/tracker/skaffold.yaml `requires:` the
-		// emitted .bayt/skaffold.launch.yaml to wire everything in.
-		"launch": {
-			dockerfile: bayt.nubox
-			skaffold: profiles: "bayt-dev": build: artifact: image: "gcr.io/trash-362115/services.tracker"
-		}
+		// Local dev loop is `docker compose up launch`; skaffold dev
+		// reuses the release artifact (single image identity per project
+		// — skaffold rejects duplicate images across configs). No
+		// skaffold.artifact.image declared here, so the launch verb's
+		// bayt-dev profile emits no artifact and doesn't shadow release.
+		"launch": dockerfile: bayt.nubox
 
 		// Integration tests under docker-in-docker for testcontainers
 		// isolation. `bayt.hostenv` provides the host.env secret + compose

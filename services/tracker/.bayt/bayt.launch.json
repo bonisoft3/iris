@@ -41,7 +41,6 @@
         ],
         "build": {
           "artifact": {
-            "image": "gcr.io/trash-362115/services.tracker",
             "context": ".",
             "sync": {
               "manual": [],

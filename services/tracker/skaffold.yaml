@@ -13,27 +13,16 @@ kind: Config
 metadata:
   name: services_tracker
 
-# Pass-through profiles. Skaffold's `activeProfiles:` propagation
-# requires the profile name to exist in the file being required —
-# it doesn't auto-cascade into transitive includes. So this file
-# declares empty bayt-dev and bayt-build profiles solely so iris
-# (which requires this file via configs filter) can activate them
-# by name; the actual artifact + sync + push content lives in the
-# bayt-emitted fragments below.
+# Pass-through profile so iris's `preview` activeProfiles propagation
+# can target bayt-build by name on this child config.
 profiles:
-- name: bayt-dev
 - name: bayt-build
 
-# Bayt-emitted fragments. Each fragment carries a profile of the
-# same name that holds the real content; this file's requires-entry
-# propagates activation downward. `command:` activation in the
-# fragments still fires for solo `cd services/tracker && skaffold
-# dev` invocations — that path doesn't need the propagation chain.
+# Bayt-emitted fragment. Local dev loop = `docker compose up launch`;
+# skaffold dev / iris preview both use the bayt-build (release) artifact
+# — one image identity per project keeps skaffold's duplicate-image
+# check happy.
 requires:
-- path: .bayt/skaffold.launch.yaml
-  activeProfiles:
-  - name: bayt-dev
-    activatedBy: [bayt-dev]
 - path: .bayt/skaffold.release.yaml
   activeProfiles:
   - name: bayt-build

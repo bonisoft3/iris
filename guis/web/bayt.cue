@@ -67,13 +67,13 @@ _web: sayt.pnpm & {
 			}
 		}
 
-		// Launch target listens on 3000 (nuxt dev server). Setting
-		// skaffold.image enables the bayt-dev profile so iris's
-		// preview chain or `cd guis/web && skaffold dev` brings it up.
+		// Launch target listens on 3000 (nuxt dev server). Local dev
+		// loop = `docker compose up launch`; skaffold dev reuses the
+		// release artifact (one image identity per project — skaffold
+		// rejects duplicate images across configs).
 		"launch": {
 			dockerfile: bayt.nubox
 			dockerfile: expose: [3000]
-			skaffold: profiles: "bayt-dev": build: artifact: image: "gcr.io/trash-362115/guis.web"
 		}
 
 		// Integrate uses the container task chain to reuse setup→build

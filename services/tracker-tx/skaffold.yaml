@@ -13,17 +13,11 @@ kind: Config
 metadata:
   name: services_tracker-tx
 
-# Pass-through profiles for activeProfiles propagation from iris.
-# See services/tracker/skaffold.yaml for the full explanation.
+# Pass-through profile for activeProfiles propagation from iris.
 profiles:
-- name: bayt-dev
 - name: bayt-build
 
 requires:
-- path: .bayt/skaffold.launch.yaml
-  activeProfiles:
-  - name: bayt-dev
-    activatedBy: [bayt-dev]
 - path: .bayt/skaffold.release.yaml
   activeProfiles:
   - name: bayt-build

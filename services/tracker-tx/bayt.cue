@@ -112,11 +112,9 @@ _tx: bayt.#project & {
 			// No build cmd — runtime command does the work. `true` is a
 			// valid sentinel for "image build is just the COPY+install".
 			cmd: "builtin": do: "true"
-			// Cluster-side dev: setting skaffold.image enables the
-			// bayt-dev profile (auto-fires on `skaffold dev`).
-			// Activation rule + dockerfile path (.bayt/Dockerfile.launch)
-			// come from stacks/sayt's launch verb fragment.
-			skaffold: profiles: "bayt-dev": build: artifact: image: "gcr.io/trash-362115/services.tracker-tx-gcp"
+			// Local dev loop = `docker compose up launch`. skaffold dev
+			// reuses the release artifact (one image identity per project
+			// — skaffold rejects duplicate images across configs).
 			compose: {
 				// envoy reads transcoding.yaml directly (envsubst expands
 				// env vars, yq converts to JSON via process substitution).
