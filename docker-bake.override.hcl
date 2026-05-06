@@ -21,6 +21,7 @@ group "ci" {
   targets = [
     "services_tracker_tx",
     "services_tracker",
+    "services_boxer",
     "guis_iris",
     "guis_web",
     "plugins_devserver",
@@ -46,6 +47,12 @@ target "services_tracker" {
   inherits   = ["ci-defaults"]
   cache-from = cache_from("services-tracker")
   cache-to   = cache_to("services-tracker")
+}
+
+target "services_boxer" {
+  inherits   = ["ci-defaults"]
+  cache-from = cache_from("services-boxer")
+  cache-to   = cache_to("services-boxer")
 }
 
 target "services_tracker_tx" {
