@@ -1,6 +1,11 @@
 # syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
 FROM guis_web-build AS release
 WORKDIR /monorepo/guis/web
+ENV HOST=0.0.0.0
+ENV PORT=8080
+ENV NODE_ENV=production
 RUN ["mise", "x", "--", "true"]
 COPY --link Taskfile.yml ./Taskfile.yml
 COPY --link .bayt/Taskfile.yml .bayt/bayt.release.json .bayt/init.gradle.kts ./.bayt/
+EXPOSE 8080
+CMD ["mise", "x", "--", "node", "/monorepo/guis/web/.output/server/index.mjs"]

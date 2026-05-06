@@ -41,6 +41,19 @@ _web: sayt.pnpm & {
 		"build": bayt.incremental & {}
 
 		"release": {
+			// Nuxt SSR runtime contract — k8s preview manifest references
+			// containerPort 8080. Chain inherits build's WORKDIR
+			// (/monorepo/guis/web), where `nuxt build` lands its output
+			// at .output/server/index.mjs.
+			env: {
+				HOST:     "0.0.0.0"
+				PORT:     "8080"
+				NODE_ENV: "production"
+			}
+			dockerfile: {
+				expose: [8080]
+				cmd: ["node", "/monorepo/guis/web/.output/server/index.mjs"]
+			}
 			bake: {
 				image:      "gcr.io/trash-362115/guis.web"
 				push:       false

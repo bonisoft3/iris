@@ -13,6 +13,13 @@
   },
   "dockerfile": {
     "preamble": [],
+    "expose": [
+      8080
+    ],
+    "cmd": [
+      "node",
+      "/monorepo/guis/web/.output/server/index.mjs"
+    ],
     "from": {
       "ref": ":build",
       "name": "guis_web-build",
@@ -23,10 +30,8 @@
     "epilogue": [],
     "copy": [],
     "healthcheck": null,
-    "expose": [],
     "entrypoint": null,
-    "incremental": false,
-    "cmd": null
+    "incremental": false
   },
   "name": "release",
   "project": "guis_web",
@@ -93,7 +98,11 @@
     "globs": [],
     "exclude": []
   },
-  "env": {},
+  "env": {
+    "HOST": "0.0.0.0",
+    "PORT": "8080",
+    "NODE_ENV": "production"
+  },
   "visibility": "internal",
   "deps": [
     "build"
