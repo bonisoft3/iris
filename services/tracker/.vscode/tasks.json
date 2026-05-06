@@ -6,20 +6,9 @@
         "kind": "build",
         "isDefault": true
       },
-      "label": "services_tracker build",
+      "label": "build",
       "type": "shell",
       "command": "task bayt:build",
-      "options": {
-        "cwd": "${workspaceFolder}/services/tracker"
-      }
-    },
-    {
-      "group": {
-        "kind": "none"
-      },
-      "label": "services_tracker doctor",
-      "type": "shell",
-      "command": "task bayt:doctor",
       "options": {
         "cwd": "${workspaceFolder}/services/tracker"
       }
@@ -29,7 +18,7 @@
         "kind": "test",
         "isDefault": true
       },
-      "label": "services_tracker test",
+      "label": "test",
       "type": "shell",
       "command": "task bayt:test",
       "options": {

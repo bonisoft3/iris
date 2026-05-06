@@ -6,7 +6,7 @@
         "kind": "test",
         "isDefault": true
       },
-      "label": "libraries_xproto test",
+      "label": "test",
       "type": "shell",
       "command": "task bayt:test",
       "options": {

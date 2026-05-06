@@ -6,20 +6,9 @@
         "kind": "build",
         "isDefault": true
       },
-      "label": "guis_web build",
+      "label": "build",
       "type": "shell",
       "command": "task bayt:build",
-      "options": {
-        "cwd": "${workspaceFolder}/guis/web"
-      }
-    },
-    {
-      "group": {
-        "kind": "none"
-      },
-      "label": "guis_web doctor",
-      "type": "shell",
-      "command": "task bayt:doctor",
       "options": {
         "cwd": "${workspaceFolder}/guis/web"
       }
@@ -29,7 +18,7 @@
         "kind": "test",
         "isDefault": true
       },
-      "label": "guis_web test",
+      "label": "test",
       "type": "shell",
       "command": "task bayt:test",
       "options": {

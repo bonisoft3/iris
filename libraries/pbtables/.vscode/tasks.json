@@ -6,20 +6,9 @@
         "kind": "build",
         "isDefault": true
       },
-      "label": "libraries_pbtables build",
+      "label": "build",
       "type": "shell",
       "command": "task bayt:build",
-      "options": {
-        "cwd": "${workspaceFolder}/libraries/pbtables"
-      }
-    },
-    {
-      "group": {
-        "kind": "none"
-      },
-      "label": "libraries_pbtables doctor",
-      "type": "shell",
-      "command": "task bayt:doctor",
       "options": {
         "cwd": "${workspaceFolder}/libraries/pbtables"
       }
@@ -29,7 +18,7 @@
         "kind": "test",
         "isDefault": true
       },
-      "label": "libraries_pbtables test",
+      "label": "test",
       "type": "shell",
       "command": "task bayt:test",
       "options": {

@@ -1,3 +1,9 @@
+# Bayt-emitted compose fragments (services/tracker, guis/web, etc.)
+# declare host.env as `file: ${BAYT_HOST_ENV_FILE}`. Compose merges
+# all top-level secrets blocks across includes, so hand-maintained
+# parents must use the same form — see plugins/bayt/bayt/gen_compose.cue.
+# Callers (sayt locally, the sayt-integrate action in CI) materialize
+# HOST_ENV into the file BAYT_HOST_ENV_FILE before invoking bake/up.
 secrets:
   host.env:
-    environment: HOST_ENV
+    file: ${BAYT_HOST_ENV_FILE}

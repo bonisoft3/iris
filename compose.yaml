@@ -1,4 +1,24 @@
+# services_tracker and guis_web bring in the bayt-emitted integrate
+# chain via the include cascade below. Each project's compose.bayt.yaml
+# transitively includes per-verb fragments + sibling library/plugin
+# build context wiring; the qualified service names (services_tracker-*,
+# guis_web-*, libraries_*-build, plugins_*-build, bayt-runtime-stub,
+# workspaceroot-setup) become available to bake's chain resolution.
+include:
+  - path: ./services/tracker/.bayt/compose.bayt.yaml
+  - path: ./guis/web/.bayt/compose.bayt.yaml
+
 services:
+  services_tracker:
+    extends:
+      file: ./services/tracker/.bayt/compose.integrate.yaml
+      service: services_tracker-integrate
+
+  guis_web:
+    extends:
+      file: ./guis/web/.bayt/compose.integrate.yaml
+      service: guis_web-integrate
+
   integrate:
     build:
       context: .
@@ -63,6 +83,7 @@ services:
       args:
         BASE_IMG: mcr.microsoft.com/devcontainers/base:ubuntu24.04@sha256:4bcb1b466771b1ba1ea110e2a27daea2f6093f9527fb75ee59703ec89b5561cb
 
-secrets:
-  host.env:
-    environment: HOST_ENV
+# host.env is declared by the bayt-emitted compose.integrate.yaml
+# fragments (file: ${BAYT_HOST_ENV_FILE}). CI/local callers must
+# materialize HOST_ENV to that file before invoking bake (see
+# plugins/sayt/integrate.nu for the canonical pattern).

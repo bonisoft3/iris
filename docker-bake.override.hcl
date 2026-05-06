@@ -20,12 +20,12 @@ function "cache_to" {
 group "ci" {
   targets = [
     "services_tracker_tx",
+    "services_tracker",
+    "guis_iris",
+    "guis_web",
     "plugins_devserver",
     "plugins_sayt",
     "libraries_mecha",
-    # guis_iris: ollama-mock uses mockserver:5.15.0, x86_64-only despite
-    # multi-arch manifest. Apple Silicon dev loop runs it under qemu and
-    # times out. Restore after migrating the mock to mockoon.
     # plugins_omnishell: `bun run check` fails on a pre-existing issue.
   ]
 }
@@ -44,7 +44,6 @@ target "ci-defaults" {
 
 target "services_tracker" {
   inherits   = ["ci-defaults"]
-  dockerfile = "./services/tracker/Dockerfile"
   cache-from = cache_from("services-tracker")
   cache-to   = cache_to("services-tracker")
 }
@@ -59,7 +58,6 @@ target "services_tracker_tx" {
 
 target "guis_web" {
   inherits   = ["ci-defaults"]
-  dockerfile = "./guis/web/Dockerfile"
   cache-from = cache_from("guis-web")
   cache-to   = cache_to("guis-web")
 }
