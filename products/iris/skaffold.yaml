@@ -110,8 +110,8 @@ profiles:
         context: ../../k8s/images/nginx
         docker: {}
 
-      - image: gcr.io/trash-362115/mockserver
-        context: images/mockserver
+      - image: gcr.io/trash-362115/mockoon
+        context: images/mockoon
         docker: {}
 
       - image: gcr.io/trash-362115/playwright

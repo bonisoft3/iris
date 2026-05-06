@@ -16,10 +16,10 @@ spec:
         app: services-tracker-pod
     spec:
       containers:
-      - name: services-tracker-mockserver
-        image: gcr.io/trash-362115/mockserver
+      - name: services-tracker-mockoon
+        image: gcr.io/trash-362115/mockoon
         ports:
-          - containerPort: 38080
+          - containerPort: 1080
       - name: services-tracker-grpcui
         imagePullPolicy: IfNotPresent
         image: fullstorydev/grpcui:v1.4.1@sha256:eed2cc4969edda33fdc39a7cab2046534835f3f8744f99410fb995335b2205c9
@@ -95,7 +95,7 @@ spec:
       name: tx
     - port: 38080
       targetPort : 1080
-      name: mockserver
+      name: mockoon
     - port: 11435
       targetPort : 11435
       name: shimmy

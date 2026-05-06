@@ -67,7 +67,7 @@ spec:
             value: http://pgrst-svc:28080/
           - name: LISTEN_PORT
             value: "28080"
-      - name: ngnix-mockserver-cnt
+      - name: ngnix-mockoon-cnt
         image: gcr.io/trash-362115/nginx
         env:
           - name: UPSTREAM_URL

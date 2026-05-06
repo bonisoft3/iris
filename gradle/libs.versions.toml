@@ -91,7 +91,6 @@ micronaut-kotest = { module = "io.micronaut.test:micronaut-test-kotest5" }
 datafaker = { module = "net.datafaker:datafaker", version = "1.9.0" }
 testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
 testcontainers-postgresql = { module = "org.testcontainers:postgresql", version = "1.21.3" }
-testcontainers-mockserver = { module = "org.testcontainers:mockserver", version = "1.21.3" }
 
 # Notice this is not a catalog, but rather it replaces settings.gradle.kts:PluginManagement.
 # See https://github.com/gradle/gradle/issues/16078. Because of that, we don't use it.

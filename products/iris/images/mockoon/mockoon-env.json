@@ -1,0 +1,177 @@
+{
+  "uuid": "3a0e2f20-5258-478f-87b4-7afb41a0b908",
+  "lastMigration": 33,
+  "name": "iris-mocks",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 1080,
+  "hostname": "0.0.0.0",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "337a7f41-7ca4-4dbb-9ac5-553d95bc9816",
+      "type": "http",
+      "documentation": "GCP compute metadata service-account token",
+      "method": "get",
+      "endpoint": "computeMetadata/v1/instance/service-accounts/default/token",
+      "responses": [
+        {
+          "uuid": "5c115426-3143-4670-b40d-e5879befb9c3",
+          "body": "{ \"access_token\": \"mocked_access_token\", \"expires_in\": 3600, \"token_type\": \"Bearer\" }",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            { "key": "Content-Type", "value": "application/json" }
+          ],
+          "bodyType": "INLINE",
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "14068bb9-0962-4b0a-868f-d7f2390359b7",
+      "type": "http",
+      "documentation": "Geolocation lookup",
+      "method": "get",
+      "endpoint": "geolocation",
+      "responses": [
+        {
+          "uuid": "89d9c25a-dcaf-4b4f-800e-9ba174fbea53",
+          "body": "{ \"country\":\"BR\",\"region\":\"sp\",\"city\":\"sao paulo\"}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            { "key": "Content-Type", "value": "application/json" }
+          ],
+          "bodyType": "INLINE",
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "5c0583bd-2f6a-4043-9d65-0cf21ee17363",
+      "type": "http",
+      "documentation": "Vertex AI imagetext:predict",
+      "method": "post",
+      "endpoint": "v1/projects/trash-362115/locations/us-central1/publishers/google/models/imagetext:predict",
+      "responses": [
+        {
+          "uuid": "6c4fe249-2f27-4c47-b562-385f51ec5c54",
+          "body": "{ \"deployedModelId\": \"modelId\", \"predictions\": [\"cardboard box\"] }",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            { "key": "Content-Type", "value": "application/json" }
+          ],
+          "bodyType": "INLINE",
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "a3418adc-6a1e-4c57-8d17-8b4e00f2973b",
+      "type": "http",
+      "documentation": "Vertex AI chat-bison:predict",
+      "method": "post",
+      "endpoint": "v1/projects/trash-362115/locations/us-central1/publishers/google/models/chat-bison:predict",
+      "responses": [
+        {
+          "uuid": "c94131db-112d-4dc6-b0e9-81e7e6c21906",
+          "body": "{ \"metadata\": {}, \"predictions\": [{ \"safetyAttributes\": {}, \"citationMetadata\": {}, \"candidates\": [{  \"author\": \"me\", \"content\": \"the content\"  }] }] }",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            { "key": "Content-Type", "value": "application/json" }
+          ],
+          "bodyType": "INLINE",
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "d6df5505-c49d-4850-a24a-69b599b5eac6",
+      "type": "http",
+      "documentation": "Translate v2",
+      "method": "post",
+      "endpoint": "language/translate/v2",
+      "responses": [
+        {
+          "uuid": "023073f3-c796-4b3b-9ac3-a81062d6874f",
+          "body": "{ \"data\": { \"translations\": [ { \"translatedText\": \"Mocked translation\" } ] } }",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            { "key": "Content-Type", "value": "application/json" }
+          ],
+          "bodyType": "INLINE",
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    { "type": "route", "uuid": "337a7f41-7ca4-4dbb-9ac5-553d95bc9816" },
+    { "type": "route", "uuid": "14068bb9-0962-4b0a-868f-d7f2390359b7" },
+    { "type": "route", "uuid": "5c0583bd-2f6a-4043-9d65-0cf21ee17363" },
+    { "type": "route", "uuid": "a3418adc-6a1e-4c57-8d17-8b4e00f2973b" },
+    { "type": "route", "uuid": "d6df5505-c49d-4850-a24a-69b599b5eac6" }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [],
+  "proxyReqHeaders": [],
+  "proxyResHeaders": [],
+  "data": [],
+  "callbacks": []
+}

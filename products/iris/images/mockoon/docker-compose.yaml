@@ -1,6 +1,6 @@
 services:
-  k8s_images_mockserver:
-    image: ${IMAGE:-k8s_images_mockserver}
+  k8s_images_mockoon:
+    image: ${IMAGE:-k8s_images_mockoon}
     build:
       # note when outside gha, the statements get ignored
       # alternatively, we can condition with ${SOME_GHA:+type=gha}
