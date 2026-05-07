@@ -188,7 +188,7 @@ export async function assertSegmentationOverlayRendered(page: Page) {
     const data = ctx.getImageData(0, 0, overlay.width, overlay.height).data
     // Check if any pixel has non-zero alpha
     for (let i = 3; i < data.length; i += 4) {
-      if (data[i] > 0) return true
+      if ((data[i] ?? 0) > 0) return true
     }
     return false
   })

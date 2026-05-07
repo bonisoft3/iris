@@ -4,6 +4,10 @@
   "type": "module",
   "main": "src/index.ts",
   "types": "src/index.ts",
+  "exports": {
+    "./playwright/camera-helpers": "./src/lint/playwright/camera-helpers.ts",
+    "./playwright/visual-lint": "./src/lint/playwright/visual-lint.ts"
+  },
   "scripts": {
     "test": "bun test",
     "test:pw": "playwright test",
@@ -25,7 +29,8 @@
     "eslint": "^9.25.0",
     "react": "^19.0.0",
     "tailwindcss": "^4.1.4",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "@playwright/test": "^1.52.0"
   },
   "peerDependencies": {
     "@tanstack/react-router": ">=1.121.0",

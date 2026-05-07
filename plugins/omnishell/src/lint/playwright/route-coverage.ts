@@ -56,7 +56,7 @@ async function extractInternalLinks(
     for (const a of document.querySelectorAll("a[href]")) {
       const href = a.getAttribute("href")
       if (href && href.startsWith("/") && !href.startsWith("//")) {
-        links.add(href.split("?")[0].split("#")[0])
+        links.add(href.split("?")[0]!.split("#")[0]!)
       }
     }
     return [...links]
