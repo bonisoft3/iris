@@ -1,0 +1,96 @@
+{
+  "dockerfile": {
+    "preamble": [],
+    "from": {
+      "ref": ":setup",
+      "name": "plugins_omnishell-setup",
+      "context": "service:plugins_omnishell-setup"
+    },
+    "mounts": [],
+    "secrets": [],
+    "epilogue": [],
+    "copy": [],
+    "healthcheck": null,
+    "expose": [],
+    "entrypoint": null,
+    "incremental": false,
+    "cmd": null
+  },
+  "name": "build",
+  "project": "plugins_omnishell",
+  "dir": "plugins/omnishell",
+  "activate": "mise x --",
+  "srcs": {
+    "globs": [
+      "src/**/*",
+      "scaffold/**/*",
+      "package.json",
+      "bun.lock",
+      "tsconfig.json",
+      "bunfig.toml"
+    ],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [],
+    "exclude": []
+  },
+  "env": {},
+  "taskfile": {
+    "run": "when_changed",
+    "silent": false,
+    "preconditions": []
+  },
+  "visibility": "internal",
+  "deps": [
+    "setup"
+  ],
+  "transitiveDeps": [
+    "setup"
+  ],
+  "transitiveCrossDeps": [],
+  "chainedDeps": [
+    {
+      "name": "setup",
+      "project": "plugins_omnishell",
+      "dir": "plugins/omnishell",
+      "outs": {
+        "globs": [],
+        "exclude": []
+      }
+    }
+  ],
+  "cmds": [
+    {
+      "srcs": {
+        "globs": [
+          "src/**/*",
+          "scaffold/**/*",
+          "package.json",
+          "bun.lock",
+          "tsconfig.json",
+          "bunfig.toml"
+        ],
+        "exclude": [],
+        "defaultGlobs": null,
+        "defaultExclude": null
+      },
+      "shell": "sh",
+      "do": "sh -c 'bun install --frozen-lockfile && bun run check'",
+      "name": "builtin",
+      "stop": false
+    }
+  ],
+  "cache": {
+    "full": false,
+    "similar": false
+  },
+  "vscode": {
+    "group": {
+      "kind": "build",
+      "isDefault": true
+    },
+    "dependsOn": [],
+    "dependsOrder": "sequence"
+  }
+}

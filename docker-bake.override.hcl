@@ -25,9 +25,9 @@ group "ci" {
     "guis_iris",
     "guis_web",
     "plugins_devserver",
+    "plugins_omnishell",
     "plugins_sayt",
     "libraries_mecha",
-    # plugins_omnishell: `bun run check` fails on a pre-existing issue.
   ]
 }
 
@@ -112,8 +112,6 @@ target "libraries_mecha" {
 
 target "plugins_omnishell" {
   inherits   = ["ci-defaults"]
-  dockerfile = "./plugins/omnishell/Dockerfile"
-  target     = "integrate"
   cache-from = cache_from("plugins-omnishell")
   cache-to   = cache_to("plugins-omnishell")
 }

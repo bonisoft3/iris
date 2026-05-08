@@ -1,0 +1,8 @@
+services:
+  plugins_omnishell-integrate:
+    build:
+      additional_contexts:
+        plugins_omnishell-build: service:plugins_omnishell-build
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate

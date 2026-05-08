@@ -1,0 +1,7 @@
+# syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
+FROM plugins_omnishell-setup AS build
+WORKDIR /monorepo/plugins/omnishell
+COPY --link --parents src/**/* scaffold/**/* package.json bun.lock tsconfig.json bunfig.toml ./
+RUN mise x -- sh -c 'bun install --frozen-lockfile && bun run check'
+COPY --link Taskfile.yml ./Taskfile.yml
+COPY --link .bayt/Taskfile.yml .bayt/Taskfile.build.yaml .bayt/bayt.build.json .bayt/init.gradle.kts ./.bayt/

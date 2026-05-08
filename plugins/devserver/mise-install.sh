@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -e
 INSTALL_DIR=$1
-MISE_VERSION=2026.3.17
+MISE_VERSION=2026.5.2
 ARCH=$(uname -m | sed 's/x86_64/x64/; s/aarch64/arm64/')
 OS=$(uname -s | tr "[:upper:]" "[:lower:]" | sed 's/darwin/macos/')
 LIBC=

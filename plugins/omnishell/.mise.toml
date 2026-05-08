@@ -13,4 +13,8 @@ aqua.slsa = false
 aqua.minisign = false
 
 [tools]
-bun = "1.3.12"
+# github backend instead of mise's core bun plugin: the core plugin
+# always picks the musl variant, which fails on bayt.nubox's leap base
+# (glibc). github backend with mise >= 2026.5.2 (bundled in lazybox
+# v0.8.3) correctly picks bun-linux-x64.zip for glibc.
+"github:oven-sh/bun" = "bun-v1.3.12"

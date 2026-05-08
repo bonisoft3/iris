@@ -18,7 +18,7 @@ import "bonisoft.org/plugins/sayt:docker"
     "TASK_TEMP_DIR=${DCM_PATH}/task",
     "SKAFFOLD_CACHE_FILE=${DCM_PATH}/skaffold/cache",
 		"PATH=/root/.local/bin:${XDG_DATA_HOME}/mise/shims:$PATH",
-		"MISE_VERSION=2026.3.17",
+		"MISE_VERSION=2026.5.2",
 	]
 	run: [
 		{ stmt: ["ARG TARGETOS", "ARG TARGETARCH"] },
@@ -26,7 +26,7 @@ import "bonisoft.org/plugins/sayt:docker"
 		{ cmd: "mkdir -p /var/run /usr/local/bin /root/.local/bin ${XDG_CONFIG_HOME}/mise" },
 		{ cmd: "xx-apk add curl libgcc libstdc++ coreutils xz bash just socat nmap" },
 		{ cmd: "./mise-install.sh /root/.local/bin", scripts: [ "mise-install.sh" ] },
-		{ cmd: "cp ./stubs/* $HOME/.local/bin/", dirs: [ "stubs" ] },
+		{ cmd: "cp ./stubs/* $HOME/.local/bin/ && mkdir -p $HOME/.local/libexec && cp ./lazy-mise $HOME/.local/libexec/lazy-mise && chmod +x $HOME/.local/libexec/lazy-mise", dirs: [ "stubs" ], files: [ "lazy-mise" ] },
    	{ cmd: "curl -fsSL https://github.com/ko1nksm/shdotenv/releases/download/v0.14.0/shdotenv -o $HOME/.local/bin/shdotenv && chmod 755 $HOME/.local/bin/shdotenv" },
    	{ cmd: "cp dind.sh $HOME/.local/bin/", files: [ "dind.sh" ] }
 	]

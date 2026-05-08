@@ -8,7 +8,7 @@ ENV XDG_DATA_HOME=${DCM_PATH}/local/share
 ENV TASK_TEMP_DIR=${DCM_PATH}/task
 ENV SKAFFOLD_CACHE_FILE=${DCM_PATH}/skaffold/cache
 ENV PATH=/root/.local/bin:${XDG_DATA_HOME}/mise/shims:$PATH
-ENV MISE_VERSION=2026.3.17
+ENV MISE_VERSION=2026.5.2
 ARG TARGETOS
 ARG TARGETARCH
 COPY --from=tonistiigi/xx:1.5.0@sha256:0c6a569797744e45955f39d4f7538ac344bfb7ebf0a54006a0a4297b153ccf0f / /
@@ -17,7 +17,7 @@ RUN  xx-apk add curl libgcc libstdc++ coreutils xz bash just socat nmap
 COPY --chmod=0755 ./plugins/devserver/mise-install.sh ./
 RUN  ./mise-install.sh /root/.local/bin
 COPY ./plugins/devserver/stubs stubs
-COPY ./plugins/devserver/lazy-mise lazy-mise
+COPY ./plugins/devserver/lazy-mise ./
 RUN  cp ./stubs/* $HOME/.local/bin/ && mkdir -p $HOME/.local/libexec && cp ./lazy-mise $HOME/.local/libexec/lazy-mise && chmod +x $HOME/.local/libexec/lazy-mise
 RUN  curl -fsSL https://github.com/ko1nksm/shdotenv/releases/download/v0.14.0/shdotenv -o $HOME/.local/bin/shdotenv && chmod 755 $HOME/.local/bin/shdotenv
 COPY ./plugins/devserver/dind.sh ./

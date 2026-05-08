@@ -1,0 +1,88 @@
+{
+  "compose": {
+    "environment": {},
+    "ports": [],
+    "volumes": [],
+    "depends_on": {}
+  },
+  "dockerfile": {
+    "preamble": [],
+    "secrets": [],
+    "from": {
+      "ref": ":build",
+      "name": "plugins_omnishell-build",
+      "context": "service:plugins_omnishell-build"
+    },
+    "mounts": [],
+    "epilogue": [],
+    "copy": [],
+    "healthcheck": null,
+    "expose": [],
+    "entrypoint": null,
+    "incremental": false,
+    "cmd": null
+  },
+  "name": "integrate",
+  "project": "plugins_omnishell",
+  "dir": "plugins/omnishell",
+  "activate": "mise x --",
+  "srcs": {
+    "globs": [
+      "test/**/*"
+    ],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [],
+    "exclude": []
+  },
+  "env": {},
+  "taskfile": {
+    "run": "when_changed",
+    "silent": false,
+    "preconditions": []
+  },
+  "visibility": "internal",
+  "deps": [
+    "build"
+  ],
+  "transitiveDeps": [
+    "build",
+    "setup"
+  ],
+  "transitiveCrossDeps": [],
+  "chainedDeps": [
+    {
+      "name": "build",
+      "project": "plugins_omnishell",
+      "dir": "plugins/omnishell",
+      "outs": {
+        "globs": [],
+        "exclude": []
+      }
+    }
+  ],
+  "cmds": [
+    {
+      "srcs": {
+        "globs": [
+          "test/**/*"
+        ],
+        "exclude": [],
+        "defaultGlobs": null,
+        "defaultExclude": null
+      },
+      "do": "bun test",
+      "dockerfile": {
+        "wrap": ""
+      },
+      "name": "builtin",
+      "shell": "exec",
+      "stop": false
+    }
+  ],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}
