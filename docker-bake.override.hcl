@@ -18,11 +18,16 @@ function "cache_to" {
 }
 
 group "ci" {
+  # iris is driven separately by `just sayt -d guis/iris integrate`
+  # (see the `iris-integrate` step in .github/workflows/ci.yml). Its
+  # integrate is compose-up-driven (no `args: "--bake"` in
+  # iris/.say.yaml), and double-building it via bake plus compose blew
+  # past the runner's ~14 GB free disk on the first attempt. Everything
+  # else stays bake-driven through this group.
   targets = [
     "services_tracker_tx",
     "services_tracker",
     "services_boxer",
-    "guis_iris",
     "guis_web",
     "plugins_devserver",
     "plugins_omnishell",
@@ -41,6 +46,12 @@ target "ci-defaults" {
   network = "host"
   cache-from = []
   cache-to = []
+  # The ci-group targets only need to populate the build cache so
+  # downstream consumers can resolve them on subsequent runs. No image
+  # needs to land on the host docker daemon or be pushed anywhere —
+  # `type=cacheonly` makes that intent explicit and silences buildx's
+  # "No output specified for ... target(s)" warning.
+  output = ["type=cacheonly"]
 }
 
 target "services_tracker" {
@@ -86,9 +97,6 @@ target "plugins_devserver" {
 
 target "guis_iris" {
   inherits   = ["ci-defaults"]
-  context    = "."
-  dockerfile = "guis/iris/Dockerfile"
-  target     = "release"
   cache-from = cache_from("guis-iris")
   cache-to   = cache_to("guis-iris")
 }
@@ -114,123 +122,5 @@ target "plugins_omnishell" {
   inherits   = ["ci-defaults"]
   cache-from = cache_from("plugins-omnishell")
   cache-to   = cache_to("plugins-omnishell")
-}
-
-# =============================================================================
-# guis/iris siblings — each points at its bayt-emitted Dockerfile under
-# guis/iris/.bayt/, with its own GHA cache scope. Intermediates that have
-# no published image (cdc-fetcher, ollama-model) still get their own
-# scope so their layer cache survives across CI runs; downstream targets
-# reference them via bake's `contexts = { … = "target:…" }` wiring.
-# =============================================================================
-
-target "guis_iris_proxy" {
-  inherits   = ["ci-defaults"]
-  context    = "./guis/iris"
-  dockerfile = ".bayt/Dockerfile.release-proxy"
-  cache-from = cache_from("guis-iris-proxy")
-  cache-to   = cache_to("guis-iris-proxy")
-}
-
-target "guis_iris_mesh" {
-  inherits   = ["ci-defaults"]
-  context    = "./guis/iris"
-  dockerfile = ".bayt/Dockerfile.release-mesh"
-  cache-from = cache_from("guis-iris-mesh")
-  cache-to   = cache_to("guis-iris-mesh")
-}
-
-target "guis_iris_crud" {
-  inherits   = ["ci-defaults"]
-  context    = "./guis/iris"
-  dockerfile = ".bayt/Dockerfile.release-crud"
-  cache-from = cache_from("guis-iris-crud")
-  cache-to   = cache_to("guis-iris-crud")
-}
-
-target "guis_iris_database" {
-  inherits   = ["ci-defaults"]
-  context    = "./guis/iris"
-  dockerfile = ".bayt/Dockerfile.release-database"
-  cache-from = cache_from("guis-iris-database")
-  cache-to   = cache_to("guis-iris-database")
-}
-
-target "guis_iris_cdc_fetcher" {
-  inherits   = ["ci-defaults"]
-  context    = "./guis/iris"
-  dockerfile = ".bayt/Dockerfile.release-cdc-fetcher"
-  cache-from = cache_from("guis-iris-cdc-fetcher")
-  cache-to   = cache_to("guis-iris-cdc-fetcher")
-}
-
-target "guis_iris_cdc" {
-  inherits   = ["ci-defaults"]
-  context    = "./guis/iris"
-  dockerfile = ".bayt/Dockerfile.release-cdc"
-  contexts   = {
-    "guis_iris-release-cdc-fetcher" = "target:guis_iris_cdc_fetcher"
-  }
-  cache-from = cache_from("guis-iris-cdc")
-  cache-to   = cache_to("guis-iris-cdc")
-}
-
-target "guis_iris_transform" {
-  inherits   = ["ci-defaults"]
-  context    = "./guis/iris"
-  dockerfile = ".bayt/Dockerfile.release-transform"
-  cache-from = cache_from("guis-iris-transform")
-  cache-to   = cache_to("guis-iris-transform")
-}
-
-target "guis_iris_rclone_s3" {
-  inherits   = ["ci-defaults"]
-  context    = "./guis/iris"
-  dockerfile = ".bayt/Dockerfile.release-rclone-s3"
-  cache-from = cache_from("guis-iris-rclone-s3")
-  cache-to   = cache_to("guis-iris-rclone-s3")
-}
-
-target "guis_iris_imgproxy" {
-  inherits   = ["ci-defaults"]
-  context    = "./guis/iris"
-  dockerfile = ".bayt/Dockerfile.release-imgproxy"
-  cache-from = cache_from("guis-iris-imgproxy")
-  cache-to   = cache_to("guis-iris-imgproxy")
-}
-
-target "guis_iris_nats" {
-  inherits   = ["ci-defaults"]
-  context    = "./guis/iris"
-  dockerfile = ".bayt/Dockerfile.release-nats"
-  cache-from = cache_from("guis-iris-nats")
-  cache-to   = cache_to("guis-iris-nats")
-}
-
-target "guis_iris_nats_init" {
-  inherits   = ["ci-defaults"]
-  context    = "./guis/iris"
-  dockerfile = ".bayt/Dockerfile.release-nats-init"
-  cache-from = cache_from("guis-iris-nats-init")
-  cache-to   = cache_to("guis-iris-nats-init")
-}
-
-target "guis_iris_ollama_model" {
-  inherits   = ["ci-defaults"]
-  context    = "./guis/iris"
-  dockerfile = ".bayt/Dockerfile.release-ollama-model"
-  cache-from = cache_from("guis-iris-ollama-model")
-  cache-to   = cache_to("guis-iris-ollama-model")
-}
-
-target "guis_iris_ollama" {
-  inherits   = ["ci-defaults"]
-  context    = "./guis/iris"
-  dockerfile = ".bayt/Dockerfile.release-ollama"
-  contexts   = {
-    "guis_iris-release-ollama-model" = "target:guis_iris_ollama_model"
-  }
-  cache-from = cache_from("guis-iris-ollama")
-  cache-to   = cache_to("guis-iris-ollama")
 }
 

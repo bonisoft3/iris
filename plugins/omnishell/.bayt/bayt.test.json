@@ -34,7 +34,11 @@
       "project": "plugins_omnishell",
       "dir": "plugins/omnishell",
       "outs": {
-        "globs": [],
+        "globs": [
+          "package.json",
+          "tsconfig.json",
+          "src/**/*"
+        ],
         "exclude": []
       }
     }

@@ -41,6 +41,9 @@ _omnishell: bayt.#project & {
 		// downstream consumers (iris e2e helpers) `FROM` this stage and
 		// import .ts directly, so the typecheck IS the build.
 		"build": sayt.build & mise.exec & {
+			// Public so iris's integrate target can FROM-COPY the
+			// playwright lint helpers under src/lint/playwright/.
+			visibility: "public"
 			srcs: globs: [
 				"src/**/*",
 				"scaffold/**/*",
@@ -48,6 +51,18 @@ _omnishell: bayt.#project & {
 				"bun.lock",
 				"tsconfig.json",
 				"bunfig.toml",
+			]
+			// Public artifacts available to cross-project consumers via
+			// `deps: ["plugins_omnishell:build"]`. iris's integrate
+			// target relies on the workspace symlink
+			// `node_modules/@omnishell/core -> plugins/omnishell` set up
+			// by pnpm install at the workspace root — that needs
+			// package.json (name + exports) plus the source tree the
+			// exports point at.
+			outs: globs: [
+				"package.json",
+				"tsconfig.json",
+				"src/**/*",
 			]
 			// `mise.exec` wraps the cmd with `mise x --`, which only
 			// activates the env for a single argv. Chained commands

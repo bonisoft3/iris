@@ -30,7 +30,7 @@
     "react": "^19.0.0",
     "tailwindcss": "^4.1.4",
     "typescript": "^5.8.3",
-    "@playwright/test": "^1.52.0"
+    "@playwright/test": "1.52.0"
   },
   "peerDependencies": {
     "@tanstack/react-router": ">=1.121.0",

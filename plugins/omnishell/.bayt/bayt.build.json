@@ -32,7 +32,11 @@
     "exclude": []
   },
   "outs": {
-    "globs": [],
+    "globs": [
+      "package.json",
+      "tsconfig.json",
+      "src/**/*"
+    ],
     "exclude": []
   },
   "env": {},
@@ -41,7 +45,7 @@
     "silent": false,
     "preconditions": []
   },
-  "visibility": "internal",
+  "visibility": "public",
   "deps": [
     "setup"
   ],
