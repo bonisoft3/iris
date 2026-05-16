@@ -6,3 +6,4 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.release
       target: release
+    image: bayt-guis_web-release:latest

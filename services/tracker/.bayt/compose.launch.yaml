@@ -14,3 +14,4 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.launch
       target: launch
+    image: bayt-services_tracker-launch:latest

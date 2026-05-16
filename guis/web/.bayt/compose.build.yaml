@@ -7,3 +7,4 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.build
       target: build
+    image: bayt-guis_web-build:latest

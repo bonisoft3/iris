@@ -17,3 +17,4 @@ services:
         path: ../package.json
       - action: rebuild
         path: ../pnpm-lock.yaml
+    image: bayt-guis_web-launch:latest

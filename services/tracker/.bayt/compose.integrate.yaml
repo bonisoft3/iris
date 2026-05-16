@@ -21,6 +21,7 @@ services:
     - cat
     - '{}'
     - +
+    image: bayt-services_tracker-integrate:latest
     network_mode: host
     secrets:
     - host.env

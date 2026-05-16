@@ -6,3 +6,4 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.release-layers
       target: release-layers
+    image: bayt-services_tracker-release-layers:latest

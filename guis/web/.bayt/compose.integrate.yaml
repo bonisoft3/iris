@@ -7,3 +7,4 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.integrate
       target: integrate
+    image: bayt-guis_web-integrate:latest

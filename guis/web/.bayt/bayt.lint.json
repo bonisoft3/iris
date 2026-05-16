@@ -36,7 +36,6 @@
           {
             "type": "cache",
             "target": "/root/.local/share/pnpm/store",
-            "sharing": "locked",
             "required": false
           }
         ]

@@ -7,3 +7,4 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.build
       target: build
+    image: bayt-services_tracker-tx-build:latest

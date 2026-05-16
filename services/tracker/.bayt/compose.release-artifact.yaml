@@ -6,3 +6,4 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.release-artifact
       target: release-artifact
+    image: bayt-services_tracker-release-artifact:latest

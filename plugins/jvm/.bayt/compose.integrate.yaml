@@ -11,5 +11,6 @@ services:
       secrets:
       - host.env
       target: integrate
+    image: bayt-plugins_jvm-integrate:latest
     secrets:
     - host.env

@@ -107,13 +107,11 @@
           {
             "type": "cache",
             "target": "/root/.gradle",
-            "sharing": "shared",
             "required": false
           },
           {
             "type": "cache",
             "target": ".gradle/configuration-cache",
-            "sharing": "locked",
             "required": false
           }
         ]

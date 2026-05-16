@@ -8,3 +8,4 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.build
       target: build
+    image: bayt-plugins_jvm-build:latest

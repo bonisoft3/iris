@@ -13,3 +13,4 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.release
       target: release
+    image: bayt-services_tracker-release:latest
