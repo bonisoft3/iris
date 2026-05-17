@@ -100,7 +100,12 @@ WORKFLOWS = [
         ],
         origin_excludes = [],
         transformations = [
-            core.move("plugins/bayt", ""),
+            # IGNORE_NOOP so the first run's --init-history walk
+            # silently skips revs that pre-date plugins/bayt/.
+            core.transform(
+                [core.move("plugins/bayt", "")],
+                noop_behavior = "IGNORE_NOOP",
+            ),
             core.transform(
                 [core.replace(
                     before = "./plugins/bayt",
