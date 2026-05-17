@@ -20,7 +20,7 @@
 package omnishell
 
 import (
-	bayt "bonisoft.org/plugins/bayt/bayt"
+	bayt "bonisoft.org/plugins/bayt/core:bayt"
 	mise "bonisoft.org/plugins/bayt/stacks/mise"
 	sayt "bonisoft.org/plugins/bayt/stacks/sayt"
 )

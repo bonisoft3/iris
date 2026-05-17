@@ -7,7 +7,7 @@
 package web
 
 import (
-	bayt "bonisoft.org/plugins/bayt/bayt"
+	bayt "bonisoft.org/plugins/bayt/core:bayt"
 	sayt "bonisoft.org/plugins/bayt/stacks/sayt"
 )
 

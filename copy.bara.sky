@@ -93,6 +93,28 @@ WORKFLOWS = [
         scope = "shall",
     ),
     struct(
+        name = "bayt",
+        destination = "git@github.com:bonisoft3/bayt.git",
+        origin_files = [
+            "plugins/bayt/**",
+        ],
+        origin_excludes = [],
+        transformations = [
+            core.move("plugins/bayt", ""),
+            core.transform(
+                [core.replace(
+                    before = "./plugins/bayt",
+                    after = ".",
+                    paths = glob([".github/**"]),
+                )],
+                noop_behavior = "IGNORE_NOOP",
+            ),
+        ],
+        submodules = "",
+        mode = "ITERATIVE",
+        scope = "bayt",
+    ),
+    struct(
         name = "lazybox",
         destination = "git@github.com:bonisoft3/lazybox.git",
         origin_files = [
