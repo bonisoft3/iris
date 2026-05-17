@@ -12,9 +12,6 @@
       "name": "plugins_jvm-build",
       "context": "service:plugins_jvm-build"
     },
-    "secrets": [
-      "host.env"
-    ],
     "mounts": [
       {
         "type": "cache",
@@ -27,6 +24,8 @@
         "required": false
       }
     ],
+    "secrets": {},
+    "extra_hosts": [],
     "epilogue": [],
     "copy": [],
     "healthcheck": null,

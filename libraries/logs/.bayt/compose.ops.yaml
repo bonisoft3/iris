@@ -1,0 +1,11 @@
+services:
+  libraries_logs-ops:
+    build:
+      additional_contexts:
+        workspaceroot-ops: service:workspaceroot-ops
+        plugins_libstoml-ops: service:plugins_libstoml-ops
+        plugins_jvm-ops: service:plugins_jvm-ops
+      context: ..
+      dockerfile: .bayt/Dockerfile.ops
+      target: ops
+    image: bayt-libraries_logs-ops:latest

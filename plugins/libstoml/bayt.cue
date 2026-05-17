@@ -18,6 +18,15 @@ _libstoml: sayt.gradle & {
 		// in via the FROM chain instead of running zypper here.
 		"setup": dockerfile: from: ref: "workspaceroot:setup"
 
+		"ops": {
+			srcs: globs: ["compose.yaml", ".bayt/**"]
+			outs: globs: ["compose.yaml", ".bayt/**"]
+			deps: ["workspaceroot:ops"]
+			visibility: "public"
+			dockerfile: bayt.scratch
+			cmd: "builtin": null
+		}
+
 		// Library: not deployed standalone, no dev server, no e2e
 		// preview.
 		"release": null

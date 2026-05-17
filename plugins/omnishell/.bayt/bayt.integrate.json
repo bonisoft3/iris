@@ -7,13 +7,14 @@
   },
   "dockerfile": {
     "preamble": [],
-    "secrets": [],
     "from": {
       "ref": ":build",
       "name": "plugins_omnishell-build",
       "context": "service:plugins_omnishell-build"
     },
     "mounts": [],
+    "secrets": {},
+    "extra_hosts": [],
     "epilogue": [],
     "copy": [],
     "healthcheck": null,

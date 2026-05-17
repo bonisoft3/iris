@@ -6,7 +6,7 @@
         "kind": "test",
         "isDefault": true
       },
-      "label": "plugins_micronaut test",
+      "label": "test",
       "type": "shell",
       "command": "task bayt:test",
       "options": {

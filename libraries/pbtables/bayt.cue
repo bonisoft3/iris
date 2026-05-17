@@ -18,6 +18,15 @@ _pbtables: sayt.gradle & {
 		// xproto's settings.gradle.kts includes logs, so logs dir must also be in the build container.
 		"build": deps: [":setup", "workspaceroot:setup", "plugins_libstoml:build", "plugins_jvm:build", "plugins_micronaut:build", "libraries_xproto:build", "libraries_logs:build"]
 
+		"ops": {
+			srcs: globs: [".bayt/**"]
+			outs: globs: [".bayt/**"]
+			deps: ["workspaceroot:ops", "plugins_libstoml:ops", "plugins_jvm:ops", "plugins_micronaut:ops", "libraries_xproto:ops", "libraries_logs:ops"]
+			visibility: "public"
+			dockerfile: bayt.scratch
+			cmd: "builtin": null
+		}
+
 		// Library: not deployed standalone, no dev server, no e2e
 		// preview.
 		"release": null

@@ -9,15 +9,14 @@ say:
     do: "run-task bayt:test"
     use: "./tools.nu [run-task]"
   launch:
-    do: "docker compose up develop --build"
-    use: ""
-  # The integrate stage's RUN already executes `./gradlew integrationTest`
-  # via dind.sh — bake's exit code IS the test verdict. Skipping the
-  # compose-up that follows in default mode (which only runs an
-  # entrypoint that prints host.env and exits 0) saves ~10s/cycle on
-  # this project.
+    args: "--target services_tracker-launch"
+  # Target dindbox (the runtime orchestrator) instead of integrate.
+  # dindbox's entrypoint probes the host gateway IP and exports
+  # DOCKER_HOST; its CMD invokes `bake services_tracker-ci`. ci's
+  # Dockerfile RUN does the inner bake on integrate (BuildKit-cached);
+  # integrate's RUN executes gradle integrationTest via dind.sh.
   integrate:
-    args: "--bake"
+    args: "--target dindbox"
   # Goreleaser-OSS doesn't understand sayt's path-prefixed monorepo
   # tags (services/tracker/v0.2.1) — that's a pro feature. --snapshot
   # keeps goreleaser in dev mode (skips the strict tag-on-HEAD

@@ -21,6 +21,15 @@ _logs: sayt.gradle & {
 		// settings.gradle.kts uses id("catalog") from libstoml plugin; pluginManagement also includes jvm.
 		"build": deps: [":setup", "workspaceroot:setup", "plugins_libstoml:build", "plugins_jvm:build"]
 
+		"ops": {
+			srcs: globs: [".bayt/**"]
+			outs: globs: [".bayt/**"]
+			deps: ["workspaceroot:ops", "plugins_libstoml:ops", "plugins_jvm:ops"]
+			visibility: "public"
+			dockerfile: bayt.scratch
+			cmd: "builtin": null
+		}
+
 		// Library: not deployed standalone, no dev server, no e2e
 		// preview. Drop the inherited targets that would emit dead
 		// bake/skaffold/compose blocks.

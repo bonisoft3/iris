@@ -1,0 +1,15 @@
+# syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
+FROM services_tracker-dindbox AS ci
+WORKDIR /monorepo/services/tracker
+RUN <<INNER
+cat > /usr/local/bin/inner-bake.sh <<'SCRIPT'
+#!/bin/sh
+set -e
+docker compose config -o /tmp/flat.yaml
+docker buildx bake --allow=fs.read=/monorepo -f /tmp/flat.yaml --progress plain services_tracker-integrate
+SCRIPT
+chmod +x /usr/local/bin/inner-bake.sh
+INNER
+RUN --mount=type=secret,id=docker_host,required=true ["/usr/local/bin/dind.sh", "/usr/local/bin/inner-bake.sh"]
+COPY --link Taskfile.yml ./Taskfile.yml
+COPY --link .bayt/Taskfile.yml .bayt/bayt.ci.json .bayt/init.gradle.kts ./.bayt/

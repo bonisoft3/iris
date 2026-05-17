@@ -1,0 +1,72 @@
+{
+  "dockerfile": {
+    "preamble": [
+      "RUN <<INNER\ncat > /usr/local/bin/inner-bake.sh <<'SCRIPT'\n#!/bin/sh\nset -e\ndocker compose config -o /tmp/flat.yaml\ndocker buildx bake --allow=fs.read=/monorepo -f /tmp/flat.yaml --progress plain services_tracker-integrate\nSCRIPT\nchmod +x /usr/local/bin/inner-bake.sh\nINNER"
+    ],
+    "from": {
+      "ref": ":dindbox",
+      "name": "services_tracker-dindbox",
+      "context": "service:services_tracker-dindbox"
+    },
+    "secrets": {
+      "docker_host": {
+        "environment": "BAYT_DOCKER_HOST"
+      }
+    },
+    "mounts": [],
+    "extra_hosts": [],
+    "epilogue": [],
+    "copy": [],
+    "healthcheck": null,
+    "expose": [],
+    "entrypoint": null,
+    "incremental": false,
+    "cmd": null
+  },
+  "name": "ci",
+  "project": "services_tracker",
+  "dir": "services/tracker",
+  "activate": "",
+  "srcs": {
+    "globs": [],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [],
+    "exclude": []
+  },
+  "env": {},
+  "visibility": "internal",
+  "deps": [],
+  "transitiveDeps": [],
+  "transitiveCrossDeps": [],
+  "chainedDeps": [],
+  "cmds": [
+    {
+      "srcs": {
+        "globs": [],
+        "exclude": [],
+        "defaultGlobs": null,
+        "defaultExclude": null
+      },
+      "shell": "exec",
+      "do": "/usr/local/bin/inner-bake.sh",
+      "dockerfile": {
+        "wrap": "/usr/local/bin/dind.sh",
+        "mounts": [
+          {
+            "type": "secret",
+            "id": "docker_host",
+            "required": true
+          }
+        ]
+      },
+      "name": "builtin",
+      "stop": false
+    }
+  ],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

@@ -13,6 +13,12 @@ include:
   required: false
 - path: ./compose.integrate.yaml
   required: false
+- path: ./compose.ops.yaml
+  required: false
+- path: ./compose.ci.yaml
+  required: false
+- path: ./compose.dindbox.yaml
+  required: false
 - path: ../../../.bayt/compose.bayt.deps.yaml
   required: false
 - path: ../../../libraries/logs/.bayt/compose.bayt.deps.yaml

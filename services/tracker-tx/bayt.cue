@@ -144,10 +144,7 @@ _tx: bayt.#project & {
 			// sayt.integrate defaults.
 			srcs: globs: ["transcoding.yaml", "cloud_run_tls.yaml", "edge.yaml"]
 			outs: globs: ["build/test-results-int/**/*.xml"]
-			dockerfile: {
-				bayt.nubox
-				secrets: []
-			}
+			dockerfile: bayt.nubox
 			cmd: "builtin": {
 				shell: "sh"  // < redirects + && chain
 				do:    "yq . < out/transcoding.yaml.tpl && yq . < out/transcoding.yaml.gcp.tpl && yq . < edge.yaml"

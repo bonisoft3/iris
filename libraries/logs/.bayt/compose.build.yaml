@@ -9,3 +9,4 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.build
       target: build
+    image: bayt-libraries_logs-build:latest

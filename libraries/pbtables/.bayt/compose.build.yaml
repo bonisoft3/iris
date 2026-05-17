@@ -12,3 +12,4 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.build
       target: build
+    image: bayt-libraries_pbtables-build:latest

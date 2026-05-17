@@ -10,6 +10,10 @@ services:
     extends:
       file: ./compose.setup.yaml
       service: libraries_logs-setup
+  ops:
+    extends:
+      file: ./compose.ops.yaml
+      service: libraries_logs-ops
   integrate:
     extends:
       file: ./compose.integrate.yaml

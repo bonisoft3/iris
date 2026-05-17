@@ -28,6 +28,15 @@ _jvm: sayt.gradle & {
 		// includeBuild — that directory must exist in the build container.
 		"build": deps: [":setup", "workspaceroot:setup", "plugins_libstoml:build"]
 
+		"ops": {
+			srcs: globs: [".bayt/**"]
+			outs: globs: [".bayt/**"]
+			deps: ["workspaceroot:ops", "plugins_libstoml:ops"]
+			visibility: "public"
+			dockerfile: bayt.scratch
+			cmd: "builtin": null
+		}
+
 		// Library: not deployed standalone, no dev server, no e2e
 		// preview.
 		"release": null

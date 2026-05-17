@@ -1,0 +1,15 @@
+services:
+  services_tracker-ops:
+    build:
+      additional_contexts:
+        workspaceroot-ops: service:workspaceroot-ops
+        libraries_logs-ops: service:libraries_logs-ops
+        libraries_pbtables-ops: service:libraries_pbtables-ops
+        libraries_xproto-ops: service:libraries_xproto-ops
+        plugins_libstoml-ops: service:plugins_libstoml-ops
+        plugins_jvm-ops: service:plugins_jvm-ops
+        plugins_micronaut-ops: service:plugins_micronaut-ops
+      context: ..
+      dockerfile: .bayt/Dockerfile.ops
+      target: ops
+    image: bayt-services_tracker-ops:latest

@@ -6,7 +6,7 @@
         "kind": "build",
         "isDefault": true
       },
-      "label": "plugins_libstoml build",
+      "label": "build",
       "type": "shell",
       "command": "task bayt:build",
       "options": {

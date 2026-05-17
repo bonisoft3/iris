@@ -39,6 +39,14 @@ group "ci" {
 target "ci-defaults" {
   secret = [
     "id=host.env,env=HOST_ENV",
+    # docker_host is the per-secret form used by the dindbox cascade
+    # (bayt's compose-spec map shape: `secrets.docker_host.environment:
+    # BAYT_DOCKER_HOST`). The env var is intentionally BAYT-prefixed so
+    # it doesn't override docker CLI's own DOCKER_HOST — that would
+    # point buildx at the remote socat'd daemon and force the docker
+    # driver, which can't export GHA cache. sayt-integrate's HOST_ENV
+    # extraction puts the host's DOCKER_HOST into BAYT_DOCKER_HOST.
+    "id=docker_host,env=BAYT_DOCKER_HOST",
   ]
   args = {
     SOURCE_DATE_EPOCH = "0"

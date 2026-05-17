@@ -1,0 +1,104 @@
+{
+  "dockerfile": {
+    "preamble": [],
+    "from": null,
+    "mounts": [],
+    "secrets": {},
+    "extra_hosts": [],
+    "epilogue": [],
+    "copy": [],
+    "healthcheck": null,
+    "expose": [],
+    "entrypoint": null,
+    "incremental": false,
+    "cmd": null
+  },
+  "name": "ops",
+  "project": "plugins_jvm",
+  "dir": "plugins/jvm",
+  "activate": "mise x --",
+  "srcs": {
+    "globs": [
+      ".bayt/**"
+    ],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [
+      ".bayt/**"
+    ],
+    "exclude": []
+  },
+  "env": {},
+  "visibility": "public",
+  "deps": [
+    "ops",
+    "ops"
+  ],
+  "transitiveDeps": [],
+  "transitiveCrossDeps": [
+    {
+      "name": "ops",
+      "project": "workspaceroot",
+      "dir": "",
+      "outs": {
+        "globs": [
+          ".bayt/**",
+          "plugins/bayt/runtime/**",
+          "Taskfile.yml",
+          "compose.yaml",
+          "bayt.cue",
+          "plugins/devserver/dind.sh"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "ops",
+      "project": "plugins_libstoml",
+      "dir": "plugins/libstoml",
+      "outs": {
+        "globs": [
+          "compose.yaml",
+          ".bayt/**"
+        ],
+        "exclude": []
+      }
+    }
+  ],
+  "chainedDeps": [
+    {
+      "name": "ops",
+      "project": "workspaceroot",
+      "dir": "",
+      "outs": {
+        "globs": [
+          ".bayt/**",
+          "plugins/bayt/runtime/**",
+          "Taskfile.yml",
+          "compose.yaml",
+          "bayt.cue",
+          "plugins/devserver/dind.sh"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "ops",
+      "project": "plugins_libstoml",
+      "dir": "plugins/libstoml",
+      "outs": {
+        "globs": [
+          "compose.yaml",
+          ".bayt/**"
+        ],
+        "exclude": []
+      }
+    }
+  ],
+  "cmds": [],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

@@ -1,23 +1,9 @@
 {
   "compose": {
-    "entrypoint": [
-      "find",
-      "build/test-results/integrationTest",
-      "-name",
-      "*.xml",
-      "-exec",
-      "cat",
-      "{}",
-      "+"
-    ],
     "environment": {},
     "ports": [],
-    "volumes": [
-      "//var/run/docker.sock:/var/run/docker.sock",
-      "${HOME:-~}/.skaffold/cache:/root/.skaffold/cache"
-    ],
-    "depends_on": {},
-    "network_mode": "host"
+    "volumes": [],
+    "depends_on": {}
   },
   "dockerfile": {
     "preamble": [],
@@ -26,9 +12,27 @@
       "name": "services_tracker-build",
       "context": "service:services_tracker-build"
     },
-    "secrets": [
-      "host.env"
+    "copy": [
+      {
+        "from": {
+          "ref": ":dindbox",
+          "name": "services_tracker-dindbox",
+          "context": "service:services_tracker-dindbox"
+        },
+        "srcs": [
+          "/usr/local/bin/dind.sh"
+        ],
+        "dst": "/usr/local/bin/dind.sh",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      }
     ],
+    "secrets": {
+      "docker_host": {
+        "environment": "BAYT_DOCKER_HOST"
+      }
+    },
     "incremental": true,
     "mounts": [
       {
@@ -42,8 +46,8 @@
         "required": false
       }
     ],
+    "extra_hosts": [],
     "epilogue": [],
-    "copy": [],
     "healthcheck": null,
     "expose": [],
     "entrypoint": null,
@@ -218,11 +222,11 @@
         "defaultExclude": null
       },
       "dockerfile": {
-        "wrap": "/monorepo/plugins/devserver/dind.sh",
+        "wrap": "/usr/local/bin/dind.sh",
         "mounts": [
           {
             "type": "secret",
-            "id": "host.env",
+            "id": "docker_host",
             "required": true
           }
         ]

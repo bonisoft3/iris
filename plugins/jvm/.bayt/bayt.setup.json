@@ -7,7 +7,8 @@
       "context": "service:workspaceroot-setup"
     },
     "mounts": [],
-    "secrets": [],
+    "secrets": {},
+    "extra_hosts": [],
     "epilogue": [],
     "copy": [],
     "healthcheck": null,

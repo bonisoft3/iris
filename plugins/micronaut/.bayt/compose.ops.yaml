@@ -1,0 +1,11 @@
+services:
+  plugins_micronaut-ops:
+    build:
+      additional_contexts:
+        workspaceroot-ops: service:workspaceroot-ops
+        plugins_libstoml-ops: service:plugins_libstoml-ops
+        plugins_jvm-ops: service:plugins_jvm-ops
+      context: ..
+      dockerfile: .bayt/Dockerfile.ops
+      target: ops
+    image: bayt-plugins_micronaut-ops:latest

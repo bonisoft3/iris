@@ -7,3 +7,4 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.descriptor
       target: descriptor
+    image: bayt-libraries_xproto-descriptor:latest

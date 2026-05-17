@@ -12,23 +12,20 @@
       "name": "plugins_micronaut-build",
       "context": "service:plugins_micronaut-build"
     },
-    "secrets": [
-      "host.env"
-    ],
     "mounts": [
       {
         "type": "cache",
         "target": "/root/.gradle",
-        "sharing": "shared",
         "required": false
       },
       {
         "type": "cache",
         "target": ".gradle/configuration-cache",
-        "sharing": "locked",
         "required": false
       }
     ],
+    "secrets": {},
+    "extra_hosts": [],
     "epilogue": [],
     "copy": [],
     "healthcheck": null,

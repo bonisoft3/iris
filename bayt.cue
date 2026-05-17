@@ -29,6 +29,26 @@ _wsroot: sayt.pnpmWorkspace & {
 	// `deps: ["workspaceroot:setup"]`. Public so cross-project
 	// consumers may reference it.
 	targets: "setup": visibility: "public"
+
+	// ops — bake-graph scaffolding only: compose includes, taskfile
+	// chain, bayt runtime helpers. Toolchain inputs (mise lockfile,
+	// package.json tree, gradle catalog) belong to :setup, which
+	// installs them; consumers that need them chain off :setup.
+	targets: "ops": {
+		let _ops = [
+			".bayt/**",
+			"plugins/bayt/runtime/**",
+			"Taskfile.yml",
+			"compose.yaml",
+			"bayt.cue",
+			"plugins/devserver/dind.sh",
+		]
+		srcs: globs: _ops
+		outs: globs: _ops
+		visibility: "public"
+		dockerfile: bayt.scratch
+		cmd: "builtin": null
+	}
 }
 
 project: _wsroot

@@ -1,6 +1,3 @@
-secrets:
-  host.env:
-    file: ${BAYT_HOST_ENV_FILE}
 services:
   libraries_logs-integrate:
     build:
@@ -8,8 +5,5 @@ services:
         libraries_logs-build: service:libraries_logs-build
       context: ..
       dockerfile: .bayt/Dockerfile.integrate
-      secrets:
-      - host.env
       target: integrate
-    secrets:
-    - host.env
+    image: bayt-libraries_logs-integrate:latest

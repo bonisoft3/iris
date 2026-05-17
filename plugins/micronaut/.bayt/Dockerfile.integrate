@@ -2,6 +2,6 @@
 FROM plugins_micronaut-build AS integrate
 WORKDIR /monorepo/plugins/micronaut
 COPY --link --parents src/it/**/*.java src/it/**/*.kt src/it/resources/**/* ./
-RUN --mount=type=cache,target=/root/.gradle,sharing=shared --mount=type=cache,target=.gradle/configuration-cache,sharing=locked ["dind.sh", "mise", "x", "--", "./gradlew", "--init-script", ".bayt/init.gradle.kts", "integrationTest", "--rerun"]
+RUN --mount=type=cache,target=/root/.gradle,id=plugins_micronaut-integrate:/root/.gradle,sharing=locked --mount=type=cache,target=.gradle/configuration-cache,id=plugins_micronaut-integrate:.gradle/configuration-cache,sharing=locked ["dind.sh", "mise", "x", "--", "./gradlew", "--init-script", ".bayt/init.gradle.kts", "integrationTest", "--rerun"]
 COPY --link Taskfile.yml ./Taskfile.yml
 COPY --link .bayt/Taskfile.yml .bayt/Taskfile.integrate.yaml .bayt/bayt.integrate.json .bayt/init.gradle.kts ./.bayt/

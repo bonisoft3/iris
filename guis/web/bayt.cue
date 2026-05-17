@@ -98,12 +98,11 @@ _web: sayt.pnpm & {
 			dockerfile: expose: [3000]
 		}
 
-		// Integrate uses the container task chain to reuse setup→build
-		// stamps; drops the host.env secret + dind.sh wrap from
-		// sayt.integrate's defaults (this project's integration tests
-		// don't need either).
+		// Tests don't touch docker, so the sayt-stack default dind.sh
+		// wrap gets cleared. bayt.incremental routes the cmd through
+		// the in-container task chain — setup→build stamps short-
+		// circuit reruns inside the build sandbox.
 		"integrate": bayt.incremental & {
-			dockerfile: secrets: []
 			cmd: "builtin": dockerfile: wrap: ""
 		}
 	}

@@ -1,0 +1,16 @@
+secrets:
+  docker_host:
+    environment: BAYT_DOCKER_HOST
+services:
+  services_tracker-ci:
+    build:
+      additional_contexts:
+        services_tracker-dindbox: service:services_tracker-dindbox
+      context: ..
+      dockerfile: .bayt/Dockerfile.ci
+      secrets:
+      - docker_host
+      target: ci
+    image: bayt-services_tracker-ci:latest
+    secrets:
+    - docker_host

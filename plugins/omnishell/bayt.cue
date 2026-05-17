@@ -89,12 +89,10 @@ _omnishell: bayt.#project & {
 		// Integrate = same `bun test` on FROM :build. CI's bake
 		// plugins_omnishell builds the integrate stage, so this is what
 		// gates landing changes — install + check (from build chain) +
-		// unit tests. No host.env secret, no dind.sh wrap (no docker
-		// socket needed).
+		// unit tests. No dind.sh wrap (no docker socket needed).
 		"integrate": sayt.integrate & mise.exec & {
 			srcs: globs: ["test/**/*"]
 			dockerfile: {
-				secrets: []
 				from: ref: ":build"
 			}
 			cmd: "builtin": {

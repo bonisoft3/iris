@@ -1,0 +1,9 @@
+services:
+  plugins_libstoml-ops:
+    build:
+      additional_contexts:
+        workspaceroot-ops: service:workspaceroot-ops
+      context: ..
+      dockerfile: .bayt/Dockerfile.ops
+      target: ops
+    image: bayt-plugins_libstoml-ops:latest

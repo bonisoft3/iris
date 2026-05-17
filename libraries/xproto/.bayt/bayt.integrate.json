@@ -12,23 +12,20 @@
       "name": "libraries_xproto-build",
       "context": "service:libraries_xproto-build"
     },
-    "secrets": [
-      "host.env"
-    ],
     "mounts": [
       {
         "type": "cache",
         "target": "/root/.gradle",
-        "sharing": "shared",
         "required": false
       },
       {
         "type": "cache",
         "target": ".gradle/configuration-cache",
-        "sharing": "locked",
         "required": false
       }
     ],
+    "secrets": {},
+    "extra_hosts": [],
     "epilogue": [],
     "copy": [],
     "healthcheck": null,

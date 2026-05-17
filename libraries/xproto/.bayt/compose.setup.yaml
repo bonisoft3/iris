@@ -6,3 +6,4 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.setup
       target: setup
+    image: bayt-libraries_xproto-setup:latest

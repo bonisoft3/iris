@@ -41,6 +41,15 @@ _xproto: sayt.gradle & {
 			deps: [":setup", "workspaceroot:setup", "plugins_libstoml:build", "plugins_jvm:build", "libraries_logs:build"]
 		}
 
+		"ops": {
+			srcs: globs: [".bayt/**"]
+			outs: globs: [".bayt/**"]
+			deps: ["workspaceroot:ops", "plugins_libstoml:ops", "plugins_jvm:ops", "libraries_logs:ops"]
+			visibility: "public"
+			dockerfile: bayt.scratch
+			cmd: "builtin": null
+		}
+
 		// descriptor — single-artifact buf-built FileDescriptorSet,
 		// consumed by services that wire envoy's grpc_json_transcoder
 		// (e.g. services/tracker-tx's launch). Separate from the main

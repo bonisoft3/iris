@@ -229,50 +229,121 @@ _tracker: sayt.gradle & {
 		"launch": dockerfile: bayt.nubox
 
 		// Integration tests under docker-in-docker for testcontainers
-		// isolation. `bayt.hostenv` provides the host.env secret + compose
-		// federation; dind.sh wrap + docker socket + skaffold cache
-		// volumes + host networking stay inline (dind.sh is sayt, not
-		// bayt). bayt.incremental lets the Dockerfile RUN invoke `task
-		// integrate:integrate`, walking the setup→build→integrate chain
-		// with stamps COPY'd from the build stage.
-		//
-		// integrate.nu drives this through `docker buildx bake` with
-		// --set=*.output=type=cacheonly — tests run during this stage's
-		// RUN, build exit code is the test verdict, no compose-up.
-		"integrate": bayt.hostenv & bayt.incremental & {
+		// isolation. integrate's RUN executes gradle integrationTest
+		// wrapped by /usr/local/bin/dind.sh, which reads the docker_host
+		// build secret (env-sourced, populated at compose-up time by
+		// the dindbox sidecar's entrypoint) and exports DOCKER_HOST
+		// before gradle's testcontainers calls reach the daemon.
+		"integrate": bayt.incremental & {
 			// TrackerEndpointIT reads bottle_test.txt from src/test/resources/
 			// via a filesystem path (not classpath), so it must be present
 			// in the container at build time. src/it/resources/ already
 			// flows in via Gradle.integrationTest's defaultGlobs — listing
 			// it here too would emit two COPY lines for the same tree.
 			srcs: globs: ["src/test/resources/**/*"]
-			cmd: "builtin": dockerfile: wrap: "/monorepo/plugins/devserver/dind.sh"
-			compose: {
-				// Runtime entrypoint cats every junit XML the gradle RUN
-				// produced at build-time. Useful when the user opts out
-				// of bake (compose-up mode) — they get the test reports
-				// on stdout instead of just an empty exit-0 from the
-				// dind.sh entrypoint. In bake mode this entrypoint is
-				// never invoked. find handles the per-test-class file
-				// fanout without a shell glob; if the directory is
-				// empty (gradle produced no XMLs) `cat` runs zero times
-				// and exits 0 — find itself errors non-zero if the
-				// directory is missing entirely, which is the right
-				// signal that integrationTest didn't run.
-				entrypoint: ["find", "build/test-results/integrationTest", "-name", "*.xml", "-exec", "cat", "{}", "+"]
-				volumes: [
-					"//var/run/docker.sock:/var/run/docker.sock",
-					"${HOME:-~}/.skaffold/cache:/root/.skaffold/cache",
-				]
-				network_mode: "host"
+			cmd: "builtin": dockerfile: {
+				wrap: "/usr/local/bin/dind.sh"
+				mounts: [{type: "secret", id: "docker_host", required: true}]
 			}
-			// Chain integrate off the build stage via FROM. Inherits
-			// .task/bayt/build.hash so the in-container task chain's
-			// `::bayt:build` dep short-circuits — no second gradle build.
-			// Cross-project COPYs (libraries/*, plugins/*) still pull as
-			// data with `--exclude=.task` because their stamps belong
-			// to those projects, not this one.
-			dockerfile: from: ref: ":build"
+			dockerfile: {
+				from: ref: ":build"
+				// integrate chains FROM :build (no bayt.dind preset), so
+				// dind.sh isn't on the image. COPY it from :dindbox,
+				// which has it baked in via the preset.
+				copy: [{
+					from: ref: ":dindbox"
+					srcs: ["/usr/local/bin/dind.sh"]
+					dst:  "/usr/local/bin/dind.sh"
+				}]
+				secrets: docker_host: environment: "BAYT_DOCKER_HOST"
+			}
+		}
+
+		// ops — content-only stage holding the project's bake-graph
+		// scaffolding (compose.yaml + .bayt/). FROM scratch, no RUN.
+		// Consumers that need to walk the compose graph at runtime
+		// (e.g. ci) depend on this; :build's cache stays unaffected.
+		// Manual cross-project deps below until the sayt stack auto-
+		// emits this and derives cross-project :ops from :build's deps.
+		"ops": {
+			srcs: globs: ["compose.yaml", ".bayt/**"]
+			outs: globs: ["compose.yaml", ".bayt/**"]
+			deps: [
+				"workspaceroot:ops",
+				"libraries_logs:ops",
+				"libraries_pbtables:ops",
+				"libraries_xproto:ops",
+				"plugins_libstoml:ops",
+				"plugins_jvm:ops",
+				"plugins_micronaut:ops",
+			]
+			dockerfile: bayt.scratch
+			cmd: "builtin": null
+		}
+
+		// ci — build target only. Its Dockerfile RUN does the inner
+		// bake against services_tracker-integrate, wrapped by dind.sh
+		// which reads DOCKER_HOST from the docker_host secret. The RUN
+		// is BuildKit-cached: when ci's inputs are unchanged, the inner
+		// bake + gradle test pipeline is skipped entirely.
+		//
+		// Triggered transitively by dindbox's CMD invoking
+		// `docker buildx bake services_tracker-ci`. The secret is
+		// passed in by bake (declared env-sourced in compose), so it
+		// flows from dindbox's runtime probe → outer bake → ci's RUN
+		// → inner bake → integrate's RUN, all carrying the same
+		// docker_host value.
+		"ci": {
+			// Chain FROM :dindbox so ci inherits dindbox's source tree
+			// + dind preset content in a single FROM. Don't switch to
+			// a leaf-style monorepo-root additional_context COPY —
+			// content-hash over the whole workspace measures slower
+			// than per-stage cache verification on both cold and hot
+			// paths.
+			activate: ""
+			cmd: "builtin": {
+				shell: "exec"
+				do:    "/usr/local/bin/inner-bake.sh"
+				dockerfile: {
+					wrap: "/usr/local/bin/dind.sh"
+					mounts: [{type: "secret", id: "docker_host", required: true}]
+				}
+			}
+			dockerfile: {
+				from: ref: ":dindbox"
+				secrets: docker_host: environment: "BAYT_DOCKER_HOST"
+				preamble: [#"""
+					RUN <<INNER
+					cat > /usr/local/bin/inner-bake.sh <<'SCRIPT'
+					#!/bin/sh
+					set -e
+					docker compose config -o /tmp/flat.yaml
+					docker buildx bake --allow=fs.read=/monorepo -f /tmp/flat.yaml --progress plain services_tracker-integrate
+					SCRIPT
+					chmod +x /usr/local/bin/inner-bake.sh
+					INNER
+					"""#]
+			}
+		}
+
+		// dindbox — runtime orchestrator. The host's single command:
+		// `docker compose up --build dindbox --exit-code-from dindbox`.
+		// dindbox's entrypoint runs socat (publishing /var/run/docker.sock
+		// as TCP) and probes the literal host-gateway IP via
+		// `docker run --add-host=…`. With DOCKER_HOST=tcp://<ip>:<port>
+		// exported, the CMD invokes the outer bake on services_tracker-ci.
+		// ci's BuildKit-cached RUN does the rest.
+		"dindbox": {
+			deps: [":build", ":ops"]
+			cmd: "builtin": null
+			dockerfile: bayt.dind
+			compose: {
+				entrypoint: ["/usr/local/bin/dind-entrypoint.sh"]
+				command: ["sh", "-c", "docker compose config -o /tmp/flat.yaml && docker buildx bake --allow=fs.read=/monorepo -f /tmp/flat.yaml --progress plain services_tracker-ci"]
+				environment: BUILDX_NO_DEFAULT_ATTESTATIONS: "1"
+				ports: ["2375"]
+				volumes: ["//var/run/docker.sock:/var/run/docker.sock"]
+			}
 		}
 	}
 }

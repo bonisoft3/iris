@@ -9,4 +9,4 @@ COPY --link Taskfile.yml ./Taskfile.yml
 COPY --link .bayt/Taskfile.yml .bayt/Taskfile.build.yaml .bayt/bayt.build.json .bayt/init.gradle.kts ./.bayt/
 COPY --from=bayt-runtime --link . /monorepo/plugins/bayt/runtime/
 COPY --link .bayt/Taskfile.setup.yaml .bayt/bayt.setup.json ./.bayt/
-RUN --mount=type=cache,id=bayt-cache,target=/root/.cache/bayt,sharing=shared --mount=type=cache,target=/root/.gradle,sharing=shared --mount=type=cache,target=.gradle/configuration-cache,sharing=locked ["task", "bayt:build"]
+RUN --mount=type=cache,target=/root/.cache/bayt,id=libraries_xproto-build:/root/.cache/bayt,sharing=locked --mount=type=cache,target=/root/.gradle,id=libraries_xproto-build:/root/.gradle,sharing=locked --mount=type=cache,target=.gradle/configuration-cache,id=libraries_xproto-build:.gradle/configuration-cache,sharing=locked ["task", "bayt:build"]

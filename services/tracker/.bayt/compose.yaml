@@ -30,3 +30,15 @@ services:
     extends:
       file: ./compose.integrate.yaml
       service: services_tracker-integrate
+  ops:
+    extends:
+      file: ./compose.ops.yaml
+      service: services_tracker-ops
+  ci:
+    extends:
+      file: ./compose.ci.yaml
+      service: services_tracker-ci
+  dindbox:
+    extends:
+      file: ./compose.dindbox.yaml
+      service: services_tracker-dindbox

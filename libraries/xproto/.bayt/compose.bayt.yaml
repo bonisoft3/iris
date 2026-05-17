@@ -3,6 +3,8 @@ include:
   required: false
 - path: ./compose.setup.yaml
   required: false
+- path: ./compose.ops.yaml
+  required: false
 - path: ./compose.descriptor.yaml
   required: false
 - path: ./compose.integrate.yaml

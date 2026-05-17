@@ -6,7 +6,7 @@
         "kind": "test",
         "isDefault": true
       },
-      "label": "plugins_libstoml test",
+      "label": "test",
       "type": "shell",
       "command": "task bayt:test",
       "options": {
