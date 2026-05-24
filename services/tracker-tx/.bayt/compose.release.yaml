@@ -7,4 +7,7 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.release
       target: release
+      x-bake:
+        platforms:
+        - linux/amd64
     image: bayt-services_tracker-tx-release:latest

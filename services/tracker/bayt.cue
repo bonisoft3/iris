@@ -177,7 +177,6 @@ _tracker: sayt.gradle & {
 			bake: {
 				image: "gcr.io/trash-362115/services.tracker"
 				push:  false // default; skaffold overrides via env
-				cacheScope: ""
 				platforms: ["linux/amd64"]
 			}
 

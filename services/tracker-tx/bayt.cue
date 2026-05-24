@@ -163,7 +163,6 @@ _tx: bayt.#project & {
 			bake: {
 				image:      "gcr.io/trash-362115/services.tracker-tx-gcp"
 				push:       false
-				cacheScope: ""
 				platforms: ["linux/amd64"]
 			}
 			_releaseBuild: {

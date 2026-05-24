@@ -57,7 +57,6 @@ _web: sayt.pnpm & {
 			bake: {
 				image:      "gcr.io/trash-362115/guis.web"
 				push:       false
-				cacheScope: ""
 				platforms: ["linux/amd64"]
 			}
 

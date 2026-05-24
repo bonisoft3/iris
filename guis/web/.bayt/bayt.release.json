@@ -2,14 +2,15 @@
   "bake": {
     "image": "gcr.io/trash-362115/guis.web",
     "push": false,
-    "cacheScope": "",
     "platforms": [
       "linux/amd64"
     ],
     "tags": [],
     "args": {},
-    "cacheFrom": [],
-    "cacheTo": []
+    "cache": {
+      "from": [],
+      "to": []
+    }
   },
   "dockerfile": {
     "preamble": [],

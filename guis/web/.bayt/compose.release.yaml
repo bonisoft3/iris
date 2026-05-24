@@ -6,4 +6,7 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.release
       target: release
+      x-bake:
+        platforms:
+        - linux/amd64
     image: bayt-guis_web-release:latest

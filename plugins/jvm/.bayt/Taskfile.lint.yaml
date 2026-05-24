@@ -2,10 +2,10 @@ tasks:
   default:
     run: always
     status:
-    - mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu hash-check --manifest {{.TASKFILE_DIR}}/bayt.lint.json
+    - mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu --manifest {{.TASKFILE_DIR}}/bayt.lint.json --stamp-file .task/bayt/lint.hash
     vars:
       BAYTW: mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/cache.nu run --manifest {{.TASKFILE_DIR}}/bayt.lint.json -- mise x --
     cmds:
     - '{{.BAYTW}} nu sayt.nu lint'
-    - defer: '{{if not .EXIT_CODE}}mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu hash-stamp --manifest {{.TASKFILE_DIR}}/bayt.lint.json{{end}}'
+    - defer: '{{if not .EXIT_CODE}}mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu --manifest {{.TASKFILE_DIR}}/bayt.lint.json --stamp-file .task/bayt/lint.hash --update-stamp{{end}}'
 version: '3'

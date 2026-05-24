@@ -3,7 +3,7 @@ tasks:
     deps:
     - pnpm
     cmds:
-    - defer: '{{if not .EXIT_CODE}}mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu hash-stamp --manifest {{.TASKFILE_DIR}}/bayt.setup.json{{end}}'
+    - defer: '{{if not .EXIT_CODE}}mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu --manifest {{.TASKFILE_DIR}}/bayt.setup.json --stamp-file .task/bayt/setup.hash --update-stamp{{end}}'
   builtin:
     env:
       SHARP_IGNORE_GLOBAL_LIBVIPS: '1'
@@ -11,12 +11,12 @@ tasks:
     vars:
       BAYTW: mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/cache.nu run --manifest {{.TASKFILE_DIR}}/bayt.setup.json --cmd builtin --
     status:
-    - mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu hash-check --manifest {{.TASKFILE_DIR}}/bayt.setup.json --cmd builtin
+    - mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu --manifest {{.TASKFILE_DIR}}/bayt.setup.json --cmd builtin --stamp-file .task/bayt/setup.builtin.hash
     generates:
     - .task/bayt/setup.builtin.hash
     cmds:
     - '{{.BAYTW}} mise install'
-    - defer: '{{if not .EXIT_CODE}}mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu hash-stamp --manifest {{.TASKFILE_DIR}}/bayt.setup.json --cmd builtin{{end}}'
+    - defer: '{{if not .EXIT_CODE}}mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu --manifest {{.TASKFILE_DIR}}/bayt.setup.json --cmd builtin --stamp-file .task/bayt/setup.builtin.hash --update-stamp{{end}}'
   pnpm:
     deps:
     - builtin
@@ -26,10 +26,10 @@ tasks:
     vars:
       BAYTW: mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/cache.nu run --manifest {{.TASKFILE_DIR}}/bayt.setup.json --cmd pnpm --
     status:
-    - mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu hash-check --manifest {{.TASKFILE_DIR}}/bayt.setup.json --cmd pnpm
+    - mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu --manifest {{.TASKFILE_DIR}}/bayt.setup.json --cmd pnpm --stamp-file .task/bayt/setup.pnpm.hash
     generates:
     - .task/bayt/setup.pnpm.hash
     cmds:
     - '{{.BAYTW}} mise x -- pnpm install --frozen-lockfile --filter Iris...'
-    - defer: '{{if not .EXIT_CODE}}mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu hash-stamp --manifest {{.TASKFILE_DIR}}/bayt.setup.json --cmd pnpm{{end}}'
+    - defer: '{{if not .EXIT_CODE}}mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu --manifest {{.TASKFILE_DIR}}/bayt.setup.json --cmd pnpm --stamp-file .task/bayt/setup.pnpm.hash --update-stamp{{end}}'
 version: '3'
