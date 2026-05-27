@@ -1,4 +1,18 @@
 {
+  "bake": {
+    "push": false,
+    "platforms": [],
+    "tags": [],
+    "args": {},
+    "cache": {
+      "from": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-libraries_pbtables-doctor"
+      ],
+      "to": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-libraries_pbtables-doctor,mode=min,image-manifest=true,oci-mediatypes=true"
+      ]
+    }
+  },
   "name": "doctor",
   "project": "libraries_pbtables",
   "dir": "libraries/pbtables",
@@ -15,6 +29,7 @@
   "taskfile": {
     "run": "always",
     "silent": false,
+    "incremental": true,
     "preconditions": []
   },
   "visibility": "internal",

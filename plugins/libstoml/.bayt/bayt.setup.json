@@ -1,10 +1,23 @@
 {
+  "bake": {
+    "push": false,
+    "platforms": [],
+    "tags": [],
+    "args": {},
+    "cache": {
+      "from": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-plugins_libstoml-setup"
+      ],
+      "to": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-plugins_libstoml-setup,mode=min,image-manifest=true,oci-mediatypes=true"
+      ]
+    }
+  },
   "dockerfile": {
     "preamble": [],
     "from": {
       "ref": "workspaceroot:setup",
-      "name": "workspaceroot-setup",
-      "context": "service:workspaceroot-setup"
+      "name": "workspaceroot-setup"
     },
     "mounts": [],
     "secrets": {},
@@ -40,6 +53,7 @@
   "taskfile": {
     "run": "when_changed",
     "silent": false,
+    "incremental": true,
     "preconditions": []
   },
   "visibility": "internal",

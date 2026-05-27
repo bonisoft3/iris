@@ -6,4 +6,9 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.integrate
       target: integrate
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-plugins_libstoml-integrate
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-plugins_libstoml-integrate,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-plugins_libstoml-integrate:latest

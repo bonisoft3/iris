@@ -13,6 +13,8 @@ include:
   required: false
 - path: ./compose.integrate.yaml
   required: false
+- path: ./compose.test-sources.yaml
+  required: false
 - path: ./compose.ops.yaml
   required: false
 - path: ./compose.ci.yaml

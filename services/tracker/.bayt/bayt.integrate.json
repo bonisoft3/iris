@@ -1,39 +1,44 @@
 {
+  "bake": {
+    "push": false,
+    "platforms": [],
+    "tags": [],
+    "args": {},
+    "cache": {
+      "from": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-integrate"
+      ],
+      "to": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-integrate,mode=min,image-manifest=true,oci-mediatypes=true"
+      ]
+    }
+  },
   "compose": {
-    "environment": {},
+    "command": [
+      "mise",
+      "x",
+      "--",
+      "./gradlew",
+      "--init-script",
+      ".bayt/init.gradle.kts",
+      "integrationTest",
+      "--rerun"
+    ],
+    "environment": {
+      "TESTCONTAINERS_HOST_OVERRIDE": "${TESTCONTAINERS_HOST_OVERRIDE}"
+    },
     "ports": [],
-    "volumes": [],
+    "volumes": [
+      "/var/run/docker.sock:/var/run/docker.sock"
+    ],
     "depends_on": {}
   },
   "dockerfile": {
     "preamble": [],
     "from": {
       "ref": ":build",
-      "name": "services_tracker-build",
-      "context": "service:services_tracker-build"
+      "name": "services_tracker-build"
     },
-    "copy": [
-      {
-        "from": {
-          "ref": ":dindbox",
-          "name": "services_tracker-dindbox",
-          "context": "service:services_tracker-dindbox"
-        },
-        "srcs": [
-          "/usr/local/bin/dind.sh"
-        ],
-        "dst": "/usr/local/bin/dind.sh",
-        "link": true,
-        "parents": false,
-        "exclude": []
-      }
-    ],
-    "secrets": {
-      "docker_host": {
-        "environment": "BAYT_DOCKER_HOST"
-      }
-    },
-    "incremental": true,
     "mounts": [
       {
         "type": "cache",
@@ -46,11 +51,14 @@
         "required": false
       }
     ],
+    "secrets": {},
     "extra_hosts": [],
     "epilogue": [],
+    "copy": [],
     "healthcheck": null,
     "expose": [],
     "entrypoint": null,
+    "incremental": false,
     "cmd": null
   },
   "name": "integrate",
@@ -77,6 +85,7 @@
   "taskfile": {
     "run": "when_changed",
     "silent": false,
+    "incremental": true,
     "preconditions": []
   },
   "visibility": "internal",
@@ -221,17 +230,7 @@
         "defaultGlobs": null,
         "defaultExclude": null
       },
-      "dockerfile": {
-        "wrap": "/usr/local/bin/dind.sh",
-        "mounts": [
-          {
-            "type": "secret",
-            "id": "docker_host",
-            "required": true
-          }
-        ]
-      },
-      "do": "./gradlew --init-script .bayt/init.gradle.kts integrationTest --rerun",
+      "do": "true",
       "name": "builtin",
       "shell": "exec",
       "stop": false

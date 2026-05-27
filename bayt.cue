@@ -25,6 +25,17 @@ import (
 
 _wsroot: sayt.pnpmWorkspace & {
 	dir: ""
+
+	// Per-target cache scope so transitive consumers (iris's dindbox
+	// cascade, hello's probe, etc.) get cache-hits on the
+	// workspaceroot-setup / workspaceroot-ops layers instead of
+	// rebuilding zypper+mise install fresh every run.
+	bake: cache: {
+		type:     "registry"
+		registry: "registry.depot.dev/f5k5087x1b"
+		scope:    "monorepo-bake-cache-v1"
+	}
+
 	// Workspace-root setup is consumed by every project's setup via
 	// `deps: ["workspaceroot:setup"]`. Public so cross-project
 	// consumers may reference it.
@@ -40,9 +51,14 @@ _wsroot: sayt.pnpmWorkspace & {
 			"plugins/bayt/runtime/**",
 			"Taskfile.yml",
 			"compose.yaml",
-			"bayt.cue",
 			"plugins/devserver/dind.sh",
 		]
+		// bayt.cue is excluded — it's the emitter's *input* (read by
+		// `just sayt generate` on the host), not a runtime source.
+		// Including it lets comment-only edits bump its mtime via
+		// chetan/git-restore-mtime, drifting workspaceroot-ops's
+		// chain ID and cascading into every downstream project's
+		// cache miss.
 		srcs: globs: _ops
 		outs: globs: _ops
 		visibility: "public"

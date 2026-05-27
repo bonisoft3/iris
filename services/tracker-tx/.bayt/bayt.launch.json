@@ -29,8 +29,7 @@
     ],
     "from": {
       "ref": ":build",
-      "name": "services_tracker-tx-build",
-      "context": "service:services_tracker-tx-build"
+      "name": "services_tracker-tx-build"
     },
     "expose": [
       8080

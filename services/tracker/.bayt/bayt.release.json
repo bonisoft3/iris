@@ -8,8 +8,12 @@
     "tags": [],
     "args": {},
     "cache": {
-      "from": [],
-      "to": []
+      "from": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-release"
+      ],
+      "to": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-release,mode=min,image-manifest=true,oci-mediatypes=true"
+      ]
     }
   },
   "dockerfile": {

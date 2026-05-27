@@ -1,15 +1,43 @@
 # syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
 FROM services_tracker-dindbox AS ci
 WORKDIR /monorepo/services/tracker
-RUN <<INNER
-cat > /usr/local/bin/inner-bake.sh <<'SCRIPT'
-#!/bin/sh
+COPY --from=services_tracker-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/services/tracker/**/* /
+COPY --from=services_tracker-ops --link --parents /monorepo/services/tracker/compose.yaml /monorepo/services/tracker/.bayt/** /
+COPY --from=services_tracker-test-sources --link --parents /monorepo/services/tracker/src/it/**/* /monorepo/services/tracker/src/test/**/* /
+COPY --from=workspaceroot-setup --link --parents /monorepo/.mise.toml /monorepo/mise.lock /monorepo/pnpm-lock.yaml /monorepo/pnpm-workspace.yaml /monorepo/package.json /monorepo/gradle/libs.versions.toml /monorepo/plugins/devserver/dind.sh /monorepo/**/package.json /monorepo/.task/bayt/setup.hash /
+COPY --from=libraries_logs-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/libraries/logs/**/* /
+COPY --from=libraries_pbtables-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/libraries/pbtables/**/* /
+COPY --from=libraries_xproto-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/libraries/xproto/**/* /
+COPY --from=plugins_libstoml-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/plugins/libstoml/**/* /
+COPY --from=plugins_jvm-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/plugins/jvm/**/* /
+COPY --from=plugins_micronaut-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/plugins/micronaut/**/* /
+COPY --from=workspaceroot-ops --link --parents /monorepo/.bayt/** /monorepo/plugins/bayt/runtime/** /monorepo/Taskfile.yml /monorepo/compose.yaml /monorepo/plugins/devserver/dind.sh /
+COPY --from=libraries_logs-ops --link --parents /monorepo/libraries/logs/.bayt/** /
+COPY --from=libraries_pbtables-ops --link --parents /monorepo/libraries/pbtables/.bayt/** /
+COPY --from=libraries_xproto-ops --link --parents /monorepo/libraries/xproto/.bayt/** /
+COPY --from=plugins_libstoml-ops --link --parents /monorepo/plugins/libstoml/compose.yaml /monorepo/plugins/libstoml/.bayt/** /
+COPY --from=plugins_jvm-ops --link --parents /monorepo/plugins/jvm/.bayt/** /
+COPY --from=plugins_micronaut-ops --link --parents /monorepo/plugins/micronaut/.bayt/** /
+ENV BUILDX_BAKE_ENTITLEMENTS_FS=0
+ENV COMPOSE_BAKE=true
+RUN --mount=type=secret,id=docker_host --mount=type=secret,id=buildx_builder --mount=type=secret,id=testcontainers_host --mount=type=secret,id=buildx_instance,mode=0600 --mount=type=secret,id=docker_config,mode=0600 <<BAYT_INJECT
 set -e
-docker compose config -o /tmp/flat.yaml
-docker buildx bake --allow=fs.read=/monorepo -f /tmp/flat.yaml --progress plain services_tracker-integrate
-SCRIPT
-chmod +x /usr/local/bin/inner-bake.sh
-INNER
-RUN --mount=type=secret,id=docker_host,required=true ["/usr/local/bin/dind.sh", "/usr/local/bin/inner-bake.sh"]
+export DOCKER_HOST="$(cat /run/secrets/docker_host)"
+export BUILDX_BUILDER="$(cat /run/secrets/buildx_builder)"
+export TESTCONTAINERS_HOST_OVERRIDE="$(cat /run/secrets/testcontainers_host)"
+if [ -s "/run/secrets/buildx_instance" ]; then mkdir -p "$(dirname "/root/.docker/buildx/instances/$BUILDX_BUILDER")"; cp -p "/run/secrets/buildx_instance" "/root/.docker/buildx/instances/$BUILDX_BUILDER"; fi
+if [ -s "/run/secrets/docker_config" ]; then mkdir -p "$(dirname "/root/.docker/config.json")"; cp -p "/run/secrets/docker_config" "/root/.docker/config.json"; fi
+if [ -n "$DOCKER_HOST" ] && [ ! -e /var/run/docker.sock ]; then
+  ulimit -n 1048576 2>/dev/null || true
+  addr=${DOCKER_HOST#tcp://}
+  [ -n "$addr" ] || { echo "dindbox: DOCKER_HOST=$DOCKER_HOST has no tcp:// address" >&2; exit 1; }
+  socat -d0 UNIX-LISTEN:/var/run/docker.sock,fork,backlog=1024,reuseaddr "TCP:$addr" &
+  SOCAT_PID=$!
+  trap 'kill $SOCAT_PID 2>/dev/null || true' EXIT INT TERM
+  socat -u OPEN:/dev/null UNIX-CONNECT:/var/run/docker.sock,retry=20,interval=0.2 >/dev/null 2>&1 \
+    || { echo "dindbox: socat bridge to /var/run/docker.sock not ready" >&2; exit 1; }
+fi
+exec docker compose up integrate --build --abort-on-container-failure --exit-code-from integrate --remove-orphans
+BAYT_INJECT
 COPY --link Taskfile.yml ./Taskfile.yml
 COPY --link .bayt/Taskfile.yml .bayt/bayt.ci.json .bayt/init.gradle.kts ./.bayt/

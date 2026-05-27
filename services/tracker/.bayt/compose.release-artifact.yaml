@@ -6,4 +6,9 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.release-artifact
       target: release-artifact
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-release-artifact
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-release-artifact,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-services_tracker-release-artifact:latest

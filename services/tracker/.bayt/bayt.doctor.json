@@ -1,4 +1,18 @@
 {
+  "bake": {
+    "push": false,
+    "platforms": [],
+    "tags": [],
+    "args": {},
+    "cache": {
+      "from": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-doctor"
+      ],
+      "to": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-doctor,mode=min,image-manifest=true,oci-mediatypes=true"
+      ]
+    }
+  },
   "name": "doctor",
   "project": "services_tracker",
   "dir": "services/tracker",
@@ -15,6 +29,7 @@
   "taskfile": {
     "run": "always",
     "silent": false,
+    "incremental": true,
     "preconditions": []
   },
   "visibility": "internal",

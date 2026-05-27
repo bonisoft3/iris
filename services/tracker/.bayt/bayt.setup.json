@@ -1,4 +1,18 @@
 {
+  "bake": {
+    "push": false,
+    "platforms": [],
+    "tags": [],
+    "args": {},
+    "cache": {
+      "from": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-setup"
+      ],
+      "to": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-setup,mode=min,image-manifest=true,oci-mediatypes=true"
+      ]
+    }
+  },
   "dockerfile": {
     "preamble": [
       "RUN zypper -n install socat=1.8.0.2-160000.2.3",
@@ -6,8 +20,7 @@
     ],
     "from": {
       "ref": "workspaceroot:setup",
-      "name": "workspaceroot-setup",
-      "context": "service:workspaceroot-setup"
+      "name": "workspaceroot-setup"
     },
     "mounts": [],
     "secrets": {},
@@ -43,6 +56,7 @@
   "taskfile": {
     "run": "when_changed",
     "silent": false,
+    "incremental": true,
     "preconditions": []
   },
   "visibility": "internal",

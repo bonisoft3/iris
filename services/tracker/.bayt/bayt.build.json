@@ -1,10 +1,23 @@
 {
+  "bake": {
+    "push": false,
+    "platforms": [],
+    "tags": [],
+    "args": {},
+    "cache": {
+      "from": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-build"
+      ],
+      "to": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-build,mode=min,image-manifest=true,oci-mediatypes=true"
+      ]
+    }
+  },
   "dockerfile": {
     "preamble": [],
     "from": {
       "ref": ":setup",
-      "name": "services_tracker-setup",
-      "context": "service:services_tracker-setup"
+      "name": "services_tracker-setup"
     },
     "incremental": true,
     "mounts": [],
@@ -52,6 +65,7 @@
   "taskfile": {
     "run": "when_changed",
     "silent": false,
+    "incremental": true,
     "preconditions": []
   },
   "visibility": "internal",

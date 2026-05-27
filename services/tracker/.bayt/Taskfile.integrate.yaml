@@ -7,6 +7,6 @@ tasks:
     vars:
       BAYTW: mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/cache.nu run --manifest {{.TASKFILE_DIR}}/bayt.integrate.json --full -- mise x --
     cmds:
-    - '{{.BAYTW}} ./gradlew --init-script .bayt/init.gradle.kts integrationTest --rerun'
+    - '{{.BAYTW}} true'
     - defer: '{{if not .EXIT_CODE}}mise x -- nu {{.TASKFILE_DIR}}/../../../plugins/bayt/runtime/fingerprint.nu --manifest {{.TASKFILE_DIR}}/bayt.integrate.json --stamp-file .task/bayt/integrate.hash --update-stamp{{end}}'
 version: '3'

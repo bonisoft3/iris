@@ -12,4 +12,9 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.build
       target: build
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-libraries_pbtables-build
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-libraries_pbtables-build,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-libraries_pbtables-build:latest

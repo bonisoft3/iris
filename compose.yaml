@@ -1,26 +1,26 @@
-# services_tracker, guis_web, services_boxer, plugins_omnishell, and
-# guis_iris bring in the bayt-emitted integrate chain via the include
-# cascade below. Each project's compose.bayt.yaml transitively includes
-# per-verb fragments + sibling library/plugin build context wiring; the
+# services_tracker, guis_web, services_boxer, plugins_omnishell bring
+# in the bayt-emitted integrate chain via the include cascade below.
+# Each project's compose.bayt.yaml transitively includes per-verb
+# fragments + sibling library/plugin build context wiring; the
 # qualified service names (services_tracker-*, guis_web-*,
-# services_boxer-*, plugins_omnishell-*, guis_iris-*, libraries_*-build,
+# services_boxer-*, plugins_omnishell-*, libraries_*-build,
 # plugins_*-build, bayt-runtime-stub, workspaceroot-setup) become
 # available to bake's chain resolution.
 #
-# guis/iris is special: its integrate target depends on a multi-service
-# runtime stack (launch, caddy, conduit, transform, rclone-s3, imgproxy,
-# database, electric, redis, ollama-mock) defined as runtime aliases in
-# guis/iris/compose.yaml, not bayt-emitted. Including the project-level
-# compose.yaml (instead of just .bayt/compose.bayt.yaml) brings those
-# aliases into the workspace graph so bake can resolve guis_iris-integrate's
-# additional_contexts. Other projects don't need this — their integrate
-# is self-contained.
+# guis/iris is deliberately excluded from the root cascade — its
+# integrate target depends on a multi-service runtime stack (launch,
+# caddy, conduit, transform, rclone-s3, imgproxy, database, electric,
+# redis, ollama-mock) defined as runtime aliases in
+# guis/iris/compose.yaml. Iris is exercised by its own ci-guis-iris
+# job against its project-local compose.yaml; pulling it into the
+# root bulk bake forces buildkit to walk the full release graph
+# (release-cdc / release-proxy / …) which isn't configured for this
+# context.
 include:
   - path: ./services/tracker/.bayt/compose.bayt.yaml
   - path: ./guis/web/.bayt/compose.bayt.yaml
   - path: ./services/boxer/.bayt/compose.bayt.yaml
   - path: ./plugins/omnishell/.bayt/compose.bayt.yaml
-  - path: ./guis/iris/compose.yaml
 
 services:
   services_tracker:
@@ -43,16 +43,12 @@ services:
       file: ./plugins/omnishell/.bayt/compose.integrate.yaml
       service: plugins_omnishell-integrate
 
-  guis_iris:
-    extends:
-      file: ./guis/iris/.bayt/compose.integrate.yaml
-      service: guis_iris-integrate
-
-  # Renamed from `integrate:` to free that name for guis_iris's
-  # playwright integrate alias that comes in via the iris/compose.yaml
-  # include above. `act:` is more descriptive anyway — this image runs
-  # GitHub Actions workflows locally via nektos/act.
-  act:
+  # The `integrate` name was previously freed for iris's playwright
+  # alias, but iris is no longer in the root cascade (see comment at
+  # the top of this file) so the name is available again. This service
+  # builds the root Dockerfile's `integrate` target — the image
+  # `ci-advanced` bakes for bulk non-iris integration coverage.
+  integrate:
     build:
       context: .
       network: host

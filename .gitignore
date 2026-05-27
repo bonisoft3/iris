@@ -275,6 +275,6 @@ service-account.json
 **/.task/
 
 services/shelfie/shelfie
-plugins/omnishell/.omc/
+**/.omc/
 plugins/omnishell/test-results/
 .gstack/

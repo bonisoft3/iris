@@ -10,4 +10,9 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.build
       target: build
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-libraries_xproto-build
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-libraries_xproto-build,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-libraries_xproto-build:latest

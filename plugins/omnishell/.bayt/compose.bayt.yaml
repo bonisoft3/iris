@@ -5,3 +5,7 @@ include:
   required: false
 - path: ./compose.integrate.yaml
   required: false
+- path: ./compose.ops.yaml
+  required: false
+- path: ../../../.bayt/compose.bayt.deps.yaml
+  required: false

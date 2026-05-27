@@ -1,10 +1,23 @@
 {
+  "bake": {
+    "push": false,
+    "platforms": [],
+    "tags": [],
+    "args": {},
+    "cache": {
+      "from": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-plugins_libstoml-build"
+      ],
+      "to": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-plugins_libstoml-build,mode=min,image-manifest=true,oci-mediatypes=true"
+      ]
+    }
+  },
   "dockerfile": {
     "preamble": [],
     "from": {
       "ref": ":setup",
-      "name": "plugins_libstoml-setup",
-      "context": "service:plugins_libstoml-setup"
+      "name": "plugins_libstoml-setup"
     },
     "incremental": true,
     "mounts": [],
@@ -51,6 +64,7 @@
   "taskfile": {
     "run": "when_changed",
     "silent": false,
+    "incremental": true,
     "preconditions": []
   },
   "visibility": "public",

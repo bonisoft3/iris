@@ -148,7 +148,6 @@ _tx: bayt.#project & {
 			cmd: "builtin": {
 				shell: "sh"  // < redirects + && chain
 				do:    "yq . < out/transcoding.yaml.tpl && yq . < out/transcoding.yaml.gcp.tpl && yq . < edge.yaml"
-				dockerfile: wrap: ""
 			}
 		}
 		"release": sayt.release & {

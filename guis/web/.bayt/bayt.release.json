@@ -23,8 +23,7 @@
     ],
     "from": {
       "ref": ":build",
-      "name": "guis_web-build",
-      "context": "service:guis_web-build"
+      "name": "guis_web-build"
     },
     "mounts": [],
     "secrets": {},

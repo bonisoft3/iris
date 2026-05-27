@@ -12,4 +12,9 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.ops
       target: ops
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-ops
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-ops,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-services_tracker-ops:latest

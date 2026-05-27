@@ -9,6 +9,14 @@ import (
 _libstoml: sayt.gradle & {
 	dir: "plugins/libstoml"
 
+	// Share the monorepo bake cache scope so downstream consumers
+	// (jvm/micronaut/tracker) get warm-cache short-circuits on this plugin's layers.
+	bake: cache: {
+		type:     "registry"
+		registry: "registry.depot.dev/f5k5087x1b"
+		scope:    "monorepo-bake-cache-v1"
+	}
+
 	targets: {
 		// Public: consumed by plugins/jvm and plugins/micronaut (gradle
 		// composite-build) and downstream services.

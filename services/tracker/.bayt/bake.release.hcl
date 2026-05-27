@@ -6,10 +6,6 @@ variable "PUSH_IMAGE" {
 }
 
 target "release" {
-  context    = "."
-  dockerfile = ".bayt/Dockerfile.release"
-  target     = "release"
-  platforms  = ["linux/amd64"]
-  tags       = [IMAGE]
-  output     = PUSH_IMAGE == "true" ? ["type=registry"] : ["type=docker"]
+  tags   = [IMAGE]
+  output = PUSH_IMAGE == "true" ? ["type=registry"] : ["type=docker"]
 }

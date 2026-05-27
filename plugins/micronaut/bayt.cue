@@ -9,6 +9,14 @@ import (
 _micronaut: sayt.gradle & {
 	dir: "plugins/micronaut"
 
+	// Share the monorepo bake cache scope so downstream consumers
+	// (tracker) get warm-cache short-circuits on this plugin's layers.
+	bake: cache: {
+		type:     "registry"
+		registry: "registry.depot.dev/f5k5087x1b"
+		scope:    "monorepo-bake-cache-v1"
+	}
+
 	targets: {
 		// Public: consumed by libraries and services downstream.
 		"build": visibility: "public"

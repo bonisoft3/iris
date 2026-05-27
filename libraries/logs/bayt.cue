@@ -9,6 +9,14 @@ import (
 _logs: sayt.gradle & {
 	dir: "libraries/logs"
 
+	// Share the monorepo bake cache scope so downstream consumers
+	// (tracker) get warm-cache short-circuits on this lib's layers.
+	bake: cache: {
+		type:     "registry"
+		registry: "registry.depot.dev/f5k5087x1b"
+		scope:    "monorepo-bake-cache-v1"
+	}
+
 	targets: {
 		// Public: consumed by libraries/pbtables, libraries/xproto, services/tracker.
 		"build": visibility: "public"

@@ -1,18 +1,27 @@
-secrets:
-  docker_host:
-    environment: BAYT_DOCKER_HOST
 services:
   services_tracker-integrate:
     build:
       additional_contexts:
-        bayt-runtime: service:bayt-runtime-stub
         services_tracker-build: service:services_tracker-build
-        services_tracker-dindbox: service:services_tracker-dindbox
       context: ..
       dockerfile: .bayt/Dockerfile.integrate
-      secrets:
-      - docker_host
       target: integrate
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-integrate
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-integrate,mode=min,image-manifest=true,oci-mediatypes=true
+    command:
+    - mise
+    - x
+    - --
+    - ./gradlew
+    - --init-script
+    - .bayt/init.gradle.kts
+    - integrationTest
+    - --rerun
+    environment:
+      TESTCONTAINERS_HOST_OVERRIDE: ${TESTCONTAINERS_HOST_OVERRIDE}
     image: bayt-services_tracker-integrate:latest
-    secrets:
-    - docker_host
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock

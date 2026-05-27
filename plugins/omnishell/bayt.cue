@@ -29,6 +29,16 @@ _omnishell: bayt.#project & {
 	dir:      "plugins/omnishell"
 	activate: "mise x --"
 
+	// Per-target cache scope for cross-project consumers (iris's
+	// dindbox cascade transitively builds omnishell-setup / build /
+	// ops; without this they ran fresh every time and broke the
+	// outer cacheonly probe's cache-hit chain).
+	bake: cache: {
+		type:     "registry"
+		registry: "registry.depot.dev/f5k5087x1b"
+		scope:    "monorepo-bake-cache-v1"
+	}
+
 	targets: {
 		"setup": sayt.setup & mise.install & {
 			dockerfile: bayt.nubox
@@ -59,11 +69,14 @@ _omnishell: bayt.#project & {
 			// by pnpm install at the workspace root — that needs
 			// package.json (name + exports) plus the source tree the
 			// exports point at.
-			outs: globs: [
-				"package.json",
-				"tsconfig.json",
-				"src/**/*",
-			]
+			// Broad outs (whole workdir minus .bayt/.git) so iris's
+			// dindbox cascade can re-bake omnishell-build from the
+			// inner-bake context. Same temp shape as iris.build until
+			// bayt grows a proper "source closure" concept.
+			outs: {
+				globs: ["**/*"]
+				exclude: [".bayt/**", ".git/**"]
+			}
 			// `mise.exec` wraps the cmd with `mise x --`, which only
 			// activates the env for a single argv. Chained commands
 			// (`bun install && bun run check`) need an explicit `sh -c`
@@ -97,11 +110,25 @@ _omnishell: bayt.#project & {
 			}
 			cmd: "builtin": {
 				do: "bun test"
-				dockerfile: wrap: ""
 			}
 		}
 
 		"generate": sayt.generate & {cmd: "builtin": do: "true"}
+
+		// ops — content-only stage carrying omnishell's bake-graph
+		// scaffolding into downstream dindbox cascades that include
+		// omnishell as a federated dep. Taskfile.yml is included
+		// because bayt's emitter always issues `COPY Taskfile.yml`
+		// in each stage; the file's WORKDIR resolution is harmless
+		// for scratch ops but the build-time COPY needs it present.
+		"ops": {
+			srcs: globs: ["compose.yaml", ".bayt/**", "Taskfile.yml"]
+			outs: globs: ["compose.yaml", ".bayt/**", "Taskfile.yml"]
+			deps: ["workspaceroot:ops"]
+			dockerfile: bayt.scratch
+			cmd: "builtin": null
+			visibility: "public"
+		}
 	}
 }
 

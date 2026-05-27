@@ -14,3 +14,7 @@ services:
     extends:
       file: ./compose.integrate.yaml
       service: plugins_omnishell-integrate
+  ops:
+    extends:
+      file: ./compose.ops.yaml
+      service: plugins_omnishell-ops

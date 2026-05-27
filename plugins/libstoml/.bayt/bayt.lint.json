@@ -1,4 +1,18 @@
 {
+  "bake": {
+    "push": false,
+    "platforms": [],
+    "tags": [],
+    "args": {},
+    "cache": {
+      "from": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-plugins_libstoml-lint"
+      ],
+      "to": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-plugins_libstoml-lint,mode=min,image-manifest=true,oci-mediatypes=true"
+      ]
+    }
+  },
   "name": "lint",
   "project": "plugins_libstoml",
   "dir": "plugins/libstoml",
@@ -15,6 +29,7 @@
   "taskfile": {
     "run": "always",
     "silent": false,
+    "incremental": true,
     "preconditions": []
   },
   "visibility": "internal",

@@ -4,8 +4,7 @@
     "incremental": true,
     "from": {
       "ref": ":setup",
-      "name": "guis_web-setup",
-      "context": "service:guis_web-setup"
+      "name": "guis_web-setup"
     },
     "mounts": [],
     "secrets": {},

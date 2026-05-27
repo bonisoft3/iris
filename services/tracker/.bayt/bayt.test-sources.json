@@ -1,0 +1,59 @@
+{
+  "bake": {
+    "push": false,
+    "platforms": [],
+    "tags": [],
+    "args": {},
+    "cache": {
+      "from": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-test-sources"
+      ],
+      "to": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-test-sources,mode=min,image-manifest=true,oci-mediatypes=true"
+      ]
+    }
+  },
+  "dockerfile": {
+    "preamble": [],
+    "from": null,
+    "mounts": [],
+    "secrets": {},
+    "extra_hosts": [],
+    "epilogue": [],
+    "copy": [],
+    "healthcheck": null,
+    "expose": [],
+    "entrypoint": null,
+    "incremental": false,
+    "cmd": null
+  },
+  "name": "test-sources",
+  "project": "services_tracker",
+  "dir": "services/tracker",
+  "activate": "mise x --",
+  "srcs": {
+    "globs": [
+      "src/it/**/*",
+      "src/test/**/*"
+    ],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [
+      "src/it/**/*",
+      "src/test/**/*"
+    ],
+    "exclude": []
+  },
+  "env": {},
+  "visibility": "internal",
+  "deps": [],
+  "transitiveDeps": [],
+  "transitiveCrossDeps": [],
+  "chainedDeps": [],
+  "cmds": [],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

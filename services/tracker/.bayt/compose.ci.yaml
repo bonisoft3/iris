@@ -1,16 +1,54 @@
 secrets:
   docker_host:
-    environment: BAYT_DOCKER_HOST
+    environment: DOCKER_HOST_TCP
+  buildx_builder:
+    environment: BUILDX_BUILDER
+  buildx_instance:
+    environment: BUILDX_INSTANCE
+  docker_config:
+    environment: DOCKER_AUTH_CONFIG
+  testcontainers_host:
+    environment: TESTCONTAINERS_HOST_OVERRIDE
 services:
   services_tracker-ci:
     build:
       additional_contexts:
+        services_tracker-build: service:services_tracker-build
+        services_tracker-ops: service:services_tracker-ops
+        services_tracker-test-sources: service:services_tracker-test-sources
+        workspaceroot-setup: service:workspaceroot-setup
+        libraries_logs-build: service:libraries_logs-build
+        libraries_pbtables-build: service:libraries_pbtables-build
+        libraries_xproto-build: service:libraries_xproto-build
+        plugins_libstoml-build: service:plugins_libstoml-build
+        plugins_jvm-build: service:plugins_jvm-build
+        plugins_micronaut-build: service:plugins_micronaut-build
+        workspaceroot-ops: service:workspaceroot-ops
+        libraries_logs-ops: service:libraries_logs-ops
+        libraries_pbtables-ops: service:libraries_pbtables-ops
+        libraries_xproto-ops: service:libraries_xproto-ops
+        plugins_libstoml-ops: service:plugins_libstoml-ops
+        plugins_jvm-ops: service:plugins_jvm-ops
+        plugins_micronaut-ops: service:plugins_micronaut-ops
         services_tracker-dindbox: service:services_tracker-dindbox
       context: ..
       dockerfile: .bayt/Dockerfile.ci
       secrets:
       - docker_host
+      - buildx_builder
+      - buildx_instance
+      - docker_config
+      - testcontainers_host
       target: ci
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-ci
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-ci,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-services_tracker-ci:latest
     secrets:
     - docker_host
+    - buildx_builder
+    - buildx_instance
+    - docker_config
+    - testcontainers_host

@@ -1,4 +1,18 @@
 {
+  "bake": {
+    "push": false,
+    "platforms": [],
+    "tags": [],
+    "args": {},
+    "cache": {
+      "from": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-plugins_omnishell-setup"
+      ],
+      "to": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-plugins_omnishell-setup,mode=min,image-manifest=true,oci-mediatypes=true"
+      ]
+    }
+  },
   "dockerfile": {
     "preamble": [
       "COPY --from=bonitao/lazybox:0.8.3@sha256:c896a6836673d8fd217f6021a2522351fd82d580ed985159feb2f10373018e73 /lazybox/ /root/.local/share/lazybox/",
@@ -7,8 +21,7 @@
       "RUN zypper -n install findutils=4.10.0-160000.2.2 which=2.23-160000.2.2"
     ],
     "from": {
-      "name": "opensuse/leap:16.0@sha256:859560554b625c225fa767b76d61253d529b95d082c2d68579ad69168d5e3da7",
-      "context": "docker-image://opensuse/leap:16.0@sha256:859560554b625c225fa767b76d61253d529b95d082c2d68579ad69168d5e3da7"
+      "name": "opensuse/leap:16.0@sha256:859560554b625c225fa767b76d61253d529b95d082c2d68579ad69168d5e3da7"
     },
     "mounts": [],
     "secrets": {},

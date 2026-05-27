@@ -1,12 +1,25 @@
 {
+  "bake": {
+    "push": false,
+    "platforms": [],
+    "tags": [],
+    "args": {},
+    "cache": {
+      "from": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-release-layers"
+      ],
+      "to": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-release-layers,mode=min,image-manifest=true,oci-mediatypes=true"
+      ]
+    }
+  },
   "dockerfile": {
     "preamble": [
       "RUN zypper -n install tar=1.35-160000.3.1 gzip=1.13-160000.2.2 && zypper clean -a"
     ],
     "from": {
       "ref": ":release-artifact",
-      "name": "services_tracker-release-artifact",
-      "context": "service:services_tracker-release-artifact"
+      "name": "services_tracker-release-artifact"
     },
     "mounts": [],
     "secrets": {},

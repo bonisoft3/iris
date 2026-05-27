@@ -3,58 +3,5 @@ FROM docker:29.2.0-cli@sha256:ae2609c051339b48c157d97edc4f1171026251607b29a2b0f2
 WORKDIR /monorepo/services/tracker
 COPY --link --from=alpine/socat:latest@sha256:bfd2550379212e087dc18db2f4611f43477be4b575d660c8f18c5b9a1b2e2757 /usr/bin/socat1 /usr/local/bin/socat
 COPY --link --from=alpine/socat:latest@sha256:bfd2550379212e087dc18db2f4611f43477be4b575d660c8f18c5b9a1b2e2757 /usr/lib/libreadline.so.8 /usr/lib/libncursesw.so.6 /usr/lib/
-RUN <<DIND
-cat > /usr/local/bin/dind.sh <<'SCRIPT'
-#!/bin/sh
-# dind.sh — RUN-side wrap. Reads the docker_host secret
-# mounted at /run/secrets/docker_host and re-exports it
-# as DOCKER_HOST so testcontainers / docker CLI in the
-# wrapped command reach the dindbox-bridged daemon.
-set -e
-export DOCKER_HOST="$(cat /run/secrets/docker_host)"
-exec "$@"
-SCRIPT
-cat > /usr/local/bin/dind-entrypoint.sh <<'SCRIPT'
-#!/bin/sh
-# dind-entrypoint.sh — sidecar entrypoint. Bridges the
-# mounted /var/run/docker.sock to a published TCP port
-# (socat), discovers the literal IP host.docker.internal
-# resolves to on this host (cross-platform via a probe
-# container with --add-host=host-gateway), then exports
-# DOCKER_HOST and BAYT_DOCKER_HOST before execing CMD.
-# DOCKER_HOST is the local docker CLI's target;
-# BAYT_DOCKER_HOST is the env-sourced secret value piped
-# through to RUN sandboxes that bake spawns from CMD.
-set -e
-export DOCKER_HOST=unix:///var/run/docker.sock
-socat -d0 TCP-LISTEN:2375,fork,reuseaddr UNIX-CONNECT:/var/run/docker.sock &
-socat -u OPEN:/dev/null TCP:127.0.0.1:2375,retry=100,interval=0.05 >/dev/null 2>&1
-HOST_PORT=$(docker inspect "$HOSTNAME" --format '{{(index (index .NetworkSettings.Ports "2375/tcp") 0).HostPort}}')
-[ -n "$HOST_PORT" ] || { echo "dind-entrypoint: no host port for $HOSTNAME" >&2; exit 1; }
-HOST_IP=$(docker run --rm --add-host=host.docker.internal:host-gateway busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223 \
-    awk '/host\.docker\.internal/ {printf "%s", $1; exit}' /etc/hosts)
-[ -n "$HOST_IP" ] || { echo "dind-entrypoint: failed to probe host IP" >&2; exit 1; }
-export DOCKER_HOST="tcp://${HOST_IP}:${HOST_PORT}"
-export BAYT_DOCKER_HOST="$DOCKER_HOST"
-exec "$@"
-SCRIPT
-chmod +x /usr/local/bin/dind.sh /usr/local/bin/dind-entrypoint.sh
-DIND
-COPY --from=services_tracker-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/services/tracker/**/* /
-COPY --from=services_tracker-ops --link --parents /monorepo/services/tracker/compose.yaml /monorepo/services/tracker/.bayt/** /
-COPY --from=workspaceroot-setup --link --parents /monorepo/.mise.toml /monorepo/mise.lock /monorepo/pnpm-lock.yaml /monorepo/pnpm-workspace.yaml /monorepo/package.json /monorepo/gradle/libs.versions.toml /monorepo/plugins/devserver/dind.sh /monorepo/**/package.json /monorepo/.task/bayt/setup.hash /
-COPY --from=libraries_logs-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/libraries/logs/**/* /
-COPY --from=libraries_pbtables-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/libraries/pbtables/**/* /
-COPY --from=libraries_xproto-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/libraries/xproto/**/* /
-COPY --from=plugins_libstoml-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/plugins/libstoml/**/* /
-COPY --from=plugins_jvm-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/plugins/jvm/**/* /
-COPY --from=plugins_micronaut-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/plugins/micronaut/**/* /
-COPY --from=workspaceroot-ops --link --parents /monorepo/.bayt/** /monorepo/plugins/bayt/runtime/** /monorepo/Taskfile.yml /monorepo/compose.yaml /monorepo/bayt.cue /monorepo/plugins/devserver/dind.sh /
-COPY --from=libraries_logs-ops --link --parents /monorepo/libraries/logs/.bayt/** /
-COPY --from=libraries_pbtables-ops --link --parents /monorepo/libraries/pbtables/.bayt/** /
-COPY --from=libraries_xproto-ops --link --parents /monorepo/libraries/xproto/.bayt/** /
-COPY --from=plugins_libstoml-ops --link --parents /monorepo/plugins/libstoml/compose.yaml /monorepo/plugins/libstoml/.bayt/** /
-COPY --from=plugins_jvm-ops --link --parents /monorepo/plugins/jvm/.bayt/** /
-COPY --from=plugins_micronaut-ops --link --parents /monorepo/plugins/micronaut/.bayt/** /
 COPY --link Taskfile.yml ./Taskfile.yml
 COPY --link .bayt/Taskfile.yml .bayt/bayt.dindbox.json .bayt/init.gradle.kts ./.bayt/

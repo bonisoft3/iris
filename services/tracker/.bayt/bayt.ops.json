@@ -1,4 +1,18 @@
 {
+  "bake": {
+    "push": false,
+    "platforms": [],
+    "tags": [],
+    "args": {},
+    "cache": {
+      "from": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-ops"
+      ],
+      "to": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-ops,mode=min,image-manifest=true,oci-mediatypes=true"
+      ]
+    }
+  },
   "dockerfile": {
     "preamble": [],
     "from": null,
@@ -54,7 +68,6 @@
           "plugins/bayt/runtime/**",
           "Taskfile.yml",
           "compose.yaml",
-          "bayt.cue",
           "plugins/devserver/dind.sh"
         ],
         "exclude": []
@@ -139,7 +152,6 @@
           "plugins/bayt/runtime/**",
           "Taskfile.yml",
           "compose.yaml",
-          "bayt.cue",
           "plugins/devserver/dind.sh"
         ],
         "exclude": []

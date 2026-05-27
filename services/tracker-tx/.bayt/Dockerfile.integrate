@@ -7,6 +7,6 @@ ENV MISE_TRUSTED_CONFIG_PATHS=/monorepo
 RUN zypper -n install findutils=4.10.0-160000.2.2 which=2.23-160000.2.2
 COPY --from=services_tracker-tx-build --link --parents /monorepo/services/tracker-tx/out/transcoding.yaml.tpl /monorepo/services/tracker-tx/out/transcoding.yaml.gcp.tpl /
 COPY --link --parents transcoding.yaml cloud_run_tls.yaml edge.yaml ./
-RUN  mise x -- yq . < out/transcoding.yaml.tpl && yq . < out/transcoding.yaml.gcp.tpl && yq . < edge.yaml
+RUN mise x -- yq . < out/transcoding.yaml.tpl && yq . < out/transcoding.yaml.gcp.tpl && yq . < edge.yaml
 COPY --link Taskfile.yml ./Taskfile.yml
 COPY --link .bayt/Taskfile.yml .bayt/Taskfile.integrate.yaml .bayt/bayt.integrate.json .bayt/init.gradle.kts ./.bayt/

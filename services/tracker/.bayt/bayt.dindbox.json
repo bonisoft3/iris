@@ -1,37 +1,27 @@
 {
-  "compose": {
-    "command": [
-      "sh",
-      "-c",
-      "docker compose config -o /tmp/flat.yaml && docker buildx bake --allow=fs.read=/monorepo -f /tmp/flat.yaml --progress plain services_tracker-ci"
-    ],
-    "entrypoint": [
-      "/usr/local/bin/dind-entrypoint.sh"
-    ],
-    "environment": {
-      "BUILDX_NO_DEFAULT_ATTESTATIONS": "1"
-    },
-    "ports": [
-      "2375"
-    ],
-    "volumes": [
-      "//var/run/docker.sock:/var/run/docker.sock"
-    ],
-    "depends_on": {}
+  "bake": {
+    "push": false,
+    "platforms": [],
+    "tags": [],
+    "args": {},
+    "cache": {
+      "from": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-dindbox"
+      ],
+      "to": [
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-dindbox,mode=min,image-manifest=true,oci-mediatypes=true"
+      ]
+    }
   },
   "dockerfile": {
-    "preamble": [
-      "RUN <<DIND\ncat > /usr/local/bin/dind.sh <<'SCRIPT'\n#!/bin/sh\n# dind.sh — RUN-side wrap. Reads the docker_host secret\n# mounted at /run/secrets/docker_host and re-exports it\n# as DOCKER_HOST so testcontainers / docker CLI in the\n# wrapped command reach the dindbox-bridged daemon.\nset -e\nexport DOCKER_HOST=\"$(cat /run/secrets/docker_host)\"\nexec \"$@\"\nSCRIPT\ncat > /usr/local/bin/dind-entrypoint.sh <<'SCRIPT'\n#!/bin/sh\n# dind-entrypoint.sh — sidecar entrypoint. Bridges the\n# mounted /var/run/docker.sock to a published TCP port\n# (socat), discovers the literal IP host.docker.internal\n# resolves to on this host (cross-platform via a probe\n# container with --add-host=host-gateway), then exports\n# DOCKER_HOST and BAYT_DOCKER_HOST before execing CMD.\n# DOCKER_HOST is the local docker CLI's target;\n# BAYT_DOCKER_HOST is the env-sourced secret value piped\n# through to RUN sandboxes that bake spawns from CMD.\nset -e\nexport DOCKER_HOST=unix:///var/run/docker.sock\nsocat -d0 TCP-LISTEN:2375,fork,reuseaddr UNIX-CONNECT:/var/run/docker.sock &\nsocat -u OPEN:/dev/null TCP:127.0.0.1:2375,retry=100,interval=0.05 >/dev/null 2>&1\nHOST_PORT=$(docker inspect \"$HOSTNAME\" --format '{{(index (index .NetworkSettings.Ports \"2375/tcp\") 0).HostPort}}')\n[ -n \"$HOST_PORT\" ] || { echo \"dind-entrypoint: no host port for $HOSTNAME\" >&2; exit 1; }\nHOST_IP=$(docker run --rm --add-host=host.docker.internal:host-gateway busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223 \\\n    awk '/host\\.docker\\.internal/ {printf \"%s\", $1; exit}' /etc/hosts)\n[ -n \"$HOST_IP\" ] || { echo \"dind-entrypoint: failed to probe host IP\" >&2; exit 1; }\nexport DOCKER_HOST=\"tcp://${HOST_IP}:${HOST_PORT}\"\nexport BAYT_DOCKER_HOST=\"$DOCKER_HOST\"\nexec \"$@\"\nSCRIPT\nchmod +x /usr/local/bin/dind.sh /usr/local/bin/dind-entrypoint.sh\nDIND"
-    ],
+    "preamble": [],
     "from": {
-      "name": "docker:29.2.0-cli@sha256:ae2609c051339b48c157d97edc4f1171026251607b29a2b0f25f990898586334",
-      "context": "docker-image://docker:29.2.0-cli@sha256:ae2609c051339b48c157d97edc4f1171026251607b29a2b0f25f990898586334"
+      "name": "docker:29.2.0-cli@sha256:ae2609c051339b48c157d97edc4f1171026251607b29a2b0f25f990898586334"
     },
     "copy": [
       {
         "from": {
-          "name": "alpine/socat:latest@sha256:bfd2550379212e087dc18db2f4611f43477be4b575d660c8f18c5b9a1b2e2757",
-          "context": "docker-image://alpine/socat:latest@sha256:bfd2550379212e087dc18db2f4611f43477be4b575d660c8f18c5b9a1b2e2757"
+          "name": "alpine/socat:latest@sha256:bfd2550379212e087dc18db2f4611f43477be4b575d660c8f18c5b9a1b2e2757"
         },
         "srcs": [
           "/usr/bin/socat1"
@@ -43,8 +33,7 @@
       },
       {
         "from": {
-          "name": "alpine/socat:latest@sha256:bfd2550379212e087dc18db2f4611f43477be4b575d660c8f18c5b9a1b2e2757",
-          "context": "docker-image://alpine/socat:latest@sha256:bfd2550379212e087dc18db2f4611f43477be4b575d660c8f18c5b9a1b2e2757"
+          "name": "alpine/socat:latest@sha256:bfd2550379212e087dc18db2f4611f43477be4b575d660c8f18c5b9a1b2e2757"
         },
         "srcs": [
           "/usr/lib/libreadline.so.8",
@@ -80,231 +69,10 @@
   },
   "env": {},
   "visibility": "internal",
-  "deps": [
-    "build",
-    "ops"
-  ],
-  "transitiveDeps": [
-    "build",
-    "ops",
-    "setup"
-  ],
-  "transitiveCrossDeps": [
-    {
-      "name": "setup",
-      "project": "workspaceroot",
-      "dir": "",
-      "outs": {
-        "globs": [
-          ".mise.toml",
-          "mise.lock",
-          "pnpm-lock.yaml",
-          "pnpm-workspace.yaml",
-          "package.json",
-          "gradle/libs.versions.toml",
-          "plugins/devserver/dind.sh",
-          "**/package.json",
-          ".task/bayt/setup.hash"
-        ],
-        "exclude": []
-      }
-    },
-    {
-      "name": "build",
-      "project": "libraries_logs",
-      "dir": "libraries/logs",
-      "outs": {
-        "globs": [
-          "**/*"
-        ],
-        "exclude": [
-          ".bayt/**",
-          ".git/**"
-        ]
-      }
-    },
-    {
-      "name": "build",
-      "project": "libraries_pbtables",
-      "dir": "libraries/pbtables",
-      "outs": {
-        "globs": [
-          "**/*"
-        ],
-        "exclude": [
-          ".bayt/**",
-          ".git/**"
-        ]
-      }
-    },
-    {
-      "name": "build",
-      "project": "libraries_xproto",
-      "dir": "libraries/xproto",
-      "outs": {
-        "globs": [
-          "**/*"
-        ],
-        "exclude": [
-          ".bayt/**",
-          ".git/**"
-        ]
-      }
-    },
-    {
-      "name": "build",
-      "project": "plugins_libstoml",
-      "dir": "plugins/libstoml",
-      "outs": {
-        "globs": [
-          "**/*"
-        ],
-        "exclude": [
-          ".bayt/**",
-          ".git/**"
-        ]
-      }
-    },
-    {
-      "name": "build",
-      "project": "plugins_jvm",
-      "dir": "plugins/jvm",
-      "outs": {
-        "globs": [
-          "**/*"
-        ],
-        "exclude": [
-          ".bayt/**",
-          ".git/**"
-        ]
-      }
-    },
-    {
-      "name": "build",
-      "project": "plugins_micronaut",
-      "dir": "plugins/micronaut",
-      "outs": {
-        "globs": [
-          "**/*"
-        ],
-        "exclude": [
-          ".bayt/**",
-          ".git/**"
-        ]
-      }
-    },
-    {
-      "name": "ops",
-      "project": "workspaceroot",
-      "dir": "",
-      "outs": {
-        "globs": [
-          ".bayt/**",
-          "plugins/bayt/runtime/**",
-          "Taskfile.yml",
-          "compose.yaml",
-          "bayt.cue",
-          "plugins/devserver/dind.sh"
-        ],
-        "exclude": []
-      }
-    },
-    {
-      "name": "ops",
-      "project": "libraries_logs",
-      "dir": "libraries/logs",
-      "outs": {
-        "globs": [
-          ".bayt/**"
-        ],
-        "exclude": []
-      }
-    },
-    {
-      "name": "ops",
-      "project": "libraries_pbtables",
-      "dir": "libraries/pbtables",
-      "outs": {
-        "globs": [
-          ".bayt/**"
-        ],
-        "exclude": []
-      }
-    },
-    {
-      "name": "ops",
-      "project": "libraries_xproto",
-      "dir": "libraries/xproto",
-      "outs": {
-        "globs": [
-          ".bayt/**"
-        ],
-        "exclude": []
-      }
-    },
-    {
-      "name": "ops",
-      "project": "plugins_libstoml",
-      "dir": "plugins/libstoml",
-      "outs": {
-        "globs": [
-          "compose.yaml",
-          ".bayt/**"
-        ],
-        "exclude": []
-      }
-    },
-    {
-      "name": "ops",
-      "project": "plugins_jvm",
-      "dir": "plugins/jvm",
-      "outs": {
-        "globs": [
-          ".bayt/**"
-        ],
-        "exclude": []
-      }
-    },
-    {
-      "name": "ops",
-      "project": "plugins_micronaut",
-      "dir": "plugins/micronaut",
-      "outs": {
-        "globs": [
-          ".bayt/**"
-        ],
-        "exclude": []
-      }
-    }
-  ],
-  "chainedDeps": [
-    {
-      "name": "build",
-      "project": "services_tracker",
-      "dir": "services/tracker",
-      "outs": {
-        "globs": [
-          "**/*"
-        ],
-        "exclude": [
-          ".bayt/**",
-          ".git/**"
-        ]
-      }
-    },
-    {
-      "name": "ops",
-      "project": "services_tracker",
-      "dir": "services/tracker",
-      "outs": {
-        "globs": [
-          "compose.yaml",
-          ".bayt/**"
-        ],
-        "exclude": []
-      }
-    }
-  ],
+  "deps": [],
+  "transitiveDeps": [],
+  "transitiveCrossDeps": [],
+  "chainedDeps": [],
   "cmds": [],
   "cache": {
     "full": false,

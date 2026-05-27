@@ -3,8 +3,7 @@
     "preamble": [],
     "from": {
       "ref": "workspaceroot:setup",
-      "name": "workspaceroot-setup",
-      "context": "service:workspaceroot-setup"
+      "name": "workspaceroot-setup"
     },
     "mounts": [],
     "secrets": {},

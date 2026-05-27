@@ -10,8 +10,7 @@
     "incremental": true,
     "from": {
       "ref": ":build",
-      "name": "guis_web-build",
-      "context": "service:guis_web-build"
+      "name": "guis_web-build"
     },
     "mounts": [],
     "secrets": {},
@@ -115,8 +114,8 @@
         "defaultGlobs": null,
         "defaultExclude": null
       },
+      "do": "mise x -- pnpm test:int",
       "dockerfile": {
-        "wrap": "",
         "mounts": [
           {
             "type": "cache",
@@ -125,7 +124,6 @@
           }
         ]
       },
-      "do": "mise x -- pnpm test:int",
       "name": "builtin",
       "shell": "exec",
       "stop": false
