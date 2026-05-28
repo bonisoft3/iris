@@ -8,6 +8,8 @@ say:
   test:
     do: "run-task bayt:test"
     use: "./tools.nu [run-task]"
+  launch:
+    do: "^mise x -- ./gradlew dev"
   integrate:
     args: '--bake --set "*.cache-to="'
   # Goreleaser-OSS doesn't understand sayt's path-prefixed monorepo
