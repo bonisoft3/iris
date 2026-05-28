@@ -8,15 +8,8 @@ say:
   test:
     do: "run-task bayt:test"
     use: "./tools.nu [run-task]"
-  launch:
-    args: "--target services_tracker-launch"
-  # Target dindbox (the runtime orchestrator) instead of integrate.
-  # dindbox's entrypoint probes the host gateway IP and exports
-  # DOCKER_HOST; its CMD invokes `bake services_tracker-ci`. ci's
-  # Dockerfile RUN does the inner bake on integrate (BuildKit-cached);
-  # integrate's RUN executes gradle integrationTest via dind.sh.
   integrate:
-    args: "--target dindbox"
+    args: '--bake --set "*.cache-to="'
   # Goreleaser-OSS doesn't understand sayt's path-prefixed monorepo
   # tags (services/tracker/v0.2.1) — that's a pro feature. --snapshot
   # keeps goreleaser in dev mode (skips the strict tag-on-HEAD
