@@ -114,6 +114,27 @@ WORKFLOWS = [
                 )],
                 noop_behavior = "IGNORE_NOOP",
             ),
+            # Stage cue.mod from .mirror/ → root. The monorepo
+            # cannot host a nested cue.mod under plugins/bayt
+            # without breaking in-monorepo CUE imports.
+            core.transform(
+                [core.move(".mirror/cue.mod", "cue.mod")],
+                noop_behavior = "IGNORE_NOOP",
+            ),
+            # Rewrite bayt's CUE import identity so the mirror is
+            # self-contained. In-monorepo: bonisoft.org/plugins/bayt/*.
+            # On mirror: github.com/bonisoft3/bayt/* — matches the
+            # mirror's cue.mod module path and lets external
+            # consumers `cue mod tidy` against the Central Registry
+            # publish with no CUE_REGISTRY config.
+            core.transform(
+                [core.replace(
+                    before = "bonisoft.org/plugins/bayt",
+                    after = "github.com/bonisoft3/bayt",
+                    paths = glob(["**.cue"]),
+                )],
+                noop_behavior = "IGNORE_NOOP",
+            ),
         ],
         submodules = "",
         mode = "ITERATIVE",
