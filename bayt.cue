@@ -42,13 +42,17 @@ _wsroot: sayt.pnpmWorkspace & {
 	targets: "setup": visibility: "public"
 
 	// ops — bake-graph scaffolding only: compose includes, taskfile
-	// chain, bayt runtime helpers. Toolchain inputs (mise lockfile,
-	// package.json tree, gradle catalog) belong to :setup, which
-	// installs them; consumers that need them chain off :setup.
+	// chain, full bayt tree (bin/, runtime/, core/, ...). The whole
+	// plugins/bayt/** ships because the inner ci `compose up integrate`
+	// resolves `bayt-runtime: <relative path>` against this layer; a
+	// narrower runtime/** glob left bin/bayt missing and the cascade
+	// failed with `bayt: executable file not found`. Toolchain inputs
+	// (mise lockfile, package.json tree, gradle catalog) belong to
+	// :setup; consumers that need them chain off :setup.
 	targets: "ops": {
 		let _ops = [
 			".bayt/**",
-			"plugins/bayt/runtime/**",
+			"plugins/bayt/**",
 			"Taskfile.yml",
 			"compose.yaml",
 			"plugins/devserver/dind.sh",
