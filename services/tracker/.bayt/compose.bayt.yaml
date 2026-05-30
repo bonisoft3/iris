@@ -35,10 +35,3 @@ include:
   required: false
 - path: ../../../plugins/micronaut/.bayt/compose.bayt.deps.yaml
   required: false
-services:
-  bayt-runtime-stub:
-    build:
-      context: ../../../plugins/bayt/runtime
-      dockerfile_inline: |
-        FROM scratch
-        COPY . /
