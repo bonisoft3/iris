@@ -2,7 +2,6 @@ services:
   libraries_pbtables-integrate:
     build:
       additional_contexts:
-        bayt-runtime: ../../../plugins/bayt
         libraries_pbtables-build: service:libraries_pbtables-build
       context: ..
       dockerfile: .bayt/Dockerfile.integrate

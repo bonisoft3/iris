@@ -6,8 +6,25 @@
     "depends_on": {}
   },
   "dockerfile": {
-    "preamble": [],
+    "preamble": [
+      "ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}"
+    ],
     "incremental": true,
+    "copy": [
+      {
+        "from": {
+          "name": "bayt-runtime",
+          "image": "bonitao/bayt:0.7.0@sha256:c87bba3b94af30cfafa29f2e4be1a75d044971585cebac947a081fdf953d6951"
+        },
+        "srcs": [
+          "runtime"
+        ],
+        "dst": "/monorepo/plugins/bayt/runtime",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      }
+    ],
     "from": {
       "ref": ":build",
       "name": "guis_web-build"
@@ -16,11 +33,9 @@
     "secrets": {},
     "extra_hosts": [],
     "epilogue": [],
-    "copy": [],
     "healthcheck": null,
     "expose": [],
     "entrypoint": null,
-    "baytRuntime": false,
     "cmd": null
   },
   "name": "integrate",

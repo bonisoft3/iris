@@ -13,7 +13,6 @@ services:
   services_tracker-ci:
     build:
       additional_contexts:
-        bayt-runtime: ../../../plugins/bayt
         services_tracker-build: service:services_tracker-build
         services_tracker-ops: service:services_tracker-ops
         services_tracker-test-sources: service:services_tracker-test-sources
@@ -32,6 +31,7 @@ services:
         plugins_jvm-ops: service:plugins_jvm-ops
         plugins_micronaut-ops: service:plugins_micronaut-ops
         services_tracker-dindbox: service:services_tracker-dindbox
+        bayt-runtime: ../../../plugins/bayt
       context: ..
       dockerfile: .bayt/Dockerfile.ci
       secrets:

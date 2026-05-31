@@ -32,8 +32,7 @@
     "copy": [],
     "healthcheck": null,
     "entrypoint": null,
-    "incremental": false,
-    "baytRuntime": false
+    "incremental": false
   },
   "name": "release",
   "project": "guis_web",

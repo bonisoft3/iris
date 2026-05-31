@@ -2,7 +2,6 @@ services:
   libraries_xproto-setup:
     build:
       additional_contexts:
-        bayt-runtime: ../../../plugins/bayt
         plugins_jvm-build: service:plugins_jvm-build
       context: ..
       dockerfile: .bayt/Dockerfile.setup

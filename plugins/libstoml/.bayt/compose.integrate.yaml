@@ -2,7 +2,6 @@ services:
   plugins_libstoml-integrate:
     build:
       additional_contexts:
-        bayt-runtime: ../../../plugins/bayt
         plugins_libstoml-build: service:plugins_libstoml-build
       context: ..
       dockerfile: .bayt/Dockerfile.integrate

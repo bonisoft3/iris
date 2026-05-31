@@ -29,8 +29,7 @@
     "copy": [],
     "healthcheck": null,
     "entrypoint": null,
-    "incremental": false,
-    "baytRuntime": false
+    "incremental": false
   },
   "hmr": {
     "native": true,

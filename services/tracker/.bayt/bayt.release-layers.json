@@ -30,7 +30,6 @@
     "expose": [],
     "entrypoint": null,
     "incremental": false,
-    "baytRuntime": false,
     "cmd": null
   },
   "name": "release-layers",

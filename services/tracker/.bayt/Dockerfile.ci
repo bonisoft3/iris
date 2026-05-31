@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
 FROM services_tracker-dindbox AS ci
 WORKDIR /monorepo/services/tracker
+COPY --link --from=bayt-runtime runtime /monorepo/plugins/bayt/runtime
+ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}
 COPY --from=services_tracker-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/services/tracker/**/* /
 COPY --from=services_tracker-ops --link --parents /monorepo/services/tracker/compose.yaml /monorepo/services/tracker/.bayt/** /
 COPY --from=services_tracker-test-sources --link --parents /monorepo/services/tracker/src/it/**/* /monorepo/services/tracker/src/test/**/* /
@@ -18,8 +20,6 @@ COPY --from=libraries_xproto-ops --link --parents /monorepo/libraries/xproto/.ba
 COPY --from=plugins_libstoml-ops --link --parents /monorepo/plugins/libstoml/compose.yaml /monorepo/plugins/libstoml/.bayt/** /
 COPY --from=plugins_jvm-ops --link --parents /monorepo/plugins/jvm/.bayt/** /
 COPY --from=plugins_micronaut-ops --link --parents /monorepo/plugins/micronaut/.bayt/** /
-COPY --from=bayt-runtime --link runtime /monorepo/plugins/bayt/runtime
-ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}
 ENV BUILDX_BAKE_ENTITLEMENTS_FS=0
 ENV COMPOSE_BAKE=true
 RUN --mount=type=secret,id=docker_host --mount=type=secret,id=buildx_builder --mount=type=secret,id=testcontainers_host --mount=type=secret,id=buildx_instance,mode=0600 --mount=type=secret,id=docker_config,mode=0600 <<BAYT_INJECT

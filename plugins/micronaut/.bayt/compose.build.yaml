@@ -2,10 +2,10 @@ services:
   plugins_micronaut-build:
     build:
       additional_contexts:
-        bayt-runtime: ../../../plugins/bayt
         workspaceroot-setup: service:workspaceroot-setup
         plugins_libstoml-build: service:plugins_libstoml-build
         plugins_micronaut-setup: service:plugins_micronaut-setup
+        bayt-runtime: ../../../plugins/bayt
       context: ..
       dockerfile: .bayt/Dockerfile.build
       target: build

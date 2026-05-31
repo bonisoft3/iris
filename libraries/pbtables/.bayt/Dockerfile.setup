@@ -2,8 +2,6 @@
 FROM plugins_jvm-build AS setup
 WORKDIR /monorepo/libraries/pbtables
 COPY --link --parents gradle/wrapper/gradle-wrapper.properties ./
-COPY --from=bayt-runtime --link runtime /monorepo/plugins/bayt/runtime
-ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}
 COPY --link --parents .mise.toml mise.lock ./
 RUN ["mise", "install"]
 COPY --link Taskfile.yml ./Taskfile.yml

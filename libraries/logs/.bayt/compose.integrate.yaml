@@ -2,7 +2,6 @@ services:
   libraries_logs-integrate:
     build:
       additional_contexts:
-        bayt-runtime: ../../../plugins/bayt
         libraries_logs-build: service:libraries_logs-build
       context: ..
       dockerfile: .bayt/Dockerfile.integrate

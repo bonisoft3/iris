@@ -2,7 +2,6 @@ services:
   plugins_jvm-integrate:
     build:
       additional_contexts:
-        bayt-runtime: ../../../plugins/bayt
         plugins_jvm-build: service:plugins_jvm-build
       context: ..
       dockerfile: .bayt/Dockerfile.integrate

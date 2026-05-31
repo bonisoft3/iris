@@ -2,7 +2,6 @@ services:
   services_tracker-build:
     build:
       additional_contexts:
-        bayt-runtime: ../../../plugins/bayt
         libraries_logs-build: service:libraries_logs-build
         libraries_pbtables-build: service:libraries_pbtables-build
         libraries_xproto-build: service:libraries_xproto-build
@@ -10,6 +9,7 @@ services:
         plugins_jvm-build: service:plugins_jvm-build
         plugins_micronaut-build: service:plugins_micronaut-build
         services_tracker-setup: service:services_tracker-setup
+        bayt-runtime: ../../../plugins/bayt
       context: ..
       dockerfile: .bayt/Dockerfile.build
       target: build
