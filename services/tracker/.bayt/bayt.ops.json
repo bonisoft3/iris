@@ -25,6 +25,7 @@
     "expose": [],
     "entrypoint": null,
     "incremental": false,
+    "baytRuntime": false,
     "cmd": null
   },
   "name": "ops",
@@ -65,9 +66,6 @@
       "outs": {
         "globs": [
           ".bayt/**",
-          "plugins/bayt/bin/**",
-          "plugins/bayt/runtime/**",
-          "plugins/bayt/bayt.nu",
           "Taskfile.yml",
           "compose.yaml",
           "plugins/devserver/dind.sh"
@@ -151,9 +149,6 @@
       "outs": {
         "globs": [
           ".bayt/**",
-          "plugins/bayt/bin/**",
-          "plugins/bayt/runtime/**",
-          "plugins/bayt/bayt.nu",
           "Taskfile.yml",
           "compose.yaml",
           "plugins/devserver/dind.sh"

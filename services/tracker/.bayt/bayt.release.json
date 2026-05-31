@@ -35,6 +35,7 @@
     "healthcheck": null,
     "expose": [],
     "incremental": false,
+    "baytRuntime": false,
     "cmd": null
   },
   "name": "release",

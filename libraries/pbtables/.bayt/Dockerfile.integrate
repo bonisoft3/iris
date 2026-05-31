@@ -2,8 +2,8 @@
 FROM libraries_pbtables-build AS integrate
 WORKDIR /monorepo/libraries/pbtables
 COPY --link --parents src/it/**/*.java src/it/**/*.kt src/it/resources/**/* ./
-COPY --from=bayt-runtime --link . /monorepo/plugins/bayt/
-ENV PATH=/monorepo/plugins/bayt/bin:${PATH}
+COPY --from=bayt-runtime --link runtime /monorepo/plugins/bayt/runtime
+ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}
 RUN --mount=type=cache,target=/root/.gradle,id=libraries_pbtables-integrate:/root/.gradle,sharing=locked --mount=type=cache,target=.gradle/configuration-cache,id=libraries_pbtables-integrate:.gradle/configuration-cache,sharing=locked ["mise", "x", "--", "./gradlew", "--init-script", ".bayt/init.gradle.kts", "integrationTest", "--rerun"]
 COPY --link Taskfile.yml ./Taskfile.yml
 COPY --link .bayt/Taskfile.yml .bayt/Taskfile.integrate.yaml .bayt/bayt.integrate.json .bayt/init.gradle.kts ./.bayt/

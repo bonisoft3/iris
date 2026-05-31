@@ -20,6 +20,7 @@
     "healthcheck": null,
     "expose": [],
     "entrypoint": null,
+    "baytRuntime": false,
     "cmd": null
   },
   "name": "integrate",

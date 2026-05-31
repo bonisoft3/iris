@@ -2,8 +2,8 @@
 FROM workspaceroot-setup AS setup
 WORKDIR /monorepo/plugins/jvm
 COPY --link --parents gradle/wrapper/gradle-wrapper.properties ./
-COPY --from=bayt-runtime --link . /monorepo/plugins/bayt/
-ENV PATH=/monorepo/plugins/bayt/bin:${PATH}
+COPY --from=bayt-runtime --link runtime /monorepo/plugins/bayt/runtime
+ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}
 COPY --link --parents .mise.toml mise.lock ./
 RUN ["mise", "install"]
 COPY --link Taskfile.yml ./Taskfile.yml

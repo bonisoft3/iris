@@ -7,8 +7,8 @@ ENV MISE_TRUSTED_CONFIG_PATHS=/monorepo
 RUN zypper -n install findutils=4.10.0-160000.2.2 which=2.23-160000.2.2
 COPY --from=workspaceroot-setup --link --parents /monorepo/.mise.toml /monorepo/mise.lock /monorepo/pnpm-lock.yaml /monorepo/pnpm-workspace.yaml /monorepo/package.json /monorepo/gradle/libs.versions.toml /monorepo/plugins/devserver/dind.sh /monorepo/**/package.json /monorepo/.task/bayt/setup.hash /
 COPY --link --parents buf.yaml buf.lock trash/**/*.proto ./
-COPY --from=bayt-runtime --link . /monorepo/plugins/bayt/
-ENV PATH=/monorepo/plugins/bayt/bin:${PATH}
+COPY --from=bayt-runtime --link runtime /monorepo/plugins/bayt/runtime
+ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}
 RUN mise x -- mkdir -p out && mise x -- buf build --as-file-descriptor-set --exclude-source-info -o 'out/xproto.desc.pb#format=binpb' .
 COPY --link Taskfile.yml ./Taskfile.yml
 COPY --link .bayt/Taskfile.yml .bayt/Taskfile.descriptor.yaml .bayt/bayt.descriptor.json .bayt/init.gradle.kts ./.bayt/

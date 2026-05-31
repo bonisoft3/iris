@@ -19,6 +19,7 @@
       "ref": ":dindbox",
       "name": "services_tracker-dindbox"
     },
+    "baytRuntime": true,
     "secrets": {
       "docker_host": {
         "environment": "DOCKER_HOST_TCP"
@@ -185,9 +186,6 @@
       "outs": {
         "globs": [
           ".bayt/**",
-          "plugins/bayt/bin/**",
-          "plugins/bayt/runtime/**",
-          "plugins/bayt/bayt.nu",
           "Taskfile.yml",
           "compose.yaml",
           "plugins/devserver/dind.sh"

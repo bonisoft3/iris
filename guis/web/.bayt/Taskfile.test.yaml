@@ -3,10 +3,10 @@ tasks:
     deps:
     - ::bayt:build
     status:
-    - bayt fingerprint --manifest {{.TASKFILE_DIR}}/bayt.test.json --stamp-file .task/bayt/test.hash
+    - bayt-runtime fingerprint --manifest {{.TASKFILE_DIR}}/bayt.test.json --stamp-file .task/bayt/test.hash
     vars:
-      BAYTW: bayt cache run --manifest {{.TASKFILE_DIR}}/bayt.test.json -- mise x --
+      BAYTW: bayt-runtime cache run --manifest {{.TASKFILE_DIR}}/bayt.test.json -- mise x --
     cmds:
     - '{{.BAYTW}} mise x -- pnpm test'
-    - defer: '{{if not .EXIT_CODE}}bayt fingerprint --manifest {{.TASKFILE_DIR}}/bayt.test.json --stamp-file .task/bayt/test.hash --update-stamp{{end}}'
+    - defer: '{{if not .EXIT_CODE}}bayt-runtime fingerprint --manifest {{.TASKFILE_DIR}}/bayt.test.json --stamp-file .task/bayt/test.hash --update-stamp{{end}}'
 version: '3'
