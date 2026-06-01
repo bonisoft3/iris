@@ -1,0 +1,14 @@
+services:
+  libraries_pbtables-bayt:
+    build:
+      additional_contexts:
+        workspaceroot-bayt: service:workspaceroot-bayt
+        plugins_libstoml-bayt: service:plugins_libstoml-bayt
+        plugins_jvm-bayt: service:plugins_jvm-bayt
+        plugins_micronaut-bayt: service:plugins_micronaut-bayt
+        libraries_xproto-bayt: service:libraries_xproto-bayt
+        libraries_logs-bayt: service:libraries_logs-bayt
+      context: ..
+      dockerfile: .bayt/Dockerfile._bayt
+      target: bayt
+    image: bayt-libraries_pbtables-bayt:latest

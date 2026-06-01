@@ -1,0 +1,28 @@
+{
+  "name": "integrate_outs",
+  "project": "services_tracker",
+  "dir": "services/tracker",
+  "activate": "",
+  "srcs": {
+    "globs": [],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [
+      "build/test-results/integrationTest/**/*.xml",
+      "build/reports/tests/integrationTest/**/*"
+    ],
+    "exclude": []
+  },
+  "env": {},
+  "visibility": "internal",
+  "deps": [],
+  "transitiveDeps": [],
+  "transitiveCrossDeps": [],
+  "chainedDeps": [],
+  "cmds": [],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

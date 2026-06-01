@@ -1,0 +1,9 @@
+services:
+  plugins_micronaut-build_outs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.build_outs
+      target: build_outs
+      additional_contexts:
+        plugins_micronaut-build: service:plugins_micronaut-build
+    image: bayt-plugins_micronaut-build_outs:latest

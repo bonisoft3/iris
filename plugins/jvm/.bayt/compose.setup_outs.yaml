@@ -1,0 +1,9 @@
+services:
+  plugins_jvm-setup_outs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.setup_outs
+      target: setup_outs
+      additional_contexts:
+        plugins_jvm-setup: service:plugins_jvm-setup
+    image: bayt-plugins_jvm-setup_outs:latest

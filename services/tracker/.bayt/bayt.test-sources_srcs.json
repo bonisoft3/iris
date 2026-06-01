@@ -1,0 +1,28 @@
+{
+  "name": "test-sources_srcs",
+  "project": "services_tracker",
+  "dir": "services/tracker",
+  "activate": "",
+  "srcs": {
+    "globs": [],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [
+      "src/it/**/*",
+      "src/test/**/*"
+    ],
+    "exclude": []
+  },
+  "env": {},
+  "visibility": "internal",
+  "deps": [],
+  "transitiveDeps": [],
+  "transitiveCrossDeps": [],
+  "chainedDeps": [],
+  "cmds": [],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

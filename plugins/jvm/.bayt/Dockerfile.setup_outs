@@ -1,0 +1,4 @@
+# syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
+FROM scratch AS setup_outs
+WORKDIR /monorepo/plugins/jvm
+COPY --from=plugins_jvm-setup --link --parents /monorepo/plugins/jvm/gradle/wrapper/gradle-wrapper.properties /monorepo/plugins/jvm/.mise.toml /monorepo/plugins/jvm/mise.lock /monorepo/plugins/jvm/.task/bayt/setup.hash /

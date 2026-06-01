@@ -1,0 +1,29 @@
+{
+  "name": "ops_srcs",
+  "project": "plugins_omnishell",
+  "dir": "plugins/omnishell",
+  "activate": "",
+  "srcs": {
+    "globs": [],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [
+      "compose.yaml",
+      ".bayt/**",
+      "Taskfile.yml"
+    ],
+    "exclude": []
+  },
+  "env": {},
+  "visibility": "public",
+  "deps": [],
+  "transitiveDeps": [],
+  "transitiveCrossDeps": [],
+  "chainedDeps": [],
+  "cmds": [],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

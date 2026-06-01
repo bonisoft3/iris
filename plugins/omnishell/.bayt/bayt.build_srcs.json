@@ -1,0 +1,32 @@
+{
+  "name": "build_srcs",
+  "project": "plugins_omnishell",
+  "dir": "plugins/omnishell",
+  "activate": "",
+  "srcs": {
+    "globs": [],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [
+      "src/**/*",
+      "scaffold/**/*",
+      "package.json",
+      "bun.lock",
+      "tsconfig.json",
+      "bunfig.toml"
+    ],
+    "exclude": []
+  },
+  "env": {},
+  "visibility": "public",
+  "deps": [],
+  "transitiveDeps": [],
+  "transitiveCrossDeps": [],
+  "chainedDeps": [],
+  "cmds": [],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

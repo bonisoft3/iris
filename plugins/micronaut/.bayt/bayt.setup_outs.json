@@ -1,0 +1,30 @@
+{
+  "name": "setup_outs",
+  "project": "plugins_micronaut",
+  "dir": "plugins/micronaut",
+  "activate": "",
+  "srcs": {
+    "globs": [],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [
+      "gradle/wrapper/gradle-wrapper.properties",
+      ".mise.toml",
+      "mise.lock",
+      ".task/bayt/setup.hash"
+    ],
+    "exclude": []
+  },
+  "env": {},
+  "visibility": "internal",
+  "deps": [],
+  "transitiveDeps": [],
+  "transitiveCrossDeps": [],
+  "chainedDeps": [],
+  "cmds": [],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

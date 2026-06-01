@@ -1,0 +1,9 @@
+services:
+  plugins_micronaut-integrate_srcs:
+    build:
+      additional_contexts:
+        plugins_micronaut-build_srcs: service:plugins_micronaut-build_srcs
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate_srcs
+      target: integrate_srcs
+    image: bayt-plugins_micronaut-integrate_srcs:latest

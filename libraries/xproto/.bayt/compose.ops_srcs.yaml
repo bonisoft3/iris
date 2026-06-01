@@ -1,0 +1,12 @@
+services:
+  libraries_xproto-ops_srcs:
+    build:
+      additional_contexts:
+        workspaceroot-ops_srcs: service:workspaceroot-ops_srcs
+        plugins_libstoml-ops_srcs: service:plugins_libstoml-ops_srcs
+        plugins_jvm-ops_srcs: service:plugins_jvm-ops_srcs
+        libraries_logs-ops_srcs: service:libraries_logs-ops_srcs
+      context: ..
+      dockerfile: .bayt/Dockerfile.ops_srcs
+      target: ops_srcs
+    image: bayt-libraries_xproto-ops_srcs:latest

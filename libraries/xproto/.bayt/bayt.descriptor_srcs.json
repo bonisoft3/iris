@@ -1,0 +1,29 @@
+{
+  "name": "descriptor_srcs",
+  "project": "libraries_xproto",
+  "dir": "libraries/xproto",
+  "activate": "",
+  "srcs": {
+    "globs": [],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [
+      "buf.yaml",
+      "buf.lock",
+      "trash/**/*.proto"
+    ],
+    "exclude": []
+  },
+  "env": {},
+  "visibility": "public",
+  "deps": [],
+  "transitiveDeps": [],
+  "transitiveCrossDeps": [],
+  "chainedDeps": [],
+  "cmds": [],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

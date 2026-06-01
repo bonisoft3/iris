@@ -1,0 +1,9 @@
+services:
+  libraries_xproto-descriptor_srcs:
+    build:
+      additional_contexts:
+        workspaceroot-setup_srcs: service:workspaceroot-setup_srcs
+      context: ..
+      dockerfile: .bayt/Dockerfile.descriptor_srcs
+      target: descriptor_srcs
+    image: bayt-libraries_xproto-descriptor_srcs:latest

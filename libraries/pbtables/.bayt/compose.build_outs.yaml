@@ -1,0 +1,9 @@
+services:
+  libraries_pbtables-build_outs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.build_outs
+      target: build_outs
+      additional_contexts:
+        libraries_pbtables-build: service:libraries_pbtables-build
+    image: bayt-libraries_pbtables-build_outs:latest

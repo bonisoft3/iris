@@ -1,0 +1,9 @@
+services:
+  libraries_pbtables-integrate_outs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate_outs
+      target: integrate_outs
+      additional_contexts:
+        libraries_pbtables-integrate: service:libraries_pbtables-integrate
+    image: bayt-libraries_pbtables-integrate_outs:latest

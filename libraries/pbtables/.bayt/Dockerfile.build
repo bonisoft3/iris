@@ -1,10 +1,8 @@
 # syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
 FROM libraries_pbtables-setup AS build
 WORKDIR /monorepo/libraries/pbtables
-COPY --link --from=bayt-runtime runtime /monorepo/plugins/bayt/runtime
+COPY --link --from=bayt runtime /monorepo/plugins/bayt/runtime
 ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}
-COPY --from=workspaceroot-setup --link --parents /monorepo/.mise.toml /monorepo/mise.lock /monorepo/pnpm-lock.yaml /monorepo/pnpm-workspace.yaml /monorepo/package.json /monorepo/gradle/libs.versions.toml /monorepo/plugins/devserver/dind.sh /monorepo/**/package.json /monorepo/.task/bayt/setup.hash /
-COPY --from=plugins_libstoml-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/plugins/libstoml/**/* /
 COPY --from=plugins_micronaut-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/plugins/micronaut/**/* /
 COPY --from=libraries_xproto-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/libraries/xproto/**/* /
 COPY --from=libraries_logs-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/libraries/logs/**/* /

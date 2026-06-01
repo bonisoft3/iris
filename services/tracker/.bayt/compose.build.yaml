@@ -8,8 +8,8 @@ services:
         plugins_libstoml-build: service:plugins_libstoml-build
         plugins_jvm-build: service:plugins_jvm-build
         plugins_micronaut-build: service:plugins_micronaut-build
+        bayt: ../../../plugins/bayt
         services_tracker-setup: service:services_tracker-setup
-        bayt-runtime: ../../../plugins/bayt
       context: ..
       dockerfile: .bayt/Dockerfile.build
       target: build

@@ -1,0 +1,9 @@
+services:
+  plugins_libstoml-integrate_outs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate_outs
+      target: integrate_outs
+      additional_contexts:
+        plugins_libstoml-integrate: service:plugins_libstoml-integrate
+    image: bayt-plugins_libstoml-integrate_outs:latest

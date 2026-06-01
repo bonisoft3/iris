@@ -1,0 +1,9 @@
+services:
+  guis_web-integrate_srcs:
+    build:
+      additional_contexts:
+        guis_web-build_srcs: service:guis_web-build_srcs
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate_srcs
+      target: integrate_srcs
+    image: bayt-guis_web-integrate_srcs:latest

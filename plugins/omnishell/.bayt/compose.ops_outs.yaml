@@ -1,0 +1,9 @@
+services:
+  plugins_omnishell-ops_outs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.ops_outs
+      target: ops_outs
+      additional_contexts:
+        plugins_omnishell-ops: service:plugins_omnishell-ops
+    image: bayt-plugins_omnishell-ops_outs:latest

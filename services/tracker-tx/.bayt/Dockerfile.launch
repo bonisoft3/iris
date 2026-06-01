@@ -5,6 +5,7 @@ COPY --from=envoyproxy/envoy:v1.35.3@sha256:4d496918618a7ebd6c71ae8285e31ebff092
 RUN zypper -n install gettext-runtime=0.22.5-160000.2.2 && zypper clean -a
 ENV PATH=/root/.local/share/mise/shims:$PATH
 COPY --from=libraries_xproto-descriptor --link --parents /monorepo/libraries/xproto/out/xproto.desc.pb /
+COPY --from=workspaceroot-setup --link --parents /monorepo/.mise.toml /monorepo/mise.lock /monorepo/pnpm-lock.yaml /monorepo/pnpm-workspace.yaml /monorepo/package.json /monorepo/gradle/libs.versions.toml /monorepo/plugins/devserver/dind.sh /monorepo/**/package.json /monorepo/.task/bayt/setup.hash /
 ENV GRPC_ADDRESS=127.0.0.1
 ENV GRPC_PORT=50051
 ENV GRPC_TRACKER_SERVICE=trash.tracker.v1.TrackerService

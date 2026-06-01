@@ -61,7 +61,6 @@
       "outs": {
         "globs": [
           ".bayt/**",
-          "plugins/bayt/runtime/**",
           "Taskfile.yml",
           "compose.yaml",
           "plugins/devserver/dind.sh"
@@ -78,7 +77,6 @@
       "outs": {
         "globs": [
           ".bayt/**",
-          "plugins/bayt/runtime/**",
           "Taskfile.yml",
           "compose.yaml",
           "plugins/devserver/dind.sh"

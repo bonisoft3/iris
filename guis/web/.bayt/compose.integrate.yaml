@@ -2,8 +2,8 @@ services:
   guis_web-integrate:
     build:
       additional_contexts:
+        bayt: ../../../plugins/bayt
         guis_web-build: service:guis_web-build
-        bayt-runtime: ../../../plugins/bayt
       context: ..
       dockerfile: .bayt/Dockerfile.integrate
       target: integrate

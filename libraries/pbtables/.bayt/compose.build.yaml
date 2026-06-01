@@ -2,13 +2,11 @@ services:
   libraries_pbtables-build:
     build:
       additional_contexts:
-        workspaceroot-setup: service:workspaceroot-setup
-        plugins_libstoml-build: service:plugins_libstoml-build
         plugins_micronaut-build: service:plugins_micronaut-build
         libraries_xproto-build: service:libraries_xproto-build
         libraries_logs-build: service:libraries_logs-build
+        bayt: ../../../plugins/bayt
         libraries_pbtables-setup: service:libraries_pbtables-setup
-        bayt-runtime: ../../../plugins/bayt
       context: ..
       dockerfile: .bayt/Dockerfile.build
       target: build

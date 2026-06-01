@@ -1,0 +1,9 @@
+services:
+  services_tracker-release-artifact_outs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.release-artifact_outs
+      target: release-artifact_outs
+      additional_contexts:
+        services_tracker-release-artifact: service:services_tracker-release-artifact
+    image: bayt-services_tracker-release-artifact_outs:latest

@@ -2,7 +2,6 @@ services:
   plugins_omnishell-build:
     build:
       additional_contexts:
-        bayt-runtime: ../../../plugins/bayt
         plugins_omnishell-setup: service:plugins_omnishell-setup
       context: ..
       dockerfile: .bayt/Dockerfile.build

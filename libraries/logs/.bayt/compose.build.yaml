@@ -2,10 +2,8 @@ services:
   libraries_logs-build:
     build:
       additional_contexts:
-        workspaceroot-setup: service:workspaceroot-setup
-        plugins_libstoml-build: service:plugins_libstoml-build
+        bayt: ../../../plugins/bayt
         libraries_logs-setup: service:libraries_logs-setup
-        bayt-runtime: ../../../plugins/bayt
       context: ..
       dockerfile: .bayt/Dockerfile.build
       target: build

@@ -21,6 +21,30 @@ include:
   required: false
 - path: ./compose.dindbox.yaml
   required: false
+- path: ./compose.setup_srcs.yaml
+  required: false
+- path: ./compose.build_srcs.yaml
+  required: false
+- path: ./compose.integrate_srcs.yaml
+  required: false
+- path: ./compose.test-sources_srcs.yaml
+  required: false
+- path: ./compose.ops_srcs.yaml
+  required: false
+- path: ./compose.setup_outs.yaml
+  required: false
+- path: ./compose.build_outs.yaml
+  required: false
+- path: ./compose.release-artifact_outs.yaml
+  required: false
+- path: ./compose.integrate_outs.yaml
+  required: false
+- path: ./compose.test-sources_outs.yaml
+  required: false
+- path: ./compose.ops_outs.yaml
+  required: false
+- path: ./compose._bayt.yaml
+  required: false
 - path: ../../../.bayt/compose.bayt.deps.yaml
   required: false
 - path: ../../../libraries/logs/.bayt/compose.bayt.deps.yaml

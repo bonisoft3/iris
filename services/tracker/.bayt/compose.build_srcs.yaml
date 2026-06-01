@@ -1,0 +1,16 @@
+services:
+  services_tracker-build_srcs:
+    build:
+      additional_contexts:
+        services_tracker-setup_srcs: service:services_tracker-setup_srcs
+        workspaceroot-setup_srcs: service:workspaceroot-setup_srcs
+        libraries_logs-build_srcs: service:libraries_logs-build_srcs
+        libraries_pbtables-build_srcs: service:libraries_pbtables-build_srcs
+        libraries_xproto-build_srcs: service:libraries_xproto-build_srcs
+        plugins_libstoml-build_srcs: service:plugins_libstoml-build_srcs
+        plugins_jvm-build_srcs: service:plugins_jvm-build_srcs
+        plugins_micronaut-build_srcs: service:plugins_micronaut-build_srcs
+      context: ..
+      dockerfile: .bayt/Dockerfile.build_srcs
+      target: build_srcs
+    image: bayt-services_tracker-build_srcs:latest

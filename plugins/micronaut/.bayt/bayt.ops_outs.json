@@ -1,0 +1,27 @@
+{
+  "name": "ops_outs",
+  "project": "plugins_micronaut",
+  "dir": "plugins/micronaut",
+  "activate": "",
+  "srcs": {
+    "globs": [],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [
+      ".bayt/**"
+    ],
+    "exclude": []
+  },
+  "env": {},
+  "visibility": "public",
+  "deps": [],
+  "transitiveDeps": [],
+  "transitiveCrossDeps": [],
+  "chainedDeps": [],
+  "cmds": [],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

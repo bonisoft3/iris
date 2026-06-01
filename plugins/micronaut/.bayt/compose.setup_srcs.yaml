@@ -1,0 +1,7 @@
+services:
+  plugins_micronaut-setup_srcs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.setup_srcs
+      target: setup_srcs
+    image: bayt-plugins_micronaut-setup_srcs:latest

@@ -1,0 +1,9 @@
+services:
+  plugins_omnishell-integrate_srcs:
+    build:
+      additional_contexts:
+        plugins_omnishell-build_srcs: service:plugins_omnishell-build_srcs
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate_srcs
+      target: integrate_srcs
+    image: bayt-plugins_omnishell-integrate_srcs:latest

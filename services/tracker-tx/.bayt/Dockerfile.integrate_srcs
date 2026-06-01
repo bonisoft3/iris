@@ -1,0 +1,5 @@
+# syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
+FROM scratch AS integrate_srcs
+WORKDIR /monorepo/services/tracker-tx
+COPY --link --parents transcoding.yaml cloud_run_tls.yaml edge.yaml ./
+COPY --link --from=services_tracker-tx-build_srcs /monorepo /monorepo

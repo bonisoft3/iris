@@ -1,0 +1,38 @@
+{
+  "name": "build_srcs",
+  "project": "plugins_libstoml",
+  "dir": "plugins/libstoml",
+  "activate": "",
+  "srcs": {
+    "globs": [],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [
+      "build.gradle.kts",
+      "src/main/**/*.gradle.kts",
+      "gradle.properties",
+      "gradle/wrapper/gradle-wrapper.jar",
+      "gradlew",
+      "src/main/**/*.java",
+      "src/main/**/*.kt",
+      "gradle/libs.versions.toml",
+      "settings.gradle.kts",
+      "src/main/**/*.sq",
+      "src/main/**/*.sql",
+      "src/main/**/*.sqm"
+    ],
+    "exclude": []
+  },
+  "env": {},
+  "visibility": "public",
+  "deps": [],
+  "transitiveDeps": [],
+  "transitiveCrossDeps": [],
+  "chainedDeps": [],
+  "cmds": [],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

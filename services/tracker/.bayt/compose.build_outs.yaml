@@ -1,0 +1,9 @@
+services:
+  services_tracker-build_outs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.build_outs
+      target: build_outs
+      additional_contexts:
+        services_tracker-build: service:services_tracker-build
+    image: bayt-services_tracker-build_outs:latest

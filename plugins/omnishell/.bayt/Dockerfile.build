@@ -2,8 +2,6 @@
 FROM plugins_omnishell-setup AS build
 WORKDIR /monorepo/plugins/omnishell
 COPY --link --parents src/**/* scaffold/**/* package.json bun.lock tsconfig.json bunfig.toml ./
-COPY --from=bayt-runtime --link . /monorepo/plugins/bayt/
-ENV PATH=/monorepo/plugins/bayt/bin:${PATH}
 RUN mise x -- sh -c 'bun install --frozen-lockfile && bun run check'
 COPY --link Taskfile.yml ./Taskfile.yml
 COPY --link .bayt/Taskfile.yml .bayt/Taskfile.build.yaml .bayt/bayt.build.json .bayt/init.gradle.kts ./.bayt/

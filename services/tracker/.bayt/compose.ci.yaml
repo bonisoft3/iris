@@ -30,8 +30,8 @@ services:
         plugins_libstoml-ops: service:plugins_libstoml-ops
         plugins_jvm-ops: service:plugins_jvm-ops
         plugins_micronaut-ops: service:plugins_micronaut-ops
+        bayt: ../../../plugins/bayt
         services_tracker-dindbox: service:services_tracker-dindbox
-        bayt-runtime: ../../../plugins/bayt
       context: ..
       dockerfile: .bayt/Dockerfile.ci
       secrets:

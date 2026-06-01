@@ -1,0 +1,7 @@
+services:
+  libraries_xproto-setup_srcs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.setup_srcs
+      target: setup_srcs
+    image: bayt-libraries_xproto-setup_srcs:latest

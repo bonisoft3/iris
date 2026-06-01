@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
 FROM services_tracker-dindbox AS ci
 WORKDIR /monorepo/services/tracker
-COPY --link --from=bayt-runtime runtime /monorepo/plugins/bayt/runtime
+COPY --link --from=bayt runtime /monorepo/plugins/bayt/runtime
 ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}
 COPY --from=services_tracker-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/services/tracker/**/* /
 COPY --from=services_tracker-ops --link --parents /monorepo/services/tracker/compose.yaml /monorepo/services/tracker/.bayt/** /

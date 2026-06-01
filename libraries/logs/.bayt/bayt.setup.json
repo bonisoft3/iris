@@ -73,6 +73,39 @@
           ".git/**"
         ]
       }
+    },
+    {
+      "name": "setup",
+      "project": "workspaceroot",
+      "dir": "",
+      "outs": {
+        "globs": [
+          ".mise.toml",
+          "mise.lock",
+          "pnpm-lock.yaml",
+          "pnpm-workspace.yaml",
+          "package.json",
+          "gradle/libs.versions.toml",
+          "plugins/devserver/dind.sh",
+          "**/package.json",
+          ".task/bayt/setup.hash"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "build",
+      "project": "plugins_libstoml",
+      "dir": "plugins/libstoml",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          ".bayt/**",
+          ".git/**"
+        ]
+      }
     }
   ],
   "chainedDeps": [],

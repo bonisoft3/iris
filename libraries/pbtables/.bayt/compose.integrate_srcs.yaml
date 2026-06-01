@@ -1,0 +1,9 @@
+services:
+  libraries_pbtables-integrate_srcs:
+    build:
+      additional_contexts:
+        libraries_pbtables-build_srcs: service:libraries_pbtables-build_srcs
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate_srcs
+      target: integrate_srcs
+    image: bayt-libraries_pbtables-integrate_srcs:latest

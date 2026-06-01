@@ -1,0 +1,7 @@
+services:
+  guis_web-build_srcs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.build_srcs
+      target: build_srcs
+    image: bayt-guis_web-build_srcs:latest

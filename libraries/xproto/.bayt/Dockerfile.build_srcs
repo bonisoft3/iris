@@ -1,0 +1,9 @@
+# syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
+FROM scratch AS build_srcs
+WORKDIR /monorepo/libraries/xproto
+COPY --link --parents build.gradle.kts src/main/**/*.gradle.kts gradle.properties gradle/wrapper/gradle-wrapper.jar gradlew src/main/**/*.java src/main/**/*.kt gradle/libs.versions.toml settings.gradle.kts src/main/**/*.sq src/main/**/*.sql src/main/**/*.sqm src/**/*.kt src/**/*.gradle.kts src/**/*.java src/**/*.sql src/**/*.sq src/**/*.sqm build.gradle.kts settings.gradle.kts gradle.properties gradlew gradle/wrapper/gradle-wrapper.jar gradle/libs.versions.toml trash/**/*.proto buf.gradle.gen.yaml buf.yaml buf.lock ./
+COPY --link --from=libraries_xproto-setup_srcs /monorepo /monorepo
+COPY --link --from=workspaceroot-setup_srcs /monorepo /monorepo
+COPY --link --from=plugins_libstoml-build_srcs /monorepo /monorepo
+COPY --link --from=plugins_jvm-build_srcs /monorepo /monorepo
+COPY --link --from=libraries_logs-build_srcs /monorepo /monorepo

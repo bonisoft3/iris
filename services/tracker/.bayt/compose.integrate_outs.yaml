@@ -1,0 +1,9 @@
+services:
+  services_tracker-integrate_outs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate_outs
+      target: integrate_outs
+      additional_contexts:
+        services_tracker-integrate: service:services_tracker-integrate
+    image: bayt-services_tracker-integrate_outs:latest

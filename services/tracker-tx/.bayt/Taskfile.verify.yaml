@@ -3,10 +3,10 @@ tasks:
     deps:
     - ::bayt:release
     status:
-    - bayt fingerprint --manifest {{.TASKFILE_DIR}}/bayt.verify.json --stamp-file .task/bayt/verify.hash
+    - ../../plugins/bayt/runtime/bayt fingerprint --manifest {{.TASKFILE_DIR}}/bayt.verify.json --stamp-file .task/bayt/verify.hash
     vars:
-      BAYTW: bayt cache run --manifest {{.TASKFILE_DIR}}/bayt.verify.json -- mise x --
+      BAYTW: ../../plugins/bayt/runtime/bayt cache run --manifest {{.TASKFILE_DIR}}/bayt.verify.json -- mise x --
     cmds:
     - '{{.BAYTW}} nu sayt.nu verify'
-    - defer: '{{if not .EXIT_CODE}}bayt fingerprint --manifest {{.TASKFILE_DIR}}/bayt.verify.json --stamp-file .task/bayt/verify.hash --update-stamp{{end}}'
+    - defer: '{{if not .EXIT_CODE}}../../plugins/bayt/runtime/bayt fingerprint --manifest {{.TASKFILE_DIR}}/bayt.verify.json --stamp-file .task/bayt/verify.hash --update-stamp{{end}}'
 version: '3'

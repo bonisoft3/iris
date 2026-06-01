@@ -1,0 +1,39 @@
+{
+  "name": "build_srcs",
+  "project": "guis_web",
+  "dir": "guis/web",
+  "activate": "",
+  "srcs": {
+    "globs": [],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [
+      "**/*"
+    ],
+    "exclude": [
+      "node_modules/**",
+      ".nuxt/**",
+      ".output/**",
+      "dist/**",
+      "coverage/**",
+      ".bayt/**",
+      ".task/**",
+      ".git/**",
+      "**/*.test.*",
+      "**/*.spec.*",
+      "tests/**"
+    ]
+  },
+  "env": {},
+  "visibility": "internal",
+  "deps": [],
+  "transitiveDeps": [],
+  "transitiveCrossDeps": [],
+  "chainedDeps": [],
+  "cmds": [],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

@@ -1,0 +1,7 @@
+services:
+  services_tracker-test-sources_srcs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.test-sources_srcs
+      target: test-sources_srcs
+    image: bayt-services_tracker-test-sources_srcs:latest

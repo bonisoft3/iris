@@ -2,11 +2,9 @@ services:
   libraries_xproto-build:
     build:
       additional_contexts:
-        workspaceroot-setup: service:workspaceroot-setup
-        plugins_libstoml-build: service:plugins_libstoml-build
         libraries_logs-build: service:libraries_logs-build
+        bayt: ../../../plugins/bayt
         libraries_xproto-setup: service:libraries_xproto-setup
-        bayt-runtime: ../../../plugins/bayt
       context: ..
       dockerfile: .bayt/Dockerfile.build
       target: build

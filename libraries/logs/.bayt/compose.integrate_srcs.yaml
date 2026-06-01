@@ -1,0 +1,9 @@
+services:
+  libraries_logs-integrate_srcs:
+    build:
+      additional_contexts:
+        libraries_logs-build_srcs: service:libraries_logs-build_srcs
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate_srcs
+      target: integrate_srcs
+    image: bayt-libraries_logs-integrate_srcs:latest

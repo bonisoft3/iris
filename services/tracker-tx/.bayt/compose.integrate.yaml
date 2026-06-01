@@ -2,7 +2,6 @@ services:
   services_tracker-tx-integrate:
     build:
       additional_contexts:
-        bayt-runtime: ../../../plugins/bayt
         services_tracker-tx-build: service:services_tracker-tx-build
       context: ..
       dockerfile: .bayt/Dockerfile.integrate

@@ -1,0 +1,9 @@
+services:
+  plugins_libstoml-integrate_srcs:
+    build:
+      additional_contexts:
+        plugins_libstoml-build_srcs: service:plugins_libstoml-build_srcs
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate_srcs
+      target: integrate_srcs
+    image: bayt-plugins_libstoml-integrate_srcs:latest

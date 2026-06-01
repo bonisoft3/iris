@@ -1,0 +1,7 @@
+services:
+  plugins_jvm-setup_srcs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.setup_srcs
+      target: setup_srcs
+    image: bayt-plugins_jvm-setup_srcs:latest

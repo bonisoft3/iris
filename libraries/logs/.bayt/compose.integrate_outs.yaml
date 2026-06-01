@@ -1,0 +1,9 @@
+services:
+  libraries_logs-integrate_outs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate_outs
+      target: integrate_outs
+      additional_contexts:
+        libraries_logs-integrate: service:libraries_logs-integrate
+    image: bayt-libraries_logs-integrate_outs:latest

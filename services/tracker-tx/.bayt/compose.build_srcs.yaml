@@ -1,0 +1,7 @@
+services:
+  services_tracker-tx-build_srcs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.build_srcs
+      target: build_srcs
+    image: bayt-services_tracker-tx-build_srcs:latest
