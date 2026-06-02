@@ -10,10 +10,6 @@ services:
     extends:
       file: ./compose.setup.yaml
       service: libraries_xproto-setup
-  ops:
-    extends:
-      file: ./compose.ops.yaml
-      service: libraries_xproto-ops
   descriptor:
     extends:
       file: ./compose.descriptor.yaml

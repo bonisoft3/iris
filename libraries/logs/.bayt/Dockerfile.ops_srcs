@@ -1,7 +1,0 @@
-# syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
-FROM scratch AS ops_srcs
-WORKDIR /monorepo/libraries/logs
-COPY --link --parents .bayt/** ./
-COPY --link --from=workspaceroot-ops_srcs /monorepo /monorepo
-COPY --link --from=plugins_libstoml-ops_srcs /monorepo /monorepo
-COPY --link --from=plugins_jvm-ops_srcs /monorepo /monorepo

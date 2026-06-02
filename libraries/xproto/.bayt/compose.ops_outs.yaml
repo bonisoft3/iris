@@ -1,9 +1,0 @@
-services:
-  libraries_xproto-ops_outs:
-    build:
-      context: ..
-      dockerfile: .bayt/Dockerfile.ops_outs
-      target: ops_outs
-      additional_contexts:
-        libraries_xproto-ops: service:libraries_xproto-ops
-    image: bayt-libraries_xproto-ops_outs:latest

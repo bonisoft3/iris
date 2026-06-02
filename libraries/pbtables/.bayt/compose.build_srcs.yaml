@@ -3,7 +3,6 @@ services:
     build:
       additional_contexts:
         libraries_pbtables-setup_srcs: service:libraries_pbtables-setup_srcs
-        workspaceroot-setup_srcs: service:workspaceroot-setup_srcs
         plugins_libstoml-build_srcs: service:plugins_libstoml-build_srcs
         plugins_jvm-build_srcs: service:plugins_jvm-build_srcs
         plugins_micronaut-build_srcs: service:plugins_micronaut-build_srcs

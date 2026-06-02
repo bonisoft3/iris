@@ -3,7 +3,6 @@ services:
     build:
       additional_contexts:
         plugins_jvm-setup_srcs: service:plugins_jvm-setup_srcs
-        workspaceroot-setup_srcs: service:workspaceroot-setup_srcs
         plugins_libstoml-build_srcs: service:plugins_libstoml-build_srcs
       context: ..
       dockerfile: .bayt/Dockerfile.build_srcs

@@ -46,13 +46,8 @@
     "exclude": []
   },
   "outs": {
-    "globs": [
-      "**/*"
-    ],
-    "exclude": [
-      ".bayt/**",
-      ".git/**"
-    ]
+    "globs": [],
+    "exclude": []
   },
   "env": {},
   "taskfile": {

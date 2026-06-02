@@ -11,10 +11,6 @@ include:
   required: false
 - path: ./compose.launch.yaml
   required: false
-- path: ./compose.test-sources.yaml
-  required: false
-- path: ./compose.ops.yaml
-  required: false
 - path: ./compose.ci.yaml
   required: false
 - path: ./compose.dindbox.yaml
@@ -23,19 +19,11 @@ include:
   required: false
 - path: ./compose.build_srcs.yaml
   required: false
-- path: ./compose.test-sources_srcs.yaml
-  required: false
-- path: ./compose.ops_srcs.yaml
-  required: false
 - path: ./compose.setup_outs.yaml
   required: false
 - path: ./compose.build_outs.yaml
   required: false
 - path: ./compose.release-artifact_outs.yaml
-  required: false
-- path: ./compose.test-sources_outs.yaml
-  required: false
-- path: ./compose.ops_outs.yaml
   required: false
 - path: ./compose._bayt.yaml
   required: false

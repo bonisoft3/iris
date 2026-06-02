@@ -1,9 +1,0 @@
-services:
-  services_tracker-test-sources_outs:
-    build:
-      context: ..
-      dockerfile: .bayt/Dockerfile.test-sources_outs
-      target: test-sources_outs
-      additional_contexts:
-        services_tracker-test-sources: service:services_tracker-test-sources
-    image: bayt-services_tracker-test-sources_outs:latest

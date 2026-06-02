@@ -1,8 +1,6 @@
 services:
   plugins_omnishell-bayt:
     build:
-      additional_contexts:
-        workspaceroot-bayt: service:workspaceroot-bayt
       context: ..
       dockerfile: .bayt/Dockerfile._bayt
       target: bayt

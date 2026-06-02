@@ -1,9 +1,0 @@
-services:
-  plugins_micronaut-ops_outs:
-    build:
-      context: ..
-      dockerfile: .bayt/Dockerfile.ops_outs
-      target: ops_outs
-      additional_contexts:
-        plugins_micronaut-ops: service:plugins_micronaut-ops
-    image: bayt-plugins_micronaut-ops_outs:latest

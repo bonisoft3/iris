@@ -38,32 +38,13 @@ _wsroot: sayt.pnpmWorkspace & {
 
 	// Workspace-root setup is consumed by every project's setup via
 	// `deps: ["workspaceroot:setup"]`. Public so cross-project
-	// consumers may reference it.
+	// consumers may reference it. workspaceroot:setup's srcs/outs
+	// already carry `plugins/devserver/dind.sh` (per sayt.pnpmWorkspace),
+	// so dind.sh flows to consumers via the setup FROM chain — no
+	// separate scaffolding target needed. Bake-graph scaffolding
+	// (.bayt/**, Taskfile.yml, compose.yaml) flows via the auto-emitted
+	// `:bayt` synthetic, transitive across cross-project deps.
 	targets: "setup": visibility: "public"
-
-	// ops — bake-graph scaffolding only: compose includes, taskfile
-	// chain, workspace-root configs. Toolchain inputs (mise lockfile,
-	// package.json tree, gradle catalog) belong to :setup; consumers
-	// that need them chain off :setup.
-	targets: "ops": {
-		let _ops = [
-			".bayt/**",
-			"Taskfile.yml",
-			"compose.yaml",
-			"plugins/devserver/dind.sh",
-		]
-		// bayt.cue is excluded — it's the emitter's *input* (read by
-		// `just sayt generate` on the host), not a runtime source.
-		// Including it lets comment-only edits bump its mtime via
-		// chetan/git-restore-mtime, drifting workspaceroot-ops's
-		// chain ID and cascading into every downstream project's
-		// cache miss.
-		srcs: globs: _ops
-		outs: globs: _ops
-		visibility: "public"
-		dockerfile: bayt.scratch
-		cmd: "builtin": null
-	}
 }
 
 project: _wsroot

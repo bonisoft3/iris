@@ -3,7 +3,7 @@ services:
     build:
       additional_contexts:
         plugins_libstoml-build: service:plugins_libstoml-build
-        bayt: ../../../plugins/bayt
+        bayt: ../../../plugins/bayt/runtime
         plugins_jvm-setup: service:plugins_jvm-setup
       context: ..
       dockerfile: .bayt/Dockerfile.build

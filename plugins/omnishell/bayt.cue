@@ -62,21 +62,10 @@ _omnishell: bayt.#project & {
 				"tsconfig.json",
 				"bunfig.toml",
 			]
-			// Public artifacts available to cross-project consumers via
-			// `deps: ["plugins_omnishell:build"]`. iris's integrate
-			// target relies on the workspace symlink
-			// `node_modules/@omnishell/core -> plugins/omnishell` set up
-			// by pnpm install at the workspace root — that needs
-			// package.json (name + exports) plus the source tree the
-			// exports point at.
-			// Broad outs (whole workdir minus .bayt/.git) so iris's
-			// dindbox cascade can re-bake omnishell-build from the
-			// inner-bake context. Same temp shape as iris.build until
-			// bayt grows a proper "source closure" concept.
-			outs: {
-				globs: ["**/*"]
-				exclude: [".bayt/**", ".git/**"]
-			}
+			// Typecheck-only build, no artifact. Cross-project consumers
+			// of the omnishell source tree (e.g. iris's pnpm workspace
+			// symlink) use `plugins_omnishell:build:srcs` instead.
+			outs: globs: []
 			// `mise.exec` wraps the cmd with `mise x --`, which only
 			// activates the env for a single argv. Chained commands
 			// (`bun install && bun run check`) need an explicit `sh -c`
@@ -114,21 +103,6 @@ _omnishell: bayt.#project & {
 		}
 
 		"generate": sayt.generate & {cmd: "builtin": do: "true"}
-
-		// ops — content-only stage carrying omnishell's bake-graph
-		// scaffolding into downstream dindbox cascades that include
-		// omnishell as a federated dep. Taskfile.yml is included
-		// because bayt's emitter always issues `COPY Taskfile.yml`
-		// in each stage; the file's WORKDIR resolution is harmless
-		// for scratch ops but the build-time COPY needs it present.
-		"ops": {
-			srcs: globs: ["compose.yaml", ".bayt/**", "Taskfile.yml"]
-			outs: globs: ["compose.yaml", ".bayt/**", "Taskfile.yml"]
-			deps: ["workspaceroot:ops"]
-			dockerfile: bayt.scratch
-			cmd: "builtin": null
-			visibility: "public"
-		}
 	}
 }
 

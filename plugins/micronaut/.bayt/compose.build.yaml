@@ -2,7 +2,7 @@ services:
   plugins_micronaut-build:
     build:
       additional_contexts:
-        bayt: ../../../plugins/bayt
+        bayt: ../../../plugins/bayt/runtime
         plugins_micronaut-setup: service:plugins_micronaut-setup
       context: ..
       dockerfile: .bayt/Dockerfile.build

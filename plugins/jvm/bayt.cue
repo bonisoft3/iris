@@ -20,30 +20,20 @@ _jvm: sayt.gradle & {
 	targets: {
 		// Public: consumed by plugins/micronaut and downstream services.
 		// :setup is public too so consumers can chain-FROM jvm:build (which
-		// has the JDK installed via mise) instead of repeating the install.
-		// REPRODUCER: this FROM-chain config across all jvm consumers
-		// (logs/pbtables/xproto/micronaut/tracker) inflates BuildKit's
-		// frontend gRPC message past its ~4 MB limit. Hits
-		// `ResourceExhausted: grpc: received message larger than max
-		// (~6 MB vs 4 MB)` on `just sayt -d services/tracker integrate`.
-		// Reverting just the `setup` overrides + visibility="public"
-		// (in this file plus libs/plugins below) returns to working
-		// baseline. Left here intentionally as a reproducer.
+		// has the JDK via mise) instead of repeating the install.
+		// REPRODUCER (kept intentionally): the chain-FROM-jvm pattern across
+		// all jvm consumers (logs/pbtables/xproto/micronaut/tracker) trips
+		// BuildKit's ~4 MB frontend gRPC limit (ResourceExhausted on
+		// `just sayt -d services/tracker integrate`). Revert path: drop the
+		// `setup` overrides + visibility=public in this file and the lib/
+		// plugin chain consumers.
 		"build": visibility: "public"
 		"setup": visibility: "public"
 		"setup": dockerfile: from: ref: "workspaceroot:setup"
 		// settings.gradle.kts includes libstoml via pluginManagement
 		// includeBuild — that directory must exist in the build container.
-		"build": deps: [":setup", "workspaceroot:setup", "plugins_libstoml:build"]
-
-		"ops": {
-			srcs: globs: [".bayt/**"]
-			outs: globs: [".bayt/**"]
-			deps: ["workspaceroot:ops", "plugins_libstoml:ops"]
-			visibility: "public"
-			dockerfile: bayt.scratch
-			cmd: "builtin": null
-		}
+		// workspaceroot:setup flows in via setup's FROM chain.
+		"build": deps: [":setup", "plugins_libstoml:build"]
 
 		// Library: not deployed standalone, no dev server, no e2e
 		// preview.

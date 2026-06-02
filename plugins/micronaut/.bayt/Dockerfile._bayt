@@ -2,6 +2,6 @@
 FROM scratch AS bayt
 WORKDIR /monorepo/plugins/micronaut
 COPY --link --parents .bayt/** Taskfile.yml compose.yaml ./
-COPY --link --from=workspaceroot-bayt /monorepo /monorepo
 COPY --link --from=plugins_libstoml-bayt /monorepo /monorepo
 COPY --link --from=plugins_jvm-bayt /monorepo /monorepo
+COPY --link --from=workspaceroot-bayt /monorepo /monorepo

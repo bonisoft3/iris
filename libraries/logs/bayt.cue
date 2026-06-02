@@ -26,17 +26,11 @@ _logs: sayt.gradle & {
 		// BuildKit's frontend gRPC payload past its ~4 MB ceiling. See
 		// plugins/jvm/bayt.cue for the full story.
 		"setup": dockerfile: from: ref: "plugins_jvm:build"
-		// settings.gradle.kts uses id("catalog") from libstoml plugin; pluginManagement also includes jvm.
-		"build": deps: [":setup", "workspaceroot:setup", "plugins_libstoml:build", "plugins_jvm:build"]
-
-		"ops": {
-			srcs: globs: [".bayt/**"]
-			outs: globs: [".bayt/**"]
-			deps: ["workspaceroot:ops", "plugins_libstoml:ops", "plugins_jvm:ops"]
-			visibility: "public"
-			dockerfile: bayt.scratch
-			cmd: "builtin": null
-		}
+		// settings.gradle.kts uses id("catalog") from libstoml plugin;
+		// pluginManagement also includes jvm. workspaceroot:setup's
+		// content flows in via the FROM chain (setup → plugins_jvm:build
+		// → … → workspaceroot:setup), so no explicit dep needed.
+		"build": deps: [":setup", "plugins_libstoml:build", "plugins_jvm:build"]
 
 		// Library: not deployed standalone, no dev server, no e2e
 		// preview. Drop the inherited targets that would emit dead

@@ -3,7 +3,7 @@ services:
     build:
       additional_contexts:
         libraries_logs-build: service:libraries_logs-build
-        bayt: ../../../plugins/bayt
+        bayt: ../../../plugins/bayt/runtime
         libraries_xproto-setup: service:libraries_xproto-setup
       context: ..
       dockerfile: .bayt/Dockerfile.build

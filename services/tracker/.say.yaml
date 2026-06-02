@@ -10,6 +10,12 @@ say:
     use: "./tools.nu [run-task]"
   launch:
     do: "^mise x -- ./gradlew dev"
+  # Local-dev defaults: pick bake branch, keep local pushes off shared
+  # depot. Sayt's verb-level args are all-or-nothing, so CI's explicit
+  # `--builder X --target ci` suppresses both. Don't inline the
+  # cache-to wipe into the CI workflow — only inner compose-up would
+  # then write to depot, with chain IDs that drift from outer's, and
+  # the warm cache breaks across runs.
   integrate:
     args: '--bake --set "*.cache-to="'
   # Goreleaser-OSS doesn't understand sayt's path-prefixed monorepo

@@ -3,7 +3,6 @@ services:
     build:
       additional_contexts:
         services_tracker-setup_srcs: service:services_tracker-setup_srcs
-        workspaceroot-setup_srcs: service:workspaceroot-setup_srcs
         libraries_logs-build_srcs: service:libraries_logs-build_srcs
         libraries_pbtables-build_srcs: service:libraries_pbtables-build_srcs
         libraries_xproto-build_srcs: service:libraries_xproto-build_srcs

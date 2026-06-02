@@ -109,12 +109,16 @@
       "dir": "plugins/libstoml",
       "outs": {
         "globs": [
-          "**/*"
+          "build/**/*",
+          ".gradle/**/*",
+          "build.gradle.kts",
+          "settings.gradle.kts",
+          "gradle.properties",
+          "gradlew",
+          "gradle/wrapper/**/*",
+          "gradle/libs.versions.toml"
         ],
-        "exclude": [
-          ".bayt/**",
-          ".git/**"
-        ]
+        "exclude": []
       }
     }
   ],

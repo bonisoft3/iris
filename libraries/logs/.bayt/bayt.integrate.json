@@ -83,6 +83,42 @@
   ],
   "transitiveCrossDeps": [
     {
+      "name": "build",
+      "project": "plugins_libstoml",
+      "dir": "plugins/libstoml",
+      "outs": {
+        "globs": [
+          "build/**/*",
+          ".gradle/**/*",
+          "build.gradle.kts",
+          "settings.gradle.kts",
+          "gradle.properties",
+          "gradlew",
+          "gradle/wrapper/**/*",
+          "gradle/libs.versions.toml"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "build",
+      "project": "plugins_jvm",
+      "dir": "plugins/jvm",
+      "outs": {
+        "globs": [
+          "build/**/*",
+          ".gradle/**/*",
+          "build.gradle.kts",
+          "settings.gradle.kts",
+          "gradle.properties",
+          "gradlew",
+          "gradle/wrapper/**/*",
+          "gradle/libs.versions.toml"
+        ],
+        "exclude": []
+      }
+    },
+    {
       "name": "setup",
       "project": "workspaceroot",
       "dir": "",
@@ -100,34 +136,6 @@
         ],
         "exclude": []
       }
-    },
-    {
-      "name": "build",
-      "project": "plugins_libstoml",
-      "dir": "plugins/libstoml",
-      "outs": {
-        "globs": [
-          "**/*"
-        ],
-        "exclude": [
-          ".bayt/**",
-          ".git/**"
-        ]
-      }
-    },
-    {
-      "name": "build",
-      "project": "plugins_jvm",
-      "dir": "plugins/jvm",
-      "outs": {
-        "globs": [
-          "**/*"
-        ],
-        "exclude": [
-          ".bayt/**",
-          ".git/**"
-        ]
-      }
     }
   ],
   "chainedDeps": [
@@ -137,12 +145,16 @@
       "dir": "libraries/logs",
       "outs": {
         "globs": [
-          "**/*"
+          "build/**/*",
+          ".gradle/**/*",
+          "build.gradle.kts",
+          "settings.gradle.kts",
+          "gradle.properties",
+          "gradlew",
+          "gradle/wrapper/**/*",
+          "gradle/libs.versions.toml"
         ],
-        "exclude": [
-          ".bayt/**",
-          ".git/**"
-        ]
+        "exclude": []
       }
     }
   ],

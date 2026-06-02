@@ -2,8 +2,8 @@ services:
   plugins_jvm-bayt:
     build:
       additional_contexts:
-        workspaceroot-bayt: service:workspaceroot-bayt
         plugins_libstoml-bayt: service:plugins_libstoml-bayt
+        workspaceroot-bayt: service:workspaceroot-bayt
       context: ..
       dockerfile: .bayt/Dockerfile._bayt
       target: bayt

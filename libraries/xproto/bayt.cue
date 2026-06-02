@@ -46,16 +46,9 @@ _xproto: sayt.gradle & {
 				"buf.yaml",
 				"buf.lock",
 			]
-			deps: [":setup", "workspaceroot:setup", "plugins_libstoml:build", "plugins_jvm:build", "libraries_logs:build"]
-		}
-
-		"ops": {
-			srcs: globs: [".bayt/**"]
-			outs: globs: [".bayt/**"]
-			deps: ["workspaceroot:ops", "plugins_libstoml:ops", "plugins_jvm:ops", "libraries_logs:ops"]
-			visibility: "public"
-			dockerfile: bayt.scratch
-			cmd: "builtin": null
+			// workspaceroot:setup flows via FROM chain (setup → jvm:build
+			// → workspaceroot:setup), so no explicit dep needed.
+			deps: [":setup", "plugins_libstoml:build", "plugins_jvm:build", "libraries_logs:build"]
 		}
 
 		// descriptor — single-artifact buf-built FileDescriptorSet,

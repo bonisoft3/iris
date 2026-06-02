@@ -1,9 +1,0 @@
-services:
-  libraries_logs-ops_outs:
-    build:
-      context: ..
-      dockerfile: .bayt/Dockerfile.ops_outs
-      target: ops_outs
-      additional_contexts:
-        libraries_logs-ops: service:libraries_logs-ops
-    image: bayt-libraries_logs-ops_outs:latest

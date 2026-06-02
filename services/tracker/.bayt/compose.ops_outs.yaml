@@ -1,9 +1,0 @@
-services:
-  services_tracker-ops_outs:
-    build:
-      context: ..
-      dockerfile: .bayt/Dockerfile.ops_outs
-      target: ops_outs
-      additional_contexts:
-        services_tracker-ops: service:services_tracker-ops
-    image: bayt-services_tracker-ops_outs:latest

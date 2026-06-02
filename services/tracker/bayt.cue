@@ -80,9 +80,10 @@ _tracker: sayt.gradle & {
 			// the build stage. Without this, classpath:prompts/*.json
 			// et al. are absent at integration-test runtime.
 			srcs: globs: ["src/main/resources/**/*"]
+			// workspaceroot:setup flows in via the FROM chain (setup
+			// FROMs workspaceroot:setup), so it's not listed explicitly.
 			deps: [
 				":setup",
-				"workspaceroot:setup",
 				"libraries_logs:build",
 				"libraries_pbtables:build",
 				"libraries_xproto:build",
@@ -278,41 +279,6 @@ _tracker: sayt.gradle & {
 			}
 		}
 
-		// test-sources — scratch FROM stage that republishes test source
-		// trees so ci's `compose up integrate --build` finds them when
-		// it rebuilds integrate from ci's filesystem. Gradle.build's
-		// defaultGlobs deliberately scope to src/main/** (test edits
-		// shouldn't bust the build layer); this stage carries the
-		// missing src/it/** + src/test/** to ci as a content-only dep.
-		"test-sources": {
-			srcs: globs: ["src/it/**/*", "src/test/**/*"]
-			outs: globs: ["src/it/**/*", "src/test/**/*"]
-			dockerfile: bayt.scratch
-			cmd: "builtin": null
-		}
-
-		// ops — content-only stage holding the project's bake-graph
-		// scaffolding (compose.yaml + .bayt/). FROM scratch, no RUN.
-		// Consumers that need to walk the compose graph at runtime
-		// (e.g. ci) depend on this; :build's cache stays unaffected.
-		// Manual cross-project deps below until the sayt stack auto-
-		// emits this and derives cross-project :ops from :build's deps.
-		"ops": {
-			srcs: globs: ["compose.yaml", ".bayt/**"]
-			outs: globs: ["compose.yaml", ".bayt/**"]
-			deps: [
-				"workspaceroot:ops",
-				"libraries_logs:ops",
-				"libraries_pbtables:ops",
-				"libraries_xproto:ops",
-				"plugins_libstoml:ops",
-				"plugins_jvm:ops",
-				"plugins_micronaut:ops",
-			]
-			dockerfile: bayt.scratch
-			cmd: "builtin": null
-		}
-
 		// ci — bake target run by `just sayt integrate --bake --target ci`.
 		// Its RUN does `docker compose up integrate` (build + run); the
 		// resulting integrate container runs `task bayt:integrate` against
@@ -324,15 +290,15 @@ _tracker: sayt.gradle & {
 		// invocation can talk to the host daemon.
 		"ci": sayt.inject & {
 			activate: ""
-			// :test-sources brings src/it/ + src/test/ into ci's
-			// workspace so the inner `compose up integrate --build`
-			// can rebuild integrate from ci's filesystem with the test
-			// sources present. Gradle's integrationTest source set
-			// reads src/it/kotlin/* and src/test/resources/*; without
-			// this stage in deps, ci's workspace only has src/main/**
-			// (from :build's narrower srcs) and gradle reports
-			// NO-SOURCE for integrationTest.
-			deps: [":build", ":ops", ":test-sources"]
+			// :bayt brings the transitive bake-graph scaffolding chain.
+			// :integrate:srcs is the auto-emitted source closure for
+			// the integrate target — Gradle.integrationTest defaults
+			// give src/it/{kt,java,resources}; integrate.srcs adds
+			// src/test/resources for testcontainers classpath reads.
+			// Don't also ship src/test/**/*.kt — gradle integrationTest
+			// only compiles src/it/* and the extra files bloat the
+			// COPY chain for no gradle-side benefit.
+			deps: [":build", ":bayt", ":integrate:srcs"]
 			cmd: "builtin": {
 				shell: "sh"
 				do:    "exec docker compose up integrate --build --abort-on-container-failure --exit-code-from integrate --remove-orphans"

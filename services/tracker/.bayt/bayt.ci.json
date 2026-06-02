@@ -81,16 +81,124 @@
   "visibility": "internal",
   "deps": [
     "build",
-    "ops",
-    "test-sources"
+    "bayt",
+    "integrate_srcs"
   ],
   "transitiveDeps": [
     "build",
-    "ops",
-    "test-sources",
+    "bayt",
+    "integrate_srcs",
     "setup"
   ],
   "transitiveCrossDeps": [
+    {
+      "name": "build",
+      "project": "libraries_logs",
+      "dir": "libraries/logs",
+      "outs": {
+        "globs": [
+          "build/**/*",
+          ".gradle/**/*",
+          "build.gradle.kts",
+          "settings.gradle.kts",
+          "gradle.properties",
+          "gradlew",
+          "gradle/wrapper/**/*",
+          "gradle/libs.versions.toml"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "build",
+      "project": "libraries_pbtables",
+      "dir": "libraries/pbtables",
+      "outs": {
+        "globs": [
+          "build/**/*",
+          ".gradle/**/*",
+          "build.gradle.kts",
+          "settings.gradle.kts",
+          "gradle.properties",
+          "gradlew",
+          "gradle/wrapper/**/*",
+          "gradle/libs.versions.toml"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "build",
+      "project": "libraries_xproto",
+      "dir": "libraries/xproto",
+      "outs": {
+        "globs": [
+          "build/**/*",
+          ".gradle/**/*",
+          "build.gradle.kts",
+          "settings.gradle.kts",
+          "gradle.properties",
+          "gradlew",
+          "gradle/wrapper/**/*",
+          "gradle/libs.versions.toml"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "build",
+      "project": "plugins_libstoml",
+      "dir": "plugins/libstoml",
+      "outs": {
+        "globs": [
+          "build/**/*",
+          ".gradle/**/*",
+          "build.gradle.kts",
+          "settings.gradle.kts",
+          "gradle.properties",
+          "gradlew",
+          "gradle/wrapper/**/*",
+          "gradle/libs.versions.toml"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "build",
+      "project": "plugins_jvm",
+      "dir": "plugins/jvm",
+      "outs": {
+        "globs": [
+          "build/**/*",
+          ".gradle/**/*",
+          "build.gradle.kts",
+          "settings.gradle.kts",
+          "gradle.properties",
+          "gradlew",
+          "gradle/wrapper/**/*",
+          "gradle/libs.versions.toml"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "build",
+      "project": "plugins_micronaut",
+      "dir": "plugins/micronaut",
+      "outs": {
+        "globs": [
+          "build/**/*",
+          ".gradle/**/*",
+          "build.gradle.kts",
+          "settings.gradle.kts",
+          "gradle.properties",
+          "gradlew",
+          "gradle/wrapper/**/*",
+          "gradle/libs.versions.toml"
+        ],
+        "exclude": []
+      }
+    },
     {
       "name": "setup",
       "project": "workspaceroot",
@@ -109,171 +217,6 @@
         ],
         "exclude": []
       }
-    },
-    {
-      "name": "build",
-      "project": "libraries_logs",
-      "dir": "libraries/logs",
-      "outs": {
-        "globs": [
-          "**/*"
-        ],
-        "exclude": [
-          ".bayt/**",
-          ".git/**"
-        ]
-      }
-    },
-    {
-      "name": "build",
-      "project": "libraries_pbtables",
-      "dir": "libraries/pbtables",
-      "outs": {
-        "globs": [
-          "**/*"
-        ],
-        "exclude": [
-          ".bayt/**",
-          ".git/**"
-        ]
-      }
-    },
-    {
-      "name": "build",
-      "project": "libraries_xproto",
-      "dir": "libraries/xproto",
-      "outs": {
-        "globs": [
-          "**/*"
-        ],
-        "exclude": [
-          ".bayt/**",
-          ".git/**"
-        ]
-      }
-    },
-    {
-      "name": "build",
-      "project": "plugins_libstoml",
-      "dir": "plugins/libstoml",
-      "outs": {
-        "globs": [
-          "**/*"
-        ],
-        "exclude": [
-          ".bayt/**",
-          ".git/**"
-        ]
-      }
-    },
-    {
-      "name": "build",
-      "project": "plugins_jvm",
-      "dir": "plugins/jvm",
-      "outs": {
-        "globs": [
-          "**/*"
-        ],
-        "exclude": [
-          ".bayt/**",
-          ".git/**"
-        ]
-      }
-    },
-    {
-      "name": "build",
-      "project": "plugins_micronaut",
-      "dir": "plugins/micronaut",
-      "outs": {
-        "globs": [
-          "**/*"
-        ],
-        "exclude": [
-          ".bayt/**",
-          ".git/**"
-        ]
-      }
-    },
-    {
-      "name": "ops",
-      "project": "workspaceroot",
-      "dir": "",
-      "outs": {
-        "globs": [
-          ".bayt/**",
-          "Taskfile.yml",
-          "compose.yaml",
-          "plugins/devserver/dind.sh"
-        ],
-        "exclude": []
-      }
-    },
-    {
-      "name": "ops",
-      "project": "libraries_logs",
-      "dir": "libraries/logs",
-      "outs": {
-        "globs": [
-          ".bayt/**"
-        ],
-        "exclude": []
-      }
-    },
-    {
-      "name": "ops",
-      "project": "libraries_pbtables",
-      "dir": "libraries/pbtables",
-      "outs": {
-        "globs": [
-          ".bayt/**"
-        ],
-        "exclude": []
-      }
-    },
-    {
-      "name": "ops",
-      "project": "libraries_xproto",
-      "dir": "libraries/xproto",
-      "outs": {
-        "globs": [
-          ".bayt/**"
-        ],
-        "exclude": []
-      }
-    },
-    {
-      "name": "ops",
-      "project": "plugins_libstoml",
-      "dir": "plugins/libstoml",
-      "outs": {
-        "globs": [
-          "compose.yaml",
-          ".bayt/**"
-        ],
-        "exclude": []
-      }
-    },
-    {
-      "name": "ops",
-      "project": "plugins_jvm",
-      "dir": "plugins/jvm",
-      "outs": {
-        "globs": [
-          ".bayt/**"
-        ],
-        "exclude": []
-      }
-    },
-    {
-      "name": "ops",
-      "project": "plugins_micronaut",
-      "dir": "plugins/micronaut",
-      "outs": {
-        "globs": [
-          ".bayt/**"
-        ],
-        "exclude": []
-      }
     }
   ],
   "chainedDeps": [
@@ -283,34 +226,41 @@
       "dir": "services/tracker",
       "outs": {
         "globs": [
-          "**/*"
-        ],
-        "exclude": [
-          ".bayt/**",
-          ".git/**"
-        ]
-      }
-    },
-    {
-      "name": "ops",
-      "project": "services_tracker",
-      "dir": "services/tracker",
-      "outs": {
-        "globs": [
-          "compose.yaml",
-          ".bayt/**"
+          "build/**/*",
+          ".gradle/**/*",
+          "build.gradle.kts",
+          "settings.gradle.kts",
+          "gradle.properties",
+          "gradlew",
+          "gradle/wrapper/**/*",
+          "gradle/libs.versions.toml"
         ],
         "exclude": []
       }
     },
     {
-      "name": "test-sources",
+      "name": "bayt",
       "project": "services_tracker",
       "dir": "services/tracker",
       "outs": {
         "globs": [
-          "src/it/**/*",
-          "src/test/**/*"
+          ".bayt/**",
+          "Taskfile.yml",
+          "compose.yaml"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "integrate_srcs",
+      "project": "services_tracker",
+      "dir": "services/tracker",
+      "outs": {
+        "globs": [
+          "src/it/**/*.java",
+          "src/it/**/*.kt",
+          "src/it/resources/**/*",
+          "src/test/resources/**/*"
         ],
         "exclude": []
       }

@@ -1,4 +1,0 @@
-# syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
-FROM scratch AS ops_outs
-WORKDIR /monorepo/plugins/omnishell
-COPY --from=plugins_omnishell-ops --link --parents /monorepo/plugins/omnishell/compose.yaml /monorepo/plugins/omnishell/.bayt/** /monorepo/plugins/omnishell/Taskfile.yml /

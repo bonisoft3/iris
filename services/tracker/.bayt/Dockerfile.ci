@@ -1,25 +1,18 @@
 # syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
 FROM services_tracker-dindbox AS ci
 WORKDIR /monorepo/services/tracker
-COPY --link --from=bayt runtime /monorepo/plugins/bayt/runtime
+COPY --link --from=bayt . /monorepo/plugins/bayt/runtime
 ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}
-COPY --from=services_tracker-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/services/tracker/**/* /
-COPY --from=services_tracker-ops --link --parents /monorepo/services/tracker/compose.yaml /monorepo/services/tracker/.bayt/** /
-COPY --from=services_tracker-test-sources --link --parents /monorepo/services/tracker/src/it/**/* /monorepo/services/tracker/src/test/**/* /
-COPY --from=workspaceroot-setup --link --parents /monorepo/.mise.toml /monorepo/mise.lock /monorepo/pnpm-lock.yaml /monorepo/pnpm-workspace.yaml /monorepo/package.json /monorepo/gradle/libs.versions.toml /monorepo/plugins/devserver/dind.sh /monorepo/**/package.json /monorepo/.task/bayt/setup.hash /
-COPY --from=libraries_logs-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/libraries/logs/**/* /
-COPY --from=libraries_pbtables-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/libraries/pbtables/**/* /
-COPY --from=libraries_xproto-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/libraries/xproto/**/* /
-COPY --from=plugins_libstoml-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/plugins/libstoml/**/* /
-COPY --from=plugins_jvm-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/plugins/jvm/**/* /
-COPY --from=plugins_micronaut-build --exclude=.bayt/** --exclude=.git/** --link --parents /monorepo/plugins/micronaut/**/* /
-COPY --from=workspaceroot-ops --link --parents /monorepo/.bayt/** /monorepo/Taskfile.yml /monorepo/compose.yaml /monorepo/plugins/devserver/dind.sh /
-COPY --from=libraries_logs-ops --link --parents /monorepo/libraries/logs/.bayt/** /
-COPY --from=libraries_pbtables-ops --link --parents /monorepo/libraries/pbtables/.bayt/** /
-COPY --from=libraries_xproto-ops --link --parents /monorepo/libraries/xproto/.bayt/** /
-COPY --from=plugins_libstoml-ops --link --parents /monorepo/plugins/libstoml/compose.yaml /monorepo/plugins/libstoml/.bayt/** /
-COPY --from=plugins_jvm-ops --link --parents /monorepo/plugins/jvm/.bayt/** /
-COPY --from=plugins_micronaut-ops --link --parents /monorepo/plugins/micronaut/.bayt/** /
+COPY --from=services_tracker-build --link /monorepo/services/tracker /monorepo/services/tracker
+COPY --from=services_tracker-bayt --link /monorepo /monorepo
+COPY --from=services_tracker-integrate_srcs --link --parents /monorepo/services/tracker/src/it/**/*.java /monorepo/services/tracker/src/it/**/*.kt /monorepo/services/tracker/src/it/resources/**/* /monorepo/services/tracker/src/test/resources/**/* /
+COPY --from=libraries_logs-build --link /monorepo/libraries/logs /monorepo/libraries/logs
+COPY --from=libraries_pbtables-build --link /monorepo/libraries/pbtables /monorepo/libraries/pbtables
+COPY --from=libraries_xproto-build --link /monorepo/libraries/xproto /monorepo/libraries/xproto
+COPY --from=plugins_libstoml-build --link /monorepo/plugins/libstoml /monorepo/plugins/libstoml
+COPY --from=plugins_jvm-build --link /monorepo/plugins/jvm /monorepo/plugins/jvm
+COPY --from=plugins_micronaut-build --link /monorepo/plugins/micronaut /monorepo/plugins/micronaut
+COPY --from=workspaceroot-setup --link /monorepo /monorepo
 ENV BUILDX_BAKE_ENTITLEMENTS_FS=0
 ENV COMPOSE_BAKE=true
 RUN --mount=type=secret,id=docker_host --mount=type=secret,id=buildx_builder --mount=type=secret,id=testcontainers_host --mount=type=secret,id=buildx_instance,mode=0600 --mount=type=secret,id=docker_config,mode=0600 <<BAYT_INJECT

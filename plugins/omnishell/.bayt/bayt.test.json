@@ -49,13 +49,8 @@
       "project": "plugins_omnishell",
       "dir": "plugins/omnishell",
       "outs": {
-        "globs": [
-          "**/*"
-        ],
-        "exclude": [
-          ".bayt/**",
-          ".git/**"
-        ]
+        "globs": [],
+        "exclude": []
       }
     }
   ],

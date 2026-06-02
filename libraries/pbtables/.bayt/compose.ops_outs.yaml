@@ -1,9 +1,0 @@
-services:
-  libraries_pbtables-ops_outs:
-    build:
-      context: ..
-      dockerfile: .bayt/Dockerfile.ops_outs
-      target: ops_outs
-      additional_contexts:
-        libraries_pbtables-ops: service:libraries_pbtables-ops
-    image: bayt-libraries_pbtables-ops_outs:latest

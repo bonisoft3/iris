@@ -4,7 +4,3 @@ includes:
     taskfile: ./.bayt/Taskfile.yml
     dir: ./
     optional: true
-  workspaceroot:
-    taskfile: ../../Taskfile.yml
-    dir: ../../
-    optional: true

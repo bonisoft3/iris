@@ -69,12 +69,16 @@
   },
   "outs": {
     "globs": [
-      "**/*"
+      "build/**/*",
+      ".gradle/**/*",
+      "build.gradle.kts",
+      "settings.gradle.kts",
+      "gradle.properties",
+      "gradlew",
+      "gradle/wrapper/**/*",
+      "gradle/libs.versions.toml"
     ],
-    "exclude": [
-      ".bayt/**",
-      ".git/**"
-    ]
+    "exclude": []
   },
   "env": {},
   "taskfile": {
@@ -86,7 +90,6 @@
   "visibility": "public",
   "deps": [
     "setup",
-    "setup",
     "build",
     "build"
   ],
@@ -94,6 +97,42 @@
     "setup"
   ],
   "transitiveCrossDeps": [
+    {
+      "name": "build",
+      "project": "plugins_libstoml",
+      "dir": "plugins/libstoml",
+      "outs": {
+        "globs": [
+          "build/**/*",
+          ".gradle/**/*",
+          "build.gradle.kts",
+          "settings.gradle.kts",
+          "gradle.properties",
+          "gradlew",
+          "gradle/wrapper/**/*",
+          "gradle/libs.versions.toml"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "build",
+      "project": "plugins_jvm",
+      "dir": "plugins/jvm",
+      "outs": {
+        "globs": [
+          "build/**/*",
+          ".gradle/**/*",
+          "build.gradle.kts",
+          "settings.gradle.kts",
+          "gradle.properties",
+          "gradlew",
+          "gradle/wrapper/**/*",
+          "gradle/libs.versions.toml"
+        ],
+        "exclude": []
+      }
+    },
     {
       "name": "setup",
       "project": "workspaceroot",
@@ -111,34 +150,6 @@
           ".task/bayt/setup.hash"
         ],
         "exclude": []
-      }
-    },
-    {
-      "name": "build",
-      "project": "plugins_libstoml",
-      "dir": "plugins/libstoml",
-      "outs": {
-        "globs": [
-          "**/*"
-        ],
-        "exclude": [
-          ".bayt/**",
-          ".git/**"
-        ]
-      }
-    },
-    {
-      "name": "build",
-      "project": "plugins_jvm",
-      "dir": "plugins/jvm",
-      "outs": {
-        "globs": [
-          "**/*"
-        ],
-        "exclude": [
-          ".bayt/**",
-          ".git/**"
-        ]
       }
     }
   ],
@@ -158,36 +169,21 @@
       }
     },
     {
-      "name": "setup",
-      "project": "workspaceroot",
-      "dir": "",
-      "outs": {
-        "globs": [
-          ".mise.toml",
-          "mise.lock",
-          "pnpm-lock.yaml",
-          "pnpm-workspace.yaml",
-          "package.json",
-          "gradle/libs.versions.toml",
-          "plugins/devserver/dind.sh",
-          "**/package.json",
-          ".task/bayt/setup.hash"
-        ],
-        "exclude": []
-      }
-    },
-    {
       "name": "build",
       "project": "plugins_libstoml",
       "dir": "plugins/libstoml",
       "outs": {
         "globs": [
-          "**/*"
+          "build/**/*",
+          ".gradle/**/*",
+          "build.gradle.kts",
+          "settings.gradle.kts",
+          "gradle.properties",
+          "gradlew",
+          "gradle/wrapper/**/*",
+          "gradle/libs.versions.toml"
         ],
-        "exclude": [
-          ".bayt/**",
-          ".git/**"
-        ]
+        "exclude": []
       }
     },
     {
@@ -196,12 +192,16 @@
       "dir": "plugins/jvm",
       "outs": {
         "globs": [
-          "**/*"
+          "build/**/*",
+          ".gradle/**/*",
+          "build.gradle.kts",
+          "settings.gradle.kts",
+          "gradle.properties",
+          "gradlew",
+          "gradle/wrapper/**/*",
+          "gradle/libs.versions.toml"
         ],
-        "exclude": [
-          ".bayt/**",
-          ".git/**"
-        ]
+        "exclude": []
       }
     }
   ],

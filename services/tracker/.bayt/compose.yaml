@@ -30,14 +30,6 @@ services:
     extends:
       file: ./compose.integrate.yaml
       service: services_tracker-integrate
-  test-sources:
-    extends:
-      file: ./compose.test-sources.yaml
-      service: services_tracker-test-sources
-  ops:
-    extends:
-      file: ./compose.ops.yaml
-      service: services_tracker-ops
   ci:
     extends:
       file: ./compose.ci.yaml

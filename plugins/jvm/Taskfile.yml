@@ -4,11 +4,11 @@ includes:
     taskfile: ./.bayt/Taskfile.yml
     dir: ./
     optional: true
-  plugins_libstoml:
-    taskfile: ../../plugins/libstoml/Taskfile.yml
-    dir: ../../plugins/libstoml/
-    optional: true
   workspaceroot:
     taskfile: ../../Taskfile.yml
     dir: ../../
+    optional: true
+  plugins_libstoml:
+    taskfile: ../../plugins/libstoml/Taskfile.yml
+    dir: ../../plugins/libstoml/
     optional: true

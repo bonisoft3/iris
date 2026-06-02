@@ -10,10 +10,6 @@ services:
     extends:
       file: ./compose.setup.yaml
       service: plugins_libstoml-setup
-  ops:
-    extends:
-      file: ./compose.ops.yaml
-      service: plugins_libstoml-ops
   integrate:
     extends:
       file: ./compose.integrate.yaml

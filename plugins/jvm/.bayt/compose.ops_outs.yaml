@@ -1,9 +1,0 @@
-services:
-  plugins_jvm-ops_outs:
-    build:
-      context: ..
-      dockerfile: .bayt/Dockerfile.ops_outs
-      target: ops_outs
-      additional_contexts:
-        plugins_jvm-ops: service:plugins_jvm-ops
-    image: bayt-plugins_jvm-ops_outs:latest
