@@ -1,4 +1,5 @@
 # syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
+# generated from bayt.cue — do not edit
 FROM docker:29.2.0-cli@sha256:ae2609c051339b48c157d97edc4f1171026251607b29a2b0f25f990898586334 AS dindbox
 WORKDIR /monorepo/services/tracker
 COPY --link --from=alpine/socat:latest@sha256:bfd2550379212e087dc18db2f4611f43477be4b575d660c8f18c5b9a1b2e2757 /usr/bin/socat1 /usr/local/bin/socat

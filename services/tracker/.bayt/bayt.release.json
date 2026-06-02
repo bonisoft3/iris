@@ -1,4 +1,5 @@
 {
+  "_generated_from": "bayt.cue (do not edit)",
   "bake": {
     "image": "gcr.io/trash-362115/services.tracker",
     "push": false,

@@ -30,7 +30,7 @@ _logs: sayt.gradle & {
 		// pluginManagement also includes jvm. workspaceroot:setup's
 		// content flows in via the FROM chain (setup → plugins_jvm:build
 		// → … → workspaceroot:setup), so no explicit dep needed.
-		"build": deps: [":setup", "plugins_libstoml:build", "plugins_jvm:build"]
+		"build": deps: ["plugins_libstoml:build", "plugins_jvm:build"]
 
 		// Library: not deployed standalone, no dev server, no e2e
 		// preview. Drop the inherited targets that would emit dead

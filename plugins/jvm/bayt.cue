@@ -33,7 +33,7 @@ _jvm: sayt.gradle & {
 		// settings.gradle.kts includes libstoml via pluginManagement
 		// includeBuild — that directory must exist in the build container.
 		// workspaceroot:setup flows in via setup's FROM chain.
-		"build": deps: [":setup", "plugins_libstoml:build"]
+		"build": deps: ["plugins_libstoml:build"]
 
 		// Library: not deployed standalone, no dev server, no e2e
 		// preview.

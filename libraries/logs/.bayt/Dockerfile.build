@@ -1,4 +1,5 @@
 # syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
+# generated from bayt.cue — do not edit
 FROM libraries_logs-setup AS build
 WORKDIR /monorepo/libraries/logs
 COPY --link --from=bayt . /monorepo/plugins/bayt/runtime

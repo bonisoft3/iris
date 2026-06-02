@@ -48,7 +48,7 @@ _xproto: sayt.gradle & {
 			]
 			// workspaceroot:setup flows via FROM chain (setup → jvm:build
 			// → workspaceroot:setup), so no explicit dep needed.
-			deps: [":setup", "plugins_libstoml:build", "plugins_jvm:build", "libraries_logs:build"]
+			deps: ["plugins_libstoml:build", "plugins_jvm:build", "libraries_logs:build"]
 		}
 
 		// descriptor — single-artifact buf-built FileDescriptorSet,

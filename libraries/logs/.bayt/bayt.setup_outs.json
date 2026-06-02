@@ -1,4 +1,5 @@
 {
+  "_generated_from": "bayt.cue (do not edit)",
   "name": "setup_outs",
   "project": "libraries_logs",
   "dir": "libraries/logs",

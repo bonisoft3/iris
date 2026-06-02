@@ -65,7 +65,6 @@ _omnishell: bayt.#project & {
 			// Typecheck-only build, no artifact. Cross-project consumers
 			// of the omnishell source tree (e.g. iris's pnpm workspace
 			// symlink) use `plugins_omnishell:build:srcs` instead.
-			outs: globs: []
 			// `mise.exec` wraps the cmd with `mise x --`, which only
 			// activates the env for a single argv. Chained commands
 			// (`bun install && bun run check`) need an explicit `sh -c`

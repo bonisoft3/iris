@@ -164,21 +164,20 @@ _tx: bayt.#project & {
 				push:       false
 				platforms: ["linux/amd64"]
 			}
-			_releaseBuild: {
-				artifact: {
-					image: "gcr.io/trash-362115/services.tracker-tx-gcp"
-					// `docker compose config` flattens the federated bayt
-					// graph so bake can resolve cross-Dockerfile FROM refs
-					// (Dockerfile.release `COPY --from=services_tracker-tx-build`
-					// is a sibling target, not a local stage).
-					custom: buildCommand: "docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.release.hcl release"
-				}
-				platforms: ["linux/amd64"]
-				local: push: true
-			}
 			skaffold: profiles: {
 				"bayt-build": {
-					build: _releaseBuild
+					build: {
+						artifact: {
+							image: "gcr.io/trash-362115/services.tracker-tx-gcp"
+							// `docker compose config` flattens the federated bayt
+							// graph so bake can resolve cross-Dockerfile FROM refs
+							// (Dockerfile.release `COPY --from=services_tracker-tx-build`
+							// is a sibling target, not a local stage).
+							custom: buildCommand: "docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.release.hcl release"
+						}
+						platforms: ["linux/amd64"]
+						local: push: true
+					}
 					test: [{
 						image: "gcr.io/trash-362115/services.tracker-tx"
 						custom: [{command: "task bayt:integrate", timeoutSeconds: 3000}]

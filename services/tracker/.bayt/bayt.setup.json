@@ -1,4 +1,5 @@
 {
+  "_generated_from": "bayt.cue (do not edit)",
   "bake": {
     "push": false,
     "platforms": [],
@@ -14,10 +15,7 @@
     }
   },
   "dockerfile": {
-    "preamble": [
-      "RUN zypper -n install socat=1.8.0.2-160000.2.3",
-      "RUN docker --help"
-    ],
+    "preamble": [],
     "from": {
       "ref": "workspaceroot:setup",
       "name": "workspaceroot-setup"

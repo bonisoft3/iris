@@ -1,4 +1,5 @@
 # syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
+# generated from bayt.cue — do not edit
 FROM scratch AS build_outs
 WORKDIR /monorepo/plugins/libstoml
 COPY --from=plugins_libstoml-build --link --parents /monorepo/plugins/libstoml/build/**/* /monorepo/plugins/libstoml/.gradle/**/* /monorepo/plugins/libstoml/build.gradle.kts /monorepo/plugins/libstoml/settings.gradle.kts /monorepo/plugins/libstoml/gradle.properties /monorepo/plugins/libstoml/gradlew /monorepo/plugins/libstoml/gradle/wrapper/**/* /monorepo/plugins/libstoml/gradle/libs.versions.toml /

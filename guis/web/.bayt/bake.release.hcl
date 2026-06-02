@@ -1,3 +1,4 @@
+# generated from bayt.cue — do not edit
 variable "IMAGE" {
   default = "gcr.io/trash-362115/guis.web"
 }

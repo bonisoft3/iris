@@ -1,3 +1,4 @@
+# generated from bayt.cue — do not edit
 services:
   libraries_xproto-setup_srcs:
     build:

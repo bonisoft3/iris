@@ -1,4 +1,5 @@
 # syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
+# generated from bayt.cue — do not edit
 FROM scratch AS setup_outs
 WORKDIR /monorepo/plugins/micronaut
 COPY --from=plugins_micronaut-setup --link --parents /monorepo/plugins/micronaut/gradle/wrapper/gradle-wrapper.properties /monorepo/plugins/micronaut/.mise.toml /monorepo/plugins/micronaut/mise.lock /monorepo/plugins/micronaut/.task/bayt/setup.hash /

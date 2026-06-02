@@ -1,9 +1,4 @@
 // guis/web/bayt.cue — bayt configuration for the web PWA.
-//
-// What bayt owns here: skaffold.yaml + Taskfile.yml + per-target
-// canonical manifests. Dockerfile / compose / bake HCL stay hand-
-// maintained — they wire pnpm/nuxt conventions that the pnpm stack
-// doesn't fully reproduce yet.
 package web
 
 import (
@@ -60,25 +55,24 @@ _web: sayt.pnpm & {
 				platforms: ["linux/amd64"]
 			}
 
-			_releaseBuild: {
-				artifact: {
-					image: "gcr.io/trash-362115/guis.web"
-					// `docker compose config` flattens the federated bayt
-					// graph; bake then uses additional_contexts from the
-					// flattened compose to resolve the cross-Dockerfile
-					// `FROM guis_web-build AS release` reference (a sibling
-					// target's image, not a stage in this Dockerfile).
-					// --allow=fs.read=../.. whitelists the worktree root for
-				// the bayt-runtime additional_context (lives at
-				// plugins/bayt/runtime/). Same pattern tracker uses.
-				custom: buildCommand: "docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.release.hcl release"
-				}
-				platforms: ["linux/amd64"]
-				local: push: true
-			}
 			skaffold: profiles: {
 				"bayt-build": {
-					build: _releaseBuild
+					build: {
+						artifact: {
+							image: "gcr.io/trash-362115/guis.web"
+							// `docker compose config` flattens the federated bayt
+							// graph; bake then uses additional_contexts from the
+							// flattened compose to resolve the cross-Dockerfile
+							// `FROM guis_web-build AS release` reference (a sibling
+							// target's image, not a stage in this Dockerfile).
+							// --allow=fs.read=../.. whitelists the worktree root
+							// for the bayt-runtime additional_context (lives at
+							// plugins/bayt/runtime/).
+							custom: buildCommand: "docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.release.hcl release"
+						}
+						platforms: ["linux/amd64"]
+						local: push: true
+					}
 					test: [{
 						image: "gcr.io/trash-362115/guis.web"
 						custom: [{command: "task bayt:integrate", timeoutSeconds: 3000}]

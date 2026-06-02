@@ -26,7 +26,7 @@ _pbtables: sayt.gradle & {
 		// includeBuild("../../libraries/xproto"). xproto's settings.gradle.kts
 		// includes logs, so logs dir must also be in the build container.
 		// workspaceroot:setup flows in via the FROM chain.
-		"build": deps: [":setup", "plugins_libstoml:build", "plugins_jvm:build", "plugins_micronaut:build", "libraries_xproto:build", "libraries_logs:build"]
+		"build": deps: ["plugins_libstoml:build", "plugins_jvm:build", "plugins_micronaut:build", "libraries_xproto:build", "libraries_logs:build"]
 
 		// Library: not deployed standalone, no dev server, no e2e
 		// preview.

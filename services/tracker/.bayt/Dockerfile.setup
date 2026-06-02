@@ -1,8 +1,7 @@
 # syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
+# generated from bayt.cue — do not edit
 FROM workspaceroot-setup AS setup
 WORKDIR /monorepo/services/tracker
-RUN zypper -n install socat=1.8.0.2-160000.2.3
-RUN docker --help
 COPY --link --parents gradle/wrapper/gradle-wrapper.properties ./
 COPY --link --parents .mise.toml mise.lock ./
 RUN ["mise", "install"]

@@ -25,7 +25,7 @@ _micronaut: sayt.gradle & {
 		// settings.gradle.kts pluginManagement includes both libstoml
 		// and jvm via includeBuild — both must exist in the build container.
 		// workspaceroot:setup flows in via setup's FROM chain.
-		"build": deps: [":setup", "plugins_libstoml:build", "plugins_jvm:build"]
+		"build": deps: ["plugins_libstoml:build", "plugins_jvm:build"]
 
 		// Library: not deployed standalone, no dev server, no e2e
 		// preview.

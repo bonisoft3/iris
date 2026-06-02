@@ -1,4 +1,5 @@
 {
+  "_generated_from": "bayt.cue (do not edit)",
   "bake": {
     "push": false,
     "platforms": [],
@@ -26,7 +27,7 @@
       {
         "from": {
           "name": "bayt",
-          "image": "bonitao/bayt:0.8.0@sha256:1a133025e7b55bb9de7cb5a474890732e4d38bb7f7c555ba3d3adef8d3ab3686"
+          "image": "bonitao/bayt:0.9.0@sha256:7d38770893936b7b77098da02b6a195124720e540f90c56fa2ce866a3c85beb0"
         },
         "srcs": [
           "runtime"

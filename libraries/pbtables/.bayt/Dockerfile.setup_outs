@@ -1,4 +1,5 @@
 # syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
+# generated from bayt.cue — do not edit
 FROM scratch AS setup_outs
 WORKDIR /monorepo/libraries/pbtables
 COPY --from=libraries_pbtables-setup --link --parents /monorepo/libraries/pbtables/gradle/wrapper/gradle-wrapper.properties /monorepo/libraries/pbtables/.mise.toml /monorepo/libraries/pbtables/mise.lock /monorepo/libraries/pbtables/.task/bayt/setup.hash /
