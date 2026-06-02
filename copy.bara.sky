@@ -19,6 +19,31 @@ def scoped_message_transform(scope):
         ctx.set_message("Sync: " + first_line + "\n\nFrom worldsense/trash")
     return core.dynamic_transform(_transform, params = {"scope": scope})
 
+# Per-commit VERSION read for sayt composite-action sibling pinning.
+# Source action.yml files keep relative refs (`./.github/actions/sayt/<x>`)
+# so monorepo self-CI and target-repo clones test local code via local
+# paths. On mirror sync we rewrite those refs to absolute self-pinned
+# form `bonisoft3/sayt/.github/actions/sayt/<x>@<VERSION>` so downstream
+# consumers fetching the tagged composite find sibling actions on the
+# same commit. ITERATIVE mode replays each source commit independently,
+# so reading VERSION inside the dynamic transform yields the per-commit
+# value and the pin matches the release that commit represents.
+def _sayt_pin_siblings(ctx):
+    version_path = ctx.new_path("VERSION")
+    if not version_path.exists():
+        return
+    version = ctx.read_path(version_path).strip()
+    ctx.run(core.replace(
+        before = "./.github/actions/sayt/integrate",
+        after = "bonisoft3/sayt/.github/actions/sayt/integrate@" + version,
+        paths = glob([".github/actions/sayt/ci/action.yml"]),
+    ))
+    ctx.run(core.replace(
+        before = "./.github/actions/sayt/summary",
+        after = "bonisoft3/sayt/.github/actions/sayt/summary@" + version,
+        paths = glob([".github/actions/sayt/integrate/action.yml"]),
+    ))
+
 WORKFLOWS = [
     struct(
         name = "iris",
@@ -65,6 +90,13 @@ WORKFLOWS = [
                 )],
                 noop_behavior = "IGNORE_NOOP",
             ),
+            # Bake the absolute self-pin into composite siblings. Source keeps
+            # relative refs (so monorepo self-CI tests local code); the mirror
+            # gets `bonisoft3/sayt/...@<VERSION>` so downstream consumers find
+            # the inner action.yml on the same tagged commit. Per-commit
+            # correctness: in ITERATIVE mode each replay reads its own
+            # VERSION, so the pin matches the commit's release.
+            core.dynamic_transform(impl = _sayt_pin_siblings),
             core.transform(
                 [core.replace(
                     before = "Sayt is developed in the [worldsense/trash](https://github.com/worldsense/trash) monorepo under `plugins/sayt/` and synced to this repo via copybara. To cut a release:\n\n1. **Determine version** — run `sayt release --dry-run` to see what git-cliff computes from conventional commits (e.g. `v0.1.0`).\n2. **Update version files** — edit `VERSION` and all copies to match, verify with `sayt lint`.\n3. **Merge** — open a PR and merge. Wait for copybara to sync to `bonisoft3/sayt`.\n4. **Tag** — create and push the version tag on `bonisoft3/sayt`. The `cd.yml` workflow triggers on the tag push, runs goreleaser, and publishes the GitHub release with binaries.",
