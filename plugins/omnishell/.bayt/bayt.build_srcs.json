@@ -22,7 +22,9 @@
   "env": {},
   "visibility": "public",
   "deps": [],
-  "transitiveDeps": [],
+  "transitiveDeps": [
+    "setup_srcs"
+  ],
   "transitiveCrossDeps": [],
   "chainedDeps": [],
   "cmds": [],

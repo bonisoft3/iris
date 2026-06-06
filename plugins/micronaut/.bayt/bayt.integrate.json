@@ -7,10 +7,11 @@
     "args": {},
     "cache": {
       "from": [
-        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-plugins_micronaut-integrate"
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-branch-bkversion-os-arch}-plugins_micronaut-integrate",
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-branch-bkversion-os-arch}-plugins_micronaut-integrate"
       ],
       "to": [
-        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-plugins_micronaut-integrate,mode=min,image-manifest=true,oci-mediatypes=true"
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-branch-bkversion-os-arch}-plugins_micronaut-integrate,mode=min,image-manifest=true,oci-mediatypes=true"
       ]
     }
   },
@@ -154,6 +155,20 @@
           "gradlew",
           "gradle/wrapper/**/*",
           "gradle/libs.versions.toml"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "setup",
+      "project": "plugins_micronaut",
+      "dir": "plugins/micronaut",
+      "outs": {
+        "globs": [
+          "gradle/wrapper/gradle-wrapper.properties",
+          ".mise.toml",
+          "mise.lock",
+          ".task/bayt/setup.hash"
         ],
         "exclude": []
       }

@@ -4,6 +4,7 @@ services:
     build:
       additional_contexts:
         guis_web-build: service:guis_web-build
+        guis_web-setup: service:guis_web-setup
         workspaceroot-setup: service:workspaceroot-setup
       context: ..
       dockerfile: .bayt/Dockerfile.launch

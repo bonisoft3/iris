@@ -17,8 +17,28 @@
   "env": {},
   "visibility": "internal",
   "deps": [],
-  "transitiveDeps": [],
-  "transitiveCrossDeps": [],
+  "transitiveDeps": [
+    "build_srcs",
+    "setup_srcs"
+  ],
+  "transitiveCrossDeps": [
+    {
+      "project": "plugins_omnishell",
+      "name": "build_srcs",
+      "dir": "plugins/omnishell",
+      "outs": {
+        "globs": [
+          "src/**/*",
+          "scaffold/**/*",
+          "package.json",
+          "bun.lock",
+          "tsconfig.json",
+          "bunfig.toml"
+        ],
+        "exclude": []
+      }
+    }
+  ],
   "chainedDeps": [],
   "cmds": [],
   "cache": {

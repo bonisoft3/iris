@@ -7,10 +7,11 @@
     "args": {},
     "cache": {
       "from": [
-        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-libraries_xproto-doctor"
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-branch-bkversion-os-arch}-libraries_xproto-doctor",
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-branch-bkversion-os-arch}-libraries_xproto-doctor"
       ],
       "to": [
-        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-libraries_xproto-doctor,mode=min,image-manifest=true,oci-mediatypes=true"
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-branch-bkversion-os-arch}-libraries_xproto-doctor,mode=min,image-manifest=true,oci-mediatypes=true"
       ]
     }
   },

@@ -3,6 +3,10 @@ tasks:
   default:
     deps:
     - ::bayt:release
+    - ::bayt:release-layers
+    - ::bayt:release-artifact
+    - ::bayt:build
+    - ::bayt:setup
     status:
     - ../../plugins/bayt/runtime/bayt fingerprint --manifest {{.TASKFILE_DIR}}/bayt.verify.json --stamp-file .task/bayt/verify.hash
     vars:

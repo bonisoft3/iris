@@ -4,3 +4,4 @@ FROM scratch AS integrate_srcs
 WORKDIR /monorepo/libraries/xproto
 COPY --link --parents src/it/**/*.java src/it/**/*.kt src/it/resources/**/* ./
 COPY --link --from=libraries_xproto-build_srcs /monorepo /monorepo
+COPY --link --from=libraries_xproto-setup_srcs /monorepo /monorepo

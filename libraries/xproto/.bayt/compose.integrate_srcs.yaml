@@ -4,6 +4,7 @@ services:
     build:
       additional_contexts:
         libraries_xproto-build_srcs: service:libraries_xproto-build_srcs
+        libraries_xproto-setup_srcs: service:libraries_xproto-setup_srcs
       context: ..
       dockerfile: .bayt/Dockerfile.integrate_srcs
       target: integrate_srcs

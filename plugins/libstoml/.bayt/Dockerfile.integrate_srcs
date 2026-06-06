@@ -4,3 +4,4 @@ FROM scratch AS integrate_srcs
 WORKDIR /monorepo/plugins/libstoml
 COPY --link --parents src/it/**/*.java src/it/**/*.kt src/it/resources/**/* ./
 COPY --link --from=plugins_libstoml-build_srcs /monorepo /monorepo
+COPY --link --from=plugins_libstoml-setup_srcs /monorepo /monorepo

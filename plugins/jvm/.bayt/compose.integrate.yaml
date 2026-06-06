@@ -9,7 +9,8 @@ services:
       target: integrate
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-plugins_jvm-integrate
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-branch-bkversion-os-arch}-plugins_jvm-integrate
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-branch-bkversion-os-arch}-plugins_jvm-integrate
         cache-to:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-plugins_jvm-integrate,mode=min,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-branch-bkversion-os-arch}-plugins_jvm-integrate,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-plugins_jvm-integrate:latest

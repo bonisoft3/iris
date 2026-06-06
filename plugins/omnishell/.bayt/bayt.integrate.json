@@ -7,10 +7,11 @@
     "args": {},
     "cache": {
       "from": [
-        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-plugins_omnishell-integrate"
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-branch-bkversion-os-arch}-plugins_omnishell-integrate",
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-branch-bkversion-os-arch}-plugins_omnishell-integrate"
       ],
       "to": [
-        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-plugins_omnishell-integrate,mode=min,image-manifest=true,oci-mediatypes=true"
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-branch-bkversion-os-arch}-plugins_omnishell-integrate,mode=min,image-manifest=true,oci-mediatypes=true"
       ]
     }
   },
@@ -70,6 +71,15 @@
   "chainedDeps": [
     {
       "name": "build",
+      "project": "plugins_omnishell",
+      "dir": "plugins/omnishell",
+      "outs": {
+        "globs": [],
+        "exclude": []
+      }
+    },
+    {
+      "name": "setup",
       "project": "plugins_omnishell",
       "dir": "plugins/omnishell",
       "outs": {

@@ -116,6 +116,15 @@
         ],
         "exclude": []
       }
+    },
+    {
+      "name": "setup",
+      "project": "services_tracker-tx",
+      "dir": "services/tracker-tx",
+      "outs": {
+        "globs": [],
+        "exclude": []
+      }
     }
   ],
   "cmds": [],

@@ -27,8 +27,53 @@
   "env": {},
   "visibility": "internal",
   "deps": [],
-  "transitiveDeps": [],
-  "transitiveCrossDeps": [],
+  "transitiveDeps": [
+    "build_srcs",
+    "setup_srcs"
+  ],
+  "transitiveCrossDeps": [
+    {
+      "name": "setup_srcs",
+      "project": "workspaceroot",
+      "dir": "",
+      "outs": {
+        "globs": [
+          ".mise.toml",
+          "mise.lock",
+          "pnpm-lock.yaml",
+          "pnpm-workspace.yaml",
+          "package.json",
+          "gradle/libs.versions.toml",
+          "plugins/devserver/dind.sh",
+          "**/package.json"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "project": "guis_web",
+      "name": "build_srcs",
+      "dir": "guis/web",
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          "node_modules/**",
+          ".nuxt/**",
+          ".output/**",
+          "dist/**",
+          "coverage/**",
+          ".bayt/**",
+          ".task/**",
+          ".git/**",
+          "**/*.test.*",
+          "**/*.spec.*",
+          "tests/**"
+        ]
+      }
+    }
+  ],
   "chainedDeps": [],
   "cmds": [],
   "cache": {

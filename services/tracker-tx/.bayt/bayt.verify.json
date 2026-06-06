@@ -40,6 +40,27 @@
         "globs": [],
         "exclude": []
       }
+    },
+    {
+      "name": "build",
+      "project": "services_tracker-tx",
+      "dir": "services/tracker-tx",
+      "outs": {
+        "globs": [
+          "out/transcoding.yaml.tpl",
+          "out/transcoding.yaml.gcp.tpl"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "setup",
+      "project": "services_tracker-tx",
+      "dir": "services/tracker-tx",
+      "outs": {
+        "globs": [],
+        "exclude": []
+      }
     }
   ],
   "cmds": [

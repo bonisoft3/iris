@@ -4,6 +4,7 @@ services:
     build:
       additional_contexts:
         plugins_jvm-build_srcs: service:plugins_jvm-build_srcs
+        plugins_jvm-setup_srcs: service:plugins_jvm-setup_srcs
       context: ..
       dockerfile: .bayt/Dockerfile.integrate_srcs
       target: integrate_srcs

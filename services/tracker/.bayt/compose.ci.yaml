@@ -10,20 +10,33 @@ secrets:
     environment: DOCKER_AUTH_CONFIG
   testcontainers_host:
     environment: TESTCONTAINERS_HOST_OVERRIDE
+  cache_scope:
+    environment: CACHE_SCOPE
+  cache_scope_fallback:
+    environment: CACHE_SCOPE_FALLBACK
+  sayt_no_cache:
+    environment: SAYT_NO_CACHE
 services:
   services_tracker-ci:
     build:
       additional_contexts:
-        services_tracker-build: service:services_tracker-build
-        services_tracker-bayt: service:services_tracker-bayt
         services_tracker-integrate_srcs: service:services_tracker-integrate_srcs
-        libraries_logs-build: service:libraries_logs-build
-        libraries_pbtables-build: service:libraries_pbtables-build
-        libraries_xproto-build: service:libraries_xproto-build
-        plugins_libstoml-build: service:plugins_libstoml-build
-        plugins_jvm-build: service:plugins_jvm-build
-        plugins_micronaut-build: service:plugins_micronaut-build
-        workspaceroot-setup: service:workspaceroot-setup
+        services_tracker-bayt: service:services_tracker-bayt
+        services_tracker-build_srcs: service:services_tracker-build_srcs
+        services_tracker-setup_srcs: service:services_tracker-setup_srcs
+        libraries_logs-build_srcs: service:libraries_logs-build_srcs
+        libraries_pbtables-build_srcs: service:libraries_pbtables-build_srcs
+        libraries_xproto-build_srcs: service:libraries_xproto-build_srcs
+        plugins_libstoml-build_srcs: service:plugins_libstoml-build_srcs
+        plugins_jvm-build_srcs: service:plugins_jvm-build_srcs
+        plugins_micronaut-build_srcs: service:plugins_micronaut-build_srcs
+        workspaceroot-setup_srcs: service:workspaceroot-setup_srcs
+        plugins_libstoml-setup_srcs: service:plugins_libstoml-setup_srcs
+        plugins_jvm-setup_srcs: service:plugins_jvm-setup_srcs
+        libraries_logs-setup_srcs: service:libraries_logs-setup_srcs
+        plugins_micronaut-setup_srcs: service:plugins_micronaut-setup_srcs
+        libraries_xproto-setup_srcs: service:libraries_xproto-setup_srcs
+        libraries_pbtables-setup_srcs: service:libraries_pbtables-setup_srcs
         bayt: ../../../plugins/bayt/runtime
         services_tracker-dindbox: service:services_tracker-dindbox
       context: ..
@@ -34,12 +47,16 @@ services:
       - buildx_instance
       - docker_config
       - testcontainers_host
+      - cache_scope
+      - cache_scope_fallback
+      - sayt_no_cache
       target: ci
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-ci
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-branch-bkversion-os-arch}-services_tracker-ci
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-branch-bkversion-os-arch}-services_tracker-ci
         cache-to:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-ci,mode=min,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-branch-bkversion-os-arch}-services_tracker-ci,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-services_tracker-ci:latest
     secrets:
     - docker_host
@@ -47,3 +64,6 @@ services:
     - buildx_instance
     - docker_config
     - testcontainers_host
+    - cache_scope
+    - cache_scope_fallback
+    - sayt_no_cache

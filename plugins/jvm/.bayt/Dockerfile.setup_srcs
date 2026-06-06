@@ -2,4 +2,4 @@
 # generated from bayt.cue — do not edit
 FROM scratch AS setup_srcs
 WORKDIR /monorepo/plugins/jvm
-COPY --link --parents gradle/wrapper/gradle-wrapper.properties ./
+COPY --link --parents gradle/wrapper/gradle-wrapper.properties .mise.toml mise.lock ./

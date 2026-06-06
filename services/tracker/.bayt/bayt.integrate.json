@@ -7,10 +7,11 @@
     "args": {},
     "cache": {
       "from": [
-        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-integrate"
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-branch-bkversion-os-arch}-services_tracker-integrate",
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-branch-bkversion-os-arch}-services_tracker-integrate"
       ],
       "to": [
-        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-integrate,mode=min,image-manifest=true,oci-mediatypes=true"
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-branch-bkversion-os-arch}-services_tracker-integrate,mode=min,image-manifest=true,oci-mediatypes=true"
       ]
     }
   },
@@ -241,6 +242,20 @@
           "gradlew",
           "gradle/wrapper/**/*",
           "gradle/libs.versions.toml"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "setup",
+      "project": "services_tracker",
+      "dir": "services/tracker",
+      "outs": {
+        "globs": [
+          "gradle/wrapper/gradle-wrapper.properties",
+          ".mise.toml",
+          "mise.lock",
+          ".task/bayt/setup.hash"
         ],
         "exclude": []
       }

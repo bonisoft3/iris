@@ -2,8 +2,7 @@
 # generated from bayt.cue — do not edit
 FROM workspaceroot-setup AS setup
 WORKDIR /monorepo/plugins/libstoml
-COPY --link --parents gradle/wrapper/gradle-wrapper.properties ./
-COPY --link --parents .mise.toml mise.lock ./
+COPY --link --parents gradle/wrapper/gradle-wrapper.properties .mise.toml mise.lock ./
 RUN ["mise", "install"]
 COPY --link Taskfile.yml ./Taskfile.yml
 COPY --link .bayt/Taskfile.yml .bayt/Taskfile.setup.yaml .bayt/bayt.setup.json .bayt/init.gradle.kts ./.bayt/

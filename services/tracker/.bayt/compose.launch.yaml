@@ -4,6 +4,7 @@ services:
     build:
       additional_contexts:
         services_tracker-build: service:services_tracker-build
+        services_tracker-setup: service:services_tracker-setup
         libraries_logs-build: service:libraries_logs-build
         libraries_pbtables-build: service:libraries_pbtables-build
         libraries_xproto-build: service:libraries_xproto-build
@@ -16,7 +17,8 @@ services:
       target: launch
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-launch
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-branch-bkversion-os-arch}-services_tracker-launch
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-branch-bkversion-os-arch}-services_tracker-launch
         cache-to:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-services_tracker-launch,mode=min,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-branch-bkversion-os-arch}-services_tracker-launch,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-services_tracker-launch:latest

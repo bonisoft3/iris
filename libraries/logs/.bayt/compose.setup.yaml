@@ -9,7 +9,8 @@ services:
       target: setup
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-libraries_logs-setup
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-branch-bkversion-os-arch}-libraries_logs-setup
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-branch-bkversion-os-arch}-libraries_logs-setup
         cache-to:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-libraries_logs-setup,mode=min,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-branch-bkversion-os-arch}-libraries_logs-setup,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-libraries_logs-setup:latest

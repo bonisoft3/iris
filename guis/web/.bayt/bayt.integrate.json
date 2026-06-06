@@ -110,6 +110,15 @@
         ],
         "exclude": []
       }
+    },
+    {
+      "name": "setup",
+      "project": "guis_web",
+      "dir": "guis/web",
+      "outs": {
+        "globs": [],
+        "exclude": []
+      }
     }
   ],
   "cmds": [

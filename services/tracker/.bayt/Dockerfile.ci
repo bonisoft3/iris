@@ -4,23 +4,33 @@ FROM services_tracker-dindbox AS ci
 WORKDIR /monorepo/services/tracker
 COPY --link --from=bayt . /monorepo/plugins/bayt/runtime
 ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}
-COPY --from=services_tracker-build --link /monorepo/services/tracker /monorepo/services/tracker
-COPY --from=services_tracker-bayt --link /monorepo /monorepo
 COPY --from=services_tracker-integrate_srcs --link --parents /monorepo/services/tracker/src/it/**/*.java /monorepo/services/tracker/src/it/**/*.kt /monorepo/services/tracker/src/it/resources/**/* /monorepo/services/tracker/src/test/resources/**/* /
-COPY --from=libraries_logs-build --link /monorepo/libraries/logs /monorepo/libraries/logs
-COPY --from=libraries_pbtables-build --link /monorepo/libraries/pbtables /monorepo/libraries/pbtables
-COPY --from=libraries_xproto-build --link /monorepo/libraries/xproto /monorepo/libraries/xproto
-COPY --from=plugins_libstoml-build --link /monorepo/plugins/libstoml /monorepo/plugins/libstoml
-COPY --from=plugins_jvm-build --link /monorepo/plugins/jvm /monorepo/plugins/jvm
-COPY --from=plugins_micronaut-build --link /monorepo/plugins/micronaut /monorepo/plugins/micronaut
-COPY --from=workspaceroot-setup --link /monorepo /monorepo
+COPY --from=services_tracker-bayt --link /monorepo /monorepo
+COPY --from=services_tracker-build_srcs --link --parents /monorepo/services/tracker/build.gradle.kts /monorepo/services/tracker/src/main/**/*.gradle.kts /monorepo/services/tracker/gradle.properties /monorepo/services/tracker/gradle/wrapper/gradle-wrapper.jar /monorepo/services/tracker/gradlew /monorepo/services/tracker/src/main/**/*.java /monorepo/services/tracker/src/main/**/*.kt /monorepo/services/tracker/gradle/libs.versions.toml /monorepo/services/tracker/settings.gradle.kts /monorepo/services/tracker/src/main/**/*.sq /monorepo/services/tracker/src/main/**/*.sql /monorepo/services/tracker/src/main/**/*.sqm /monorepo/services/tracker/src/main/resources/**/* /
+COPY --from=services_tracker-setup_srcs --link --parents /monorepo/services/tracker/gradle/wrapper/gradle-wrapper.properties /monorepo/services/tracker/.mise.toml /monorepo/services/tracker/mise.lock /
+COPY --from=libraries_logs-build_srcs --link --parents /monorepo/libraries/logs/build.gradle.kts /monorepo/libraries/logs/src/main/**/*.gradle.kts /monorepo/libraries/logs/gradle.properties /monorepo/libraries/logs/gradle/wrapper/gradle-wrapper.jar /monorepo/libraries/logs/gradlew /monorepo/libraries/logs/src/main/**/*.java /monorepo/libraries/logs/src/main/**/*.kt /monorepo/libraries/logs/gradle/libs.versions.toml /monorepo/libraries/logs/settings.gradle.kts /monorepo/libraries/logs/src/main/**/*.sq /monorepo/libraries/logs/src/main/**/*.sql /monorepo/libraries/logs/src/main/**/*.sqm /
+COPY --from=libraries_pbtables-build_srcs --link --parents /monorepo/libraries/pbtables/build.gradle.kts /monorepo/libraries/pbtables/src/main/**/*.gradle.kts /monorepo/libraries/pbtables/gradle.properties /monorepo/libraries/pbtables/gradle/wrapper/gradle-wrapper.jar /monorepo/libraries/pbtables/gradlew /monorepo/libraries/pbtables/src/main/**/*.java /monorepo/libraries/pbtables/src/main/**/*.kt /monorepo/libraries/pbtables/gradle/libs.versions.toml /monorepo/libraries/pbtables/settings.gradle.kts /monorepo/libraries/pbtables/src/main/**/*.sq /monorepo/libraries/pbtables/src/main/**/*.sql /monorepo/libraries/pbtables/src/main/**/*.sqm /
+COPY --from=libraries_xproto-build_srcs --link --parents /monorepo/libraries/xproto/build.gradle.kts /monorepo/libraries/xproto/src/main/**/*.gradle.kts /monorepo/libraries/xproto/gradle.properties /monorepo/libraries/xproto/gradle/wrapper/gradle-wrapper.jar /monorepo/libraries/xproto/gradlew /monorepo/libraries/xproto/src/main/**/*.java /monorepo/libraries/xproto/src/main/**/*.kt /monorepo/libraries/xproto/gradle/libs.versions.toml /monorepo/libraries/xproto/settings.gradle.kts /monorepo/libraries/xproto/src/main/**/*.sq /monorepo/libraries/xproto/src/main/**/*.sql /monorepo/libraries/xproto/src/main/**/*.sqm /monorepo/libraries/xproto/src/**/*.kt /monorepo/libraries/xproto/src/**/*.gradle.kts /monorepo/libraries/xproto/src/**/*.java /monorepo/libraries/xproto/src/**/*.sql /monorepo/libraries/xproto/src/**/*.sq /monorepo/libraries/xproto/src/**/*.sqm /monorepo/libraries/xproto/build.gradle.kts /monorepo/libraries/xproto/settings.gradle.kts /monorepo/libraries/xproto/gradle.properties /monorepo/libraries/xproto/gradlew /monorepo/libraries/xproto/gradle/wrapper/gradle-wrapper.jar /monorepo/libraries/xproto/gradle/libs.versions.toml /monorepo/libraries/xproto/trash/**/*.proto /monorepo/libraries/xproto/buf.gradle.gen.yaml /monorepo/libraries/xproto/buf.yaml /monorepo/libraries/xproto/buf.lock /
+COPY --from=plugins_libstoml-build_srcs --link --parents /monorepo/plugins/libstoml/build.gradle.kts /monorepo/plugins/libstoml/src/main/**/*.gradle.kts /monorepo/plugins/libstoml/gradle.properties /monorepo/plugins/libstoml/gradle/wrapper/gradle-wrapper.jar /monorepo/plugins/libstoml/gradlew /monorepo/plugins/libstoml/src/main/**/*.java /monorepo/plugins/libstoml/src/main/**/*.kt /monorepo/plugins/libstoml/gradle/libs.versions.toml /monorepo/plugins/libstoml/settings.gradle.kts /monorepo/plugins/libstoml/src/main/**/*.sq /monorepo/plugins/libstoml/src/main/**/*.sql /monorepo/plugins/libstoml/src/main/**/*.sqm /
+COPY --from=plugins_jvm-build_srcs --link --parents /monorepo/plugins/jvm/build.gradle.kts /monorepo/plugins/jvm/src/main/**/*.gradle.kts /monorepo/plugins/jvm/gradle.properties /monorepo/plugins/jvm/gradle/wrapper/gradle-wrapper.jar /monorepo/plugins/jvm/gradlew /monorepo/plugins/jvm/src/main/**/*.java /monorepo/plugins/jvm/src/main/**/*.kt /monorepo/plugins/jvm/gradle/libs.versions.toml /monorepo/plugins/jvm/settings.gradle.kts /monorepo/plugins/jvm/src/main/**/*.sq /monorepo/plugins/jvm/src/main/**/*.sql /monorepo/plugins/jvm/src/main/**/*.sqm /
+COPY --from=plugins_micronaut-build_srcs --link --parents /monorepo/plugins/micronaut/build.gradle.kts /monorepo/plugins/micronaut/src/main/**/*.gradle.kts /monorepo/plugins/micronaut/gradle.properties /monorepo/plugins/micronaut/gradle/wrapper/gradle-wrapper.jar /monorepo/plugins/micronaut/gradlew /monorepo/plugins/micronaut/src/main/**/*.java /monorepo/plugins/micronaut/src/main/**/*.kt /monorepo/plugins/micronaut/gradle/libs.versions.toml /monorepo/plugins/micronaut/settings.gradle.kts /monorepo/plugins/micronaut/src/main/**/*.sq /monorepo/plugins/micronaut/src/main/**/*.sql /monorepo/plugins/micronaut/src/main/**/*.sqm /
+COPY --from=workspaceroot-setup_srcs --link --parents /monorepo/.mise.toml /monorepo/mise.lock /monorepo/pnpm-lock.yaml /monorepo/pnpm-workspace.yaml /monorepo/package.json /monorepo/gradle/libs.versions.toml /monorepo/plugins/devserver/dind.sh /monorepo/**/package.json /
+COPY --from=plugins_libstoml-setup_srcs --link --parents /monorepo/plugins/libstoml/gradle/wrapper/gradle-wrapper.properties /monorepo/plugins/libstoml/.mise.toml /monorepo/plugins/libstoml/mise.lock /
+COPY --from=plugins_jvm-setup_srcs --link --parents /monorepo/plugins/jvm/gradle/wrapper/gradle-wrapper.properties /monorepo/plugins/jvm/.mise.toml /monorepo/plugins/jvm/mise.lock /
+COPY --from=libraries_logs-setup_srcs --link --parents /monorepo/libraries/logs/gradle/wrapper/gradle-wrapper.properties /monorepo/libraries/logs/.mise.toml /monorepo/libraries/logs/mise.lock /
+COPY --from=plugins_micronaut-setup_srcs --link --parents /monorepo/plugins/micronaut/gradle/wrapper/gradle-wrapper.properties /monorepo/plugins/micronaut/.mise.toml /monorepo/plugins/micronaut/mise.lock /
+COPY --from=libraries_xproto-setup_srcs --link --parents /monorepo/libraries/xproto/gradle/wrapper/gradle-wrapper.properties /monorepo/libraries/xproto/.mise.toml /monorepo/libraries/xproto/mise.lock /
+COPY --from=libraries_pbtables-setup_srcs --link --parents /monorepo/libraries/pbtables/gradle/wrapper/gradle-wrapper.properties /monorepo/libraries/pbtables/.mise.toml /monorepo/libraries/pbtables/mise.lock /
 ENV BUILDX_BAKE_ENTITLEMENTS_FS=0
 ENV COMPOSE_BAKE=true
-RUN --mount=type=secret,id=docker_host --mount=type=secret,id=buildx_builder --mount=type=secret,id=testcontainers_host --mount=type=secret,id=buildx_instance,mode=0600 --mount=type=secret,id=docker_config,mode=0600 <<BAYT_INJECT
+RUN --mount=type=secret,id=docker_host --mount=type=secret,id=buildx_builder --mount=type=secret,id=testcontainers_host --mount=type=secret,id=cache_scope --mount=type=secret,id=cache_scope_fallback --mount=type=secret,id=sayt_no_cache --mount=type=secret,id=buildx_instance,mode=0600 --mount=type=secret,id=docker_config,mode=0600 <<BAYT_INJECT
 set -e
 export DOCKER_HOST="$(cat /run/secrets/docker_host)"
 export BUILDX_BUILDER="$(cat /run/secrets/buildx_builder)"
 export TESTCONTAINERS_HOST_OVERRIDE="$(cat /run/secrets/testcontainers_host)"
+export CACHE_SCOPE="$(cat /run/secrets/cache_scope)"
+export CACHE_SCOPE_FALLBACK="$(cat /run/secrets/cache_scope_fallback)"
+export SAYT_NO_CACHE="$(cat /run/secrets/sayt_no_cache)"
 if [ -s "/run/secrets/buildx_instance" ]; then mkdir -p "$(dirname "/root/.docker/buildx/instances/$BUILDX_BUILDER")"; cp -p "/run/secrets/buildx_instance" "/root/.docker/buildx/instances/$BUILDX_BUILDER"; fi
 if [ -s "/run/secrets/docker_config" ]; then mkdir -p "$(dirname "/root/.docker/config.json")"; cp -p "/run/secrets/docker_config" "/root/.docker/config.json"; fi
 if [ -n "$DOCKER_HOST" ] && [ ! -e /var/run/docker.sock ]; then
@@ -33,7 +43,8 @@ if [ -n "$DOCKER_HOST" ] && [ ! -e /var/run/docker.sock ]; then
   socat -u OPEN:/dev/null UNIX-CONNECT:/var/run/docker.sock,retry=20,interval=0.2 >/dev/null 2>&1 \
     || { echo "dindbox: socat bridge to /var/run/docker.sock not ready" >&2; exit 1; }
 fi
-exec docker compose up integrate --build --abort-on-container-failure --exit-code-from integrate --remove-orphans
+docker compose config | docker buildx bake --allow=fs.read=/monorepo ${SAYT_NO_CACHE:+--no-cache --set "*.cache-from=" --set "*.cache-to="} --load -f - integrate
+exec docker compose up integrate --abort-on-container-failure --exit-code-from integrate --remove-orphans
 BAYT_INJECT
 COPY --link Taskfile.yml ./Taskfile.yml
 COPY --link .bayt/Taskfile.yml .bayt/bayt.ci.json .bayt/init.gradle.kts ./.bayt/

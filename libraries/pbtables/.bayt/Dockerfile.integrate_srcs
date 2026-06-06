@@ -4,3 +4,4 @@ FROM scratch AS integrate_srcs
 WORKDIR /monorepo/libraries/pbtables
 COPY --link --parents src/it/**/*.java src/it/**/*.kt src/it/resources/**/* ./
 COPY --link --from=libraries_pbtables-build_srcs /monorepo /monorepo
+COPY --link --from=libraries_pbtables-setup_srcs /monorepo /monorepo

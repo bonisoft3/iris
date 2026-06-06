@@ -60,6 +60,26 @@
         "globs": [],
         "exclude": []
       }
+    },
+    {
+      "name": "build",
+      "project": "guis_web",
+      "dir": "guis/web",
+      "outs": {
+        "globs": [
+          ".output/**/*"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "setup",
+      "project": "guis_web",
+      "dir": "guis/web",
+      "outs": {
+        "globs": [],
+        "exclude": []
+      }
     }
   ],
   "cmds": [

@@ -244,7 +244,12 @@ _tracker: sayt.gradle & {
 		// classpath reads). Don't add src/test/**/*.kt — integrationTest
 		// only compiles src/it/*; the rest bloats the COPY chain.
 		"ci": sayt.ci & {
-			deps: [":build", ":bayt", ":integrate:srcs"]
+			// Source-closure for the outer ci stage. `:integrate:srcs`
+			// transitively rolls in the upstream `:build:srcs` closures
+			// (libraries + plugins) via the synthetic `:srcs` transitive
+			// machinery; `workspaceroot:setup:srcs` brings the root-level
+			// mise + workspace files.
+			deps: [":integrate:srcs", ":bayt"]
 		}
 
 		"dindbox": sayt.dindbox

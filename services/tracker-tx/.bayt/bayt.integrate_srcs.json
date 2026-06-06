@@ -19,8 +19,25 @@
   "env": {},
   "visibility": "internal",
   "deps": [],
-  "transitiveDeps": [],
-  "transitiveCrossDeps": [],
+  "transitiveDeps": [
+    "build_srcs",
+    "setup_srcs"
+  ],
+  "transitiveCrossDeps": [
+    {
+      "project": "services_tracker-tx",
+      "name": "build_srcs",
+      "dir": "services/tracker-tx",
+      "outs": {
+        "globs": [
+          "transcoding.yaml",
+          "cloud_run_tls.yaml",
+          "edge.yaml"
+        ],
+        "exclude": []
+      }
+    }
+  ],
   "chainedDeps": [],
   "cmds": [],
   "cache": {

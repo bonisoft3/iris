@@ -4,3 +4,4 @@ FROM scratch AS integrate_srcs
 WORKDIR /monorepo/plugins/micronaut
 COPY --link --parents src/it/**/*.java src/it/**/*.kt src/it/resources/**/* ./
 COPY --link --from=plugins_micronaut-build_srcs /monorepo /monorepo
+COPY --link --from=plugins_micronaut-setup_srcs /monorepo /monorepo

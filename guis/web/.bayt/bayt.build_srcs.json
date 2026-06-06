@@ -29,8 +29,29 @@
   "env": {},
   "visibility": "internal",
   "deps": [],
-  "transitiveDeps": [],
-  "transitiveCrossDeps": [],
+  "transitiveDeps": [
+    "setup_srcs"
+  ],
+  "transitiveCrossDeps": [
+    {
+      "name": "setup_srcs",
+      "project": "workspaceroot",
+      "dir": "",
+      "outs": {
+        "globs": [
+          ".mise.toml",
+          "mise.lock",
+          "pnpm-lock.yaml",
+          "pnpm-workspace.yaml",
+          "package.json",
+          "gradle/libs.versions.toml",
+          "plugins/devserver/dind.sh",
+          "**/package.json"
+        ],
+        "exclude": []
+      }
+    }
+  ],
   "chainedDeps": [],
   "cmds": [],
   "cache": {

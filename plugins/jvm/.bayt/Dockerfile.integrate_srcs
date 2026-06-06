@@ -4,3 +4,4 @@ FROM scratch AS integrate_srcs
 WORKDIR /monorepo/plugins/jvm
 COPY --link --parents src/it/**/*.java src/it/**/*.kt src/it/resources/**/* ./
 COPY --link --from=plugins_jvm-build_srcs /monorepo /monorepo
+COPY --link --from=plugins_jvm-setup_srcs /monorepo /monorepo
