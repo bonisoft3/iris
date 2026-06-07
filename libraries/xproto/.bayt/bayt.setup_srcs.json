@@ -84,6 +84,19 @@
       }
     },
     {
+      "project": "plugins_libstoml",
+      "name": "setup_srcs",
+      "dir": "plugins/libstoml",
+      "outs": {
+        "globs": [
+          "gradle/wrapper/gradle-wrapper.properties",
+          ".mise.toml",
+          "mise.lock"
+        ],
+        "exclude": []
+      }
+    },
+    {
       "project": "plugins_jvm",
       "name": "setup_srcs",
       "dir": "plugins/jvm",

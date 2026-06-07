@@ -8,6 +8,8 @@ include:
   required: false
 - path: ./compose.setup_srcs.yaml
   required: false
+- path: ./compose.integrate_srcs.yaml
+  required: false
 - path: ./compose.build_outs.yaml
   required: false
 - path: ./compose.setup_outs.yaml
