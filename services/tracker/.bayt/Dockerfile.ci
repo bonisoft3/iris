@@ -43,7 +43,7 @@ if [ -n "$DOCKER_HOST" ] && [ ! -e /var/run/docker.sock ]; then
   socat -u OPEN:/dev/null UNIX-CONNECT:/var/run/docker.sock,retry=20,interval=0.2 >/dev/null 2>&1 \
     || { echo "dindbox: socat bridge to /var/run/docker.sock not ready" >&2; exit 1; }
 fi
-docker compose config | docker buildx bake --allow=fs.read=/monorepo ${SAYT_NO_CACHE:+--no-cache --set "*.cache-from=" --set "*.cache-to="} --load -f - integrate
+docker compose config | docker buildx bake --allow=fs.read=/monorepo ${SAYT_NO_CACHE:+--no-cache --set "*.cache-from=" --set "*.cache-to="} -f - integrate
 exec docker compose up integrate --abort-on-container-failure --exit-code-from integrate --remove-orphans
 BAYT_INJECT
 COPY --link Taskfile.yml ./Taskfile.yml

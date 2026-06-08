@@ -13,6 +13,8 @@ services:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-branch-bkversion-os-arch}-services_tracker-integrate
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-branch-bkversion-os-arch}-services_tracker-integrate,mode=min,image-manifest=true,oci-mediatypes=true
+        output:
+        - type=docker
     command:
     - mise
     - x
