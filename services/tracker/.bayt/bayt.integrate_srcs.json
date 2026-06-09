@@ -198,8 +198,9 @@
       "outs": {
         "globs": [
           "gradle/wrapper/gradle-wrapper.properties",
-          ".mise.toml",
-          "mise.lock"
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock"
         ],
         "exclude": []
       }
@@ -211,8 +212,9 @@
       "outs": {
         "globs": [
           "gradle/wrapper/gradle-wrapper.properties",
-          ".mise.toml",
-          "mise.lock"
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock"
         ],
         "exclude": []
       }
@@ -238,8 +240,9 @@
       "outs": {
         "globs": [
           "gradle/wrapper/gradle-wrapper.properties",
-          ".mise.toml",
-          "mise.lock"
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock"
         ],
         "exclude": []
       }
