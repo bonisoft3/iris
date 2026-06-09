@@ -2,4 +2,4 @@
 # generated from bayt.cue — do not edit
 FROM scratch AS setup_outs
 WORKDIR /monorepo/plugins/micronaut
-COPY --from=plugins_micronaut-setup --link --parents /monorepo/plugins/micronaut/gradle/wrapper/gradle-wrapper.properties /monorepo/plugins/micronaut/.mise.toml /monorepo/plugins/micronaut/mise.lock /monorepo/plugins/micronaut/.task/bayt/setup.hash /
+COPY --from=plugins_micronaut-setup --link --parents /monorepo/plugins/micronaut/gradle/wrapper/gradle-wrapper.properties /monorepo/plugins/micronaut/[m]ise.toml /monorepo/plugins/micronaut/[.]mise.toml /monorepo/plugins/micronaut/[m]ise.lock /monorepo/plugins/micronaut/.task/bayt/setup.hash /

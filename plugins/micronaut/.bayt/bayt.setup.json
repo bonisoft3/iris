@@ -39,16 +39,18 @@
   "srcs": {
     "globs": [
       "gradle/wrapper/gradle-wrapper.properties",
-      ".mise.toml",
-      "mise.lock"
+      "[m]ise.toml",
+      "[.]mise.toml",
+      "[m]ise.lock"
     ],
     "exclude": []
   },
   "outs": {
     "globs": [
       "gradle/wrapper/gradle-wrapper.properties",
-      ".mise.toml",
-      "mise.lock",
+      "[m]ise.toml",
+      "[.]mise.toml",
+      "[m]ise.lock",
       ".task/bayt/setup.hash"
     ],
     "exclude": []
@@ -106,8 +108,9 @@
       "dir": "",
       "outs": {
         "globs": [
-          ".mise.toml",
-          "mise.lock",
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock",
           "pnpm-lock.yaml",
           "pnpm-workspace.yaml",
           "package.json",
@@ -126,10 +129,12 @@
       "srcs": {
         "globs": [
           "gradle/wrapper/gradle-wrapper.properties",
-          ".mise.toml",
-          "mise.lock",
-          ".mise.toml",
-          "mise.lock"
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock",
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock"
         ],
         "exclude": [],
         "defaultGlobs": null,

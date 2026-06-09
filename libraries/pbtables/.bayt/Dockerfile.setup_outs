@@ -2,4 +2,4 @@
 # generated from bayt.cue — do not edit
 FROM scratch AS setup_outs
 WORKDIR /monorepo/libraries/pbtables
-COPY --from=libraries_pbtables-setup --link --parents /monorepo/libraries/pbtables/gradle/wrapper/gradle-wrapper.properties /monorepo/libraries/pbtables/.mise.toml /monorepo/libraries/pbtables/mise.lock /monorepo/libraries/pbtables/.task/bayt/setup.hash /
+COPY --from=libraries_pbtables-setup --link --parents /monorepo/libraries/pbtables/gradle/wrapper/gradle-wrapper.properties /monorepo/libraries/pbtables/[m]ise.toml /monorepo/libraries/pbtables/[.]mise.toml /monorepo/libraries/pbtables/[m]ise.lock /monorepo/libraries/pbtables/.task/bayt/setup.hash /

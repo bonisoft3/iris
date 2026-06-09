@@ -75,8 +75,9 @@
       "dir": "",
       "outs": {
         "globs": [
-          ".mise.toml",
-          "mise.lock",
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock",
           "pnpm-lock.yaml",
           "pnpm-workspace.yaml",
           "package.json",
@@ -115,8 +116,9 @@
       "outs": {
         "globs": [
           "gradle/wrapper/gradle-wrapper.properties",
-          ".mise.toml",
-          "mise.lock",
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock",
           ".task/bayt/setup.hash"
         ],
         "exclude": []

@@ -2,4 +2,4 @@
 # generated from bayt.cue — do not edit
 FROM scratch AS setup_srcs
 WORKDIR /monorepo/services/tracker
-COPY --link --parents gradle/wrapper/gradle-wrapper.properties .mise.toml mise.lock ./
+COPY --link --parents gradle/wrapper/gradle-wrapper.properties [m]ise.toml [.]mise.toml [m]ise.lock ./

@@ -2,7 +2,7 @@
 # generated from bayt.cue — do not edit
 FROM plugins_jvm-build AS setup
 WORKDIR /monorepo/libraries/logs
-COPY --link --parents gradle/wrapper/gradle-wrapper.properties .mise.toml mise.lock ./
+COPY --link --parents gradle/wrapper/gradle-wrapper.properties [m]ise.toml [.]mise.toml [m]ise.lock ./
 RUN ["mise", "install"]
 COPY --link Taskfile.yml ./Taskfile.yml
 COPY --link .bayt/Taskfile.yml .bayt/Taskfile.setup.yaml .bayt/bayt.setup.json .bayt/init.gradle.kts ./.bayt/
