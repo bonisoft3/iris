@@ -1,5 +1,4 @@
-# syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
 # generated from bayt.cue — do not edit
 FROM scratch AS build_outs
 WORKDIR /monorepo/plugins/micronaut
-COPY --from=plugins_micronaut-build --link --parents /monorepo/plugins/micronaut/build/**/* /monorepo/plugins/micronaut/.gradle/**/* /monorepo/plugins/micronaut/build.gradle.kts /monorepo/plugins/micronaut/settings.gradle.kts /monorepo/plugins/micronaut/gradle.properties /monorepo/plugins/micronaut/gradlew /monorepo/plugins/micronaut/gradle/wrapper/**/* /monorepo/plugins/micronaut/gradle/libs.versions.toml /
+COPY --from=plugins_micronaut-build --link --parents /monorepo/plugins/micronaut/build/**/* /monorepo/plugins/micronaut/.gradle/**/* /monorepo/plugins/micronaut/build.gradle.kts /monorepo/plugins/micronaut/settings.gradle.kts /monorepo/plugins/micronaut/gradle.properties /monorepo/plugins/micronaut/gradlew /monorepo/plugins/micronaut/gradle/wrapper/**/* /monorepo/plugins/micronaut/gradle/lib[s].versions.toml /

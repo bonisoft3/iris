@@ -61,7 +61,7 @@
       "gradlew",
       "src/main/**/*.java",
       "src/main/**/*.kt",
-      "gradle/libs.versions.toml",
+      "gradle/lib[s].versions.toml",
       "settings.gradle.kts",
       "src/main/**/*.sq",
       "src/main/**/*.sql",
@@ -78,7 +78,7 @@
       "gradle.properties",
       "gradlew",
       "gradle/wrapper/**/*",
-      "gradle/libs.versions.toml"
+      "gradle/lib[s].versions.toml"
     ],
     "exclude": []
   },
@@ -111,7 +111,7 @@
           "gradle.properties",
           "gradlew",
           "gradle/wrapper/**/*",
-          "gradle/libs.versions.toml"
+          "gradle/lib[s].versions.toml"
         ],
         "exclude": []
       }
@@ -164,7 +164,7 @@
           "gradle.properties",
           "gradlew",
           "gradle/wrapper/**/*",
-          "gradle/libs.versions.toml"
+          "gradle/lib[s].versions.toml"
         ],
         "exclude": []
       }
@@ -181,7 +181,7 @@
           "gradlew",
           "src/main/**/*.java",
           "src/main/**/*.kt",
-          "gradle/libs.versions.toml",
+          "gradle/lib[s].versions.toml",
           "settings.gradle.kts",
           "src/main/**/*.sq",
           "src/main/**/*.sql",

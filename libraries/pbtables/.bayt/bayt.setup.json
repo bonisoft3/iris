@@ -77,7 +77,7 @@
           "gradle.properties",
           "gradlew",
           "gradle/wrapper/**/*",
-          "gradle/libs.versions.toml"
+          "gradle/lib[s].versions.toml"
         ],
         "exclude": []
       }
@@ -95,7 +95,7 @@
           "gradle.properties",
           "gradlew",
           "gradle/wrapper/**/*",
-          "gradle/libs.versions.toml"
+          "gradle/lib[s].versions.toml"
         ],
         "exclude": []
       }

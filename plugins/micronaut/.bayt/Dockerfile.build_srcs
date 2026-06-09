@@ -1,8 +1,7 @@
-# syntax=docker/dockerfile:1.7-labs@sha256:b99fecfe00268a8b556fad7d9c37ee25d716ae08a5d7320e6d51c4dd83246894
 # generated from bayt.cue — do not edit
 FROM scratch AS build_srcs
 WORKDIR /monorepo/plugins/micronaut
-COPY --link --parents build.gradle.kts src/main/**/*.gradle.kts gradle.properties gradle/wrapper/gradle-wrapper.jar gradlew src/main/**/*.java src/main/**/*.kt gradle/libs.versions.toml settings.gradle.kts src/main/**/*.sq src/main/**/*.sql src/main/**/*.sqm ./
+COPY --link --parents build.gradle.kts src/main/**/*.gradle.kts gradle.properties gradle/wrapper/gradle-wrapper.jar gradlew src/main/**/*.java src/main/**/*.kt gradle/lib[s].versions.toml settings.gradle.kts src/main/**/*.sq src/main/**/*.sql src/main/**/*.sqm ./
 COPY --link --from=plugins_micronaut-setup_srcs /monorepo /monorepo
 COPY --link --from=plugins_libstoml-build_srcs /monorepo /monorepo
 COPY --link --from=plugins_jvm-build_srcs /monorepo /monorepo

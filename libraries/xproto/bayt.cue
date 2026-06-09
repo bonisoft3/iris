@@ -39,7 +39,6 @@ _xproto: sayt.gradle & {
 				"gradle.properties",
 				"gradlew",
 				"gradle/wrapper/gradle-wrapper.jar",
-				"gradle/libs.versions.toml",
 				// Proto source files for bufGenerate
 				"trash/**/*.proto",
 				"buf.gradle.gen.yaml",
