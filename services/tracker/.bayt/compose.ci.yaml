@@ -14,6 +14,8 @@ secrets:
     environment: CACHE_SCOPE
   cache_scope_fallback:
     environment: CACHE_SCOPE_FALLBACK
+  sayt_buildkit_syntax:
+    environment: SAYT_BUILDKIT_SYNTAX
   sayt_no_cache:
     environment: SAYT_NO_CACHE
 services:
@@ -49,14 +51,15 @@ services:
       - testcontainers_host
       - cache_scope
       - cache_scope_fallback
+      - sayt_buildkit_syntax
       - sayt_no_cache
       target: ci
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-branch-bkversion-os-arch}-services_tracker-ci
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-branch-bkversion-os-arch}-services_tracker-ci
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-ci
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-ci
         cache-to:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-branch-bkversion-os-arch}-services_tracker-ci,mode=min,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-ci,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-services_tracker-ci:latest
     secrets:
     - docker_host
@@ -66,4 +69,5 @@ services:
     - testcontainers_host
     - cache_scope
     - cache_scope_fallback
+    - sayt_buildkit_syntax
     - sayt_no_cache

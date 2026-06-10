@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1.24@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
 # generated from bayt.cue — do not edit
 FROM services_tracker-dindbox AS ci
 WORKDIR /monorepo/services/tracker
@@ -23,13 +22,14 @@ COPY --from=libraries_xproto-setup_srcs --link --parents /monorepo/libraries/xpr
 COPY --from=libraries_pbtables-setup_srcs --link --parents /monorepo/libraries/pbtables/gradle/wrapper/gradle-wrapper.properties /monorepo/libraries/pbtables/[m]ise.toml /monorepo/libraries/pbtables/[.]mise.toml /monorepo/libraries/pbtables/[m]ise.lock /
 ENV BUILDX_BAKE_ENTITLEMENTS_FS=0
 ENV COMPOSE_BAKE=true
-RUN --mount=type=secret,id=docker_host --mount=type=secret,id=buildx_builder --mount=type=secret,id=testcontainers_host --mount=type=secret,id=cache_scope --mount=type=secret,id=cache_scope_fallback --mount=type=secret,id=sayt_no_cache --mount=type=secret,id=buildx_instance,mode=0600 --mount=type=secret,id=docker_config,mode=0600 <<BAYT_INJECT
+RUN --mount=type=secret,id=docker_host --mount=type=secret,id=buildx_builder --mount=type=secret,id=testcontainers_host --mount=type=secret,id=cache_scope --mount=type=secret,id=cache_scope_fallback --mount=type=secret,id=sayt_buildkit_syntax --mount=type=secret,id=sayt_no_cache --mount=type=secret,id=buildx_instance,mode=0600 --mount=type=secret,id=docker_config,mode=0600 <<BAYT_INJECT
 set -e
 export DOCKER_HOST="$(cat /run/secrets/docker_host)"
 export BUILDX_BUILDER="$(cat /run/secrets/buildx_builder)"
 export TESTCONTAINERS_HOST_OVERRIDE="$(cat /run/secrets/testcontainers_host)"
 export CACHE_SCOPE="$(cat /run/secrets/cache_scope)"
 export CACHE_SCOPE_FALLBACK="$(cat /run/secrets/cache_scope_fallback)"
+export SAYT_BUILDKIT_SYNTAX="$(cat /run/secrets/sayt_buildkit_syntax)"
 export SAYT_NO_CACHE="$(cat /run/secrets/sayt_no_cache)"
 if [ -s "/run/secrets/buildx_instance" ]; then mkdir -p "$(dirname "/root/.docker/buildx/instances/$BUILDX_BUILDER")"; cp -p "/run/secrets/buildx_instance" "/root/.docker/buildx/instances/$BUILDX_BUILDER"; fi
 if [ -s "/run/secrets/docker_config" ]; then mkdir -p "$(dirname "/root/.docker/config.json")"; cp -p "/run/secrets/docker_config" "/root/.docker/config.json"; fi
@@ -43,7 +43,7 @@ if [ -n "$DOCKER_HOST" ] && [ ! -e /var/run/docker.sock ]; then
   socat -u OPEN:/dev/null UNIX-CONNECT:/var/run/docker.sock,retry=20,interval=0.2 >/dev/null 2>&1 \
     || { echo "dindbox: socat bridge to /var/run/docker.sock not ready" >&2; exit 1; }
 fi
-docker compose config | docker buildx bake --allow=fs.read=/monorepo ${SAYT_NO_CACHE:+--no-cache --set "*.cache-from=" --set "*.cache-to="} -f - integrate
+docker compose config | docker buildx bake --allow=fs.read=/monorepo ${SAYT_NO_CACHE:+--no-cache --set "*.cache-from=" --set "*.cache-to="} ${SAYT_BUILDKIT_SYNTAX:+--set "*.args.BUILDKIT_SYNTAX=$SAYT_BUILDKIT_SYNTAX"} -f - integrate
 exec docker compose up integrate --abort-on-container-failure --exit-code-from integrate --remove-orphans
 BAYT_INJECT
 COPY --link Taskfile.yml ./Taskfile.yml

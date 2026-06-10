@@ -7,11 +7,11 @@
     "args": {},
     "cache": {
       "from": [
-        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-branch-bkversion-os-arch}-services_tracker-ci",
-        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-branch-bkversion-os-arch}-services_tracker-ci"
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-ci",
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-ci"
       ],
       "to": [
-        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-branch-bkversion-os-arch}-services_tracker-ci,mode=min,image-manifest=true,oci-mediatypes=true"
+        "type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-ci,mode=min,image-manifest=true,oci-mediatypes=true"
       ]
     }
   },
@@ -59,6 +59,9 @@
       },
       "cache_scope_fallback": {
         "environment": "CACHE_SCOPE_FALLBACK"
+      },
+      "sayt_buildkit_syntax": {
+        "environment": "SAYT_BUILDKIT_SYNTAX"
       },
       "sayt_no_cache": {
         "environment": "SAYT_NO_CACHE"
@@ -438,7 +441,7 @@
         "defaultExclude": null
       },
       "shell": "sh",
-      "do": "docker compose config | docker buildx bake --allow=fs.read=/monorepo ${SAYT_NO_CACHE:+--no-cache --set \"*.cache-from=\" --set \"*.cache-to=\"} -f - integrate\nexec docker compose up integrate --abort-on-container-failure --exit-code-from integrate --remove-orphans",
+      "do": "docker compose config | docker buildx bake --allow=fs.read=/monorepo ${SAYT_NO_CACHE:+--no-cache --set \"*.cache-from=\" --set \"*.cache-to=\"} ${SAYT_BUILDKIT_SYNTAX:+--set \"*.args.BUILDKIT_SYNTAX=$SAYT_BUILDKIT_SYNTAX\"} -f - integrate\nexec docker compose up integrate --abort-on-container-failure --exit-code-from integrate --remove-orphans",
       "dockerfile": {
         "inject": {
           "secrets": [
@@ -470,6 +473,12 @@
               "id": "cache_scope_fallback",
               "var": {
                 "contents": "CACHE_SCOPE_FALLBACK"
+              }
+            },
+            {
+              "id": "sayt_buildkit_syntax",
+              "var": {
+                "contents": "SAYT_BUILDKIT_SYNTAX"
               }
             },
             {
