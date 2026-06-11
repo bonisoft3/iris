@@ -27,13 +27,16 @@
       "--rerun"
     ],
     "environment": {
-      "TESTCONTAINERS_HOST_OVERRIDE": "${TESTCONTAINERS_HOST_OVERRIDE}"
+      "TESTCONTAINERS_HOST_OVERRIDE": "host.docker.internal"
     },
     "ports": [],
     "volumes": [
       "/var/run/docker.sock:/var/run/docker.sock"
     ],
-    "depends_on": {}
+    "depends_on": {},
+    "extra_hosts": [
+      "host.docker.internal:host-gateway"
+    ]
   },
   "dockerfile": {
     "preamble": [],

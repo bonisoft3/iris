@@ -225,17 +225,10 @@ _tracker: sayt.gradle & {
 			compose: {
 				command: ["mise", "x", "--", "./gradlew", "--init-script", ".bayt/init.gradle.kts", "integrationTest", "--rerun"]
 				volumes: ["/var/run/docker.sock:/var/run/docker.sock"]
-				// testcontainers spawns Ryuk + service containers via
-				// the host daemon (attached to docker0); integrate
-				// sits on compose's user-defined bridge. Without
-				// TESTCONTAINERS_HOST_OVERRIDE, the testcontainers
-				// client tells the Java side "connect to Ryuk at
-				// 172.17.0.x" (docker0 gateway) — unroutable from
-				// the bridge integrate lives on, Ryuk times out.
-				// dind.nu/sayt.inject plumb the host-gateway IP
-				// through as $TESTCONTAINERS_HOST_OVERRIDE; this
-				// env-passthrough surfaces it to the JVM.
-				environment: TESTCONTAINERS_HOST_OVERRIDE: "${TESTCONTAINERS_HOST_OVERRIDE}"
+				// Own-bridge gateway route to the host's published
+				// Ryuk/service ports; see services/hello/bayt.cue.
+				environment: TESTCONTAINERS_HOST_OVERRIDE: "host.docker.internal"
+				extra_hosts: ["host.docker.internal:host-gateway"]
 			}
 		}
 
