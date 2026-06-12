@@ -1,7 +1,7 @@
 # generated from bayt.cue — do not edit
 FROM libraries_pbtables-setup AS build
 WORKDIR /monorepo/libraries/pbtables
-COPY --link --from=bayt . /monorepo/plugins/bayt/runtime
+COPY --link --from=bayt runtime /monorepo/plugins/bayt/runtime
 ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}
 COPY --from=plugins_micronaut-build --link /monorepo/plugins/micronaut /monorepo/plugins/micronaut
 COPY --from=libraries_xproto-build --link /monorepo/libraries/xproto /monorepo/libraries/xproto

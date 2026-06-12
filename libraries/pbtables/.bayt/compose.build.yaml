@@ -6,7 +6,7 @@ services:
         plugins_micronaut-build: service:plugins_micronaut-build
         libraries_xproto-build: service:libraries_xproto-build
         libraries_logs-build: service:libraries_logs-build
-        bayt: ../../../plugins/bayt/runtime
+        bayt: docker-image://bonitao/bayt:0.13.0@sha256:9a3d971b7cdfb3c9a20c4976009e2409f4ebc5e0b4ed550fdefafd9acb774db5
         libraries_pbtables-setup: service:libraries_pbtables-setup
       context: ..
       dockerfile: .bayt/Dockerfile.build
@@ -17,4 +17,4 @@ services:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_pbtables-build
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_pbtables-build,mode=min,image-manifest=true,oci-mediatypes=true
-    image: bayt-libraries_pbtables-build:latest
+    image: bayt-libraries_pbtables-build:${BAYT_IMAGE_TAG:-latest}

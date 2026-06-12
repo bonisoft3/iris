@@ -15,4 +15,4 @@ services:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_micronaut-integrate,mode=min,image-manifest=true,oci-mediatypes=true
         output:
         - type=docker
-    image: bayt-plugins_micronaut-integrate:latest
+    image: bayt-plugins_micronaut-integrate:${BAYT_IMAGE_TAG:-latest}

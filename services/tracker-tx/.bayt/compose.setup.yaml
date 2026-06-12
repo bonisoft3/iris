@@ -5,4 +5,4 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.setup
       target: setup
-    image: bayt-services_tracker-tx-setup:latest
+    image: bayt-services_tracker-tx-setup:${BAYT_IMAGE_TAG:-latest}

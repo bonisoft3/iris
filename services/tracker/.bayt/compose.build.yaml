@@ -9,7 +9,7 @@ services:
         plugins_libstoml-build: service:plugins_libstoml-build
         plugins_jvm-build: service:plugins_jvm-build
         plugins_micronaut-build: service:plugins_micronaut-build
-        bayt: ../../../plugins/bayt/runtime
+        bayt: docker-image://bonitao/bayt:0.13.0@sha256:9a3d971b7cdfb3c9a20c4976009e2409f4ebc5e0b4ed550fdefafd9acb774db5
         services_tracker-setup: service:services_tracker-setup
       context: ..
       dockerfile: .bayt/Dockerfile.build
@@ -20,4 +20,4 @@ services:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-build
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build,mode=min,image-manifest=true,oci-mediatypes=true
-    image: bayt-services_tracker-build:latest
+    image: bayt-services_tracker-build:${BAYT_IMAGE_TAG:-latest}

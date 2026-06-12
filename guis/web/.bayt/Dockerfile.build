@@ -1,7 +1,7 @@
 # generated from bayt.cue — do not edit
 FROM guis_web-setup AS build
 WORKDIR /monorepo/guis/web
-COPY --link --from=bayt . /monorepo/plugins/bayt/runtime
+COPY --link --from=bayt runtime /monorepo/plugins/bayt/runtime
 ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}
 COPY --link --parents --exclude=node_modules/** --exclude=.nuxt/** --exclude=.output/** --exclude=dist/** --exclude=coverage/** --exclude=.bayt/** --exclude=.task/** --exclude=.git/** --exclude=**/*.test.* --exclude=**/*.spec.* --exclude=tests/** **/* ./
 COPY --link Taskfile.yml ./Taskfile.yml

@@ -3,9 +3,9 @@ services:
   guis_web-integrate:
     build:
       additional_contexts:
-        bayt: ../../../plugins/bayt/runtime
+        bayt: docker-image://bonitao/bayt:0.13.0@sha256:9a3d971b7cdfb3c9a20c4976009e2409f4ebc5e0b4ed550fdefafd9acb774db5
         guis_web-build: service:guis_web-build
       context: ..
       dockerfile: .bayt/Dockerfile.integrate
       target: integrate
-    image: bayt-guis_web-integrate:latest
+    image: bayt-guis_web-integrate:${BAYT_IMAGE_TAG:-latest}

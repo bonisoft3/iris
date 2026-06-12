@@ -18,6 +18,12 @@ secrets:
     environment: SAYT_BUILDKIT_SYNTAX
   sayt_no_cache:
     environment: SAYT_NO_CACHE
+  bayt_image_tag:
+    environment: BAYT_IMAGE_TAG
+  bayt_pull_policy:
+    environment: BAYT_PULL_POLICY
+  sayt_no_cache_to:
+    environment: SAYT_NO_CACHE_TO
 services:
   services_tracker-ci:
     build:
@@ -39,7 +45,7 @@ services:
         plugins_micronaut-setup_srcs: service:plugins_micronaut-setup_srcs
         libraries_xproto-setup_srcs: service:libraries_xproto-setup_srcs
         libraries_pbtables-setup_srcs: service:libraries_pbtables-setup_srcs
-        bayt: ../../../plugins/bayt/runtime
+        bayt: docker-image://bonitao/bayt:0.13.0@sha256:9a3d971b7cdfb3c9a20c4976009e2409f4ebc5e0b4ed550fdefafd9acb774db5
         services_tracker-dindbox: service:services_tracker-dindbox
       context: ..
       dockerfile: .bayt/Dockerfile.ci
@@ -53,6 +59,9 @@ services:
       - cache_scope_fallback
       - sayt_buildkit_syntax
       - sayt_no_cache
+      - bayt_image_tag
+      - bayt_pull_policy
+      - sayt_no_cache_to
       target: ci
       x-bake:
         cache-from:
@@ -60,7 +69,7 @@ services:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-ci
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-ci,mode=min,image-manifest=true,oci-mediatypes=true
-    image: bayt-services_tracker-ci:latest
+    image: bayt-services_tracker-ci:${BAYT_IMAGE_TAG:-latest}
     secrets:
     - docker_host
     - buildx_builder
@@ -71,3 +80,6 @@ services:
     - cache_scope_fallback
     - sayt_buildkit_syntax
     - sayt_no_cache
+    - bayt_image_tag
+    - bayt_pull_policy
+    - sayt_no_cache_to

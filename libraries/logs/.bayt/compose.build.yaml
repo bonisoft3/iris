@@ -3,7 +3,7 @@ services:
   libraries_logs-build:
     build:
       additional_contexts:
-        bayt: ../../../plugins/bayt/runtime
+        bayt: docker-image://bonitao/bayt:0.13.0@sha256:9a3d971b7cdfb3c9a20c4976009e2409f4ebc5e0b4ed550fdefafd9acb774db5
         libraries_logs-setup: service:libraries_logs-setup
       context: ..
       dockerfile: .bayt/Dockerfile.build
@@ -14,4 +14,4 @@ services:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_logs-build
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_logs-build,mode=min,image-manifest=true,oci-mediatypes=true
-    image: bayt-libraries_logs-build:latest
+    image: bayt-libraries_logs-build:${BAYT_IMAGE_TAG:-latest}

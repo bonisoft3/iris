@@ -13,4 +13,4 @@ services:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_libstoml-setup
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_libstoml-setup,mode=min,image-manifest=true,oci-mediatypes=true
-    image: bayt-plugins_libstoml-setup:latest
+    image: bayt-plugins_libstoml-setup:${BAYT_IMAGE_TAG:-latest}

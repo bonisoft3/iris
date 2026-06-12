@@ -6,10 +6,10 @@ tasks:
     - ::bayt:build
     - ::bayt:setup
     status:
-    - ../../plugins/bayt/runtime/bayt fingerprint --manifest {{.TASKFILE_DIR}}/bayt.verify.json --stamp-file .task/bayt/verify.hash
+    - bayt fingerprint --manifest {{.TASKFILE_DIR}}/bayt.verify.json --stamp-file .task/bayt/verify.hash
     vars:
-      BAYTW: ../../plugins/bayt/runtime/bayt cache run --manifest {{.TASKFILE_DIR}}/bayt.verify.json -- mise x --
+      BAYTW: bayt cache run --manifest {{.TASKFILE_DIR}}/bayt.verify.json -- mise x --
     cmds:
     - '{{.BAYTW}} mise x -- pnpm test:e2e'
-    - defer: '{{if not .EXIT_CODE}}../../plugins/bayt/runtime/bayt fingerprint --manifest {{.TASKFILE_DIR}}/bayt.verify.json --stamp-file .task/bayt/verify.hash --update-stamp{{end}}'
+    - defer: '{{if not .EXIT_CODE}}bayt fingerprint --manifest {{.TASKFILE_DIR}}/bayt.verify.json --stamp-file .task/bayt/verify.hash --update-stamp{{end}}'
 version: '3'

@@ -10,4 +10,4 @@ services:
       x-bake:
         platforms:
         - linux/amd64
-    image: bayt-guis_web-release:latest
+    image: bayt-guis_web-release:${BAYT_IMAGE_TAG:-latest}

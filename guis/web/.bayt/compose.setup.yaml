@@ -7,4 +7,4 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.setup
       target: setup
-    image: bayt-guis_web-setup:latest
+    image: bayt-guis_web-setup:${BAYT_IMAGE_TAG:-latest}

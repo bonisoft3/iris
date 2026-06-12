@@ -11,4 +11,4 @@ services:
       x-bake:
         platforms:
         - linux/amd64
-    image: bayt-services_tracker-tx-release:latest
+    image: bayt-services_tracker-tx-release:${BAYT_IMAGE_TAG:-latest}

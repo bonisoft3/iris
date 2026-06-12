@@ -8,4 +8,4 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.integrate
       target: integrate
-    image: bayt-services_tracker-tx-integrate:latest
+    image: bayt-services_tracker-tx-integrate:${BAYT_IMAGE_TAG:-latest}

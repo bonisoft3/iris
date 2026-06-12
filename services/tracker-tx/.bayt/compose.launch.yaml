@@ -19,7 +19,7 @@ services:
       timeout: 30s
       retries: 3
       start_period: 60s
-    image: bayt-services_tracker-tx-launch:latest
+    image: bayt-services_tracker-tx-launch:${BAYT_IMAGE_TAG:-latest}
     ports:
     - '8080'
     volumes:

@@ -18,4 +18,4 @@ services:
         path: ../package.json
       - action: rebuild
         path: ../pnpm-lock.yaml
-    image: bayt-guis_web-launch:latest
+    image: bayt-guis_web-launch:${BAYT_IMAGE_TAG:-latest}

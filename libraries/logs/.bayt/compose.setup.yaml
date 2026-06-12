@@ -13,4 +13,4 @@ services:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_logs-setup
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_logs-setup,mode=min,image-manifest=true,oci-mediatypes=true
-    image: bayt-libraries_logs-setup:latest
+    image: bayt-libraries_logs-setup:${BAYT_IMAGE_TAG:-latest}
