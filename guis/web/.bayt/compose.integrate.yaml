@@ -3,7 +3,7 @@ services:
   guis_web-integrate:
     build:
       additional_contexts:
-        bayt: docker-image://bonitao/bayt:0.14.2@sha256:2dbb93087e0e4101566ede96df1ab80115641733ebf35279958784d2e77f7b6f
+        bayt: ../../../plugins/bayt/runtime
         guis_web-build: service:guis_web-build
       context: ..
       dockerfile: .bayt/Dockerfile.integrate

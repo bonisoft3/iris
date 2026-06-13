@@ -45,7 +45,7 @@ services:
         plugins_micronaut-setup_srcs: service:plugins_micronaut-setup_srcs
         libraries_xproto-setup_srcs: service:libraries_xproto-setup_srcs
         libraries_pbtables-setup_srcs: service:libraries_pbtables-setup_srcs
-        bayt: docker-image://bonitao/bayt:0.14.2@sha256:2dbb93087e0e4101566ede96df1ab80115641733ebf35279958784d2e77f7b6f
+        bayt: ../../../plugins/bayt/runtime
         services_tracker-dindbox: service:services_tracker-dindbox
       context: ..
       dockerfile: .bayt/Dockerfile.ci

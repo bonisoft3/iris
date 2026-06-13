@@ -4,7 +4,7 @@ services:
     build:
       additional_contexts:
         libraries_logs-build: service:libraries_logs-build
-        bayt: docker-image://bonitao/bayt:0.14.2@sha256:2dbb93087e0e4101566ede96df1ab80115641733ebf35279958784d2e77f7b6f
+        bayt: ../../../plugins/bayt/runtime
         libraries_xproto-setup: service:libraries_xproto-setup
       context: ..
       dockerfile: .bayt/Dockerfile.build
