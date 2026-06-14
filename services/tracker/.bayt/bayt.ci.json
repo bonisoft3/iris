@@ -61,7 +61,7 @@
         "environment": "CACHE_SCOPE_FALLBACK"
       },
       "sayt_buildkit_syntax": {
-        "environment": "SAYT_BUILDKIT_SYNTAX"
+        "environment": "BUILDKIT_SYNTAX"
       },
       "sayt_no_cache": {
         "environment": "SAYT_NO_CACHE"
@@ -450,7 +450,7 @@
         "defaultExclude": null
       },
       "shell": "sh",
-      "do": "docker compose config | docker buildx bake --allow=fs.read=/monorepo ${SAYT_NO_CACHE:+--no-cache --set \"*.cache-from=\" --set \"*.cache-to=\"} ${SAYT_NO_CACHE_TO:+--set \"*.cache-to=\"} ${SAYT_BUILDKIT_SYNTAX:+--set \"*.args.BUILDKIT_SYNTAX=$SAYT_BUILDKIT_SYNTAX\"} -f - integrate\nexec docker compose up integrate --abort-on-container-failure --exit-code-from integrate --remove-orphans",
+      "do": "if [ -n \"$BUILDKIT_SYNTAX\" ]; then\n  # depot frontend-pin workaround (full rationale in stacks/sayt/sayt.cue)\n  find /monorepo -path '*/.bayt/Dockerfile.*' -type f -exec sed -i \"1i # syntax=$BUILDKIT_SYNTAX\" {} \\;\nfi\ndocker compose config | docker buildx bake --allow=fs.read=/monorepo ${SAYT_NO_CACHE:+--no-cache --set \"*.cache-from=\" --set \"*.cache-to=\"} ${SAYT_NO_CACHE_TO:+--set \"*.cache-to=\"} -f - integrate\nexec docker compose up integrate --abort-on-container-failure --exit-code-from integrate --remove-orphans",
       "dockerfile": {
         "inject": {
           "secrets": [
@@ -487,7 +487,7 @@
             {
               "id": "sayt_buildkit_syntax",
               "var": {
-                "contents": "SAYT_BUILDKIT_SYNTAX"
+                "contents": "BUILDKIT_SYNTAX"
               }
             },
             {

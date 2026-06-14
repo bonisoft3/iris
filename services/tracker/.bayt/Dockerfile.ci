@@ -29,7 +29,7 @@ export BUILDX_BUILDER="$(cat /run/secrets/buildx_builder)"
 export TESTCONTAINERS_HOST_OVERRIDE="$(cat /run/secrets/testcontainers_host)"
 export CACHE_SCOPE="$(cat /run/secrets/cache_scope)"
 export CACHE_SCOPE_FALLBACK="$(cat /run/secrets/cache_scope_fallback)"
-export SAYT_BUILDKIT_SYNTAX="$(cat /run/secrets/sayt_buildkit_syntax)"
+export BUILDKIT_SYNTAX="$(cat /run/secrets/sayt_buildkit_syntax)"
 export SAYT_NO_CACHE="$(cat /run/secrets/sayt_no_cache)"
 export BAYT_IMAGE_TAG="$(cat /run/secrets/bayt_image_tag)"
 export BAYT_PULL_POLICY="$(cat /run/secrets/bayt_pull_policy)"
@@ -46,7 +46,11 @@ if [ -n "$DOCKER_HOST" ] && [ ! -e /var/run/docker.sock ]; then
   socat -u OPEN:/dev/null UNIX-CONNECT:/var/run/docker.sock,retry=20,interval=0.2 >/dev/null 2>&1 \
     || { echo "dindbox: socat bridge to /var/run/docker.sock not ready" >&2; exit 1; }
 fi
-docker compose config | docker buildx bake --allow=fs.read=/monorepo ${SAYT_NO_CACHE:+--no-cache --set "*.cache-from=" --set "*.cache-to="} ${SAYT_NO_CACHE_TO:+--set "*.cache-to="} ${SAYT_BUILDKIT_SYNTAX:+--set "*.args.BUILDKIT_SYNTAX=$SAYT_BUILDKIT_SYNTAX"} -f - integrate
+if [ -n "$BUILDKIT_SYNTAX" ]; then
+  # depot frontend-pin workaround (full rationale in stacks/sayt/sayt.cue)
+  find /monorepo -path '*/.bayt/Dockerfile.*' -type f -exec sed -i "1i # syntax=$BUILDKIT_SYNTAX" {} \;
+fi
+docker compose config | docker buildx bake --allow=fs.read=/monorepo ${SAYT_NO_CACHE:+--no-cache --set "*.cache-from=" --set "*.cache-to="} ${SAYT_NO_CACHE_TO:+--set "*.cache-to="} -f - integrate
 exec docker compose up integrate --abort-on-container-failure --exit-code-from integrate --remove-orphans
 BAYT_INJECT
 COPY --link Taskfile.yml ./Taskfile.yml
