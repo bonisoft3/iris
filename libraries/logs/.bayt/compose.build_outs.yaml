@@ -8,3 +8,6 @@ services:
       additional_contexts:
         libraries_logs-build: service:libraries_logs-build
     image: bayt-libraries_logs-build_outs:latest
+include:
+- path: ./compose.build.yaml
+  required: false

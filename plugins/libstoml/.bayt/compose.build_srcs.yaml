@@ -1,4 +1,7 @@
 # generated from bayt.cue — do not edit
+include:
+- path: ./compose.setup_srcs.yaml
+  required: false
 services:
   plugins_libstoml-build_srcs:
     build:

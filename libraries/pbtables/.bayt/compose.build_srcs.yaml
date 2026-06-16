@@ -1,4 +1,17 @@
 # generated from bayt.cue — do not edit
+include:
+- path: ./compose.setup_srcs.yaml
+  required: false
+- path: ../../../plugins/libstoml/.bayt/compose.build_srcs.yaml
+  required: false
+- path: ../../../plugins/jvm/.bayt/compose.build_srcs.yaml
+  required: false
+- path: ../../../plugins/micronaut/.bayt/compose.build_srcs.yaml
+  required: false
+- path: ../../../libraries/xproto/.bayt/compose.build_srcs.yaml
+  required: false
+- path: ../../../libraries/logs/.bayt/compose.build_srcs.yaml
+  required: false
 services:
   libraries_pbtables-build_srcs:
     build:

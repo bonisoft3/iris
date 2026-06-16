@@ -8,3 +8,6 @@ services:
       additional_contexts:
         guis_web-build: service:guis_web-build
     image: bayt-guis_web-build_outs:latest
+include:
+- path: ./compose.build.yaml
+  required: false

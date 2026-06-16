@@ -8,3 +8,6 @@ services:
       additional_contexts:
         libraries_pbtables-build: service:libraries_pbtables-build
     image: bayt-libraries_pbtables-build_outs:latest
+include:
+- path: ./compose.build.yaml
+  required: false

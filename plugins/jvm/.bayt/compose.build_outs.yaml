@@ -8,3 +8,6 @@ services:
       additional_contexts:
         plugins_jvm-build: service:plugins_jvm-build
     image: bayt-plugins_jvm-build_outs:latest
+include:
+- path: ./compose.build.yaml
+  required: false

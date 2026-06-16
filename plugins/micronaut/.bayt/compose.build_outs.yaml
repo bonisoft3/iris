@@ -8,3 +8,6 @@ services:
       additional_contexts:
         plugins_micronaut-build: service:plugins_micronaut-build
     image: bayt-plugins_micronaut-build_outs:latest
+include:
+- path: ./compose.build.yaml
+  required: false

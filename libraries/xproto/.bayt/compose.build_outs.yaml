@@ -8,3 +8,6 @@ services:
       additional_contexts:
         libraries_xproto-build: service:libraries_xproto-build
     image: bayt-libraries_xproto-build_outs:latest
+include:
+- path: ./compose.build.yaml
+  required: false

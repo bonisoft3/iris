@@ -8,3 +8,6 @@ services:
       additional_contexts:
         plugins_libstoml-build: service:plugins_libstoml-build
     image: bayt-plugins_libstoml-build_outs:latest
+include:
+- path: ./compose.build.yaml
+  required: false

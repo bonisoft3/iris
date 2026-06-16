@@ -1,4 +1,17 @@
 # generated from bayt.cue — do not edit
+include:
+- path: ../../../plugins/libstoml/.bayt/compose._bayt.yaml
+  required: false
+- path: ../../../plugins/jvm/.bayt/compose._bayt.yaml
+  required: false
+- path: ../../../plugins/micronaut/.bayt/compose._bayt.yaml
+  required: false
+- path: ../../../libraries/xproto/.bayt/compose._bayt.yaml
+  required: false
+- path: ../../../libraries/logs/.bayt/compose._bayt.yaml
+  required: false
+- path: ../../../.bayt/compose._bayt.yaml
+  required: false
 services:
   libraries_pbtables-bayt:
     build:

@@ -1,4 +1,9 @@
 # generated from bayt.cue — do not edit
+include:
+- path: ./compose.build_srcs.yaml
+  required: false
+- path: ./compose.setup_srcs.yaml
+  required: false
 services:
   libraries_xproto-integrate_srcs:
     build:

@@ -8,3 +8,6 @@ services:
       additional_contexts:
         services_tracker-setup: service:services_tracker-setup
     image: bayt-services_tracker-setup_outs:latest
+include:
+- path: ./compose.setup.yaml
+  required: false
