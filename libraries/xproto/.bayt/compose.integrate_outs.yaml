@@ -8,6 +8,3 @@ services:
       additional_contexts:
         libraries_xproto-integrate: service:libraries_xproto-integrate
     image: bayt-libraries_xproto-integrate_outs:latest
-include:
-- path: ./compose.integrate.yaml
-  required: false

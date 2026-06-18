@@ -8,6 +8,3 @@ services:
       additional_contexts:
         libraries_xproto-setup: service:libraries_xproto-setup
     image: bayt-libraries_xproto-setup_outs:latest
-include:
-- path: ./compose.setup.yaml
-  required: false

@@ -1,0 +1,6 @@
+# generated from bayt.cue — do not edit
+include:
+- path: ./compose.descriptor.yaml
+  required: false
+- path: ../../../.bayt/compose.setup.closure.yaml
+  required: false

@@ -8,6 +8,3 @@ services:
       additional_contexts:
         services_tracker-tx-integrate: service:services_tracker-tx-integrate
     image: bayt-services_tracker-tx-integrate_outs:latest
-include:
-- path: ./compose.integrate.yaml
-  required: false

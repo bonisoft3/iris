@@ -8,6 +8,3 @@ services:
       additional_contexts:
         plugins_micronaut-integrate: service:plugins_micronaut-integrate
     image: bayt-plugins_micronaut-integrate_outs:latest
-include:
-- path: ./compose.integrate.yaml
-  required: false

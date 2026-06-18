@@ -8,6 +8,3 @@ services:
       additional_contexts:
         libraries_xproto-descriptor: service:libraries_xproto-descriptor
     image: bayt-libraries_xproto-descriptor_outs:latest
-include:
-- path: ./compose.descriptor.yaml
-  required: false

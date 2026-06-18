@@ -1,7 +1,4 @@
 # generated from bayt.cue — do not edit
-include:
-- path: ../../../.bayt/compose.setup.yaml
-  required: false
 services:
   libraries_xproto-descriptor:
     build:

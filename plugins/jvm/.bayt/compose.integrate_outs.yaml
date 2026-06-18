@@ -8,6 +8,3 @@ services:
       additional_contexts:
         plugins_jvm-integrate: service:plugins_jvm-integrate
     image: bayt-plugins_jvm-integrate_outs:latest
-include:
-- path: ./compose.integrate.yaml
-  required: false

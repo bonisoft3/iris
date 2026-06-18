@@ -1,0 +1,6 @@
+# generated from bayt.cue — do not edit
+include:
+- path: ./compose.descriptor_outs.yaml
+  required: false
+- path: ./compose.descriptor.closure.yaml
+  required: false

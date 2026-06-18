@@ -1,15 +1,4 @@
 # generated from bayt.cue — do not edit
-include:
-- path: ./compose.setup.yaml
-  required: false
-- path: ../../../plugins/libstoml/.bayt/compose.build.yaml
-  required: false
-- path: ../../../plugins/jvm/.bayt/compose.build.yaml
-  required: false
-- path: ../../../libraries/logs/.bayt/compose.build.yaml
-  required: false
-- path: ../../../.bayt/compose.setup.yaml
-  required: false
 services:
   libraries_xproto-build:
     build:

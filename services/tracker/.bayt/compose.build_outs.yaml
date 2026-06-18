@@ -8,6 +8,3 @@ services:
       additional_contexts:
         services_tracker-build: service:services_tracker-build
     image: bayt-services_tracker-build_outs:latest
-include:
-- path: ./compose.build.yaml
-  required: false

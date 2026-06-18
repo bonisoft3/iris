@@ -18,5 +18,5 @@ include:
   required: false
 - path: ./compose._bayt.yaml
   required: false
-- path: ../../../.bayt/compose.bayt.deps.yaml
+- path: ../../../.bayt/compose.bayt.yaml
   required: false

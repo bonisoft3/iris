@@ -1,9 +1,4 @@
 # generated from bayt.cue — do not edit
-include:
-- path: ../../../libraries/xproto/.bayt/compose._bayt.yaml
-  required: false
-- path: ../../../.bayt/compose._bayt.yaml
-  required: false
 services:
   services_tracker-tx-bayt:
     build:

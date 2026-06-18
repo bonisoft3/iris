@@ -26,11 +26,11 @@ include:
   required: false
 - path: ./compose._bayt.yaml
   required: false
-- path: ../../../plugins/libstoml/.bayt/compose.bayt.deps.yaml
+- path: ../../../plugins/libstoml/.bayt/compose.bayt.yaml
   required: false
-- path: ../../../plugins/jvm/.bayt/compose.bayt.deps.yaml
+- path: ../../../plugins/jvm/.bayt/compose.bayt.yaml
   required: false
-- path: ../../../libraries/logs/.bayt/compose.bayt.deps.yaml
+- path: ../../../libraries/logs/.bayt/compose.bayt.yaml
   required: false
-- path: ../../../.bayt/compose.bayt.deps.yaml
+- path: ../../../.bayt/compose.bayt.yaml
   required: false

@@ -8,6 +8,3 @@ services:
       additional_contexts:
         services_tracker-release-artifact: service:services_tracker-release-artifact
     image: bayt-services_tracker-release-artifact_outs:latest
-include:
-- path: ./compose.release-artifact.yaml
-  required: false

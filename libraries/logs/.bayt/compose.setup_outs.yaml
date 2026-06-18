@@ -8,6 +8,3 @@ services:
       additional_contexts:
         libraries_logs-setup: service:libraries_logs-setup
     image: bayt-libraries_logs-setup_outs:latest
-include:
-- path: ./compose.setup.yaml
-  required: false

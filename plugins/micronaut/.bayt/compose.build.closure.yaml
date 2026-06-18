@@ -1,0 +1,12 @@
+# generated from bayt.cue — do not edit
+include:
+- path: ./compose.build.yaml
+  required: false
+- path: ./compose.setup.closure.yaml
+  required: false
+- path: ../../../plugins/libstoml/.bayt/compose.build.closure.yaml
+  required: false
+- path: ../../../plugins/jvm/.bayt/compose.build.closure.yaml
+  required: false
+- path: ../../../.bayt/compose.setup.closure.yaml
+  required: false

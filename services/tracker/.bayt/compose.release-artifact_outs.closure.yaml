@@ -1,0 +1,6 @@
+# generated from bayt.cue — do not edit
+include:
+- path: ./compose.release-artifact_outs.yaml
+  required: false
+- path: ./compose.release-artifact.closure.yaml
+  required: false
