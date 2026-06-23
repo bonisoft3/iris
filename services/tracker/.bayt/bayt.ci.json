@@ -524,6 +524,7 @@
             {
               "id": "docker_config",
               "var": {
+                "contents": "DOCKER_AUTH_CONFIG",
                 "path": "/root/.docker/config.json"
               },
               "mode": "0600"

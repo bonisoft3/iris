@@ -35,6 +35,7 @@ export BAYT_IMAGE_TAG="$(cat /run/secrets/bayt_image_tag)"
 export BAYT_PULL_POLICY="$(cat /run/secrets/bayt_pull_policy)"
 export SAYT_NO_CACHE_TO="$(cat /run/secrets/sayt_no_cache_to)"
 if [ -s "/run/secrets/buildx_instance" ]; then mkdir -p "$(dirname "/root/.docker/buildx/instances/$BUILDX_BUILDER")"; cp -p "/run/secrets/buildx_instance" "/root/.docker/buildx/instances/$BUILDX_BUILDER"; fi
+export DOCKER_AUTH_CONFIG="$(cat /run/secrets/docker_config)"
 if [ -s "/run/secrets/docker_config" ]; then mkdir -p "$(dirname "/root/.docker/config.json")"; cp -p "/run/secrets/docker_config" "/root/.docker/config.json"; fi
 if [ -n "$DOCKER_HOST" ] && [ ! -e /var/run/docker.sock ]; then
   ulimit -n 1048576 2>/dev/null || true
