@@ -69,8 +69,7 @@ services:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-ci
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-ci,mode=min,image-manifest=true,oci-mediatypes=true
-    image: 1203bbwv79.registry.depot.dev/bayt-services_tracker-ci:${BAYT_IMAGE_TAG:-latest}
-    pull_policy: ${BAYT_PULL_POLICY:-build}
+    image: bayt-services_tracker-ci:${BAYT_IMAGE_TAG:-latest}
     secrets:
     - docker_host
     - buildx_builder
