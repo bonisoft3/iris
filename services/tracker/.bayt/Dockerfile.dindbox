@@ -3,5 +3,6 @@ FROM docker:29.2.0-cli@sha256:ae2609c051339b48c157d97edc4f1171026251607b29a2b0f2
 WORKDIR /monorepo/services/tracker
 COPY --link --from=alpine/socat:latest@sha256:bfd2550379212e087dc18db2f4611f43477be4b575d660c8f18c5b9a1b2e2757 /usr/bin/socat1 /usr/local/bin/socat
 COPY --link --from=alpine/socat:latest@sha256:bfd2550379212e087dc18db2f4611f43477be4b575d660c8f18c5b9a1b2e2757 /usr/lib/libreadline.so.8 /usr/lib/libncursesw.so.6 /usr/lib/
+COPY --link --from=ghcr.io/jqlang/jq:latest@sha256:b9c68867e5766576263a222e91db3de422d802069c7af70440e667a95344e486 /jq /usr/local/bin/jq
 COPY --link Taskfile.yml ./Taskfile.yml
 COPY --link .bayt/Taskfile.yml .bayt/bayt.dindbox.json .bayt/init.gradle.kts ./.bayt/
