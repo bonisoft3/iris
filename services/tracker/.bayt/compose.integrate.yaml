@@ -14,7 +14,7 @@ services:
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-integrate,mode=min,image-manifest=true,oci-mediatypes=true
         output:
-        - type=docker
+        - type=${BAYT_COMPOSE_OUTPUT:-docker}
     command:
     - mise
     - x
