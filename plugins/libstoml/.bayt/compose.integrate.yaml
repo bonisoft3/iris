@@ -14,5 +14,5 @@ services:
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-integrate,mode=min,image-manifest=true,oci-mediatypes=true
         output:
-        - type=docker
+        - type=${BAYT_COMPOSE_OUTPUT:-docker}
     image: bayt-plugins_libstoml-integrate:${BAYT_IMAGE_TAG:-latest}
