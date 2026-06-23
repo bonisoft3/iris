@@ -23,6 +23,15 @@ _tracker: sayt.gradle & {
 		scope:    "tracker-bake-cache-v1"
 	}
 
+	// Pull-based depot transport: the sayt/depot warmup pushes the launch set
+	// to Depot's org registry — a full OCI registry that accepts custom repo
+	// names. The project-scoped cache.registry above is cache-only (image
+	// sub-repos 403), so images.registry must be the org subdomain.
+	bake: images: {
+		pull:     true
+		registry: "1203bbwv79.registry.depot.dev"
+	}
+
 	targets: {
 		// Install dind dependencies during setup so the layer builds
 		// in parallel with the cross-project lib chains rather than

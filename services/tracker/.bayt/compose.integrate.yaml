@@ -28,6 +28,7 @@ services:
       TESTCONTAINERS_HOST_OVERRIDE: host.docker.internal
     extra_hosts:
     - host.docker.internal:host-gateway
-    image: bayt-services_tracker-integrate:${BAYT_IMAGE_TAG:-latest}
+    image: 1203bbwv79.registry.depot.dev/bayt-services_tracker-integrate:${BAYT_IMAGE_TAG:-latest}
+    pull_policy: ${BAYT_PULL_POLICY:-build}
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock

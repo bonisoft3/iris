@@ -25,4 +25,5 @@ services:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-release,mode=min,image-manifest=true,oci-mediatypes=true
         platforms:
         - linux/amd64
-    image: bayt-services_tracker-release:${BAYT_IMAGE_TAG:-latest}
+    image: 1203bbwv79.registry.depot.dev/bayt-services_tracker-release:${BAYT_IMAGE_TAG:-latest}
+    pull_policy: ${BAYT_PULL_POLICY:-build}
