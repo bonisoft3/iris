@@ -28,7 +28,7 @@
       {
         "from": {
           "name": "bayt",
-          "image": "bonitao/bayt:0.19.0@sha256:036882b8b4caa84aa3d4564c776cdb5f4efa273489069c1e77c2ae67c12b9d40"
+          "image": "bonitao/bayt:0.19.1@sha256:adc37f85fb0fc0655c0e357415bf2f0f6c19b8a296d7f78770e442086b3077e1"
         },
         "srcs": [
           "runtime"
