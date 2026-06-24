@@ -45,18 +45,6 @@
         "link": true,
         "parents": false,
         "exclude": []
-      },
-      {
-        "from": {
-          "name": "ghcr.io/jqlang/jq:latest@sha256:b9c68867e5766576263a222e91db3de422d802069c7af70440e667a95344e486"
-        },
-        "srcs": [
-          "/jq"
-        ],
-        "dst": "/usr/local/bin/jq",
-        "link": true,
-        "parents": false,
-        "exclude": []
       }
     ],
     "mounts": [],
