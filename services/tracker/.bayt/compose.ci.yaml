@@ -24,6 +24,12 @@ secrets:
     environment: BAYT_PULL_POLICY
   sayt_no_cache_to:
     environment: SAYT_NO_CACHE_TO
+  depot_token:
+    environment: DEPOT_TOKEN
+  depot_project_id:
+    environment: DEPOT_PROJECT_ID
+  depot_disable_otel:
+    environment: DEPOT_DISABLE_OTEL
 services:
   services_tracker-ci:
     build:
@@ -45,7 +51,7 @@ services:
         plugins_micronaut-setup_srcs: service:plugins_micronaut-setup_srcs
         libraries_xproto-setup_srcs: service:libraries_xproto-setup_srcs
         libraries_pbtables-setup_srcs: service:libraries_pbtables-setup_srcs
-        bayt: ../../../plugins/bayt/runtime
+        bayt: docker-image://bonitao/bayt:0.19.2@sha256:8c1d142badce44c181219759701895502ae84760e0578f2a08116a4dd979346b
         services_tracker-dindbox: service:services_tracker-dindbox
       context: ..
       dockerfile: .bayt/Dockerfile.ci
@@ -62,6 +68,9 @@ services:
       - bayt_image_tag
       - bayt_pull_policy
       - sayt_no_cache_to
+      - depot_token
+      - depot_project_id
+      - depot_disable_otel
       target: ci
       x-bake:
         cache-from:
@@ -83,3 +92,6 @@ services:
     - bayt_image_tag
     - bayt_pull_policy
     - sayt_no_cache_to
+    - depot_token
+    - depot_project_id
+    - depot_disable_otel

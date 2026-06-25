@@ -1,7 +1,7 @@
 # generated from bayt.cue — do not edit
 FROM services_tracker-dindbox AS ci
 WORKDIR /monorepo/services/tracker
-COPY --link --from=bayt . /monorepo/plugins/bayt/runtime
+COPY --link --from=bayt runtime /monorepo/plugins/bayt/runtime
 ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}
 COPY --from=services_tracker-integrate_srcs --link --parents /monorepo/services/tracker/src/it/**/*.java /monorepo/services/tracker/src/it/**/*.kt /monorepo/services/tracker/src/it/resources/**/* /monorepo/services/tracker/src/test/resources/**/* /
 COPY --from=services_tracker-bayt --link /monorepo /monorepo
@@ -22,7 +22,7 @@ COPY --from=libraries_xproto-setup_srcs --link --parents /monorepo/libraries/xpr
 COPY --from=libraries_pbtables-setup_srcs --link --parents /monorepo/libraries/pbtables/gradle/wrapper/gradle-wrapper.properties /monorepo/libraries/pbtables/[m]ise.toml /monorepo/libraries/pbtables/[.]mise.toml /monorepo/libraries/pbtables/[m]ise.lock /
 ENV BUILDX_BAKE_ENTITLEMENTS_FS=0
 ENV COMPOSE_BAKE=true
-RUN --mount=type=secret,id=docker_host --mount=type=secret,id=buildx_builder --mount=type=secret,id=testcontainers_host --mount=type=secret,id=cache_scope --mount=type=secret,id=cache_scope_fallback --mount=type=secret,id=sayt_buildkit_syntax --mount=type=secret,id=sayt_no_cache --mount=type=secret,id=bayt_image_tag --mount=type=secret,id=bayt_pull_policy --mount=type=secret,id=sayt_no_cache_to --mount=type=secret,id=buildx_instance,mode=0600 --mount=type=secret,id=docker_config,mode=0600 <<BAYT_INJECT
+RUN --mount=type=secret,id=docker_host --mount=type=secret,id=buildx_builder --mount=type=secret,id=testcontainers_host --mount=type=secret,id=cache_scope --mount=type=secret,id=cache_scope_fallback --mount=type=secret,id=sayt_buildkit_syntax --mount=type=secret,id=sayt_no_cache --mount=type=secret,id=bayt_image_tag --mount=type=secret,id=bayt_pull_policy --mount=type=secret,id=sayt_no_cache_to --mount=type=secret,id=depot_token --mount=type=secret,id=depot_project_id --mount=type=secret,id=depot_disable_otel --mount=type=secret,id=buildx_instance,mode=0600 --mount=type=secret,id=docker_config,mode=0600 <<BAYT_INJECT
 set -e
 export DOCKER_HOST="$(cat /run/secrets/docker_host)"
 export BUILDX_BUILDER="$(cat /run/secrets/buildx_builder)"
@@ -34,6 +34,9 @@ export SAYT_NO_CACHE="$(cat /run/secrets/sayt_no_cache)"
 export BAYT_IMAGE_TAG="$(cat /run/secrets/bayt_image_tag)"
 export BAYT_PULL_POLICY="$(cat /run/secrets/bayt_pull_policy)"
 export SAYT_NO_CACHE_TO="$(cat /run/secrets/sayt_no_cache_to)"
+export DEPOT_TOKEN="$(cat /run/secrets/depot_token)"
+export DEPOT_PROJECT_ID="$(cat /run/secrets/depot_project_id)"
+export DEPOT_DISABLE_OTEL="$(cat /run/secrets/depot_disable_otel)"
 if [ -s "/run/secrets/buildx_instance" ]; then mkdir -p "$(dirname "/root/.docker/buildx/instances/$BUILDX_BUILDER")"; cp -p "/run/secrets/buildx_instance" "/root/.docker/buildx/instances/$BUILDX_BUILDER"; fi
 export DOCKER_AUTH_CONFIG="$(cat /run/secrets/docker_config)"
 if [ -s "/run/secrets/docker_config" ]; then mkdir -p "$(dirname "/root/.docker/config.json")"; cp -p "/run/secrets/docker_config" "/root/.docker/config.json"; fi
@@ -51,7 +54,8 @@ if [ -n "$BUILDKIT_SYNTAX" ]; then
   # depot frontend-pin workaround (full rationale in stacks/sayt/sayt.cue)
   find /monorepo -path '*/.bayt/Dockerfile.*' -type f -exec sed -i "1i # syntax=$BUILDKIT_SYNTAX" {} \;
 fi
-docker compose config | docker buildx bake --allow=fs.read=/monorepo ${SAYT_NO_CACHE:+--no-cache --set "*.cache-from=" --set "*.cache-to="} ${SAYT_NO_CACHE_TO:+--set "*.cache-to="} -f - integrate
+[ -n "$DEPOT_TOKEN" ] && bake="depot bake --project $DEPOT_PROJECT_ID" || bake="docker buildx bake"
+docker compose config | docker buildx bake --allow=fs.read=/monorepo -f - --print integrate | $bake -f - ${SAYT_NO_CACHE:+--no-cache --set "*.cache-from=" --set "*.cache-to="} ${SAYT_NO_CACHE_TO:+--set "*.cache-to="} integrate
 exec docker compose up integrate --abort-on-container-failure --exit-code-from integrate --remove-orphans
 BAYT_INJECT
 COPY --link Taskfile.yml ./Taskfile.yml

@@ -45,6 +45,18 @@
         "link": true,
         "parents": false,
         "exclude": []
+      },
+      {
+        "from": {
+          "name": "ghcr.io/depot/cli:2.101.65@sha256:08d7a79775468e59711cc8269b6830bb0c8bd0091a36c049cdc1534b44e4c3e5"
+        },
+        "srcs": [
+          "/usr/bin/depot"
+        ],
+        "dst": "/usr/local/bin/depot",
+        "link": true,
+        "parents": false,
+        "exclude": []
       }
     ],
     "mounts": [],
