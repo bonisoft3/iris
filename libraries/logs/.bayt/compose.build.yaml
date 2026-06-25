@@ -3,7 +3,7 @@ services:
   libraries_logs-build:
     build:
       additional_contexts:
-        bayt: ../../../plugins/bayt/runtime
+        bayt: docker-image://bonitao/bayt:0.20.0@sha256:53067425459172ea74ecfb4c23d2a5ac76f96b54b6103a55463168e911d4c53d
         libraries_logs-setup: service:libraries_logs-setup
       context: ..
       dockerfile: .bayt/Dockerfile.build

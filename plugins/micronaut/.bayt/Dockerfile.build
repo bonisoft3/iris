@@ -1,7 +1,7 @@
 # generated from bayt.cue — do not edit
 FROM plugins_micronaut-setup AS build
 WORKDIR /monorepo/plugins/micronaut
-COPY --link --from=bayt . /monorepo/plugins/bayt/runtime
+COPY --link --from=bayt runtime /monorepo/plugins/bayt/runtime
 ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}
 COPY --link --parents build.gradle.kts src/main/**/*.gradle.kts gradle.properties gradle/wrapper/gradle-wrapper.jar gradlew src/main/**/*.java src/main/**/*.kt gradle/lib[s].versions.toml settings.gradle.kts src/main/**/*.sq src/main/**/*.sql src/main/**/*.sqm ./
 COPY --link Taskfile.yml ./Taskfile.yml
