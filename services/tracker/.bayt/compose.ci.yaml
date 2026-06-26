@@ -22,6 +22,8 @@ secrets:
     environment: BAYT_IMAGE_TAG
   bayt_pull_policy:
     environment: BAYT_PULL_POLICY
+  sayt_no_cache_from:
+    environment: SAYT_NO_CACHE_FROM
   sayt_no_cache_to:
     environment: SAYT_NO_CACHE_TO
   depot_token:
@@ -67,6 +69,7 @@ services:
       - sayt_no_cache
       - bayt_image_tag
       - bayt_pull_policy
+      - sayt_no_cache_from
       - sayt_no_cache_to
       - depot_token
       - depot_project_id
@@ -91,6 +94,7 @@ services:
     - sayt_no_cache
     - bayt_image_tag
     - bayt_pull_policy
+    - sayt_no_cache_from
     - sayt_no_cache_to
     - depot_token
     - depot_project_id
