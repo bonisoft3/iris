@@ -1,4 +1,4 @@
 # generated from bayt.cue — do not edit
 FROM scratch AS build_outs
 WORKDIR /monorepo/plugins/libstoml
-COPY --from=plugins_libstoml-build --link --parents /monorepo/plugins/libstoml/build/**/* /monorepo/plugins/libstoml/.gradle/**/* /monorepo/plugins/libstoml/build.gradle.kts /monorepo/plugins/libstoml/settings.gradle.kts /monorepo/plugins/libstoml/gradle.properties /monorepo/plugins/libstoml/gradlew /monorepo/plugins/libstoml/gradle/wrapper/**/* /monorepo/plugins/libstoml/gradle/lib[s].versions.toml /
+COPY --from=plugins_libstoml-build --parents /monorepo/plugins/libstoml/build/**/* /monorepo/plugins/libstoml/.gradle/**/* /monorepo/plugins/libstoml/build.gradle.kts /monorepo/plugins/libstoml/settings.gradle.kts /monorepo/plugins/libstoml/gradle.properties /monorepo/plugins/libstoml/gradlew /monorepo/plugins/libstoml/gradle/wrapper/**/* /monorepo/plugins/libstoml/gradle/lib[s].versions.toml /

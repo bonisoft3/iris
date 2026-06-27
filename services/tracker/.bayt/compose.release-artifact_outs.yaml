@@ -7,4 +7,10 @@ services:
       target: release-artifact_outs
       additional_contexts:
         services_tracker-release-artifact: service:services_tracker-release-artifact
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-release-artifact_outs
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-release-artifact_outs
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-release-artifact_outs,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-services_tracker-release-artifact_outs:latest

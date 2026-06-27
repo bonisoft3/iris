@@ -1,5 +1,5 @@
 # generated from bayt.cue — do not edit
 FROM scratch AS integrate_srcs
 WORKDIR /monorepo/guis/web
-COPY --link --parents --exclude=node_modules/** --exclude=.nuxt/** --exclude=.output/** --exclude=dist/** --exclude=coverage/** **/*.spec.ts **/*.spec.tsx tests/**/* vitest.config.* vitest.integration.config.* ./
+COPY --parents --exclude=node_modules/** --exclude=.nuxt/** --exclude=.output/** --exclude=dist/** --exclude=coverage/** **/*.spec.ts **/*.spec.tsx tests/**/* vitest.config.* vitest.integration.config.* ./
 COPY --link --from=guis_web-build_srcs /monorepo /monorepo

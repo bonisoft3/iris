@@ -2,5 +2,5 @@
 FROM services_tracker-build AS release-artifact
 WORKDIR /monorepo/services/tracker
 RUN --mount=type=cache,target=/root/.gradle,id=services_tracker-release-artifact:/root/.gradle,sharing=locked ["mise", "x", "--", "./gradlew", "--init-script", ".bayt/init.gradle.kts", "--no-daemon", "jibBuildTar"]
-COPY --link Taskfile.yml ./Taskfile.yml
-COPY --link .bayt/Taskfile.yml .bayt/bayt.release-artifact.json .bayt/init.gradle.kts ./.bayt/
+COPY Taskfile.yml ./Taskfile.yml
+COPY .bayt/Taskfile.yml .bayt/bayt.release-artifact.json .bayt/init.gradle.kts ./.bayt/

@@ -1,4 +1,4 @@
 # generated from bayt.cue — do not edit
 FROM scratch AS build_srcs
 WORKDIR /monorepo/plugins/omnishell
-COPY --link --parents src/**/* scaffold/**/* package.json bun.lock tsconfig.json bunfig.toml ./
+COPY --parents src/**/* scaffold/**/* package.json bun.lock tsconfig.json bunfig.toml ./

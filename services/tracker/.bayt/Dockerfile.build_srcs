@@ -1,7 +1,7 @@
 # generated from bayt.cue — do not edit
 FROM scratch AS build_srcs
 WORKDIR /monorepo/services/tracker
-COPY --link --parents build.gradle.kts src/main/**/*.gradle.kts gradle.properties gradle/wrapper/gradle-wrapper.jar gradlew src/main/**/*.java src/main/**/*.kt gradle/lib[s].versions.toml settings.gradle.kts src/main/**/*.sq src/main/**/*.sql src/main/**/*.sqm src/main/resources/**/* ./
+COPY --parents build.gradle.kts src/main/**/*.gradle.kts gradle.properties gradle/wrapper/gradle-wrapper.jar gradlew src/main/**/*.java src/main/**/*.kt gradle/lib[s].versions.toml settings.gradle.kts src/main/**/*.sq src/main/**/*.sql src/main/**/*.sqm src/main/resources/**/* ./
 COPY --link --from=services_tracker-setup_srcs /monorepo /monorepo
 COPY --link --from=libraries_logs-build_srcs /monorepo /monorepo
 COPY --link --from=libraries_pbtables-build_srcs /monorepo /monorepo

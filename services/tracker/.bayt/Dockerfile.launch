@@ -15,5 +15,5 @@ COPY --from=plugins_jvm-build --link /monorepo/plugins/jvm /monorepo/plugins/jvm
 COPY --from=plugins_micronaut-build --link /monorepo/plugins/micronaut /monorepo/plugins/micronaut
 COPY --from=workspaceroot-setup --link /monorepo /monorepo
 RUN ["mise", "x", "--", "./gradlew", "--init-script", ".bayt/init.gradle.kts", "run"]
-COPY --link Taskfile.yml ./Taskfile.yml
-COPY --link .bayt/Taskfile.yml .bayt/bayt.launch.json .bayt/init.gradle.kts ./.bayt/
+COPY Taskfile.yml ./Taskfile.yml
+COPY .bayt/Taskfile.yml .bayt/bayt.launch.json .bayt/init.gradle.kts ./.bayt/

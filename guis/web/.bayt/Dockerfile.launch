@@ -8,7 +8,7 @@ RUN zypper -n install findutils=4.10.0-160000.2.2 which=2.23-160000.2.2
 COPY --from=guis_web-build --link /monorepo/guis/web /monorepo/guis/web
 COPY --from=guis_web-setup --link /monorepo/guis/web /monorepo/guis/web
 COPY --from=workspaceroot-setup --link /monorepo /monorepo
-COPY --link Taskfile.yml ./Taskfile.yml
-COPY --link .bayt/Taskfile.yml .bayt/bayt.launch.json .bayt/init.gradle.kts ./.bayt/
+COPY Taskfile.yml ./Taskfile.yml
+COPY .bayt/Taskfile.yml .bayt/bayt.launch.json .bayt/init.gradle.kts ./.bayt/
 EXPOSE 3000
 CMD ["mise", "x", "--", "pnpm", "dev"]

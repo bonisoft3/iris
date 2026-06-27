@@ -7,4 +7,10 @@ services:
       target: descriptor_outs
       additional_contexts:
         libraries_xproto-descriptor: service:libraries_xproto-descriptor
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-descriptor_outs
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-descriptor_outs
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-descriptor_outs,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-libraries_xproto-descriptor_outs:latest

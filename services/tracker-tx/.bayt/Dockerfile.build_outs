@@ -1,4 +1,4 @@
 # generated from bayt.cue — do not edit
 FROM scratch AS build_outs
 WORKDIR /monorepo/services/tracker-tx
-COPY --from=services_tracker-tx-build --link --parents /monorepo/services/tracker-tx/out/transcoding.yaml.tpl /monorepo/services/tracker-tx/out/transcoding.yaml.gcp.tpl /
+COPY --from=services_tracker-tx-build --parents /monorepo/services/tracker-tx/out/transcoding.yaml.tpl /monorepo/services/tracker-tx/out/transcoding.yaml.gcp.tpl /

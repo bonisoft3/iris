@@ -1,4 +1,4 @@
 # generated from bayt.cue — do not edit
 FROM scratch AS setup_srcs
 WORKDIR /monorepo/plugins/micronaut
-COPY --link --parents gradle/wrapper/gradle-wrapper.properties [m]ise.toml [.]mise.toml [m]ise.lock ./
+COPY --parents gradle/wrapper/gradle-wrapper.properties [m]ise.toml [.]mise.toml [m]ise.lock ./

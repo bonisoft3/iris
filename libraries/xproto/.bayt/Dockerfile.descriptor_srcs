@@ -1,5 +1,5 @@
 # generated from bayt.cue — do not edit
 FROM scratch AS descriptor_srcs
 WORKDIR /monorepo/libraries/xproto
-COPY --link --parents buf.yaml buf.lock trash/**/*.proto ./
+COPY --parents buf.yaml buf.lock trash/**/*.proto ./
 COPY --link --from=workspaceroot-setup_srcs /monorepo /monorepo

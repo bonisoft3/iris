@@ -15,6 +15,6 @@ ENV GRPC_DISPOSAL_PLACE_SERVICE=trash.tracker.v1.DisposalPlaceService
 ENV PROTO_DESCRIPTOR_PB=/monorepo/libraries/xproto/out/xproto.desc.pb
 ENV ENVOY_UID=0
 RUN ["mise", "x", "--", "true"]
-COPY --link Taskfile.yml ./Taskfile.yml
-COPY --link .bayt/Taskfile.yml .bayt/bayt.launch.json .bayt/init.gradle.kts ./.bayt/
+COPY Taskfile.yml ./Taskfile.yml
+COPY .bayt/Taskfile.yml .bayt/bayt.launch.json .bayt/init.gradle.kts ./.bayt/
 EXPOSE 8080

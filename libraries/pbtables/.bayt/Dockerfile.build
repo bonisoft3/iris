@@ -6,8 +6,8 @@ ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}
 COPY --from=plugins_micronaut-build --link /monorepo/plugins/micronaut /monorepo/plugins/micronaut
 COPY --from=libraries_xproto-build --link /monorepo/libraries/xproto /monorepo/libraries/xproto
 COPY --from=libraries_logs-build --link /monorepo/libraries/logs /monorepo/libraries/logs
-COPY --link --parents build.gradle.kts src/main/**/*.gradle.kts gradle.properties gradle/wrapper/gradle-wrapper.jar gradlew src/main/**/*.java src/main/**/*.kt gradle/lib[s].versions.toml settings.gradle.kts src/main/**/*.sq src/main/**/*.sql src/main/**/*.sqm ./
-COPY --link Taskfile.yml ./Taskfile.yml
-COPY --link .bayt/Taskfile.yml .bayt/Taskfile.build.yaml .bayt/bayt.build.json .bayt/init.gradle.kts ./.bayt/
-COPY --link .bayt/Taskfile.setup.yaml .bayt/bayt.setup.json ./.bayt/
+COPY --parents build.gradle.kts src/main/**/*.gradle.kts gradle.properties gradle/wrapper/gradle-wrapper.jar gradlew src/main/**/*.java src/main/**/*.kt gradle/lib[s].versions.toml settings.gradle.kts src/main/**/*.sq src/main/**/*.sql src/main/**/*.sqm ./
+COPY Taskfile.yml ./Taskfile.yml
+COPY .bayt/Taskfile.yml .bayt/Taskfile.build.yaml .bayt/bayt.build.json .bayt/init.gradle.kts ./.bayt/
+COPY .bayt/Taskfile.setup.yaml .bayt/bayt.setup.json ./.bayt/
 RUN --mount=type=cache,target=/root/.cache/bayt,id=libraries_pbtables-build:/root/.cache/bayt,sharing=locked --mount=type=cache,target=/root/.gradle,id=libraries_pbtables-build:/root/.gradle,sharing=locked --mount=type=cache,target=.gradle/configuration-cache,id=libraries_pbtables-build:.gradle/configuration-cache,sharing=locked ["task", "bayt:build"]

@@ -1,4 +1,4 @@
 # generated from bayt.cue — do not edit
 FROM scratch AS build_srcs
 WORKDIR /monorepo/services/tracker-tx
-COPY --link --parents transcoding.yaml cloud_run_tls.yaml edge.yaml ./
+COPY --parents transcoding.yaml cloud_run_tls.yaml edge.yaml ./

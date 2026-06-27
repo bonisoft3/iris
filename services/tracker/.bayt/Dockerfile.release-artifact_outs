@@ -1,4 +1,4 @@
 # generated from bayt.cue — do not edit
 FROM scratch AS release-artifact_outs
 WORKDIR /monorepo/services/tracker
-COPY --from=services_tracker-release-artifact --link --parents /monorepo/services/tracker/build/jib-image.tar /
+COPY --from=services_tracker-release-artifact --parents /monorepo/services/tracker/build/jib-image.tar /

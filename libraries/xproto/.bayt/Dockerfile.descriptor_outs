@@ -1,4 +1,4 @@
 # generated from bayt.cue — do not edit
 FROM scratch AS descriptor_outs
 WORKDIR /monorepo/libraries/xproto
-COPY --from=libraries_xproto-descriptor --link --parents /monorepo/libraries/xproto/out/xproto.desc.pb /
+COPY --from=libraries_xproto-descriptor --parents /monorepo/libraries/xproto/out/xproto.desc.pb /

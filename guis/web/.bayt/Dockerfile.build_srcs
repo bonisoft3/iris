@@ -1,4 +1,4 @@
 # generated from bayt.cue — do not edit
 FROM scratch AS build_srcs
 WORKDIR /monorepo/guis/web
-COPY --link --parents --exclude=node_modules/** --exclude=.nuxt/** --exclude=.output/** --exclude=dist/** --exclude=coverage/** --exclude=.bayt/** --exclude=.task/** --exclude=.git/** --exclude=**/*.test.* --exclude=**/*.spec.* --exclude=tests/** **/* ./
+COPY --parents --exclude=node_modules/** --exclude=.nuxt/** --exclude=.output/** --exclude=dist/** --exclude=coverage/** --exclude=.bayt/** --exclude=.task/** --exclude=.git/** --exclude=**/*.test.* --exclude=**/*.spec.* --exclude=tests/** **/* ./

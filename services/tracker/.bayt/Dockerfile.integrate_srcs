@@ -1,6 +1,6 @@
 # generated from bayt.cue — do not edit
 FROM scratch AS integrate_srcs
 WORKDIR /monorepo/services/tracker
-COPY --link --parents src/it/**/*.java src/it/**/*.kt src/it/resources/**/* src/test/resources/**/* ./
+COPY --parents src/it/**/*.java src/it/**/*.kt src/it/resources/**/* src/test/resources/**/* ./
 COPY --link --from=services_tracker-build_srcs /monorepo /monorepo
 COPY --link --from=services_tracker-setup_srcs /monorepo /monorepo

@@ -1,4 +1,4 @@
 # generated from bayt.cue — do not edit
 FROM scratch AS integrate_outs
 WORKDIR /monorepo/plugins/jvm
-COPY --from=plugins_jvm-integrate --link --parents /monorepo/plugins/jvm/build/test-results/integrationTest/**/*.xml /monorepo/plugins/jvm/build/reports/tests/integrationTest/**/* /
+COPY --from=plugins_jvm-integrate --parents /monorepo/plugins/jvm/build/test-results/integrationTest/**/*.xml /monorepo/plugins/jvm/build/reports/tests/integrationTest/**/* /

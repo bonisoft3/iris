@@ -1,4 +1,4 @@
 # generated from bayt.cue — do not edit
 FROM scratch AS build_outs
 WORKDIR /monorepo/plugins/jvm
-COPY --from=plugins_jvm-build --link --parents /monorepo/plugins/jvm/build/**/* /monorepo/plugins/jvm/.gradle/**/* /monorepo/plugins/jvm/build.gradle.kts /monorepo/plugins/jvm/settings.gradle.kts /monorepo/plugins/jvm/gradle.properties /monorepo/plugins/jvm/gradlew /monorepo/plugins/jvm/gradle/wrapper/**/* /monorepo/plugins/jvm/gradle/lib[s].versions.toml /
+COPY --from=plugins_jvm-build --parents /monorepo/plugins/jvm/build/**/* /monorepo/plugins/jvm/.gradle/**/* /monorepo/plugins/jvm/build.gradle.kts /monorepo/plugins/jvm/settings.gradle.kts /monorepo/plugins/jvm/gradle.properties /monorepo/plugins/jvm/gradlew /monorepo/plugins/jvm/gradle/wrapper/**/* /monorepo/plugins/jvm/gradle/lib[s].versions.toml /

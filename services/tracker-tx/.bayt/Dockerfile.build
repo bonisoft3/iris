@@ -6,7 +6,7 @@ ENV PATH=/root/.local/bin:/root/.local/share/lazybox/bin:$PATH
 ENV MISE_TRUSTED_CONFIG_PATHS=/monorepo
 RUN zypper -n install findutils=4.10.0-160000.2.2 which=2.23-160000.2.2
 COPY --from=services_tracker-tx-setup --link /monorepo/services/tracker-tx /monorepo/services/tracker-tx
-COPY --link --parents transcoding.yaml cloud_run_tls.yaml edge.yaml ./
+COPY --parents transcoding.yaml cloud_run_tls.yaml edge.yaml ./
 RUN mise x -- mkdir -p out && cat transcoding.yaml cloud_run_tls.yaml > out/transcoding.yaml.gcp.tpl && cat transcoding.yaml > out/transcoding.yaml.tpl
-COPY --link Taskfile.yml ./Taskfile.yml
-COPY --link .bayt/Taskfile.yml .bayt/Taskfile.build.yaml .bayt/bayt.build.json .bayt/init.gradle.kts ./.bayt/
+COPY Taskfile.yml ./Taskfile.yml
+COPY .bayt/Taskfile.yml .bayt/Taskfile.build.yaml .bayt/bayt.build.json .bayt/init.gradle.kts ./.bayt/

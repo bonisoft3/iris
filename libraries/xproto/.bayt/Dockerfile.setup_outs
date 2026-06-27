@@ -1,4 +1,4 @@
 # generated from bayt.cue — do not edit
 FROM scratch AS setup_outs
 WORKDIR /monorepo/libraries/xproto
-COPY --from=libraries_xproto-setup --link --parents /monorepo/libraries/xproto/gradle/wrapper/gradle-wrapper.properties /monorepo/libraries/xproto/[m]ise.toml /monorepo/libraries/xproto/[.]mise.toml /monorepo/libraries/xproto/[m]ise.lock /monorepo/libraries/xproto/.task/bayt/setup.hash /
+COPY --from=libraries_xproto-setup --parents /monorepo/libraries/xproto/gradle/wrapper/gradle-wrapper.properties /monorepo/libraries/xproto/[m]ise.toml /monorepo/libraries/xproto/[.]mise.toml /monorepo/libraries/xproto/[m]ise.lock /monorepo/libraries/xproto/.task/bayt/setup.hash /

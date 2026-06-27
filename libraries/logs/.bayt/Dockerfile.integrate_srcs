@@ -1,6 +1,6 @@
 # generated from bayt.cue — do not edit
 FROM scratch AS integrate_srcs
 WORKDIR /monorepo/libraries/logs
-COPY --link --parents src/it/**/*.java src/it/**/*.kt src/it/resources/**/* ./
+COPY --parents src/it/**/*.java src/it/**/*.kt src/it/resources/**/* ./
 COPY --link --from=libraries_logs-build_srcs /monorepo /monorepo
 COPY --link --from=libraries_logs-setup_srcs /monorepo /monorepo

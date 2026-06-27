@@ -1,5 +1,5 @@
 # generated from bayt.cue — do not edit
 FROM scratch AS integrate_srcs
 WORKDIR /monorepo/plugins/omnishell
-COPY --link --parents test/**/* ./
+COPY --parents test/**/* ./
 COPY --link --from=plugins_omnishell-build_srcs /monorepo /monorepo

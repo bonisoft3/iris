@@ -1,7 +1,7 @@
 # generated from bayt.cue — do not edit
 FROM services_tracker-build AS integrate
 WORKDIR /monorepo/services/tracker
-COPY --link --parents src/it/**/*.java src/it/**/*.kt src/it/resources/**/* src/test/resources/**/* ./
+COPY --parents src/it/**/*.java src/it/**/*.kt src/it/resources/**/* src/test/resources/**/* ./
 RUN --mount=type=cache,target=/root/.gradle,id=services_tracker-integrate:/root/.gradle,sharing=locked --mount=type=cache,target=.gradle/configuration-cache,id=services_tracker-integrate:.gradle/configuration-cache,sharing=locked ["mise", "x", "--", "true"]
-COPY --link Taskfile.yml ./Taskfile.yml
-COPY --link .bayt/Taskfile.yml .bayt/Taskfile.integrate.yaml .bayt/bayt.integrate.json .bayt/init.gradle.kts ./.bayt/
+COPY Taskfile.yml ./Taskfile.yml
+COPY .bayt/Taskfile.yml .bayt/Taskfile.integrate.yaml .bayt/bayt.integrate.json .bayt/init.gradle.kts ./.bayt/

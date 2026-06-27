@@ -1,7 +1,7 @@
 # generated from bayt.cue — do not edit
 FROM scratch AS build_srcs
 WORKDIR /monorepo/libraries/xproto
-COPY --link --parents build.gradle.kts src/main/**/*.gradle.kts gradle.properties gradle/wrapper/gradle-wrapper.jar gradlew src/main/**/*.java src/main/**/*.kt gradle/lib[s].versions.toml settings.gradle.kts src/main/**/*.sq src/main/**/*.sql src/main/**/*.sqm src/**/*.kt src/**/*.gradle.kts src/**/*.java src/**/*.sql src/**/*.sq src/**/*.sqm build.gradle.kts settings.gradle.kts gradle.properties gradlew gradle/wrapper/gradle-wrapper.jar trash/**/*.proto buf.gradle.gen.yaml buf.yaml buf.lock ./
+COPY --parents build.gradle.kts src/main/**/*.gradle.kts gradle.properties gradle/wrapper/gradle-wrapper.jar gradlew src/main/**/*.java src/main/**/*.kt gradle/lib[s].versions.toml settings.gradle.kts src/main/**/*.sq src/main/**/*.sql src/main/**/*.sqm src/**/*.kt src/**/*.gradle.kts src/**/*.java src/**/*.sql src/**/*.sq src/**/*.sqm build.gradle.kts settings.gradle.kts gradle.properties gradlew gradle/wrapper/gradle-wrapper.jar trash/**/*.proto buf.gradle.gen.yaml buf.yaml buf.lock ./
 COPY --link --from=libraries_xproto-setup_srcs /monorepo /monorepo
 COPY --link --from=plugins_libstoml-build_srcs /monorepo /monorepo
 COPY --link --from=plugins_jvm-build_srcs /monorepo /monorepo

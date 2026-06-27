@@ -1,4 +1,4 @@
 # generated from bayt.cue — do not edit
 FROM scratch AS integrate_outs
 WORKDIR /monorepo/libraries/pbtables
-COPY --from=libraries_pbtables-integrate --link --parents /monorepo/libraries/pbtables/build/test-results/integrationTest/**/*.xml /monorepo/libraries/pbtables/build/reports/tests/integrationTest/**/* /
+COPY --from=libraries_pbtables-integrate --parents /monorepo/libraries/pbtables/build/test-results/integrationTest/**/*.xml /monorepo/libraries/pbtables/build/reports/tests/integrationTest/**/* /

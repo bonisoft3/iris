@@ -1,7 +1,7 @@
 # generated from bayt.cue — do not edit
 FROM plugins_omnishell-setup AS build
 WORKDIR /monorepo/plugins/omnishell
-COPY --link --parents src/**/* scaffold/**/* package.json bun.lock tsconfig.json bunfig.toml ./
+COPY --parents src/**/* scaffold/**/* package.json bun.lock tsconfig.json bunfig.toml ./
 RUN mise x -- sh -c 'bun install --frozen-lockfile && bun run check'
-COPY --link Taskfile.yml ./Taskfile.yml
-COPY --link .bayt/Taskfile.yml .bayt/Taskfile.build.yaml .bayt/bayt.build.json .bayt/init.gradle.kts ./.bayt/
+COPY Taskfile.yml ./Taskfile.yml
+COPY .bayt/Taskfile.yml .bayt/Taskfile.build.yaml .bayt/bayt.build.json .bayt/init.gradle.kts ./.bayt/
