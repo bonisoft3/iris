@@ -9,4 +9,4 @@ ENV LC_ALL=en_US.UTF-8
 COPY Taskfile.yml ./Taskfile.yml
 COPY .bayt/Taskfile.yml .bayt/bayt.release.json .bayt/init.gradle.kts ./.bayt/
 ENTRYPOINT ["java", "-cp", "@/app/jib-classpath-file", "com.trash.services.tracker.ApplicationKt"]
-COPY --link --from=services_tracker-release-layers /monorepo/services/tracker/build/layers/ /
+COPY --from=services_tracker-release-layers /monorepo/services/tracker/build/layers/ /

@@ -27,7 +27,7 @@
       "com.trash.services.tracker.ApplicationKt"
     ],
     "epilogue": [
-      "COPY --link --from=services_tracker-release-layers /monorepo/services/tracker/build/layers/ /"
+      "COPY --from=services_tracker-release-layers /monorepo/services/tracker/build/layers/ /"
     ],
     "from": null,
     "mounts": [],

@@ -1,8 +1,8 @@
 # generated from bayt.cue — do not edit
 FROM docker:29.2.0-cli@sha256:ae2609c051339b48c157d97edc4f1171026251607b29a2b0f25f990898586334 AS dindbox
 WORKDIR /monorepo/services/tracker
-COPY --link --from=alpine/socat:latest@sha256:bfd2550379212e087dc18db2f4611f43477be4b575d660c8f18c5b9a1b2e2757 /usr/bin/socat1 /usr/local/bin/socat
-COPY --link --from=alpine/socat:latest@sha256:bfd2550379212e087dc18db2f4611f43477be4b575d660c8f18c5b9a1b2e2757 /usr/lib/libreadline.so.8 /usr/lib/libncursesw.so.6 /usr/lib/
-COPY --link --from=ghcr.io/depot/cli:2.101.65@sha256:08d7a79775468e59711cc8269b6830bb0c8bd0091a36c049cdc1534b44e4c3e5 /usr/bin/depot /usr/local/bin/depot
+COPY --from=alpine/socat:latest@sha256:bfd2550379212e087dc18db2f4611f43477be4b575d660c8f18c5b9a1b2e2757 /usr/bin/socat1 /usr/local/bin/socat
+COPY --from=alpine/socat:latest@sha256:bfd2550379212e087dc18db2f4611f43477be4b575d660c8f18c5b9a1b2e2757 /usr/lib/libreadline.so.8 /usr/lib/libncursesw.so.6 /usr/lib/
+COPY --from=ghcr.io/depot/cli:2.101.65@sha256:08d7a79775468e59711cc8269b6830bb0c8bd0091a36c049cdc1534b44e4c3e5 /usr/bin/depot /usr/local/bin/depot
 COPY Taskfile.yml ./Taskfile.yml
 COPY .bayt/Taskfile.yml .bayt/bayt.dindbox.json .bayt/init.gradle.kts ./.bayt/

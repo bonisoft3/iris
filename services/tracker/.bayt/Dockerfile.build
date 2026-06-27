@@ -1,7 +1,7 @@
 # generated from bayt.cue — do not edit
 FROM services_tracker-setup AS build
 WORKDIR /monorepo/services/tracker
-COPY --link --from=bayt runtime /monorepo/plugins/bayt/runtime
+COPY --from=bayt runtime /monorepo/plugins/bayt/runtime
 ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}
 COPY --from=libraries_logs-build --link /monorepo/libraries/logs /monorepo/libraries/logs
 COPY --from=libraries_pbtables-build --link /monorepo/libraries/pbtables /monorepo/libraries/pbtables

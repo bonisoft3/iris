@@ -142,7 +142,7 @@ _tracker: sayt.gradle & {
 				// land at / (not at /monorepo/.../build/layers/ as bayt's
 				// auto cross-stage COPY would do). release-layers.outs is
 				// empty so there's no competing auto-COPY here.
-				epilogue: ["COPY --link --from=services_tracker-release-layers /monorepo/services/tracker/build/layers/ /"]
+				epilogue: ["COPY --from=services_tracker-release-layers /monorepo/services/tracker/build/layers/ /"]
 			}
 
 			// bake contract (skaffold custom-command integration):
