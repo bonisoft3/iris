@@ -4,7 +4,7 @@ services:
     build:
       additional_contexts:
         plugins_libstoml-build: service:plugins_libstoml-build
-        bayt: docker-image://bonitao/bayt:0.21.2@sha256:0b71f66bca6af1b15104f2e0a41ab1dbb26f2749b1505b0faa89c16368de8772
+        bayt: ../../../plugins/bayt/runtime
         plugins_jvm-setup: service:plugins_jvm-setup
       context: ..
       dockerfile: .bayt/Dockerfile.build

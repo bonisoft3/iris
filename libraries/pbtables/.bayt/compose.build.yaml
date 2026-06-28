@@ -6,7 +6,7 @@ services:
         plugins_micronaut-build: service:plugins_micronaut-build
         libraries_xproto-build: service:libraries_xproto-build
         libraries_logs-build: service:libraries_logs-build
-        bayt: docker-image://bonitao/bayt:0.21.2@sha256:0b71f66bca6af1b15104f2e0a41ab1dbb26f2749b1505b0faa89c16368de8772
+        bayt: ../../../plugins/bayt/runtime
         libraries_pbtables-setup: service:libraries_pbtables-setup
       context: ..
       dockerfile: .bayt/Dockerfile.build

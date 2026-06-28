@@ -1,7 +1,7 @@
 # generated from bayt.cue — do not edit
 FROM guis_web-build AS integrate
 WORKDIR /monorepo/guis/web
-COPY --from=bayt runtime /monorepo/plugins/bayt/runtime
+COPY --from=bayt . /monorepo/plugins/bayt/runtime
 ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}
 COPY --parents --exclude=node_modules/** --exclude=.nuxt/** --exclude=.output/** --exclude=dist/** --exclude=coverage/** **/*.spec.ts **/*.spec.tsx tests/**/* vitest.config.* vitest.integration.config.* ./
 COPY Taskfile.yml ./Taskfile.yml

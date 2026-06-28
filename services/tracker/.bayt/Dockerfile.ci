@@ -1,7 +1,7 @@
 # generated from bayt.cue — do not edit
 FROM services_tracker-dindbox AS ci
 WORKDIR /monorepo/services/tracker
-COPY --from=bayt runtime /monorepo/plugins/bayt/runtime
+COPY --from=bayt . /monorepo/plugins/bayt/runtime
 ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}
 COPY --from=services_tracker-integrate_srcs --parents /monorepo/services/tracker/src/it/**/*.java /monorepo/services/tracker/src/it/**/*.kt /monorepo/services/tracker/src/it/resources/**/* /monorepo/services/tracker/src/test/resources/**/* /
 COPY --from=services_tracker-bayt --link /monorepo /monorepo

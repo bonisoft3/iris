@@ -1,7 +1,7 @@
 # generated from bayt.cue — do not edit
 FROM libraries_logs-setup AS build
 WORKDIR /monorepo/libraries/logs
-COPY --from=bayt runtime /monorepo/plugins/bayt/runtime
+COPY --from=bayt . /monorepo/plugins/bayt/runtime
 ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}
 COPY --parents build.gradle.kts src/main/**/*.gradle.kts gradle.properties gradle/wrapper/gradle-wrapper.jar gradlew src/main/**/*.java src/main/**/*.kt gradle/lib[s].versions.toml settings.gradle.kts src/main/**/*.sq src/main/**/*.sql src/main/**/*.sqm ./
 COPY Taskfile.yml ./Taskfile.yml
