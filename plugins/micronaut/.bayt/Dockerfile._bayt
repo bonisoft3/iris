@@ -1,7 +1,11 @@
 # generated from bayt.cue — do not edit
-FROM scratch AS bayt
+FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223 AS bayt_ctxs
 WORKDIR /monorepo/plugins/micronaut
 COPY --parents .bayt/** [T]askfile.y[m]l [T]askfile.y[a]ml [c]ompose.y[m]l [c]ompose.y[a]ml [d]ocker-compose.y[m]l [d]ocker-compose.y[a]ml ./
-COPY --link --from=plugins_libstoml-bayt /monorepo /monorepo
-COPY --link --from=plugins_jvm-bayt /monorepo /monorepo
-COPY --link --from=workspaceroot-bayt /monorepo /monorepo
+COPY --from=plugins_libstoml-bayt /monorepo /monorepo
+COPY --from=plugins_jvm-bayt /monorepo /monorepo
+COPY --from=workspaceroot-bayt /monorepo /monorepo
+ARG SOURCE_DATE_EPOCH
+RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+FROM scratch AS bayt
+COPY --from=bayt_ctxs /monorepo /monorepo

@@ -7,10 +7,4 @@ services:
       target: build_outs
       additional_contexts:
         libraries_xproto-build: service:libraries_xproto-build
-      x-bake:
-        cache-from:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-build_outs
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-build_outs
-        cache-to:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-build_outs,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-libraries_xproto-build_outs:latest

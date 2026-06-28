@@ -7,10 +7,4 @@ services:
       target: setup_outs
       additional_contexts:
         services_tracker-setup: service:services_tracker-setup
-      x-bake:
-        cache-from:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-setup_outs
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-setup_outs
-        cache-to:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-setup_outs,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-services_tracker-setup_outs:latest
