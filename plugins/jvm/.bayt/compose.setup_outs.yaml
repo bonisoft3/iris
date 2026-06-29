@@ -7,4 +7,10 @@ services:
       target: setup_outs
       additional_contexts:
         plugins_jvm-setup: service:plugins_jvm-setup
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_jvm-setup_outs
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_jvm-setup_outs
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_jvm-setup_outs,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-plugins_jvm-setup_outs:latest

@@ -7,4 +7,10 @@ services:
       target: integrate_outs
       additional_contexts:
         plugins_libstoml-integrate: service:plugins_libstoml-integrate
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_libstoml-integrate_outs
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_libstoml-integrate_outs
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_libstoml-integrate_outs,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-plugins_libstoml-integrate_outs:latest

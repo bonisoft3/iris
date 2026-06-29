@@ -7,4 +7,10 @@ services:
       target: integrate_outs
       additional_contexts:
         libraries_logs-integrate: service:libraries_logs-integrate
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_logs-integrate_outs
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_logs-integrate_outs
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_logs-integrate_outs,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-libraries_logs-integrate_outs:latest

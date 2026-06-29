@@ -7,4 +7,10 @@ services:
       target: build_outs
       additional_contexts:
         services_tracker-build: service:services_tracker-build
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build_outs
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-build_outs
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build_outs,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-services_tracker-build_outs:latest

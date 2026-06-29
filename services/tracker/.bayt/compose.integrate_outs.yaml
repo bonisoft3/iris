@@ -7,4 +7,10 @@ services:
       target: integrate_outs
       additional_contexts:
         services_tracker-integrate: service:services_tracker-integrate
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-integrate_outs
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-integrate_outs
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-integrate_outs,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-services_tracker-integrate_outs:latest
