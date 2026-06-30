@@ -22,6 +22,7 @@
     "preconditions": []
   },
   "visibility": "internal",
+  "emitsSrcs": false,
   "deps": [
     "release"
   ],

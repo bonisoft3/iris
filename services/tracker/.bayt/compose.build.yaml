@@ -21,3 +21,37 @@ services:
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-build,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-services_tracker-build:${BAYT_IMAGE_TAG:-latest}
+  services_tracker-build_srcs:
+    build:
+      additional_contexts:
+        services_tracker-setup_srcs: service:services_tracker-setup_srcs
+        libraries_logs-build_srcs: service:libraries_logs-build_srcs
+        libraries_pbtables-build_srcs: service:libraries_pbtables-build_srcs
+        libraries_xproto-build_srcs: service:libraries_xproto-build_srcs
+        plugins_libstoml-build_srcs: service:plugins_libstoml-build_srcs
+        plugins_jvm-build_srcs: service:plugins_jvm-build_srcs
+        plugins_micronaut-build_srcs: service:plugins_micronaut-build_srcs
+      context: ..
+      dockerfile: .bayt/Dockerfile.build
+      target: build_srcs
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build_srcs
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-build_srcs
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build_srcs,mode=max,image-manifest=true,oci-mediatypes=true
+    image: bayt-services_tracker-build_srcs:latest
+  services_tracker-build_outs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.build
+      target: build_outs
+      additional_contexts:
+        services_tracker-build: service:services_tracker-build
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build_outs
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-build_outs
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build_outs,mode=min,image-manifest=true,oci-mediatypes=true
+    image: bayt-services_tracker-build_outs:latest

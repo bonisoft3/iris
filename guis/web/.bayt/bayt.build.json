@@ -62,6 +62,96 @@
     "exclude": []
   },
   "env": {},
+  "synthetics": {
+    "outs": {
+      "name": "build_outs",
+      "project": "guis_web",
+      "dir": "guis/web",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          ".output/**/*"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      }
+    },
+    "srcs": {
+      "name": "build_srcs",
+      "project": "guis_web",
+      "dir": "guis/web",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          "**/*"
+        ],
+        "exclude": [
+          "node_modules/**",
+          ".nuxt/**",
+          ".output/**",
+          "dist/**",
+          "coverage/**",
+          ".bayt/**",
+          ".task/**",
+          ".git/**",
+          "**/*.test.*",
+          "**/*.spec.*",
+          "tests/**"
+        ]
+      },
+      "env": {},
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [
+        "setup_srcs"
+      ],
+      "transitiveCrossDeps": [
+        {
+          "name": "setup_srcs",
+          "project": "workspaceroot",
+          "dir": "",
+          "outs": {
+            "globs": [
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock",
+              "pnpm-lock.yaml",
+              "pnpm-workspace.yaml",
+              "package.json",
+              "gradle/libs.versions.toml",
+              "plugins/devserver/dind.sh",
+              "**/package.json"
+            ],
+            "exclude": []
+          }
+        }
+      ],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      }
+    }
+  },
   "taskfile": {
     "run": "when_changed",
     "silent": false,
@@ -69,6 +159,7 @@
     "preconditions": []
   },
   "visibility": "internal",
+  "emitsSrcs": true,
   "deps": [
     "setup"
   ],

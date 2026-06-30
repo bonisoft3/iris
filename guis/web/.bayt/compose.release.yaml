@@ -11,3 +11,11 @@ services:
         platforms:
         - linux/amd64
     image: bayt-guis_web-release:${BAYT_IMAGE_TAG:-latest}
+  guis_web-release_srcs:
+    build:
+      additional_contexts:
+        guis_web-build_srcs: service:guis_web-build_srcs
+      context: ..
+      dockerfile: .bayt/Dockerfile.release
+      target: release_srcs
+    image: bayt-guis_web-release_srcs:latest

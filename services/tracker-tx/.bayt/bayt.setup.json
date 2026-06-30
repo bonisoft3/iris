@@ -41,6 +41,7 @@
     "preconditions": []
   },
   "visibility": "internal",
+  "emitsSrcs": false,
   "deps": [],
   "transitiveDeps": [],
   "transitiveCrossDeps": [],

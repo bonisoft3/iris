@@ -1,0 +1,8 @@
+# generated from bayt.cue — do not edit
+include:
+- path: ./compose.launch.yaml
+  required: false
+- path: ./compose.build_srcs.closure.yaml
+  required: false
+- path: ../../../libraries/xproto/.bayt/compose.descriptor_srcs.closure.yaml
+  required: false

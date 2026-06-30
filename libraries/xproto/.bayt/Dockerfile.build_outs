@@ -1,4 +1,0 @@
-# generated from bayt.cue — do not edit
-FROM scratch AS build_outs
-WORKDIR /monorepo/libraries/xproto
-COPY --from=libraries_xproto-build --parents /monorepo/libraries/xproto/build/**/* /monorepo/libraries/xproto/.gradle/**/* /monorepo/libraries/xproto/build.gradle.kts /monorepo/libraries/xproto/settings.gradle.kts /monorepo/libraries/xproto/gradle.properties /monorepo/libraries/xproto/gradlew /monorepo/libraries/xproto/gradle/wrapper/**/* /monorepo/libraries/xproto/gradle/lib[s].versions.toml /

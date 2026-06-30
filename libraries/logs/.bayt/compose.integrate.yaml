@@ -16,3 +16,32 @@ services:
         output:
         - type=${BAYT_COMPOSE_OUTPUT:-docker}
     image: bayt-libraries_logs-integrate:${BAYT_IMAGE_TAG:-latest}
+  libraries_logs-integrate_srcs:
+    build:
+      additional_contexts:
+        libraries_logs-build_srcs: service:libraries_logs-build_srcs
+        libraries_logs-setup_srcs: service:libraries_logs-setup_srcs
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate_srcs
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_logs-integrate_srcs
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_logs-integrate_srcs
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_logs-integrate_srcs,mode=max,image-manifest=true,oci-mediatypes=true
+    image: bayt-libraries_logs-integrate_srcs:latest
+  libraries_logs-integrate_outs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate_outs
+      additional_contexts:
+        libraries_logs-integrate: service:libraries_logs-integrate
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_logs-integrate_outs
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_logs-integrate_outs
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_logs-integrate_outs,mode=min,image-manifest=true,oci-mediatypes=true
+    image: bayt-libraries_logs-integrate_outs:latest

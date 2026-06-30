@@ -9,3 +9,17 @@ services:
       dockerfile: .bayt/Dockerfile.build
       target: build
     image: bayt-guis_web-build:${BAYT_IMAGE_TAG:-latest}
+  guis_web-build_srcs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.build
+      target: build_srcs
+    image: bayt-guis_web-build_srcs:latest
+  guis_web-build_outs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.build
+      target: build_outs
+      additional_contexts:
+        guis_web-build: service:guis_web-build
+    image: bayt-guis_web-build_outs:latest

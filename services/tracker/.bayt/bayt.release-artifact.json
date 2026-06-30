@@ -47,7 +47,390 @@
     "exclude": []
   },
   "env": {},
+  "synthetics": {
+    "outs": {
+      "name": "release-artifact_outs",
+      "project": "services_tracker",
+      "dir": "services/tracker",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          "build/jib-image.tar"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      }
+    },
+    "srcs": {
+      "name": "release-artifact_srcs",
+      "project": "services_tracker",
+      "dir": "services/tracker",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          "build.gradle.kts",
+          "src/main/**/*.gradle.kts",
+          "gradle.properties",
+          "gradle/wrapper/gradle-wrapper.jar",
+          "gradlew",
+          "src/main/**/*.java",
+          "src/main/**/*.kt",
+          "gradle/lib[s].versions.toml",
+          "settings.gradle.kts",
+          "src/main/**/*.sq",
+          "src/main/**/*.sql",
+          "src/main/**/*.sqm",
+          "src/main/resources/**/*",
+          "gradle/wrapper/gradle-wrapper.properties",
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [
+        "build_srcs",
+        "setup_srcs"
+      ],
+      "transitiveCrossDeps": [
+        {
+          "name": "build_srcs",
+          "project": "libraries_logs",
+          "dir": "libraries/logs",
+          "outs": {
+            "globs": [
+              "build.gradle.kts",
+              "src/main/**/*.gradle.kts",
+              "gradle.properties",
+              "gradle/wrapper/gradle-wrapper.jar",
+              "gradlew",
+              "src/main/**/*.java",
+              "src/main/**/*.kt",
+              "gradle/lib[s].versions.toml",
+              "settings.gradle.kts",
+              "src/main/**/*.sq",
+              "src/main/**/*.sql",
+              "src/main/**/*.sqm",
+              "gradle/wrapper/gradle-wrapper.properties",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "name": "build_srcs",
+          "project": "libraries_pbtables",
+          "dir": "libraries/pbtables",
+          "outs": {
+            "globs": [
+              "build.gradle.kts",
+              "src/main/**/*.gradle.kts",
+              "gradle.properties",
+              "gradle/wrapper/gradle-wrapper.jar",
+              "gradlew",
+              "src/main/**/*.java",
+              "src/main/**/*.kt",
+              "gradle/lib[s].versions.toml",
+              "settings.gradle.kts",
+              "src/main/**/*.sq",
+              "src/main/**/*.sql",
+              "src/main/**/*.sqm",
+              "gradle/wrapper/gradle-wrapper.properties",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "name": "build_srcs",
+          "project": "libraries_xproto",
+          "dir": "libraries/xproto",
+          "outs": {
+            "globs": [
+              "build.gradle.kts",
+              "src/main/**/*.gradle.kts",
+              "gradle.properties",
+              "gradle/wrapper/gradle-wrapper.jar",
+              "gradlew",
+              "src/main/**/*.java",
+              "src/main/**/*.kt",
+              "gradle/lib[s].versions.toml",
+              "settings.gradle.kts",
+              "src/main/**/*.sq",
+              "src/main/**/*.sql",
+              "src/main/**/*.sqm",
+              "src/**/*.kt",
+              "src/**/*.gradle.kts",
+              "src/**/*.java",
+              "src/**/*.sql",
+              "src/**/*.sq",
+              "src/**/*.sqm",
+              "trash/**/*.proto",
+              "buf.gradle.gen.yaml",
+              "buf.yaml",
+              "buf.lock",
+              "gradle/wrapper/gradle-wrapper.properties",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "name": "build_srcs",
+          "project": "plugins_libstoml",
+          "dir": "plugins/libstoml",
+          "outs": {
+            "globs": [
+              "build.gradle.kts",
+              "src/main/**/*.gradle.kts",
+              "gradle.properties",
+              "gradle/wrapper/gradle-wrapper.jar",
+              "gradlew",
+              "src/main/**/*.java",
+              "src/main/**/*.kt",
+              "gradle/lib[s].versions.toml",
+              "settings.gradle.kts",
+              "src/main/**/*.sq",
+              "src/main/**/*.sql",
+              "src/main/**/*.sqm",
+              "gradle/wrapper/gradle-wrapper.properties",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "name": "build_srcs",
+          "project": "plugins_jvm",
+          "dir": "plugins/jvm",
+          "outs": {
+            "globs": [
+              "build.gradle.kts",
+              "src/main/**/*.gradle.kts",
+              "gradle.properties",
+              "gradle/wrapper/gradle-wrapper.jar",
+              "gradlew",
+              "src/main/**/*.java",
+              "src/main/**/*.kt",
+              "gradle/lib[s].versions.toml",
+              "settings.gradle.kts",
+              "src/main/**/*.sq",
+              "src/main/**/*.sql",
+              "src/main/**/*.sqm",
+              "gradle/wrapper/gradle-wrapper.properties",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "name": "build_srcs",
+          "project": "plugins_micronaut",
+          "dir": "plugins/micronaut",
+          "outs": {
+            "globs": [
+              "build.gradle.kts",
+              "src/main/**/*.gradle.kts",
+              "gradle.properties",
+              "gradle/wrapper/gradle-wrapper.jar",
+              "gradlew",
+              "src/main/**/*.java",
+              "src/main/**/*.kt",
+              "gradle/lib[s].versions.toml",
+              "settings.gradle.kts",
+              "src/main/**/*.sq",
+              "src/main/**/*.sql",
+              "src/main/**/*.sqm",
+              "gradle/wrapper/gradle-wrapper.properties",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "name": "setup_srcs",
+          "project": "workspaceroot",
+          "dir": "",
+          "outs": {
+            "globs": [
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock",
+              "pnpm-lock.yaml",
+              "pnpm-workspace.yaml",
+              "package.json",
+              "gradle/libs.versions.toml",
+              "plugins/devserver/dind.sh",
+              "**/package.json"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "plugins_libstoml",
+          "name": "setup_srcs",
+          "dir": "plugins/libstoml",
+          "outs": {
+            "globs": [
+              "gradle/wrapper/gradle-wrapper.properties",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "plugins_jvm",
+          "name": "setup_srcs",
+          "dir": "plugins/jvm",
+          "outs": {
+            "globs": [
+              "gradle/wrapper/gradle-wrapper.properties",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "libraries_logs",
+          "name": "setup_srcs",
+          "dir": "libraries/logs",
+          "outs": {
+            "globs": [
+              "gradle/wrapper/gradle-wrapper.properties",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "plugins_micronaut",
+          "name": "setup_srcs",
+          "dir": "plugins/micronaut",
+          "outs": {
+            "globs": [
+              "gradle/wrapper/gradle-wrapper.properties",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "libraries_xproto",
+          "name": "setup_srcs",
+          "dir": "libraries/xproto",
+          "outs": {
+            "globs": [
+              "gradle/wrapper/gradle-wrapper.properties",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "libraries_pbtables",
+          "name": "setup_srcs",
+          "dir": "libraries/pbtables",
+          "outs": {
+            "globs": [
+              "gradle/wrapper/gradle-wrapper.properties",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "services_tracker",
+          "name": "build_srcs",
+          "dir": "services/tracker",
+          "outs": {
+            "globs": [
+              "build.gradle.kts",
+              "src/main/**/*.gradle.kts",
+              "gradle.properties",
+              "gradle/wrapper/gradle-wrapper.jar",
+              "gradlew",
+              "src/main/**/*.java",
+              "src/main/**/*.kt",
+              "gradle/lib[s].versions.toml",
+              "settings.gradle.kts",
+              "src/main/**/*.sq",
+              "src/main/**/*.sql",
+              "src/main/**/*.sqm",
+              "src/main/resources/**/*"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "services_tracker",
+          "name": "setup_srcs",
+          "dir": "services/tracker",
+          "outs": {
+            "globs": [
+              "gradle/wrapper/gradle-wrapper.properties",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock"
+            ],
+            "exclude": []
+          }
+        }
+      ],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      }
+    }
+  },
   "visibility": "internal",
+  "emitsSrcs": true,
   "deps": [
     "build"
   ],

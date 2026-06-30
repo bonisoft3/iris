@@ -1,4 +1,0 @@
-# generated from bayt.cue — do not edit
-FROM scratch AS build_outs
-WORKDIR /monorepo/libraries/logs
-COPY --from=libraries_logs-build --parents /monorepo/libraries/logs/build/**/* /monorepo/libraries/logs/.gradle/**/* /monorepo/libraries/logs/build.gradle.kts /monorepo/libraries/logs/settings.gradle.kts /monorepo/libraries/logs/gradle.properties /monorepo/libraries/logs/gradlew /monorepo/libraries/logs/gradle/wrapper/**/* /monorepo/libraries/logs/gradle/lib[s].versions.toml /

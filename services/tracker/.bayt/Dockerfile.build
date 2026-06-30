@@ -14,3 +14,22 @@ COPY Taskfile.yml ./Taskfile.yml
 COPY .bayt/Taskfile.yml .bayt/Taskfile.build.yaml .bayt/bayt.build.json .bayt/init.gradle.kts ./.bayt/
 COPY .bayt/Taskfile.setup.yaml .bayt/bayt.setup.json ./.bayt/
 RUN --mount=type=cache,target=/root/.cache/bayt,id=services_tracker-build:/root/.cache/bayt,sharing=locked --mount=type=cache,target=/root/.gradle,id=services_tracker-build:/root/.gradle,sharing=locked --mount=type=cache,target=.gradle/configuration-cache,id=services_tracker-build:.gradle/configuration-cache,sharing=locked ["task", "bayt:build"]
+
+FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223 AS build_ctxs
+WORKDIR /monorepo/services/tracker
+COPY --parents build.gradle.kts src/main/**/*.gradle.kts gradle.properties gradle/wrapper/gradle-wrapper.jar gradlew src/main/**/*.java src/main/**/*.kt gradle/lib[s].versions.toml settings.gradle.kts src/main/**/*.sq src/main/**/*.sql src/main/**/*.sqm src/main/resources/**/* ./
+COPY --from=services_tracker-setup_srcs /monorepo /monorepo
+COPY --from=libraries_logs-build_srcs /monorepo /monorepo
+COPY --from=libraries_pbtables-build_srcs /monorepo /monorepo
+COPY --from=libraries_xproto-build_srcs /monorepo /monorepo
+COPY --from=plugins_libstoml-build_srcs /monorepo /monorepo
+COPY --from=plugins_jvm-build_srcs /monorepo /monorepo
+COPY --from=plugins_micronaut-build_srcs /monorepo /monorepo
+ARG SOURCE_DATE_EPOCH
+RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+FROM scratch AS build_srcs
+COPY --from=build_ctxs /monorepo /monorepo
+
+FROM scratch AS build_outs
+WORKDIR /monorepo/services/tracker
+COPY --from=services_tracker-build --parents /monorepo/services/tracker/build/**/* /monorepo/services/tracker/.gradle/**/* /monorepo/services/tracker/build.gradle.kts /monorepo/services/tracker/settings.gradle.kts /monorepo/services/tracker/gradle.properties /monorepo/services/tracker/gradlew /monorepo/services/tracker/gradle/wrapper/**/* /monorepo/services/tracker/gradle/lib[s].versions.toml /

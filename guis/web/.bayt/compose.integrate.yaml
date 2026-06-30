@@ -9,3 +9,11 @@ services:
       dockerfile: .bayt/Dockerfile.integrate
       target: integrate
     image: bayt-guis_web-integrate:${BAYT_IMAGE_TAG:-latest}
+  guis_web-integrate_srcs:
+    build:
+      additional_contexts:
+        guis_web-build_srcs: service:guis_web-build_srcs
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate_srcs
+    image: bayt-guis_web-integrate_srcs:latest

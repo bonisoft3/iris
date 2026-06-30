@@ -56,6 +56,169 @@
     "exclude": []
   },
   "env": {},
+  "synthetics": {
+    "outs": {
+      "name": "setup_outs",
+      "project": "libraries_xproto",
+      "dir": "libraries/xproto",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          "gradle/wrapper/gradle-wrapper.properties",
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock",
+          ".task/bayt/setup.hash"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      }
+    },
+    "srcs": {
+      "name": "setup_srcs",
+      "project": "libraries_xproto",
+      "dir": "libraries/xproto",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          "gradle/wrapper/gradle-wrapper.properties",
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [
+        {
+          "name": "build_srcs",
+          "project": "plugins_jvm",
+          "dir": "plugins/jvm",
+          "outs": {
+            "globs": [
+              "build.gradle.kts",
+              "src/main/**/*.gradle.kts",
+              "gradle.properties",
+              "gradle/wrapper/gradle-wrapper.jar",
+              "gradlew",
+              "src/main/**/*.java",
+              "src/main/**/*.kt",
+              "gradle/lib[s].versions.toml",
+              "settings.gradle.kts",
+              "src/main/**/*.sq",
+              "src/main/**/*.sql",
+              "src/main/**/*.sqm",
+              "gradle/wrapper/gradle-wrapper.properties",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "name": "build_srcs",
+          "project": "plugins_libstoml",
+          "dir": "plugins/libstoml",
+          "outs": {
+            "globs": [
+              "build.gradle.kts",
+              "src/main/**/*.gradle.kts",
+              "gradle.properties",
+              "gradle/wrapper/gradle-wrapper.jar",
+              "gradlew",
+              "src/main/**/*.java",
+              "src/main/**/*.kt",
+              "gradle/lib[s].versions.toml",
+              "settings.gradle.kts",
+              "src/main/**/*.sq",
+              "src/main/**/*.sql",
+              "src/main/**/*.sqm",
+              "gradle/wrapper/gradle-wrapper.properties",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "name": "setup_srcs",
+          "project": "workspaceroot",
+          "dir": "",
+          "outs": {
+            "globs": [
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock",
+              "pnpm-lock.yaml",
+              "pnpm-workspace.yaml",
+              "package.json",
+              "gradle/libs.versions.toml",
+              "plugins/devserver/dind.sh",
+              "**/package.json"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "plugins_libstoml",
+          "name": "setup_srcs",
+          "dir": "plugins/libstoml",
+          "outs": {
+            "globs": [
+              "gradle/wrapper/gradle-wrapper.properties",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "plugins_jvm",
+          "name": "setup_srcs",
+          "dir": "plugins/jvm",
+          "outs": {
+            "globs": [
+              "gradle/wrapper/gradle-wrapper.properties",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock"
+            ],
+            "exclude": []
+          }
+        }
+      ],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      }
+    }
+  },
   "taskfile": {
     "run": "when_changed",
     "silent": false,
@@ -63,6 +226,7 @@
     "preconditions": []
   },
   "visibility": "internal",
+  "emitsSrcs": true,
   "deps": [],
   "transitiveDeps": [],
   "transitiveCrossDeps": [

@@ -1,4 +1,0 @@
-# generated from bayt.cue — do not edit
-FROM scratch AS integrate_outs
-WORKDIR /monorepo/services/tracker
-COPY --from=services_tracker-integrate --parents /monorepo/services/tracker/build/test-results/integrationTest/**/*.xml /monorepo/services/tracker/build/reports/tests/integrationTest/**/* /

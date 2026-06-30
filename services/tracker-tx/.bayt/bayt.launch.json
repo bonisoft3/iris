@@ -106,7 +106,88 @@
     "PROTO_DESCRIPTOR_PB": "/monorepo/libraries/xproto/out/xproto.desc.pb",
     "ENVOY_UID": "0"
   },
+  "synthetics": {
+    "srcs": {
+      "name": "launch_srcs",
+      "project": "services_tracker-tx",
+      "dir": "services/tracker-tx",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          "transcoding.yaml",
+          "cloud_run_tls.yaml",
+          "edge.yaml"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [
+        "build_srcs",
+        "setup_srcs"
+      ],
+      "transitiveCrossDeps": [
+        {
+          "name": "descriptor_srcs",
+          "project": "libraries_xproto",
+          "dir": "libraries/xproto",
+          "outs": {
+            "globs": [
+              "buf.yaml",
+              "buf.lock",
+              "trash/**/*.proto"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "name": "setup_srcs",
+          "project": "workspaceroot",
+          "dir": "",
+          "outs": {
+            "globs": [
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock",
+              "pnpm-lock.yaml",
+              "pnpm-workspace.yaml",
+              "package.json",
+              "gradle/libs.versions.toml",
+              "plugins/devserver/dind.sh",
+              "**/package.json"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "services_tracker-tx",
+          "name": "build_srcs",
+          "dir": "services/tracker-tx",
+          "outs": {
+            "globs": [
+              "transcoding.yaml",
+              "cloud_run_tls.yaml",
+              "edge.yaml"
+            ],
+            "exclude": []
+          }
+        }
+      ],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      }
+    }
+  },
   "visibility": "internal",
+  "emitsSrcs": true,
   "deps": [
     "build",
     "descriptor"

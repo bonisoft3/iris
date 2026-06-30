@@ -24,3 +24,12 @@ services:
     - '8080'
     volumes:
     - //var/run/docker.sock:/var/run/docker.sock
+  services_tracker-tx-launch_srcs:
+    build:
+      additional_contexts:
+        services_tracker-tx-build_srcs: service:services_tracker-tx-build_srcs
+        libraries_xproto-descriptor_srcs: service:libraries_xproto-descriptor_srcs
+      context: ..
+      dockerfile: .bayt/Dockerfile.launch
+      target: launch_srcs
+    image: bayt-services_tracker-tx-launch_srcs:latest

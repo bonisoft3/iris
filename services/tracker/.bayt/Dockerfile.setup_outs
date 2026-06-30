@@ -1,4 +1,0 @@
-# generated from bayt.cue — do not edit
-FROM scratch AS setup_outs
-WORKDIR /monorepo/services/tracker
-COPY --from=services_tracker-setup --parents /monorepo/services/tracker/gradle/wrapper/gradle-wrapper.properties /monorepo/services/tracker/[m]ise.toml /monorepo/services/tracker/[.]mise.toml /monorepo/services/tracker/[m]ise.lock /monorepo/services/tracker/.task/bayt/setup.hash /

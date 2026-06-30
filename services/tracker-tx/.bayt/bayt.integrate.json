@@ -46,6 +46,81 @@
     "exclude": []
   },
   "env": {},
+  "synthetics": {
+    "outs": {
+      "name": "integrate_outs",
+      "project": "services_tracker-tx",
+      "dir": "services/tracker-tx",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          "build/test-results-int/**/*.xml"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      }
+    },
+    "srcs": {
+      "name": "integrate_srcs",
+      "project": "services_tracker-tx",
+      "dir": "services/tracker-tx",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          "transcoding.yaml",
+          "cloud_run_tls.yaml",
+          "edge.yaml"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [
+        "build_srcs",
+        "setup_srcs"
+      ],
+      "transitiveCrossDeps": [
+        {
+          "project": "services_tracker-tx",
+          "name": "build_srcs",
+          "dir": "services/tracker-tx",
+          "outs": {
+            "globs": [
+              "transcoding.yaml",
+              "cloud_run_tls.yaml",
+              "edge.yaml"
+            ],
+            "exclude": []
+          }
+        }
+      ],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      }
+    }
+  },
   "taskfile": {
     "run": "when_changed",
     "silent": false,
@@ -53,6 +128,7 @@
     "preconditions": []
   },
   "visibility": "internal",
+  "emitsSrcs": true,
   "deps": [
     "build"
   ],

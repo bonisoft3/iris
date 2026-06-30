@@ -10,17 +10,17 @@ include:
   required: false
 - path: ./compose.release.yaml
   required: false
-- path: ./compose.build_srcs.yaml
-  required: false
-- path: ./compose.integrate_srcs.yaml
-  required: false
-- path: ./compose.build_outs.yaml
-  required: false
-- path: ./compose.integrate_outs.yaml
-  required: false
-- path: ./compose._bayt.yaml
-  required: false
 - path: ../../../libraries/xproto/.bayt/compose.bayt.yaml
   required: false
 - path: ../../../.bayt/compose.bayt.yaml
   required: false
+services:
+  services_tracker-tx-bayt:
+    build:
+      additional_contexts:
+        libraries_xproto-bayt: service:libraries_xproto-bayt
+        workspaceroot-bayt: service:workspaceroot-bayt
+      context: ..
+      dockerfile: .bayt/Dockerfile.bayt
+      target: bayt
+    image: bayt-services_tracker-tx-bayt:latest

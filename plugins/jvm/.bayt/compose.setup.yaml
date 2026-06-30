@@ -14,3 +14,29 @@ services:
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-setup,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-plugins_jvm-setup:${BAYT_IMAGE_TAG:-latest}
+  plugins_jvm-setup_srcs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_srcs
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_jvm-setup_srcs
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_jvm-setup_srcs
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_jvm-setup_srcs,mode=max,image-manifest=true,oci-mediatypes=true
+    image: bayt-plugins_jvm-setup_srcs:latest
+  plugins_jvm-setup_outs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_outs
+      additional_contexts:
+        plugins_jvm-setup: service:plugins_jvm-setup
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_jvm-setup_outs
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_jvm-setup_outs
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_jvm-setup_outs,mode=min,image-manifest=true,oci-mediatypes=true
+    image: bayt-plugins_jvm-setup_outs:latest

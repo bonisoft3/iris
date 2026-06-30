@@ -95,7 +95,56 @@
     "exclude": []
   },
   "env": {},
+  "synthetics": {
+    "srcs": {
+      "name": "release_srcs",
+      "project": "services_tracker-tx",
+      "dir": "services/tracker-tx",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          "transcoding.yaml",
+          "cloud_run_tls.yaml",
+          "edge.yaml"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [
+        "build_srcs",
+        "setup_srcs"
+      ],
+      "transitiveCrossDeps": [
+        {
+          "project": "services_tracker-tx",
+          "name": "build_srcs",
+          "dir": "services/tracker-tx",
+          "outs": {
+            "globs": [
+              "transcoding.yaml",
+              "cloud_run_tls.yaml",
+              "edge.yaml"
+            ],
+            "exclude": []
+          }
+        }
+      ],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      }
+    }
+  },
   "visibility": "internal",
+  "emitsSrcs": true,
   "deps": [
     "build"
   ],

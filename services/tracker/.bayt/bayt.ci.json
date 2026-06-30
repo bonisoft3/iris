@@ -114,6 +114,7 @@
     "COMPOSE_BAKE": "true"
   },
   "visibility": "internal",
+  "emitsSrcs": false,
   "deps": [
     "dindbox",
     "integrate_srcs",
@@ -144,7 +145,11 @@
           "settings.gradle.kts",
           "src/main/**/*.sq",
           "src/main/**/*.sql",
-          "src/main/**/*.sqm"
+          "src/main/**/*.sqm",
+          "gradle/wrapper/gradle-wrapper.properties",
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock"
         ],
         "exclude": []
       }
@@ -166,7 +171,11 @@
           "settings.gradle.kts",
           "src/main/**/*.sq",
           "src/main/**/*.sql",
-          "src/main/**/*.sqm"
+          "src/main/**/*.sqm",
+          "gradle/wrapper/gradle-wrapper.properties",
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock"
         ],
         "exclude": []
       }
@@ -195,15 +204,14 @@
           "src/**/*.sql",
           "src/**/*.sq",
           "src/**/*.sqm",
-          "build.gradle.kts",
-          "settings.gradle.kts",
-          "gradle.properties",
-          "gradlew",
-          "gradle/wrapper/gradle-wrapper.jar",
           "trash/**/*.proto",
           "buf.gradle.gen.yaml",
           "buf.yaml",
-          "buf.lock"
+          "buf.lock",
+          "gradle/wrapper/gradle-wrapper.properties",
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock"
         ],
         "exclude": []
       }
@@ -225,7 +233,11 @@
           "settings.gradle.kts",
           "src/main/**/*.sq",
           "src/main/**/*.sql",
-          "src/main/**/*.sqm"
+          "src/main/**/*.sqm",
+          "gradle/wrapper/gradle-wrapper.properties",
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock"
         ],
         "exclude": []
       }
@@ -247,7 +259,11 @@
           "settings.gradle.kts",
           "src/main/**/*.sq",
           "src/main/**/*.sql",
-          "src/main/**/*.sqm"
+          "src/main/**/*.sqm",
+          "gradle/wrapper/gradle-wrapper.properties",
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock"
         ],
         "exclude": []
       }
@@ -269,7 +285,11 @@
           "settings.gradle.kts",
           "src/main/**/*.sq",
           "src/main/**/*.sql",
-          "src/main/**/*.sqm"
+          "src/main/**/*.sqm",
+          "gradle/wrapper/gradle-wrapper.properties",
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock"
         ],
         "exclude": []
       }

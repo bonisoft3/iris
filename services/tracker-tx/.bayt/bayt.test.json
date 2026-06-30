@@ -25,6 +25,7 @@
     "preconditions": []
   },
   "visibility": "internal",
+  "emitsSrcs": false,
   "deps": [
     "build"
   ],

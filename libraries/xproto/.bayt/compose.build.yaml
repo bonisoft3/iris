@@ -16,3 +16,34 @@ services:
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-build,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-libraries_xproto-build:${BAYT_IMAGE_TAG:-latest}
+  libraries_xproto-build_srcs:
+    build:
+      additional_contexts:
+        libraries_xproto-setup_srcs: service:libraries_xproto-setup_srcs
+        plugins_libstoml-build_srcs: service:plugins_libstoml-build_srcs
+        plugins_jvm-build_srcs: service:plugins_jvm-build_srcs
+        libraries_logs-build_srcs: service:libraries_logs-build_srcs
+      context: ..
+      dockerfile: .bayt/Dockerfile.build
+      target: build_srcs
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_xproto-build_srcs
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_xproto-build_srcs
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_xproto-build_srcs,mode=max,image-manifest=true,oci-mediatypes=true
+    image: bayt-libraries_xproto-build_srcs:latest
+  libraries_xproto-build_outs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.build
+      target: build_outs
+      additional_contexts:
+        libraries_xproto-build: service:libraries_xproto-build
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_xproto-build_outs
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_xproto-build_outs
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_xproto-build_outs,mode=min,image-manifest=true,oci-mediatypes=true
+    image: bayt-libraries_xproto-build_outs:latest

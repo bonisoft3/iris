@@ -1,6 +1,4 @@
 # generated from bayt.cue — do not edit
 include:
-- path: ./compose._bayt.yaml
-  required: false
-- path: ../../../.bayt/compose._bayt.closure.yaml
+- path: ./compose.bayt.yaml
   required: false

@@ -14,3 +14,31 @@ services:
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-descriptor,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-libraries_xproto-descriptor:${BAYT_IMAGE_TAG:-latest}
+  libraries_xproto-descriptor_srcs:
+    build:
+      additional_contexts:
+        workspaceroot-setup_srcs: service:workspaceroot-setup_srcs
+      context: ..
+      dockerfile: .bayt/Dockerfile.descriptor
+      target: descriptor_srcs
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_xproto-descriptor_srcs
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_xproto-descriptor_srcs
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_xproto-descriptor_srcs,mode=max,image-manifest=true,oci-mediatypes=true
+    image: bayt-libraries_xproto-descriptor_srcs:latest
+  libraries_xproto-descriptor_outs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.descriptor
+      target: descriptor_outs
+      additional_contexts:
+        libraries_xproto-descriptor: service:libraries_xproto-descriptor
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_xproto-descriptor_outs
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_xproto-descriptor_outs
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_xproto-descriptor_outs,mode=min,image-manifest=true,oci-mediatypes=true
+    image: bayt-libraries_xproto-descriptor_outs:latest

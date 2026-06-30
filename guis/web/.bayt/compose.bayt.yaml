@@ -10,13 +10,14 @@ include:
   required: false
 - path: ./compose.integrate.yaml
   required: false
-- path: ./compose.build_srcs.yaml
-  required: false
-- path: ./compose.integrate_srcs.yaml
-  required: false
-- path: ./compose.build_outs.yaml
-  required: false
-- path: ./compose._bayt.yaml
-  required: false
 - path: ../../../.bayt/compose.bayt.yaml
   required: false
+services:
+  guis_web-bayt:
+    build:
+      additional_contexts:
+        workspaceroot-bayt: service:workspaceroot-bayt
+      context: ..
+      dockerfile: .bayt/Dockerfile.bayt
+      target: bayt
+    image: bayt-guis_web-bayt:latest

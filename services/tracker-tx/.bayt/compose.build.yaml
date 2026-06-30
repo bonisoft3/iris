@@ -8,3 +8,17 @@ services:
       dockerfile: .bayt/Dockerfile.build
       target: build
     image: bayt-services_tracker-tx-build:${BAYT_IMAGE_TAG:-latest}
+  services_tracker-tx-build_srcs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.build
+      target: build_srcs
+    image: bayt-services_tracker-tx-build_srcs:latest
+  services_tracker-tx-build_outs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.build
+      target: build_outs
+      additional_contexts:
+        services_tracker-tx-build: service:services_tracker-tx-build
+    image: bayt-services_tracker-tx-build_outs:latest

@@ -1,4 +1,0 @@
-# generated from bayt.cue — do not edit
-FROM scratch AS integrate_outs
-WORKDIR /monorepo/plugins/libstoml
-COPY --from=plugins_libstoml-integrate --parents /monorepo/plugins/libstoml/build/test-results/integrationTest/**/*.xml /monorepo/plugins/libstoml/build/reports/tests/integrationTest/**/* /

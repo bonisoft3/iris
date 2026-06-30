@@ -5,3 +5,13 @@ RUN zypper -n install tar=1.35-160000.3.1 gzip=1.13-160000.2.2 && zypper clean -
 RUN mise x -- mkdir -p build/jib && tar xf build/jib-image.tar -C build/jib && mkdir -p build/layers && for tb in build/jib/*.tar.gz; do tar xzf "$tb" -C build/layers; done
 COPY Taskfile.yml ./Taskfile.yml
 COPY .bayt/Taskfile.yml .bayt/bayt.release-layers.json .bayt/init.gradle.kts ./.bayt/
+
+FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223 AS release-layers_ctxs
+WORKDIR /monorepo/services/tracker
+COPY --from=services_tracker-release-artifact_srcs /monorepo /monorepo
+COPY --from=services_tracker-build_srcs /monorepo /monorepo
+COPY --from=services_tracker-setup_srcs /monorepo /monorepo
+ARG SOURCE_DATE_EPOCH
+RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+FROM scratch AS release-layers_srcs
+COPY --from=release-layers_ctxs /monorepo /monorepo

@@ -6,23 +6,26 @@ include:
   required: false
 - path: ./compose.integrate.yaml
   required: false
-- path: ./compose.build_srcs.yaml
-  required: false
-- path: ./compose.setup_srcs.yaml
-  required: false
-- path: ./compose.integrate_srcs.yaml
-  required: false
-- path: ./compose.build_outs.yaml
-  required: false
-- path: ./compose.setup_outs.yaml
-  required: false
-- path: ./compose.integrate_outs.yaml
-  required: false
-- path: ./compose._bayt.yaml
-  required: false
 - path: ../../../plugins/libstoml/.bayt/compose.bayt.yaml
   required: false
 - path: ../../../plugins/jvm/.bayt/compose.bayt.yaml
   required: false
 - path: ../../../.bayt/compose.bayt.yaml
   required: false
+services:
+  libraries_logs-bayt:
+    build:
+      additional_contexts:
+        plugins_libstoml-bayt: service:plugins_libstoml-bayt
+        plugins_jvm-bayt: service:plugins_jvm-bayt
+        workspaceroot-bayt: service:workspaceroot-bayt
+      context: ..
+      dockerfile: .bayt/Dockerfile.bayt
+      target: bayt
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_logs-bayt
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_logs-bayt
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_logs-bayt,mode=max,image-manifest=true,oci-mediatypes=true
+    image: bayt-libraries_logs-bayt:latest

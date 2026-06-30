@@ -1,4 +1,0 @@
-# generated from bayt.cue — do not edit
-FROM scratch AS setup_outs
-WORKDIR /monorepo/libraries/logs
-COPY --from=libraries_logs-setup --parents /monorepo/libraries/logs/gradle/wrapper/gradle-wrapper.properties /monorepo/libraries/logs/[m]ise.toml /monorepo/libraries/logs/[.]mise.toml /monorepo/libraries/logs/[m]ise.lock /monorepo/libraries/logs/.task/bayt/setup.hash /

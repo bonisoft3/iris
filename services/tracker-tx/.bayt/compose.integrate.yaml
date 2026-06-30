@@ -9,3 +9,19 @@ services:
       dockerfile: .bayt/Dockerfile.integrate
       target: integrate
     image: bayt-services_tracker-tx-integrate:${BAYT_IMAGE_TAG:-latest}
+  services_tracker-tx-integrate_srcs:
+    build:
+      additional_contexts:
+        services_tracker-tx-build_srcs: service:services_tracker-tx-build_srcs
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate_srcs
+    image: bayt-services_tracker-tx-integrate_srcs:latest
+  services_tracker-tx-integrate_outs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate_outs
+      additional_contexts:
+        services_tracker-tx-integrate: service:services_tracker-tx-integrate
+    image: bayt-services_tracker-tx-integrate_outs:latest
