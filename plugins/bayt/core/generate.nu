@@ -166,7 +166,8 @@ def _hash-header       [c: string]: nothing -> string { "# generated from bayt.c
 def _slash-header      [c: string]: nothing -> string { "// generated from bayt.cue — do not edit\n" + $c }
 def _json-header  [d: any]: nothing -> any { {_generated_from: "bayt.cue (do not edit)"} | merge $d }
 
-def write-bundle [bundle: record, base: string] {
+def write-bundle [bundle: record, base: string, --depot] {
+	let ws = (pwd | str trim)
 	let prefix = if $base == "." or $base == "" { "" } else { $"($base)/" }
 
 	let bayt_dir = $"($prefix).bayt"
@@ -253,7 +254,56 @@ def write-bundle [bundle: record, base: string] {
 }
 ')
 
+	# --- depot.yaml (opt-in): a flat, git-context-bakeable definition for the
+	# depot build phase. Emitted after the compose files it flattens.
+	if $depot {
+		emit-depot-yaml $base $ws
+	}
+
 	print $"bayt: wrote files for project ($bundle.manifest.projectManifest.name)"
+}
+
+# emit-depot-yaml writes two git-context-bakeable files for the depot build phase:
+#   <proj>/.bayt/depot.yaml — the integration graph flattened by
+#     `docker compose config --no-interpolate` (federation resolved, cross-project
+#     services inlined) with late-bound ${VARS} (CACHE_SCOPE, BAYT_IMAGE_TAG,
+#     BAYT_COMPOSE_OUTPUT) left literal for the bake caller to set. compose
+#     absolutizes contexts and uses `service:` refs, so rewrite contexts to
+#     repo-root-relative and `service:X` → `target:X` (depot bake stats a
+#     `service:X` context as a path).
+#   <proj>/.bayt/depot.hcl — the `integrate` closure as a bake `group`, so the
+#     build phase bakes it by name with no runtime `buildx --print` scrape and no
+#     local file read. That's what lets the build job go checkout-free:
+#       depot bake <git-ref> -f <proj>/.bayt/depot.yaml -f <proj>/.bayt/depot.hcl \
+#         --set "*.args.BUILDKIT_SYNTAX=…" depot-build
+# `--no-interpolate` + `buildx bake --print` require docker; the docker-CLI dep is
+# why this is behind --depot.
+def emit-depot-yaml [proj_dir: string, ws: string] {
+	let dir = if $proj_dir == "." or $proj_dir == "" { $ws } else { $"($ws)/($proj_dir)" }
+	let r = (do { cd $dir; ^docker compose config --no-interpolate } | complete)
+	if $r.exit_code != 0 {
+		print -e $"bayt: depot.yaml skipped for ($proj_dir) — `docker compose config` exited ($r.exit_code) \(deps not generated? run with --recursive\)"
+		print -e ($r.stderr | lines | last 3 | str join "\n")
+		return
+	}
+	let flat = ($r.stdout
+		| str replace --all $"($ws)/" ""
+		| str replace --all $ws "."
+		| str replace --all "service:" "target:")
+	atomic-write $"($dir)/.bayt/depot.yaml" (_hash-header $flat)
+
+	# depot.hcl — the `integrate` closure as a bake group. buildx --print expands
+	# it (depot's --print doesn't); scrape the target keys at generation time so
+	# the build phase needs neither a runtime scrape nor a checkout. Skipped for
+	# projects with no `integrate` target.
+	let p = (do { cd $dir; ^docker buildx bake -f .bayt/depot.yaml --print integrate } | complete)
+	if $p.exit_code == 0 {
+		let names = ($p.stdout | from json | get --optional target | default {} | columns)
+		if ($names | is-not-empty) {
+			let group = ("group \"depot-build\" {\n  targets = [" + ($names | each {|n| $'"($n)"'} | str join ", ") + "]\n}\n")
+			atomic-write $"($dir)/.bayt/depot.hcl" (_slash-header $group)
+		}
+	}
 }
 
 # pass1 extracts the project.targets map from a bayt.cue.
@@ -457,25 +507,25 @@ def topo-schedule [workspace_root: string, root_rel: string, index: record] {
 # two-segment cross-project dep so transitive `:srcs` walking lands the
 # upstream source closures without consumers enumerating them. Missing
 # `:srcs` manifests (upstream target had no srcs) silently skip.
-def regen-project [bayt_cue: string, dir_rel: string, index: record, workspace_root: string] {
+def regen-project [bayt_cue: string, dir_rel: string, index: record, workspace_root: string, --depot] {
 	let targets = (pass1 $bayt_cue)
 	let cdeps = (cross-dep-strings $targets)
 	let auto_srcs = (srcs-variants $cdeps)
 	let all_deps = ($cdeps | append $auto_srcs | uniq)
 	let dep_manifests = (load-dep-manifests $all_deps $index $workspace_root $auto_srcs)
 	let bundle = (pass2 $bayt_cue $dep_manifests)
-	write-bundle $bundle $dir_rel
+	write-bundle $bundle $dir_rel --depot=$depot
 }
 
 # Entry point.
 const cache_nu = (path self | path dirname | path dirname | path join "runtime" "cache.nu")
 
-export def main [--recursive (-r), --runtime: string = ""] {
+export def main [--recursive (-r), --runtime: string = "", --depot] {
 	let effective = if ($runtime | is-empty) { ($env.BAYT_RUNTIME_DIR? | default "") } else { $runtime }
-	with-env { BAYT_RUNTIME_DIR: $effective } { _main --recursive=$recursive }
+	with-env { BAYT_RUNTIME_DIR: $effective } { _main --recursive=$recursive --depot=$depot }
 }
 
-def _main [--recursive (-r)] {
+def _main [--recursive (-r), --depot] {
 	if not ("bayt.cue" | path exists) {
 		return
 	}
@@ -500,7 +550,7 @@ def _main [--recursive (-r)] {
 			} else {
 				$"($workspace_root)/($dir_rel)/bayt.cue"
 			}
-			regen-project $bayt_cue $dir_rel $index $workspace_root
+			regen-project $bayt_cue $dir_rel $index $workspace_root --depot=$depot
 		}
 	} else {
 		# Single-project mode: cd to workspace_root so write-bundle's
@@ -511,7 +561,7 @@ def _main [--recursive (-r)] {
 		let project_rel = if ($project_rel | str trim) == "" { "." } else { $project_rel }
 		let bayt_cue = if $project_rel == "." { $"($workspace_root)/bayt.cue" } else { $"($workspace_root)/($project_rel)/bayt.cue" }
 		cd $workspace_root
-		regen-project $bayt_cue $project_rel $index $workspace_root
+		regen-project $bayt_cue $project_rel $index $workspace_root --depot=$depot
 	}
 
 	# Run cache GC at end of generation. Cheap (no-op when under
