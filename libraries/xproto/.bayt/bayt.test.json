@@ -128,7 +128,8 @@
           ".task/bayt/setup.hash"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     }
   ],
   "chainedDeps": [

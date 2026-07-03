@@ -357,7 +357,8 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         },
         {
           "project": "plugins_jvm",
@@ -371,7 +372,8 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         },
         {
           "project": "libraries_logs",
@@ -400,7 +402,8 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         },
         {
           "project": "libraries_xproto",
@@ -414,7 +417,8 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         },
         {
           "project": "libraries_pbtables",

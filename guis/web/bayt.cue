@@ -87,10 +87,9 @@ _web: sayt.pnpm & {
 		// release artifact (one image identity per project — skaffold
 		// rejects duplicate images across configs).
 		// Chains off :build (the iris pattern): `pnpm dev` needs the
-		// build stage's full filesystem (sources + node_modules), which
-		// flows via FROM. A fresh base would only receive build's
-		// declared outs (.output/**) under runtime-class dep edges —
-		// not enough for the dev server.
+		// build stage's full filesystem via FROM — a fresh base would
+		// receive only build's declared outs (.output/**) on the
+		// runtime-class dep edge, not enough for the dev server.
 		"launch": {
 			dockerfile: from: ref: ":build"
 			dockerfile: expose: [3000]

@@ -199,7 +199,8 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         },
         {
           "project": "plugins_jvm",

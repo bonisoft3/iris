@@ -249,7 +249,8 @@
               "**/package.json"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         },
         {
           "project": "plugins_libstoml",
@@ -263,7 +264,8 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         },
         {
           "project": "plugins_jvm",
@@ -277,7 +279,8 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         },
         {
           "project": "libraries_logs",
@@ -448,7 +451,8 @@
           ".task/bayt/setup.hash"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     }
   ],
   "chainedDeps": [
