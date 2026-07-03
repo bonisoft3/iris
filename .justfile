@@ -14,6 +14,8 @@ doctor:
 [no-cd]
 generate:
   just sayt generate
+generate-all:
+  nu {{justfile_directory()}}/plugins/bayt/bayt.nu generate --all --runtime plugins/bayt
 [no-cd]
 lint:
   just sayt lint
