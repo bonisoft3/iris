@@ -22,6 +22,7 @@
     "preconditions": []
   },
   "visibility": "internal",
+  "class": "build",
   "emitsSrcs": false,
   "deps": [
     "release"
@@ -50,7 +51,8 @@
           ".task/bayt/setup.hash"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     }
   ],
   "chainedDeps": [
@@ -61,7 +63,8 @@
       "outs": {
         "globs": [],
         "exclude": []
-      }
+      },
+      "class": "runtime"
     },
     {
       "name": "build",
@@ -72,7 +75,8 @@
           ".output/**/*"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "setup",
@@ -81,7 +85,8 @@
       "outs": {
         "globs": [],
         "exclude": []
-      }
+      },
+      "class": "build"
     }
   ],
   "cmds": [

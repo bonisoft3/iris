@@ -77,6 +77,7 @@
         "exclude": []
       },
       "env": {},
+      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [],
@@ -107,6 +108,7 @@
         "exclude": []
       },
       "env": {},
+      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [],
@@ -135,7 +137,8 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         },
         {
           "name": "build_srcs",
@@ -226,6 +229,7 @@
     "preconditions": []
   },
   "visibility": "internal",
+  "class": "build",
   "emitsSrcs": true,
   "deps": [],
   "transitiveDeps": [],
@@ -246,7 +250,8 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "build",

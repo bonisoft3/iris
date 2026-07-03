@@ -3,17 +3,16 @@ services:
   services_tracker-release:
     build:
       additional_contexts:
-        services_tracker-release-layers: service:services_tracker-release-layers
-        services_tracker-release-artifact: service:services_tracker-release-artifact
-        services_tracker-build: service:services_tracker-build
-        services_tracker-setup: service:services_tracker-setup
-        libraries_logs-build: service:libraries_logs-build
-        libraries_pbtables-build: service:libraries_pbtables-build
-        libraries_xproto-build: service:libraries_xproto-build
-        plugins_libstoml-build: service:plugins_libstoml-build
-        plugins_jvm-build: service:plugins_jvm-build
-        plugins_micronaut-build: service:plugins_micronaut-build
-        workspaceroot-setup: service:workspaceroot-setup
+        services_tracker-release-artifact_outs: service:services_tracker-release-artifact_outs
+        services_tracker-build_outs: service:services_tracker-build_outs
+        services_tracker-setup_outs: service:services_tracker-setup_outs
+        libraries_logs-build_outs: service:libraries_logs-build_outs
+        libraries_pbtables-build_outs: service:libraries_pbtables-build_outs
+        libraries_xproto-build_outs: service:libraries_xproto-build_outs
+        plugins_libstoml-build_outs: service:plugins_libstoml-build_outs
+        plugins_jvm-build_outs: service:plugins_jvm-build_outs
+        plugins_micronaut-build_outs: service:plugins_micronaut-build_outs
+        workspaceroot-setup_outs: service:workspaceroot-setup_outs
       context: ..
       dockerfile: .bayt/Dockerfile.release
       target: release

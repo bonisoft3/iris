@@ -37,6 +37,7 @@
     "preconditions": []
   },
   "visibility": "internal",
+  "class": "build",
   "emitsSrcs": false,
   "deps": [
     "release"
@@ -65,7 +66,8 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "build",
@@ -83,7 +85,8 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "build",
@@ -101,7 +104,8 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "build",
@@ -119,7 +123,8 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "build",
@@ -137,7 +142,8 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "build",
@@ -155,7 +161,8 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "setup",
@@ -175,7 +182,8 @@
           ".task/bayt/setup.hash"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     }
   ],
   "chainedDeps": [
@@ -186,7 +194,8 @@
       "outs": {
         "globs": [],
         "exclude": []
-      }
+      },
+      "class": "runtime"
     },
     {
       "name": "release-layers",
@@ -195,7 +204,8 @@
       "outs": {
         "globs": [],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "release-artifact",
@@ -206,7 +216,8 @@
           "build/jib-image.tar"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "build",
@@ -224,7 +235,8 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "setup",
@@ -239,7 +251,8 @@
           ".task/bayt/setup.hash"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     }
   ],
   "cmds": [

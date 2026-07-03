@@ -143,6 +143,7 @@
         "exclude": []
       },
       "env": {},
+      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [
@@ -176,7 +177,8 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         },
         {
           "name": "build_srcs",
@@ -202,7 +204,8 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         },
         {
           "name": "build_srcs",
@@ -238,7 +241,8 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         },
         {
           "name": "build_srcs",
@@ -264,7 +268,8 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         },
         {
           "name": "build_srcs",
@@ -290,7 +295,8 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         },
         {
           "name": "build_srcs",
@@ -316,7 +322,8 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         },
         {
           "name": "setup_srcs",
@@ -335,7 +342,8 @@
               "**/package.json"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         },
         {
           "project": "plugins_libstoml",
@@ -377,7 +385,8 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         },
         {
           "project": "plugins_micronaut",
@@ -419,7 +428,8 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         },
         {
           "project": "services_tracker",
@@ -442,7 +452,8 @@
               "src/main/resources/**/*"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         },
         {
           "project": "services_tracker",
@@ -456,7 +467,8 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         }
       ],
       "chainedDeps": [],
@@ -468,6 +480,7 @@
     }
   },
   "visibility": "internal",
+  "class": "runtime",
   "emitsSrcs": true,
   "deps": [
     "release-layers"
@@ -495,7 +508,8 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "build",
@@ -513,7 +527,8 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "build",
@@ -531,7 +546,8 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "build",
@@ -549,7 +565,8 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "build",
@@ -567,7 +584,8 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "build",
@@ -585,7 +603,8 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "setup",
@@ -605,7 +624,8 @@
           ".task/bayt/setup.hash"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     }
   ],
   "chainedDeps": [
@@ -616,7 +636,8 @@
       "outs": {
         "globs": [],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "release-artifact",
@@ -627,7 +648,8 @@
           "build/jib-image.tar"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "build",
@@ -645,7 +667,8 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "setup",
@@ -660,7 +683,8 @@
           ".task/bayt/setup.hash"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     }
   ],
   "cmds": [],

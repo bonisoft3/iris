@@ -25,6 +25,7 @@
     "preconditions": []
   },
   "visibility": "internal",
+  "class": "build",
   "emitsSrcs": false,
   "deps": [
     "build"
@@ -45,7 +46,8 @@
           "out/transcoding.yaml.gcp.tpl"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "setup",
@@ -54,7 +56,8 @@
       "outs": {
         "globs": [],
         "exclude": []
-      }
+      },
+      "class": "build"
     }
   ],
   "cmds": [

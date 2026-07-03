@@ -5,15 +5,15 @@ COPY --from=bonitao/lazybox:0.8.3@sha256:c896a6836673d8fd217f6021a2522351fd82d58
 ENV PATH=/root/.local/bin:/root/.local/share/lazybox/bin:$PATH
 ENV MISE_TRUSTED_CONFIG_PATHS=/monorepo
 RUN zypper -n install findutils=4.10.0-160000.2.2 which=2.23-160000.2.2
-COPY --from=services_tracker-build --link /monorepo/services/tracker /monorepo/services/tracker
-COPY --from=services_tracker-setup --link /monorepo/services/tracker /monorepo/services/tracker
-COPY --from=libraries_logs-build --link /monorepo/libraries/logs /monorepo/libraries/logs
-COPY --from=libraries_pbtables-build --link /monorepo/libraries/pbtables /monorepo/libraries/pbtables
-COPY --from=libraries_xproto-build --link /monorepo/libraries/xproto /monorepo/libraries/xproto
-COPY --from=plugins_libstoml-build --link /monorepo/plugins/libstoml /monorepo/plugins/libstoml
-COPY --from=plugins_jvm-build --link /monorepo/plugins/jvm /monorepo/plugins/jvm
-COPY --from=plugins_micronaut-build --link /monorepo/plugins/micronaut /monorepo/plugins/micronaut
-COPY --from=workspaceroot-setup --link /monorepo /monorepo
+COPY --from=services_tracker-build_outs --parents /monorepo/services/tracker/build/**/* /monorepo/services/tracker/.gradle/**/* /monorepo/services/tracker/build.gradle.kts /monorepo/services/tracker/settings.gradle.kts /monorepo/services/tracker/gradle.properties /monorepo/services/tracker/gradlew /monorepo/services/tracker/gradle/wrapper/**/* /monorepo/services/tracker/gradle/lib[s].versions.toml /
+COPY --from=services_tracker-setup_outs --parents /monorepo/services/tracker/gradle/wrapper/gradle-wrapper.properties /monorepo/services/tracker/[m]ise.toml /monorepo/services/tracker/[.]mise.toml /monorepo/services/tracker/[m]ise.lock /monorepo/services/tracker/.task/bayt/setup.hash /
+COPY --from=libraries_logs-build_outs --parents /monorepo/libraries/logs/build/**/* /monorepo/libraries/logs/.gradle/**/* /monorepo/libraries/logs/build.gradle.kts /monorepo/libraries/logs/settings.gradle.kts /monorepo/libraries/logs/gradle.properties /monorepo/libraries/logs/gradlew /monorepo/libraries/logs/gradle/wrapper/**/* /monorepo/libraries/logs/gradle/lib[s].versions.toml /
+COPY --from=libraries_pbtables-build_outs --parents /monorepo/libraries/pbtables/build/**/* /monorepo/libraries/pbtables/.gradle/**/* /monorepo/libraries/pbtables/build.gradle.kts /monorepo/libraries/pbtables/settings.gradle.kts /monorepo/libraries/pbtables/gradle.properties /monorepo/libraries/pbtables/gradlew /monorepo/libraries/pbtables/gradle/wrapper/**/* /monorepo/libraries/pbtables/gradle/lib[s].versions.toml /
+COPY --from=libraries_xproto-build_outs --parents /monorepo/libraries/xproto/build/**/* /monorepo/libraries/xproto/.gradle/**/* /monorepo/libraries/xproto/build.gradle.kts /monorepo/libraries/xproto/settings.gradle.kts /monorepo/libraries/xproto/gradle.properties /monorepo/libraries/xproto/gradlew /monorepo/libraries/xproto/gradle/wrapper/**/* /monorepo/libraries/xproto/gradle/lib[s].versions.toml /
+COPY --from=plugins_libstoml-build_outs --parents /monorepo/plugins/libstoml/build/**/* /monorepo/plugins/libstoml/.gradle/**/* /monorepo/plugins/libstoml/build.gradle.kts /monorepo/plugins/libstoml/settings.gradle.kts /monorepo/plugins/libstoml/gradle.properties /monorepo/plugins/libstoml/gradlew /monorepo/plugins/libstoml/gradle/wrapper/**/* /monorepo/plugins/libstoml/gradle/lib[s].versions.toml /
+COPY --from=plugins_jvm-build_outs --parents /monorepo/plugins/jvm/build/**/* /monorepo/plugins/jvm/.gradle/**/* /monorepo/plugins/jvm/build.gradle.kts /monorepo/plugins/jvm/settings.gradle.kts /monorepo/plugins/jvm/gradle.properties /monorepo/plugins/jvm/gradlew /monorepo/plugins/jvm/gradle/wrapper/**/* /monorepo/plugins/jvm/gradle/lib[s].versions.toml /
+COPY --from=plugins_micronaut-build_outs --parents /monorepo/plugins/micronaut/build/**/* /monorepo/plugins/micronaut/.gradle/**/* /monorepo/plugins/micronaut/build.gradle.kts /monorepo/plugins/micronaut/settings.gradle.kts /monorepo/plugins/micronaut/gradle.properties /monorepo/plugins/micronaut/gradlew /monorepo/plugins/micronaut/gradle/wrapper/**/* /monorepo/plugins/micronaut/gradle/lib[s].versions.toml /
+COPY --from=workspaceroot-setup_outs --parents /monorepo/[m]ise.toml /monorepo/[.]mise.toml /monorepo/[m]ise.lock /monorepo/pnpm-lock.yaml /monorepo/pnpm-workspace.yaml /monorepo/package.json /monorepo/gradle/libs.versions.toml /monorepo/plugins/devserver/dind.sh /monorepo/**/package.json /monorepo/.task/bayt/setup.hash /
 RUN ["mise", "x", "--", "./gradlew", "--init-script", ".bayt/init.gradle.kts", "run"]
 COPY Taskfile.yml ./Taskfile.yml
 COPY .bayt/Taskfile.yml .bayt/bayt.launch.json .bayt/init.gradle.kts ./.bayt/

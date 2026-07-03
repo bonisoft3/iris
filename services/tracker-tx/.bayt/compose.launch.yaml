@@ -3,8 +3,8 @@ services:
   services_tracker-tx-launch:
     build:
       additional_contexts:
-        libraries_xproto-descriptor: service:libraries_xproto-descriptor
-        workspaceroot-setup: service:workspaceroot-setup
+        libraries_xproto-descriptor_outs: service:libraries_xproto-descriptor_outs
+        workspaceroot-setup_outs: service:workspaceroot-setup_outs
         services_tracker-tx-build: service:services_tracker-tx-build
       context: ..
       dockerfile: .bayt/Dockerfile.launch

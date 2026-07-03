@@ -122,6 +122,7 @@
         "exclude": []
       },
       "env": {},
+      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [
@@ -146,7 +147,8 @@
               "**/package.json"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         },
         {
           "project": "guis_web",
@@ -169,7 +171,8 @@
               "**/*.spec.*",
               "tests/**"
             ]
-          }
+          },
+          "class": "build"
         }
       ],
       "chainedDeps": [],
@@ -181,6 +184,7 @@
     }
   },
   "visibility": "internal",
+  "class": "runtime",
   "emitsSrcs": true,
   "deps": [
     "build"
@@ -208,7 +212,8 @@
           ".task/bayt/setup.hash"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     }
   ],
   "chainedDeps": [
@@ -221,7 +226,8 @@
           ".output/**/*"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "setup",
@@ -230,7 +236,8 @@
       "outs": {
         "globs": [],
         "exclude": []
-      }
+      },
+      "class": "build"
     }
   ],
   "cmds": [

@@ -107,6 +107,7 @@
         "exclude": []
       },
       "env": {},
+      "class": "build",
       "visibility": "public",
       "deps": [],
       "transitiveDeps": [],
@@ -149,6 +150,7 @@
         "exclude": []
       },
       "env": {},
+      "class": "build",
       "visibility": "public",
       "deps": [],
       "transitiveDeps": [
@@ -179,7 +181,8 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         },
         {
           "name": "setup_srcs",
@@ -198,7 +201,8 @@
               "**/package.json"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         },
         {
           "project": "plugins_libstoml",
@@ -226,7 +230,8 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         }
       ],
       "chainedDeps": [],
@@ -244,6 +249,7 @@
     "preconditions": []
   },
   "visibility": "public",
+  "class": "build",
   "emitsSrcs": true,
   "deps": [
     "setup",
@@ -269,7 +275,8 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "setup",
@@ -289,7 +296,8 @@
           ".task/bayt/setup.hash"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     }
   ],
   "chainedDeps": [
@@ -306,7 +314,8 @@
           ".task/bayt/setup.hash"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "build",
@@ -324,7 +333,8 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     }
   ],
   "cmds": [

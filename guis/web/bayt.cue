@@ -86,8 +86,13 @@ _web: sayt.pnpm & {
 		// loop = `docker compose up launch`; skaffold dev reuses the
 		// release artifact (one image identity per project — skaffold
 		// rejects duplicate images across configs).
+		// Chains off :build (the iris pattern): `pnpm dev` needs the
+		// build stage's full filesystem (sources + node_modules), which
+		// flows via FROM. A fresh base would only receive build's
+		// declared outs (.output/**) under runtime-class dep edges —
+		// not enough for the dev server.
 		"launch": {
-			dockerfile: bayt.nubox
+			dockerfile: from: ref: ":build"
 			dockerfile: expose: [3000]
 		}
 

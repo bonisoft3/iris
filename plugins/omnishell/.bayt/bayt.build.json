@@ -74,6 +74,7 @@
         "exclude": []
       },
       "env": {},
+      "class": "build",
       "visibility": "public",
       "deps": [],
       "transitiveDeps": [
@@ -95,6 +96,7 @@
     "preconditions": []
   },
   "visibility": "public",
+  "class": "build",
   "emitsSrcs": true,
   "deps": [
     "setup"
@@ -111,7 +113,8 @@
       "outs": {
         "globs": [],
         "exclude": []
-      }
+      },
+      "class": "build"
     }
   ],
   "cmds": [

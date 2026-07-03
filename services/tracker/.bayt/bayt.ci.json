@@ -114,6 +114,7 @@
     "COMPOSE_BAKE": "true"
   },
   "visibility": "internal",
+  "class": "build",
   "emitsSrcs": false,
   "deps": [
     "dindbox",
@@ -152,7 +153,8 @@
           "[m]ise.lock"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "build_srcs",
@@ -178,7 +180,8 @@
           "[m]ise.lock"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "build_srcs",
@@ -214,7 +217,8 @@
           "[m]ise.lock"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "build_srcs",
@@ -240,7 +244,8 @@
           "[m]ise.lock"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "build_srcs",
@@ -266,7 +271,8 @@
           "[m]ise.lock"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "build_srcs",
@@ -292,7 +298,8 @@
           "[m]ise.lock"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "setup_srcs",
@@ -311,7 +318,8 @@
           "**/package.json"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "project": "plugins_libstoml",
@@ -353,7 +361,8 @@
           "[m]ise.lock"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "project": "plugins_micronaut",
@@ -395,7 +404,8 @@
           "[m]ise.lock"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     }
   ],
   "chainedDeps": [
@@ -406,7 +416,8 @@
       "outs": {
         "globs": [],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "integrate_srcs",
@@ -420,7 +431,8 @@
           "src/test/resources/**/*"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "bayt",
@@ -433,7 +445,8 @@
           "compose.yaml"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "build_srcs",
@@ -456,7 +469,8 @@
           "src/main/resources/**/*"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "setup_srcs",
@@ -470,7 +484,8 @@
           "[m]ise.lock"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     }
   ],
   "cmds": [

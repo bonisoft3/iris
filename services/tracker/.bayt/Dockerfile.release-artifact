@@ -14,6 +14,10 @@ RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/re
 FROM scratch AS release-artifact_srcs
 COPY --from=release-artifact_ctxs /monorepo /monorepo
 
-FROM scratch AS release-artifact_outs
+FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223 AS release-artifact_outs_ctxs
 WORKDIR /monorepo/services/tracker
 COPY --from=services_tracker-release-artifact --parents /monorepo/services/tracker/build/jib-image.tar /
+ARG SOURCE_DATE_EPOCH
+RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+FROM scratch AS release-artifact_outs
+COPY --from=release-artifact_outs_ctxs /monorepo /monorepo

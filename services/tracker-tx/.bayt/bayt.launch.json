@@ -125,6 +125,7 @@
         "exclude": []
       },
       "env": {},
+      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [
@@ -143,7 +144,8 @@
               "trash/**/*.proto"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         },
         {
           "name": "setup_srcs",
@@ -162,7 +164,8 @@
               "**/package.json"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         },
         {
           "project": "services_tracker-tx",
@@ -175,7 +178,8 @@
               "edge.yaml"
             ],
             "exclude": []
-          }
+          },
+          "class": "build"
         }
       ],
       "chainedDeps": [],
@@ -187,6 +191,7 @@
     }
   },
   "visibility": "internal",
+  "class": "runtime",
   "emitsSrcs": true,
   "deps": [
     "build",
@@ -206,7 +211,8 @@
           "out/xproto.desc.pb"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "setup",
@@ -226,7 +232,8 @@
           ".task/bayt/setup.hash"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     }
   ],
   "chainedDeps": [
@@ -240,7 +247,8 @@
           "out/transcoding.yaml.gcp.tpl"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "descriptor",
@@ -251,7 +259,8 @@
           "out/xproto.desc.pb"
         ],
         "exclude": []
-      }
+      },
+      "class": "build"
     },
     {
       "name": "setup",
@@ -260,7 +269,8 @@
       "outs": {
         "globs": [],
         "exclude": []
-      }
+      },
+      "class": "build"
     }
   ],
   "cmds": [
