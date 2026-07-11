@@ -48,6 +48,11 @@ def _sayt_pin_siblings(ctx):
         after = "bonisoft3/sayt/.github/actions/sayt/install@" + version,
         paths = glob([".github/actions/sayt/integrate/action.yml"]),
     ))
+    ctx.run(core.replace(
+        before = "./.github/actions/sayt/ci",
+        after = "bonisoft3/sayt/.github/actions/sayt/ci@" + version,
+        paths = glob([".github/actions/sayt/depot/action.yml"]),
+    ))
 
 WORKFLOWS = [
     struct(
