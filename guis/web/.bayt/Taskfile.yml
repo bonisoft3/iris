@@ -32,4 +32,8 @@ includes:
     taskfile: ./Taskfile.lint.yaml
     dir: ../
     optional: true
+  workspaceroot:
+    taskfile: ../../../Taskfile.yml
+    dir: ../../../
+    optional: true
 version: '3'

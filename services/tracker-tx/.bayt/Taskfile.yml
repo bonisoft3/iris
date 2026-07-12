@@ -32,4 +32,12 @@ includes:
     taskfile: ./Taskfile.lint.yaml
     dir: ../
     optional: true
+  workspaceroot:
+    taskfile: ../../../Taskfile.yml
+    dir: ../../../
+    optional: true
+  libraries_xproto:
+    taskfile: ../../../libraries/xproto/Taskfile.yml
+    dir: ../../../libraries/xproto/
+    optional: true
 version: '3'

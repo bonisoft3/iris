@@ -1,23 +1,6 @@
-# generated from bayt.cue — do not edit
 version: '3'
 includes:
   bayt:
     taskfile: ./.bayt/Taskfile.yml
     dir: ./
-    optional: true
-  plugins_jvm:
-    taskfile: ../../plugins/jvm/Taskfile.yml
-    dir: ../../plugins/jvm/
-    optional: true
-  libraries_logs:
-    taskfile: ../../libraries/logs/Taskfile.yml
-    dir: ../../libraries/logs/
-    optional: true
-  workspaceroot:
-    taskfile: ../../Taskfile.yml
-    dir: ../../
-    optional: true
-  plugins_libstoml:
-    taskfile: ../../plugins/libstoml/Taskfile.yml
-    dir: ../../plugins/libstoml/
     optional: true
