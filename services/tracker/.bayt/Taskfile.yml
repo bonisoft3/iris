@@ -1,63 +1,7 @@
 # generated from bayt.cue — do not edit
-includes:
-  setup:
-    taskfile: ./Taskfile.setup.yaml
-    dir: ../
-    optional: true
-  build:
-    taskfile: ./Taskfile.build.yaml
-    dir: ../
-    optional: true
-  integrate:
-    taskfile: ./Taskfile.integrate.yaml
-    dir: ../
-    optional: true
-  doctor:
-    taskfile: ./Taskfile.doctor.yaml
-    dir: ../
-    optional: true
-  test:
-    taskfile: ./Taskfile.test.yaml
-    dir: ../
-    optional: true
-  verify:
-    taskfile: ./Taskfile.verify.yaml
-    dir: ../
-    optional: true
-  generate:
-    taskfile: ./Taskfile.generate.yaml
-    dir: ../
-    optional: true
-  lint:
-    taskfile: ./Taskfile.lint.yaml
-    dir: ../
-    optional: true
-  libraries_logs:
-    taskfile: ../../../libraries/logs/Taskfile.yml
-    dir: ../../../libraries/logs/
-    optional: true
-  libraries_pbtables:
-    taskfile: ../../../libraries/pbtables/Taskfile.yml
-    dir: ../../../libraries/pbtables/
-    optional: true
-  libraries_xproto:
-    taskfile: ../../../libraries/xproto/Taskfile.yml
-    dir: ../../../libraries/xproto/
-    optional: true
-  plugins_libstoml:
-    taskfile: ../../../plugins/libstoml/Taskfile.yml
-    dir: ../../../plugins/libstoml/
-    optional: true
-  plugins_jvm:
-    taskfile: ../../../plugins/jvm/Taskfile.yml
-    dir: ../../../plugins/jvm/
-    optional: true
-  plugins_micronaut:
-    taskfile: ../../../plugins/micronaut/Taskfile.yml
-    dir: ../../../plugins/micronaut/
-    optional: true
-  workspaceroot:
-    taskfile: ../../../Taskfile.yml
-    dir: ../../../
-    optional: true
 version: '3'
+includes:
+  bayt:
+    taskfile: ./Taskfile.bayt.yml
+    dir: ../
+    optional: true

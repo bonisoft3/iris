@@ -8,7 +8,7 @@
       },
       "label": "plugins_libstoml build",
       "type": "shell",
-      "command": "task bayt:build",
+      "command": "task -t .bayt/Taskfile.yml bayt:build",
       "options": {
         "cwd": "${workspaceFolder}/plugins/libstoml"
       }
@@ -19,7 +19,7 @@
       },
       "label": "plugins_libstoml doctor",
       "type": "shell",
-      "command": "task bayt:doctor",
+      "command": "task -t .bayt/Taskfile.yml bayt:doctor",
       "options": {
         "cwd": "${workspaceFolder}/plugins/libstoml"
       }
@@ -31,7 +31,7 @@
       },
       "label": "plugins_libstoml test",
       "type": "shell",
-      "command": "task bayt:test",
+      "command": "task -t .bayt/Taskfile.yml bayt:test",
       "options": {
         "cwd": "${workspaceFolder}/plugins/libstoml"
       }

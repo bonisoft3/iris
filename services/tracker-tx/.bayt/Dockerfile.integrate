@@ -9,8 +9,7 @@ COPY --from=services_tracker-tx-build --link /monorepo/services/tracker-tx /mono
 COPY --from=services_tracker-tx-setup --link /monorepo/services/tracker-tx /monorepo/services/tracker-tx
 COPY --parents transcoding.yaml cloud_run_tls.yaml edge.yaml ./
 RUN mise x -- yq . < out/transcoding.yaml.tpl && yq . < out/transcoding.yaml.gcp.tpl && yq . < edge.yaml
-COPY Taskfile.yml ./Taskfile.yml
-COPY .bayt/Taskfile.yml .bayt/Taskfile.integrate.yaml .bayt/bayt.integrate.json .bayt/init.gradle.kts ./.bayt/
+COPY .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/Taskfile.integrate.yaml .bayt/bayt.integrate.json .bayt/init.gradle.kts ./.bayt/
 
 FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223 AS integrate_ctxs
 WORKDIR /monorepo/services/tracker-tx

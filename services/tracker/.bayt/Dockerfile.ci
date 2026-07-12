@@ -60,5 +60,4 @@ fi
 docker compose config | docker buildx bake --allow=fs.read=/monorepo -f - --print integrate | $bake -f - ${SAYT_NO_CACHE:+--no-cache --set "*.cache-from=" --set "*.cache-to="} ${SAYT_NO_CACHE_FROM:+--set "*.cache-from="} ${SAYT_NO_CACHE_TO:+--set "*.cache-to="} $tgt
 exec docker compose up integrate --abort-on-container-failure --exit-code-from integrate --remove-orphans
 BAYT_INJECT
-COPY Taskfile.yml ./Taskfile.yml
-COPY .bayt/Taskfile.yml .bayt/bayt.ci.json .bayt/init.gradle.kts ./.bayt/
+COPY .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/bayt.ci.json .bayt/init.gradle.kts ./.bayt/

@@ -5,8 +5,7 @@ ENV HOST=0.0.0.0
 ENV PORT=8080
 ENV NODE_ENV=production
 RUN ["mise", "x", "--", "true"]
-COPY Taskfile.yml ./Taskfile.yml
-COPY .bayt/Taskfile.yml .bayt/bayt.release.json .bayt/init.gradle.kts ./.bayt/
+COPY .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/bayt.release.json .bayt/init.gradle.kts ./.bayt/
 EXPOSE 8080
 CMD ["mise", "x", "--", "node", "/monorepo/guis/web/.output/server/index.mjs"]
 

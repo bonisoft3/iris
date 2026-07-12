@@ -6,8 +6,7 @@ ENV JAVA_HOME=/opt/java/openjdk
 ENV LANG=en_US.UTF-8
 ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
-COPY Taskfile.yml ./Taskfile.yml
-COPY .bayt/Taskfile.yml .bayt/bayt.release.json .bayt/init.gradle.kts ./.bayt/
+COPY .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/bayt.release.json .bayt/init.gradle.kts ./.bayt/
 ENTRYPOINT ["java", "-cp", "@/app/jib-classpath-file", "com.trash.services.tracker.ApplicationKt"]
 COPY --from=services_tracker-release-layers /monorepo/services/tracker/build/layers/ /
 

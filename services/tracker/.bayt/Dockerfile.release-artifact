@@ -2,8 +2,7 @@
 FROM services_tracker-build AS release-artifact
 WORKDIR /monorepo/services/tracker
 RUN --mount=type=cache,target=/root/.gradle,id=services_tracker-release-artifact:/root/.gradle,sharing=locked ["mise", "x", "--", "./gradlew", "--init-script", ".bayt/init.gradle.kts", "--no-daemon", "jibBuildTar"]
-COPY Taskfile.yml ./Taskfile.yml
-COPY .bayt/Taskfile.yml .bayt/bayt.release-artifact.json .bayt/init.gradle.kts ./.bayt/
+COPY .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/bayt.release-artifact.json .bayt/init.gradle.kts ./.bayt/
 
 FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223 AS release-artifact_ctxs
 WORKDIR /monorepo/services/tracker

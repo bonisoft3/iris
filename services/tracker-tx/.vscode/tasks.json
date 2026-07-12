@@ -8,7 +8,7 @@
       },
       "label": "build",
       "type": "shell",
-      "command": "task bayt:build",
+      "command": "task -t .bayt/Taskfile.yml bayt:build",
       "options": {
         "cwd": "${workspaceFolder}/services/tracker-tx"
       }
@@ -20,7 +20,7 @@
       },
       "label": "test",
       "type": "shell",
-      "command": "task bayt:test",
+      "command": "task -t .bayt/Taskfile.yml bayt:test",
       "options": {
         "cwd": "${workspaceFolder}/services/tracker-tx"
       }
