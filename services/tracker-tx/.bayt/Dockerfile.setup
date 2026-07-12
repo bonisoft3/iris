@@ -7,4 +7,4 @@ ENV MISE_TRUSTED_CONFIG_PATHS=/monorepo
 RUN zypper -n install findutils=4.10.0-160000.2.2 which=2.23-160000.2.2
 COPY --parents [m]ise.toml [.]mise.toml [m]ise.lock ./
 RUN ["mise", "install"]
-COPY .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/Taskfile.setup.yaml .bayt/bayt.setup.json .bayt/init.gradle.kts ./.bayt/
+COPY .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/Taskfile.setup.yaml .bayt/bayt.setup.json ./.bayt/

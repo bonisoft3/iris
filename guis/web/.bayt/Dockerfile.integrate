@@ -4,7 +4,7 @@ WORKDIR /monorepo/guis/web
 COPY --from=bayt . /monorepo/plugins/bayt/runtime
 ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}
 COPY --parents --exclude=node_modules/** --exclude=.nuxt/** --exclude=.output/** --exclude=dist/** --exclude=coverage/** **/*.spec.ts **/*.spec.tsx tests/**/* vitest.config.* vitest.integration.config.* ./
-COPY .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/Taskfile.integrate.yaml .bayt/bayt.integrate.json .bayt/init.gradle.kts ./.bayt/
+COPY .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/Taskfile.integrate.yaml .bayt/bayt.integrate.json ./.bayt/
 COPY .bayt/Taskfile.build.yaml .bayt/bayt.build.json ./.bayt/
 COPY .bayt/Taskfile.setup.yaml .bayt/bayt.setup.json ./.bayt/
 RUN --mount=type=cache,target=/root/.cache/bayt,id=guis_web-integrate:/root/.cache/bayt,sharing=locked --mount=type=cache,target=/root/.local/share/pnpm/store,id=guis_web-integrate:/root/.local/share/pnpm/store,sharing=locked ["task", "-t", ".bayt/Taskfile.yml", "bayt:integrate"]

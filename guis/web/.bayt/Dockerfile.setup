@@ -6,4 +6,4 @@ COPY --parents [m]ise.toml [.]mise.toml [m]ise.lock ./
 RUN ["mise", "install"]
 COPY --parents package.json ./
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=guis_web-setup:/root/.local/share/pnpm/store,sharing=locked ["mise", "x", "--", "pnpm", "install", "--frozen-lockfile", "--filter", "Iris..."]
-COPY .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/Taskfile.setup.yaml .bayt/bayt.setup.json .bayt/init.gradle.kts ./.bayt/
+COPY .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/Taskfile.setup.yaml .bayt/bayt.setup.json ./.bayt/
