@@ -27,6 +27,7 @@
       "ref": ":build",
       "name": "plugins_omnishell-build"
     },
+    "add": [],
     "mounts": [],
     "secrets": {},
     "extra_hosts": [],

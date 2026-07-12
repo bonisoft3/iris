@@ -21,6 +21,7 @@
       "ref": ":setup",
       "name": "plugins_omnishell-setup"
     },
+    "add": [],
     "mounts": [],
     "secrets": {},
     "extra_hosts": [],

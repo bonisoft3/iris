@@ -30,6 +30,7 @@
       "COPY --from=services_tracker-release-layers /monorepo/services/tracker/build/layers/ /"
     ],
     "from": null,
+    "add": [],
     "mounts": [],
     "secrets": {},
     "extra_hosts": [],

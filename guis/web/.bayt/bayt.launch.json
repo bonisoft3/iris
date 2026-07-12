@@ -19,6 +19,7 @@
       "pnpm",
       "dev"
     ],
+    "add": [],
     "mounts": [],
     "secrets": {},
     "extra_hosts": [],

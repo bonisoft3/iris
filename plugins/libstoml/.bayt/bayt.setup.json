@@ -21,6 +21,7 @@
       "ref": "workspaceroot:setup",
       "name": "workspaceroot-setup"
     },
+    "add": [],
     "mounts": [],
     "secrets": {},
     "extra_hosts": [],

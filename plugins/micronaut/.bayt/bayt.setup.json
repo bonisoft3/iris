@@ -21,6 +21,7 @@
       "ref": "plugins_jvm:build",
       "name": "plugins_jvm-build"
     },
+    "add": [],
     "mounts": [],
     "secrets": {},
     "extra_hosts": [],

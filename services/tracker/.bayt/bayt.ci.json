@@ -88,6 +88,7 @@
         "environment": "DEPOT_DISABLE_OTEL"
       }
     },
+    "add": [],
     "mounts": [],
     "extra_hosts": [],
     "epilogue": [],

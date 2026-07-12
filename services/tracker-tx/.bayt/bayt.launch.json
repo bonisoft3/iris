@@ -35,6 +35,7 @@
     "expose": [
       8080
     ],
+    "add": [],
     "mounts": [],
     "secrets": {},
     "extra_hosts": [],

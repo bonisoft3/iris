@@ -24,6 +24,7 @@
       "ref": ":setup",
       "name": "guis_web-setup"
     },
+    "add": [],
     "mounts": [],
     "secrets": {},
     "extra_hosts": [],

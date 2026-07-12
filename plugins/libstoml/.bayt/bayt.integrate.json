@@ -39,6 +39,7 @@
         "required": false
       }
     ],
+    "add": [],
     "secrets": {},
     "extra_hosts": [],
     "epilogue": [],

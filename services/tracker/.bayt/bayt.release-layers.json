@@ -23,6 +23,7 @@
       "ref": ":release-artifact",
       "name": "services_tracker-release-artifact"
     },
+    "add": [],
     "mounts": [],
     "secrets": {},
     "extra_hosts": [],

@@ -59,6 +59,7 @@
         "exclude": []
       }
     ],
+    "add": [],
     "mounts": [],
     "secrets": {},
     "extra_hosts": [],
