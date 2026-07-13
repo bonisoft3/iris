@@ -9,6 +9,7 @@ services:
       dockerfile: .bayt/Dockerfile.integrate
       target: integrate
     image: bayt-guis_web-integrate:${BAYT_IMAGE_TAG:-latest}
+    scale: 0
   guis_web-integrate_srcs:
     build:
       additional_contexts:
@@ -17,3 +18,4 @@ services:
       dockerfile: .bayt/Dockerfile.integrate
       target: integrate_srcs
     image: bayt-guis_web-integrate_srcs:latest
+    scale: 0

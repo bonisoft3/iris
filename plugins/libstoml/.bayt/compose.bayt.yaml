@@ -23,3 +23,4 @@ services:
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_libstoml-bayt,mode=max,image-manifest=true,oci-mediatypes=true
     image: bayt-plugins_libstoml-bayt:latest
+    scale: 0

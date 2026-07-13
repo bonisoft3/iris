@@ -9,6 +9,7 @@ services:
       dockerfile: .bayt/Dockerfile.integrate
       target: integrate
     image: bayt-services_tracker-tx-integrate:${BAYT_IMAGE_TAG:-latest}
+    scale: 0
   services_tracker-tx-integrate_srcs:
     build:
       additional_contexts:
@@ -17,6 +18,7 @@ services:
       dockerfile: .bayt/Dockerfile.integrate
       target: integrate_srcs
     image: bayt-services_tracker-tx-integrate_srcs:latest
+    scale: 0
   services_tracker-tx-integrate_outs:
     build:
       context: ..
@@ -25,3 +27,4 @@ services:
       additional_contexts:
         services_tracker-tx-integrate: service:services_tracker-tx-integrate
     image: bayt-services_tracker-tx-integrate_outs:latest
+    scale: 0

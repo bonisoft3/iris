@@ -24,3 +24,4 @@ services:
       dockerfile: .bayt/Dockerfile.bayt
       target: bayt
     image: bayt-services_tracker-tx-bayt:latest
+    scale: 0

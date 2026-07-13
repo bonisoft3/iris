@@ -12,3 +12,4 @@ services:
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-dindbox,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-services_tracker-dindbox:${BAYT_IMAGE_TAG:-latest}
+    scale: 0

@@ -7,11 +7,18 @@ services:
     extends:
       file: ./compose.build.yaml
       service: plugins_micronaut-build
+    profiles:
+    - build
   setup:
     extends:
       file: ./compose.setup.yaml
       service: plugins_micronaut-setup
+    profiles:
+    - setup
   integrate:
     extends:
       file: ./compose.integrate.yaml
       service: plugins_micronaut-integrate
+    profiles:
+    - integrate
+    scale: 1

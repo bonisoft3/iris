@@ -21,3 +21,4 @@ services:
       dockerfile: .bayt/Dockerfile.bayt
       target: bayt
     image: bayt-guis_web-bayt:latest
+    scale: 0

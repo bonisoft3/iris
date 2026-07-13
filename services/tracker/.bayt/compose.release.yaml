@@ -25,6 +25,7 @@ services:
         platforms:
         - linux/amd64
     image: bayt-services_tracker-release:${BAYT_IMAGE_TAG:-latest}
+    scale: 0
   services_tracker-release_srcs:
     build:
       additional_contexts:
@@ -42,3 +43,4 @@ services:
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-release_srcs,mode=max,image-manifest=true,oci-mediatypes=true
     image: bayt-services_tracker-release_srcs:latest
+    scale: 0

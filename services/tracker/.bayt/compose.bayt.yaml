@@ -53,3 +53,4 @@ services:
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-bayt,mode=max,image-manifest=true,oci-mediatypes=true
     image: bayt-services_tracker-bayt:latest
+    scale: 0

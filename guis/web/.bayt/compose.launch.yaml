@@ -25,3 +25,4 @@ services:
       dockerfile: .bayt/Dockerfile.launch
       target: launch_srcs
     image: bayt-guis_web-launch_srcs:latest
+    scale: 0

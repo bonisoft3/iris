@@ -7,15 +7,24 @@ services:
     extends:
       file: ./compose.build.yaml
       service: libraries_xproto-build
+    profiles:
+    - build
   setup:
     extends:
       file: ./compose.setup.yaml
       service: libraries_xproto-setup
+    profiles:
+    - setup
   descriptor:
     extends:
       file: ./compose.descriptor.yaml
       service: libraries_xproto-descriptor
+    profiles:
+    - descriptor
   integrate:
     extends:
       file: ./compose.integrate.yaml
       service: libraries_xproto-integrate
+    profiles:
+    - integrate
+    scale: 1

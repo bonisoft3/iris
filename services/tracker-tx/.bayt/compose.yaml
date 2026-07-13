@@ -7,19 +7,31 @@ services:
     extends:
       file: ./compose.setup.yaml
       service: services_tracker-tx-setup
+    profiles:
+    - setup
   build:
     extends:
       file: ./compose.build.yaml
       service: services_tracker-tx-build
+    profiles:
+    - build
   launch:
     extends:
       file: ./compose.launch.yaml
       service: services_tracker-tx-launch
+    profiles:
+    - launch
+    scale: 1
   integrate:
     extends:
       file: ./compose.integrate.yaml
       service: services_tracker-tx-integrate
+    profiles:
+    - integrate
+    scale: 1
   release:
     extends:
       file: ./compose.release.yaml
       service: services_tracker-tx-release
+    profiles:
+    - release

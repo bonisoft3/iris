@@ -18,6 +18,7 @@ services:
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-build,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-libraries_pbtables-build:${BAYT_IMAGE_TAG:-latest}
+    scale: 0
   libraries_pbtables-build_srcs:
     build:
       additional_contexts:
@@ -37,6 +38,7 @@ services:
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_pbtables-build_srcs,mode=max,image-manifest=true,oci-mediatypes=true
     image: bayt-libraries_pbtables-build_srcs:latest
+    scale: 0
   libraries_pbtables-build_outs:
     build:
       context: ..
@@ -51,3 +53,4 @@ services:
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_pbtables-build_outs,mode=max,image-manifest=true,oci-mediatypes=true
     image: bayt-libraries_pbtables-build_outs:latest
+    scale: 0

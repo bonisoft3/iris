@@ -33,3 +33,4 @@ services:
       dockerfile: .bayt/Dockerfile.launch
       target: launch_srcs
     image: bayt-services_tracker-tx-launch_srcs:latest
+    scale: 0

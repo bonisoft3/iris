@@ -7,11 +7,18 @@ services:
     extends:
       file: ./compose.build.yaml
       service: plugins_libstoml-build
+    profiles:
+    - build
   setup:
     extends:
       file: ./compose.setup.yaml
       service: plugins_libstoml-setup
+    profiles:
+    - setup
   integrate:
     extends:
       file: ./compose.integrate.yaml
       service: plugins_libstoml-integrate
+    profiles:
+    - integrate
+    scale: 1

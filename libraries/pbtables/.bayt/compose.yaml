@@ -7,11 +7,18 @@ services:
     extends:
       file: ./compose.build.yaml
       service: libraries_pbtables-build
+    profiles:
+    - build
   setup:
     extends:
       file: ./compose.setup.yaml
       service: libraries_pbtables-setup
+    profiles:
+    - setup
   integrate:
     extends:
       file: ./compose.integrate.yaml
       service: libraries_pbtables-integrate
+    profiles:
+    - integrate
+    scale: 1

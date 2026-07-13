@@ -16,6 +16,7 @@ services:
         output:
         - type=${BAYT_COMPOSE_OUTPUT:-docker}
     image: bayt-plugins_libstoml-integrate:${BAYT_IMAGE_TAG:-latest}
+    scale: 0
   plugins_libstoml-integrate_srcs:
     build:
       additional_contexts:
@@ -31,6 +32,7 @@ services:
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_libstoml-integrate_srcs,mode=max,image-manifest=true,oci-mediatypes=true
     image: bayt-plugins_libstoml-integrate_srcs:latest
+    scale: 0
   plugins_libstoml-integrate_outs:
     build:
       context: ..
@@ -45,3 +47,4 @@ services:
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_libstoml-integrate_outs,mode=max,image-manifest=true,oci-mediatypes=true
     image: bayt-plugins_libstoml-integrate_outs:latest
+    scale: 0

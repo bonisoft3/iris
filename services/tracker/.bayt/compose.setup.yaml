@@ -14,6 +14,7 @@ services:
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-setup,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-services_tracker-setup:${BAYT_IMAGE_TAG:-latest}
+    scale: 0
   services_tracker-setup_srcs:
     build:
       context: ..
@@ -26,6 +27,7 @@ services:
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-setup_srcs,mode=max,image-manifest=true,oci-mediatypes=true
     image: bayt-services_tracker-setup_srcs:latest
+    scale: 0
   services_tracker-setup_outs:
     build:
       context: ..
@@ -40,3 +42,4 @@ services:
         cache-to:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-setup_outs,mode=max,image-manifest=true,oci-mediatypes=true
     image: bayt-services_tracker-setup_outs:latest
+    scale: 0

@@ -9,12 +9,14 @@ services:
       dockerfile: .bayt/Dockerfile.build
       target: build
     image: bayt-guis_web-build:${BAYT_IMAGE_TAG:-latest}
+    scale: 0
   guis_web-build_srcs:
     build:
       context: ..
       dockerfile: .bayt/Dockerfile.build
       target: build_srcs
     image: bayt-guis_web-build_srcs:latest
+    scale: 0
   guis_web-build_outs:
     build:
       context: ..
@@ -23,3 +25,4 @@ services:
       additional_contexts:
         guis_web-build: service:guis_web-build
     image: bayt-guis_web-build_outs:latest
+    scale: 0
