@@ -83,12 +83,54 @@
     "exclude": []
   },
   "env": {},
+  "synthetics": {
+    "bayt": {
+      "name": "dindbox_bayt",
+      "project": "services_tracker",
+      "dir": "services/tracker",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          ".bayt/compose.dindbox.yaml",
+          ".bayt/Dockerfile.dindbox",
+          ".bayt/bayt.dindbox.json",
+          ".bayt/Taskfile.yml",
+          ".bayt/Taskfile.bayt.yml",
+          ".bayt/init.gradle.kts"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "class": "build",
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "services/tracker/.bayt/compose.dindbox.yaml"
+      ]
+    }
+  },
   "visibility": "internal",
   "class": "build",
   "emitsSrcs": false,
   "deps": [],
   "transitiveDeps": [],
   "transitiveCrossDeps": [],
+  "up": false,
+  "upClosure": [
+    "services/tracker/.bayt/compose.dindbox.yaml"
+  ],
   "chainedDeps": [],
   "cmds": [],
   "cache": {

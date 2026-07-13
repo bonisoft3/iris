@@ -12,6 +12,17 @@ services:
         - linux/amd64
     image: bayt-guis_web-release:${BAYT_IMAGE_TAG:-latest}
     scale: 0
+  guis_web-release_bayt:
+    build:
+      additional_contexts:
+        guis_web-build_bayt: service:guis_web-build_bayt
+        guis_web-setup_bayt: service:guis_web-setup_bayt
+        workspaceroot-setup_bayt: service:workspaceroot-setup_bayt
+      context: ..
+      dockerfile: .bayt/Dockerfile.release
+      target: release_bayt
+    image: bayt-guis_web-release_bayt:latest
+    scale: 0
   guis_web-release_srcs:
     build:
       additional_contexts:

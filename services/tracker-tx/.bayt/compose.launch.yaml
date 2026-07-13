@@ -24,6 +24,17 @@ services:
     - '8080'
     volumes:
     - //var/run/docker.sock:/var/run/docker.sock
+  services_tracker-tx-launch_bayt:
+    build:
+      additional_contexts:
+        services_tracker-tx-build_bayt: service:services_tracker-tx-build_bayt
+        libraries_xproto-descriptor_bayt: service:libraries_xproto-descriptor_bayt
+        services_tracker-tx-setup_bayt: service:services_tracker-tx-setup_bayt
+      context: ..
+      dockerfile: .bayt/Dockerfile.launch
+      target: launch_bayt
+    image: bayt-services_tracker-tx-launch_bayt:latest
+    scale: 0
   services_tracker-tx-launch_srcs:
     build:
       additional_contexts:

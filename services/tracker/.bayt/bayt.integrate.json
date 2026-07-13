@@ -16,6 +16,7 @@
     }
   },
   "compose": {
+    "up": true,
     "command": [
       "mise",
       "x",
@@ -89,6 +90,59 @@
   },
   "env": {},
   "synthetics": {
+    "bayt": {
+      "name": "integrate_bayt",
+      "project": "services_tracker",
+      "dir": "services/tracker",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          ".bayt/compose.integrate.yaml",
+          ".bayt/Dockerfile.integrate",
+          ".bayt/bayt.integrate.json",
+          ".bayt/Taskfile.yml",
+          ".bayt/Taskfile.bayt.yml",
+          ".bayt/Taskfile.integrate.yaml",
+          ".bayt/compose.integrate.closure.yaml",
+          ".bayt/init.gradle.kts"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "class": "build",
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "services/tracker/.bayt/compose.integrate.yaml",
+        "services/tracker/.bayt/compose.build.yaml",
+        "services/tracker/.bayt/compose.setup.yaml",
+        ".bayt/compose.setup.yaml",
+        "libraries/logs/.bayt/compose.build.yaml",
+        "libraries/logs/.bayt/compose.setup.yaml",
+        "plugins/jvm/.bayt/compose.build.yaml",
+        "plugins/jvm/.bayt/compose.setup.yaml",
+        "plugins/libstoml/.bayt/compose.build.yaml",
+        "plugins/libstoml/.bayt/compose.setup.yaml",
+        "libraries/pbtables/.bayt/compose.build.yaml",
+        "libraries/pbtables/.bayt/compose.setup.yaml",
+        "plugins/micronaut/.bayt/compose.build.yaml",
+        "plugins/micronaut/.bayt/compose.setup.yaml",
+        "libraries/xproto/.bayt/compose.build.yaml",
+        "libraries/xproto/.bayt/compose.setup.yaml"
+      ]
+    },
     "outs": {
       "name": "integrate_outs",
       "project": "services_tracker",
@@ -116,7 +170,25 @@
       "cache": {
         "full": false,
         "similar": false
-      }
+      },
+      "upClosure": [
+        "services/tracker/.bayt/compose.integrate.yaml",
+        "services/tracker/.bayt/compose.build.yaml",
+        "services/tracker/.bayt/compose.setup.yaml",
+        ".bayt/compose.setup.yaml",
+        "libraries/logs/.bayt/compose.build.yaml",
+        "libraries/logs/.bayt/compose.setup.yaml",
+        "plugins/jvm/.bayt/compose.build.yaml",
+        "plugins/jvm/.bayt/compose.setup.yaml",
+        "plugins/libstoml/.bayt/compose.build.yaml",
+        "plugins/libstoml/.bayt/compose.setup.yaml",
+        "libraries/pbtables/.bayt/compose.build.yaml",
+        "libraries/pbtables/.bayt/compose.setup.yaml",
+        "plugins/micronaut/.bayt/compose.build.yaml",
+        "plugins/micronaut/.bayt/compose.setup.yaml",
+        "libraries/xproto/.bayt/compose.build.yaml",
+        "libraries/xproto/.bayt/compose.setup.yaml"
+      ]
     },
     "srcs": {
       "name": "integrate_srcs",
@@ -489,7 +561,25 @@
       "cache": {
         "full": false,
         "similar": false
-      }
+      },
+      "upClosure": [
+        "services/tracker/.bayt/compose.integrate.yaml",
+        "services/tracker/.bayt/compose.build.yaml",
+        "services/tracker/.bayt/compose.setup.yaml",
+        ".bayt/compose.setup.yaml",
+        "libraries/logs/.bayt/compose.build.yaml",
+        "libraries/logs/.bayt/compose.setup.yaml",
+        "plugins/jvm/.bayt/compose.build.yaml",
+        "plugins/jvm/.bayt/compose.setup.yaml",
+        "plugins/libstoml/.bayt/compose.build.yaml",
+        "plugins/libstoml/.bayt/compose.setup.yaml",
+        "libraries/pbtables/.bayt/compose.build.yaml",
+        "libraries/pbtables/.bayt/compose.setup.yaml",
+        "plugins/micronaut/.bayt/compose.build.yaml",
+        "plugins/micronaut/.bayt/compose.setup.yaml",
+        "libraries/xproto/.bayt/compose.build.yaml",
+        "libraries/xproto/.bayt/compose.setup.yaml"
+      ]
     }
   },
   "taskfile": {
@@ -644,6 +734,25 @@
       },
       "class": "build"
     }
+  ],
+  "up": true,
+  "upClosure": [
+    "services/tracker/.bayt/compose.integrate.yaml",
+    "services/tracker/.bayt/compose.build.yaml",
+    "services/tracker/.bayt/compose.setup.yaml",
+    ".bayt/compose.setup.yaml",
+    "libraries/logs/.bayt/compose.build.yaml",
+    "libraries/logs/.bayt/compose.setup.yaml",
+    "plugins/jvm/.bayt/compose.build.yaml",
+    "plugins/jvm/.bayt/compose.setup.yaml",
+    "plugins/libstoml/.bayt/compose.build.yaml",
+    "plugins/libstoml/.bayt/compose.setup.yaml",
+    "libraries/pbtables/.bayt/compose.build.yaml",
+    "libraries/pbtables/.bayt/compose.setup.yaml",
+    "plugins/micronaut/.bayt/compose.build.yaml",
+    "plugins/micronaut/.bayt/compose.setup.yaml",
+    "libraries/xproto/.bayt/compose.build.yaml",
+    "libraries/xproto/.bayt/compose.setup.yaml"
   ],
   "chainedDeps": [
     {

@@ -75,6 +75,12 @@
       "class": "build"
     }
   ],
+  "up": false,
+  "upClosure": [
+    "plugins/libstoml/.bayt/compose.build.yaml",
+    "plugins/libstoml/.bayt/compose.setup.yaml",
+    ".bayt/compose.setup.yaml"
+  ],
   "chainedDeps": [
     {
       "name": "build",

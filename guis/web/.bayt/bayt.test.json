@@ -66,6 +66,12 @@
       "class": "build"
     }
   ],
+  "up": false,
+  "upClosure": [
+    "guis/web/.bayt/compose.build.yaml",
+    "guis/web/.bayt/compose.setup.yaml",
+    ".bayt/compose.setup.yaml"
+  ],
   "chainedDeps": [
     {
       "name": "build",

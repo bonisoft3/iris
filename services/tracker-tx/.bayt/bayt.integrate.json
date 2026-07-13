@@ -1,6 +1,7 @@
 {
   "_generated_from": "bayt.cue (do not edit)",
   "compose": {
+    "up": true,
     "environment": {},
     "ports": [],
     "volumes": [],
@@ -48,6 +49,45 @@
   },
   "env": {},
   "synthetics": {
+    "bayt": {
+      "name": "integrate_bayt",
+      "project": "services_tracker-tx",
+      "dir": "services/tracker-tx",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          ".bayt/compose.integrate.yaml",
+          ".bayt/Dockerfile.integrate",
+          ".bayt/bayt.integrate.json",
+          ".bayt/Taskfile.yml",
+          ".bayt/Taskfile.bayt.yml",
+          ".bayt/Taskfile.integrate.yaml",
+          ".bayt/compose.integrate.closure.yaml"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "class": "build",
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "services/tracker-tx/.bayt/compose.integrate.yaml",
+        "services/tracker-tx/.bayt/compose.build.yaml",
+        "services/tracker-tx/.bayt/compose.setup.yaml"
+      ]
+    },
     "outs": {
       "name": "integrate_outs",
       "project": "services_tracker-tx",
@@ -74,7 +114,12 @@
       "cache": {
         "full": false,
         "similar": false
-      }
+      },
+      "upClosure": [
+        "services/tracker-tx/.bayt/compose.integrate.yaml",
+        "services/tracker-tx/.bayt/compose.build.yaml",
+        "services/tracker-tx/.bayt/compose.setup.yaml"
+      ]
     },
     "srcs": {
       "name": "integrate_srcs",
@@ -122,7 +167,12 @@
       "cache": {
         "full": false,
         "similar": false
-      }
+      },
+      "upClosure": [
+        "services/tracker-tx/.bayt/compose.integrate.yaml",
+        "services/tracker-tx/.bayt/compose.build.yaml",
+        "services/tracker-tx/.bayt/compose.setup.yaml"
+      ]
     }
   },
   "taskfile": {
@@ -142,6 +192,12 @@
     "setup"
   ],
   "transitiveCrossDeps": [],
+  "up": true,
+  "upClosure": [
+    "services/tracker-tx/.bayt/compose.integrate.yaml",
+    "services/tracker-tx/.bayt/compose.build.yaml",
+    "services/tracker-tx/.bayt/compose.setup.yaml"
+  ],
   "chainedDeps": [
     {
       "name": "build",

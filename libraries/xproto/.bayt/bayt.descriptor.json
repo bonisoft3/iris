@@ -57,6 +57,44 @@
   },
   "env": {},
   "synthetics": {
+    "bayt": {
+      "name": "descriptor_bayt",
+      "project": "libraries_xproto",
+      "dir": "libraries/xproto",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          ".bayt/compose.descriptor.yaml",
+          ".bayt/Dockerfile.descriptor",
+          ".bayt/bayt.descriptor.json",
+          ".bayt/Taskfile.yml",
+          ".bayt/Taskfile.bayt.yml",
+          ".bayt/Taskfile.descriptor.yaml",
+          ".bayt/init.gradle.kts"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "class": "build",
+      "visibility": "public",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "libraries/xproto/.bayt/compose.descriptor.yaml",
+        ".bayt/compose.setup.yaml"
+      ]
+    },
     "outs": {
       "name": "descriptor_outs",
       "project": "libraries_xproto",
@@ -83,7 +121,11 @@
       "cache": {
         "full": false,
         "similar": false
-      }
+      },
+      "upClosure": [
+        "libraries/xproto/.bayt/compose.descriptor.yaml",
+        ".bayt/compose.setup.yaml"
+      ]
     },
     "srcs": {
       "name": "descriptor_srcs",
@@ -134,7 +176,11 @@
       "cache": {
         "full": false,
         "similar": false
-      }
+      },
+      "upClosure": [
+        "libraries/xproto/.bayt/compose.descriptor.yaml",
+        ".bayt/compose.setup.yaml"
+      ]
     }
   },
   "taskfile": {
@@ -172,6 +218,11 @@
       },
       "class": "build"
     }
+  ],
+  "up": false,
+  "upClosure": [
+    "libraries/xproto/.bayt/compose.descriptor.yaml",
+    ".bayt/compose.setup.yaml"
   ],
   "chainedDeps": [
     {

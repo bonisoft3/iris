@@ -16,6 +16,7 @@
     }
   },
   "compose": {
+    "up": true,
     "environment": {},
     "ports": [],
     "volumes": [],
@@ -55,6 +56,45 @@
   },
   "env": {},
   "synthetics": {
+    "bayt": {
+      "name": "integrate_bayt",
+      "project": "plugins_omnishell",
+      "dir": "plugins/omnishell",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          ".bayt/compose.integrate.yaml",
+          ".bayt/Dockerfile.integrate",
+          ".bayt/bayt.integrate.json",
+          ".bayt/Taskfile.yml",
+          ".bayt/Taskfile.bayt.yml",
+          ".bayt/Taskfile.integrate.yaml",
+          ".bayt/compose.integrate.closure.yaml"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "class": "build",
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "plugins/omnishell/.bayt/compose.integrate.yaml",
+        "plugins/omnishell/.bayt/compose.build.yaml",
+        "plugins/omnishell/.bayt/compose.setup.yaml"
+      ]
+    },
     "srcs": {
       "name": "integrate_srcs",
       "project": "plugins_omnishell",
@@ -108,7 +148,12 @@
       "cache": {
         "full": false,
         "similar": false
-      }
+      },
+      "upClosure": [
+        "plugins/omnishell/.bayt/compose.integrate.yaml",
+        "plugins/omnishell/.bayt/compose.build.yaml",
+        "plugins/omnishell/.bayt/compose.setup.yaml"
+      ]
     }
   },
   "taskfile": {
@@ -128,6 +173,12 @@
     "setup"
   ],
   "transitiveCrossDeps": [],
+  "up": true,
+  "upClosure": [
+    "plugins/omnishell/.bayt/compose.integrate.yaml",
+    "plugins/omnishell/.bayt/compose.build.yaml",
+    "plugins/omnishell/.bayt/compose.setup.yaml"
+  ],
   "chainedDeps": [
     {
       "name": "build",

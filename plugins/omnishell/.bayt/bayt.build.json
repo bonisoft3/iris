@@ -54,6 +54,43 @@
   },
   "env": {},
   "synthetics": {
+    "bayt": {
+      "name": "build_bayt",
+      "project": "plugins_omnishell",
+      "dir": "plugins/omnishell",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          ".bayt/compose.build.yaml",
+          ".bayt/Dockerfile.build",
+          ".bayt/bayt.build.json",
+          ".bayt/Taskfile.yml",
+          ".bayt/Taskfile.bayt.yml",
+          ".bayt/Taskfile.build.yaml"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "class": "build",
+      "visibility": "public",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "plugins/omnishell/.bayt/compose.build.yaml",
+        "plugins/omnishell/.bayt/compose.setup.yaml"
+      ]
+    },
     "srcs": {
       "name": "build_srcs",
       "project": "plugins_omnishell",
@@ -87,7 +124,11 @@
       "cache": {
         "full": false,
         "similar": false
-      }
+      },
+      "upClosure": [
+        "plugins/omnishell/.bayt/compose.build.yaml",
+        "plugins/omnishell/.bayt/compose.setup.yaml"
+      ]
     }
   },
   "taskfile": {
@@ -106,6 +147,11 @@
     "setup"
   ],
   "transitiveCrossDeps": [],
+  "up": false,
+  "upClosure": [
+    "plugins/omnishell/.bayt/compose.build.yaml",
+    "plugins/omnishell/.bayt/compose.setup.yaml"
+  ],
   "chainedDeps": [
     {
       "name": "setup",

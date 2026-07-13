@@ -64,6 +64,44 @@
   },
   "env": {},
   "synthetics": {
+    "bayt": {
+      "name": "build_bayt",
+      "project": "guis_web",
+      "dir": "guis/web",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          ".bayt/compose.build.yaml",
+          ".bayt/Dockerfile.build",
+          ".bayt/bayt.build.json",
+          ".bayt/Taskfile.yml",
+          ".bayt/Taskfile.bayt.yml",
+          ".bayt/Taskfile.build.yaml"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "class": "build",
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "guis/web/.bayt/compose.build.yaml",
+        "guis/web/.bayt/compose.setup.yaml",
+        ".bayt/compose.setup.yaml"
+      ]
+    },
     "outs": {
       "name": "build_outs",
       "project": "guis_web",
@@ -90,7 +128,12 @@
       "cache": {
         "full": false,
         "similar": false
-      }
+      },
+      "upClosure": [
+        "guis/web/.bayt/compose.build.yaml",
+        "guis/web/.bayt/compose.setup.yaml",
+        ".bayt/compose.setup.yaml"
+      ]
     },
     "srcs": {
       "name": "build_srcs",
@@ -153,7 +196,12 @@
       "cache": {
         "full": false,
         "similar": false
-      }
+      },
+      "upClosure": [
+        "guis/web/.bayt/compose.build.yaml",
+        "guis/web/.bayt/compose.setup.yaml",
+        ".bayt/compose.setup.yaml"
+      ]
     }
   },
   "taskfile": {
@@ -193,6 +241,12 @@
       },
       "class": "build"
     }
+  ],
+  "up": false,
+  "upClosure": [
+    "guis/web/.bayt/compose.build.yaml",
+    "guis/web/.bayt/compose.setup.yaml",
+    ".bayt/compose.setup.yaml"
   ],
   "chainedDeps": [
     {

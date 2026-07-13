@@ -1,6 +1,7 @@
 {
   "_generated_from": "bayt.cue (do not edit)",
   "compose": {
+    "up": true,
     "command": [
       "bash",
       "-c",
@@ -108,6 +109,46 @@
     "ENVOY_UID": "0"
   },
   "synthetics": {
+    "bayt": {
+      "name": "launch_bayt",
+      "project": "services_tracker-tx",
+      "dir": "services/tracker-tx",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          ".bayt/compose.launch.yaml",
+          ".bayt/Dockerfile.launch",
+          ".bayt/bayt.launch.json",
+          ".bayt/Taskfile.yml",
+          ".bayt/Taskfile.bayt.yml",
+          ".bayt/compose.launch.closure.yaml"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "class": "build",
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "services/tracker-tx/.bayt/compose.launch.yaml",
+        "services/tracker-tx/.bayt/compose.build.yaml",
+        "services/tracker-tx/.bayt/compose.setup.yaml",
+        "libraries/xproto/.bayt/compose.descriptor.yaml",
+        ".bayt/compose.setup.yaml"
+      ]
+    },
     "srcs": {
       "name": "launch_srcs",
       "project": "services_tracker-tx",
@@ -188,7 +229,14 @@
       "cache": {
         "full": false,
         "similar": false
-      }
+      },
+      "upClosure": [
+        "services/tracker-tx/.bayt/compose.launch.yaml",
+        "services/tracker-tx/.bayt/compose.build.yaml",
+        "services/tracker-tx/.bayt/compose.setup.yaml",
+        "libraries/xproto/.bayt/compose.descriptor.yaml",
+        ".bayt/compose.setup.yaml"
+      ]
     }
   },
   "visibility": "internal",
@@ -236,6 +284,14 @@
       },
       "class": "build"
     }
+  ],
+  "up": true,
+  "upClosure": [
+    "services/tracker-tx/.bayt/compose.launch.yaml",
+    "services/tracker-tx/.bayt/compose.build.yaml",
+    "services/tracker-tx/.bayt/compose.setup.yaml",
+    "libraries/xproto/.bayt/compose.descriptor.yaml",
+    ".bayt/compose.setup.yaml"
   ],
   "chainedDeps": [
     {

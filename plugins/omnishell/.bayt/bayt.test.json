@@ -47,6 +47,11 @@
     "setup"
   ],
   "transitiveCrossDeps": [],
+  "up": false,
+  "upClosure": [
+    "plugins/omnishell/.bayt/compose.build.yaml",
+    "plugins/omnishell/.bayt/compose.setup.yaml"
+  ],
   "chainedDeps": [
     {
       "name": "build",

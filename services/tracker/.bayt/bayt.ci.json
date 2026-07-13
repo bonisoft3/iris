@@ -114,18 +114,73 @@
     "BUILDX_BAKE_ENTITLEMENTS_FS": "0",
     "COMPOSE_BAKE": "true"
   },
+  "synthetics": {
+    "bayt": {
+      "name": "ci_bayt",
+      "project": "services_tracker",
+      "dir": "services/tracker",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          ".bayt/compose.ci.yaml",
+          ".bayt/Dockerfile.ci",
+          ".bayt/bayt.ci.json",
+          ".bayt/Taskfile.yml",
+          ".bayt/Taskfile.bayt.yml",
+          ".bayt/init.gradle.kts"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "class": "build",
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "services/tracker/.bayt/compose.ci.yaml",
+        "services/tracker/.bayt/compose.dindbox.yaml",
+        "services/tracker/.bayt/compose.integrate.yaml",
+        "services/tracker/.bayt/compose.build.yaml",
+        "services/tracker/.bayt/compose.setup.yaml",
+        ".bayt/compose.setup.yaml",
+        "libraries/logs/.bayt/compose.build.yaml",
+        "libraries/logs/.bayt/compose.setup.yaml",
+        "plugins/jvm/.bayt/compose.build.yaml",
+        "plugins/jvm/.bayt/compose.setup.yaml",
+        "plugins/libstoml/.bayt/compose.build.yaml",
+        "plugins/libstoml/.bayt/compose.setup.yaml",
+        "libraries/pbtables/.bayt/compose.build.yaml",
+        "libraries/pbtables/.bayt/compose.setup.yaml",
+        "plugins/micronaut/.bayt/compose.build.yaml",
+        "plugins/micronaut/.bayt/compose.setup.yaml",
+        "libraries/xproto/.bayt/compose.build.yaml",
+        "libraries/xproto/.bayt/compose.setup.yaml"
+      ]
+    }
+  },
   "visibility": "internal",
   "class": "build",
   "emitsSrcs": false,
   "deps": [
     "dindbox",
     "integrate_srcs",
-    "bayt"
+    "integrate_bayt"
   ],
   "transitiveDeps": [
     "dindbox",
     "integrate_srcs",
-    "bayt",
+    "integrate_bayt",
     "build_srcs",
     "setup_srcs"
   ],
@@ -413,6 +468,27 @@
       "class": "build"
     }
   ],
+  "up": false,
+  "upClosure": [
+    "services/tracker/.bayt/compose.ci.yaml",
+    "services/tracker/.bayt/compose.dindbox.yaml",
+    "services/tracker/.bayt/compose.integrate.yaml",
+    "services/tracker/.bayt/compose.build.yaml",
+    "services/tracker/.bayt/compose.setup.yaml",
+    ".bayt/compose.setup.yaml",
+    "libraries/logs/.bayt/compose.build.yaml",
+    "libraries/logs/.bayt/compose.setup.yaml",
+    "plugins/jvm/.bayt/compose.build.yaml",
+    "plugins/jvm/.bayt/compose.setup.yaml",
+    "plugins/libstoml/.bayt/compose.build.yaml",
+    "plugins/libstoml/.bayt/compose.setup.yaml",
+    "libraries/pbtables/.bayt/compose.build.yaml",
+    "libraries/pbtables/.bayt/compose.setup.yaml",
+    "plugins/micronaut/.bayt/compose.build.yaml",
+    "plugins/micronaut/.bayt/compose.setup.yaml",
+    "libraries/xproto/.bayt/compose.build.yaml",
+    "libraries/xproto/.bayt/compose.setup.yaml"
+  ],
   "chainedDeps": [
     {
       "name": "dindbox",
@@ -440,14 +516,19 @@
       "class": "build"
     },
     {
-      "name": "bayt",
+      "name": "integrate_bayt",
       "project": "services_tracker",
       "dir": "services/tracker",
       "outs": {
         "globs": [
-          ".bayt/**",
-          "Taskfile.yml",
-          "compose.yaml"
+          ".bayt/compose.integrate.yaml",
+          ".bayt/Dockerfile.integrate",
+          ".bayt/bayt.integrate.json",
+          ".bayt/Taskfile.yml",
+          ".bayt/Taskfile.bayt.yml",
+          ".bayt/Taskfile.integrate.yaml",
+          ".bayt/compose.integrate.closure.yaml",
+          ".bayt/init.gradle.kts"
         ],
         "exclude": []
       },
@@ -502,7 +583,7 @@
         "defaultExclude": null
       },
       "shell": "sh",
-      "do": "if [ -n \"$BUILDKIT_SYNTAX\" ]; then\n  # depot frontend-pin workaround (full rationale in stacks/sayt/sayt.cue)\n  find /monorepo -path '*/.bayt/Dockerfile.*' -type f -exec sed -i \"1i # syntax=$BUILDKIT_SYNTAX\" {} \\;\nfi\n[ -n \"$DEPOT_TOKEN\" ] && bake=\"depot bake --project $DEPOT_PROJECT_ID\" || bake=\"docker buildx bake\"\n[ -f .bayt/depot.hcl ] && tgt=\"-f .bayt/depot.hcl depot-build\" || tgt=\"integrate\"\ndocker compose --profile \"*\" config | docker buildx bake --allow=fs.read=/monorepo -f - --print integrate | $bake -f - ${SAYT_NO_CACHE:+--no-cache --set \"*.cache-from=\" --set \"*.cache-to=\"} ${SAYT_NO_CACHE_FROM:+--set \"*.cache-from=\"} ${SAYT_NO_CACHE_TO:+--set \"*.cache-to=\"} $tgt\nexec docker compose up integrate --abort-on-container-failure --exit-code-from integrate --remove-orphans",
+      "do": "if [ -n \"$BUILDKIT_SYNTAX\" ]; then\n  # depot frontend-pin workaround (full rationale in stacks/sayt/sayt.cue)\n  find /monorepo -path '*/.bayt/Dockerfile.*' -type f -exec sed -i \"1i # syntax=$BUILDKIT_SYNTAX\" {} \\;\nfi\n[ -n \"$DEPOT_TOKEN\" ] && bake=\"depot bake --project $DEPOT_PROJECT_ID\" || bake=\"docker buildx bake\"\n[ -f .bayt/depot.hcl ] && tgt=\"-f .bayt/depot.hcl depot-build\" || tgt=\"bayt\"\ndocker compose -f .bayt/compose.integrate.closure.yaml config | docker buildx bake --allow=fs.read=/monorepo -f - --print bayt | $bake -f - ${SAYT_NO_CACHE:+--no-cache --set \"*.cache-from=\" --set \"*.cache-to=\"} ${SAYT_NO_CACHE_FROM:+--set \"*.cache-from=\"} ${SAYT_NO_CACHE_TO:+--set \"*.cache-to=\"} $tgt\nexec docker compose -f .bayt/compose.integrate.closure.yaml up bayt --abort-on-container-failure --exit-code-from bayt --remove-orphans",
       "dockerfile": {
         "inject": {
           "secrets": [

@@ -9,3 +9,12 @@ services:
       target: setup
     image: bayt-guis_web-setup:${BAYT_IMAGE_TAG:-latest}
     scale: 0
+  guis_web-setup_bayt:
+    build:
+      additional_contexts:
+        workspaceroot-setup_bayt: service:workspaceroot-setup_bayt
+      context: ..
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_bayt
+    image: bayt-guis_web-setup_bayt:latest
+    scale: 0

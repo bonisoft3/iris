@@ -1,0 +1,18 @@
+# generated from bayt.cue — do not edit
+include:
+- path: ../../../services/tracker-tx/.bayt/compose.launch.yaml
+  required: false
+- path: ../../../services/tracker-tx/.bayt/compose.build.yaml
+  required: false
+- path: ../../../services/tracker-tx/.bayt/compose.setup.yaml
+  required: false
+- path: ../../../libraries/xproto/.bayt/compose.descriptor.yaml
+  required: false
+- path: ../../../.bayt/compose.setup.yaml
+  required: false
+services:
+  bayt:
+    extends:
+      file: ./compose.launch.yaml
+      service: services_tracker-tx-launch
+    scale: 1

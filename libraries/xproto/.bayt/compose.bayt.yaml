@@ -16,22 +16,3 @@ include:
   required: false
 - path: ../../../.bayt/compose.bayt.yaml
   required: false
-services:
-  libraries_xproto-bayt:
-    build:
-      additional_contexts:
-        plugins_libstoml-bayt: service:plugins_libstoml-bayt
-        plugins_jvm-bayt: service:plugins_jvm-bayt
-        libraries_logs-bayt: service:libraries_logs-bayt
-        workspaceroot-bayt: service:workspaceroot-bayt
-      context: ..
-      dockerfile: .bayt/Dockerfile.bayt
-      target: bayt
-      x-bake:
-        cache-from:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_xproto-bayt
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_xproto-bayt
-        cache-to:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_xproto-bayt,mode=max,image-manifest=true,oci-mediatypes=true
-    image: bayt-libraries_xproto-bayt:latest
-    scale: 0

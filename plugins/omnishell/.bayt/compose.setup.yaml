@@ -13,3 +13,16 @@ services:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-setup,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-plugins_omnishell-setup:${BAYT_IMAGE_TAG:-latest}
     scale: 0
+  plugins_omnishell-setup_bayt:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_bayt
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_omnishell-setup_bayt
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_omnishell-setup_bayt
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_omnishell-setup_bayt,mode=max,image-manifest=true,oci-mediatypes=true
+    image: bayt-plugins_omnishell-setup_bayt:latest
+    scale: 0

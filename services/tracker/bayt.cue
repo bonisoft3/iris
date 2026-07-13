@@ -242,7 +242,7 @@ _tracker: sayt.gradle & {
 			// (libraries + plugins) via the synthetic `:srcs` transitive
 			// machinery; `workspaceroot:setup:srcs` brings the root-level
 			// mise + workspace files.
-			deps: [":integrate:srcs", ":bayt"]
+			deps: [":integrate:srcs", ":integrate:bayt"]
 		}
 
 		"dindbox": sayt.dindbox

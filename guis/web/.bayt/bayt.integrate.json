@@ -1,6 +1,7 @@
 {
   "_generated_from": "bayt.cue (do not edit)",
   "compose": {
+    "up": true,
     "environment": {},
     "ports": [],
     "volumes": [],
@@ -66,6 +67,46 @@
   },
   "env": {},
   "synthetics": {
+    "bayt": {
+      "name": "integrate_bayt",
+      "project": "guis_web",
+      "dir": "guis/web",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          ".bayt/compose.integrate.yaml",
+          ".bayt/Dockerfile.integrate",
+          ".bayt/bayt.integrate.json",
+          ".bayt/Taskfile.yml",
+          ".bayt/Taskfile.bayt.yml",
+          ".bayt/Taskfile.integrate.yaml",
+          ".bayt/compose.integrate.closure.yaml"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "class": "build",
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "guis/web/.bayt/compose.integrate.yaml",
+        "guis/web/.bayt/compose.build.yaml",
+        "guis/web/.bayt/compose.setup.yaml",
+        ".bayt/compose.setup.yaml"
+      ]
+    },
     "srcs": {
       "name": "integrate_srcs",
       "project": "guis_web",
@@ -151,7 +192,13 @@
       "cache": {
         "full": false,
         "similar": false
-      }
+      },
+      "upClosure": [
+        "guis/web/.bayt/compose.integrate.yaml",
+        "guis/web/.bayt/compose.build.yaml",
+        "guis/web/.bayt/compose.setup.yaml",
+        ".bayt/compose.setup.yaml"
+      ]
     }
   },
   "taskfile": {
@@ -192,6 +239,13 @@
       },
       "class": "build"
     }
+  ],
+  "up": true,
+  "upClosure": [
+    "guis/web/.bayt/compose.integrate.yaml",
+    "guis/web/.bayt/compose.build.yaml",
+    "guis/web/.bayt/compose.setup.yaml",
+    ".bayt/compose.setup.yaml"
   ],
   "chainedDeps": [
     {

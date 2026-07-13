@@ -9,6 +9,15 @@ services:
       target: build
     image: bayt-services_tracker-tx-build:${BAYT_IMAGE_TAG:-latest}
     scale: 0
+  services_tracker-tx-build_bayt:
+    build:
+      additional_contexts:
+        services_tracker-tx-setup_bayt: service:services_tracker-tx-setup_bayt
+      context: ..
+      dockerfile: .bayt/Dockerfile.build
+      target: build_bayt
+    image: bayt-services_tracker-tx-build_bayt:latest
+    scale: 0
   services_tracker-tx-build_srcs:
     build:
       context: ..

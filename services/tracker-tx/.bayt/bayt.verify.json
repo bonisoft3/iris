@@ -33,6 +33,12 @@
     "setup"
   ],
   "transitiveCrossDeps": [],
+  "up": false,
+  "upClosure": [
+    "services/tracker-tx/.bayt/compose.release.yaml",
+    "services/tracker-tx/.bayt/compose.build.yaml",
+    "services/tracker-tx/.bayt/compose.setup.yaml"
+  ],
   "chainedDeps": [
     {
       "name": "release",

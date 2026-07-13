@@ -16,6 +16,7 @@
     }
   },
   "compose": {
+    "up": true,
     "environment": {},
     "ports": [],
     "volumes": [],
@@ -71,6 +72,53 @@
   },
   "env": {},
   "synthetics": {
+    "bayt": {
+      "name": "integrate_bayt",
+      "project": "libraries_xproto",
+      "dir": "libraries/xproto",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          ".bayt/compose.integrate.yaml",
+          ".bayt/Dockerfile.integrate",
+          ".bayt/bayt.integrate.json",
+          ".bayt/Taskfile.yml",
+          ".bayt/Taskfile.bayt.yml",
+          ".bayt/Taskfile.integrate.yaml",
+          ".bayt/compose.integrate.closure.yaml",
+          ".bayt/init.gradle.kts"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "class": "build",
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "libraries/xproto/.bayt/compose.integrate.yaml",
+        "libraries/xproto/.bayt/compose.build.yaml",
+        "libraries/xproto/.bayt/compose.setup.yaml",
+        "plugins/jvm/.bayt/compose.build.yaml",
+        "plugins/jvm/.bayt/compose.setup.yaml",
+        ".bayt/compose.setup.yaml",
+        "plugins/libstoml/.bayt/compose.build.yaml",
+        "plugins/libstoml/.bayt/compose.setup.yaml",
+        "libraries/logs/.bayt/compose.build.yaml",
+        "libraries/logs/.bayt/compose.setup.yaml"
+      ]
+    },
     "outs": {
       "name": "integrate_outs",
       "project": "libraries_xproto",
@@ -98,7 +146,19 @@
       "cache": {
         "full": false,
         "similar": false
-      }
+      },
+      "upClosure": [
+        "libraries/xproto/.bayt/compose.integrate.yaml",
+        "libraries/xproto/.bayt/compose.build.yaml",
+        "libraries/xproto/.bayt/compose.setup.yaml",
+        "plugins/jvm/.bayt/compose.build.yaml",
+        "plugins/jvm/.bayt/compose.setup.yaml",
+        ".bayt/compose.setup.yaml",
+        "plugins/libstoml/.bayt/compose.build.yaml",
+        "plugins/libstoml/.bayt/compose.setup.yaml",
+        "libraries/logs/.bayt/compose.build.yaml",
+        "libraries/logs/.bayt/compose.setup.yaml"
+      ]
     },
     "srcs": {
       "name": "integrate_srcs",
@@ -357,7 +417,19 @@
       "cache": {
         "full": false,
         "similar": false
-      }
+      },
+      "upClosure": [
+        "libraries/xproto/.bayt/compose.integrate.yaml",
+        "libraries/xproto/.bayt/compose.build.yaml",
+        "libraries/xproto/.bayt/compose.setup.yaml",
+        "plugins/jvm/.bayt/compose.build.yaml",
+        "plugins/jvm/.bayt/compose.setup.yaml",
+        ".bayt/compose.setup.yaml",
+        "plugins/libstoml/.bayt/compose.build.yaml",
+        "plugins/libstoml/.bayt/compose.setup.yaml",
+        "libraries/logs/.bayt/compose.build.yaml",
+        "libraries/logs/.bayt/compose.setup.yaml"
+      ]
     }
   },
   "taskfile": {
@@ -455,6 +527,19 @@
       },
       "class": "build"
     }
+  ],
+  "up": true,
+  "upClosure": [
+    "libraries/xproto/.bayt/compose.integrate.yaml",
+    "libraries/xproto/.bayt/compose.build.yaml",
+    "libraries/xproto/.bayt/compose.setup.yaml",
+    "plugins/jvm/.bayt/compose.build.yaml",
+    "plugins/jvm/.bayt/compose.setup.yaml",
+    ".bayt/compose.setup.yaml",
+    "plugins/libstoml/.bayt/compose.build.yaml",
+    "plugins/libstoml/.bayt/compose.setup.yaml",
+    "libraries/logs/.bayt/compose.build.yaml",
+    "libraries/logs/.bayt/compose.setup.yaml"
   ],
   "chainedDeps": [
     {

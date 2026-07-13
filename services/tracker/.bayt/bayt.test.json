@@ -189,6 +189,24 @@
       "class": "build"
     }
   ],
+  "up": false,
+  "upClosure": [
+    "services/tracker/.bayt/compose.build.yaml",
+    "services/tracker/.bayt/compose.setup.yaml",
+    ".bayt/compose.setup.yaml",
+    "libraries/logs/.bayt/compose.build.yaml",
+    "libraries/logs/.bayt/compose.setup.yaml",
+    "plugins/jvm/.bayt/compose.build.yaml",
+    "plugins/jvm/.bayt/compose.setup.yaml",
+    "plugins/libstoml/.bayt/compose.build.yaml",
+    "plugins/libstoml/.bayt/compose.setup.yaml",
+    "libraries/pbtables/.bayt/compose.build.yaml",
+    "libraries/pbtables/.bayt/compose.setup.yaml",
+    "plugins/micronaut/.bayt/compose.build.yaml",
+    "plugins/micronaut/.bayt/compose.setup.yaml",
+    "libraries/xproto/.bayt/compose.build.yaml",
+    "libraries/xproto/.bayt/compose.setup.yaml"
+  ],
   "chainedDeps": [
     {
       "name": "build",

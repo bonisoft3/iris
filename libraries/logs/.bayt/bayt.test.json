@@ -113,6 +113,16 @@
       "class": "build"
     }
   ],
+  "up": false,
+  "upClosure": [
+    "libraries/logs/.bayt/compose.build.yaml",
+    "libraries/logs/.bayt/compose.setup.yaml",
+    "plugins/jvm/.bayt/compose.build.yaml",
+    "plugins/jvm/.bayt/compose.setup.yaml",
+    ".bayt/compose.setup.yaml",
+    "plugins/libstoml/.bayt/compose.build.yaml",
+    "plugins/libstoml/.bayt/compose.setup.yaml"
+  ],
   "chainedDeps": [
     {
       "name": "build",

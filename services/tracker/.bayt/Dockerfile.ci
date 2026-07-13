@@ -4,7 +4,7 @@ WORKDIR /monorepo/services/tracker
 COPY --from=bayt . /monorepo/plugins/bayt/runtime
 ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}
 COPY --from=services_tracker-integrate_srcs --parents /monorepo/services/tracker/src/it/**/*.java /monorepo/services/tracker/src/it/**/*.kt /monorepo/services/tracker/src/it/resources/**/* /monorepo/services/tracker/src/test/resources/**/* /
-COPY --from=services_tracker-bayt --link /monorepo /monorepo
+COPY --from=services_tracker-integrate_bayt --link /monorepo /monorepo
 COPY --from=services_tracker-build_srcs --parents /monorepo/services/tracker/build.gradle.kts /monorepo/services/tracker/src/main/**/*.gradle.kts /monorepo/services/tracker/gradle.properties /monorepo/services/tracker/gradle/wrapper/gradle-wrapper.jar /monorepo/services/tracker/gradlew /monorepo/services/tracker/src/main/**/*.java /monorepo/services/tracker/src/main/**/*.kt /monorepo/services/tracker/gradle/lib[s].versions.toml /monorepo/services/tracker/settings.gradle.kts /monorepo/services/tracker/src/main/**/*.sq /monorepo/services/tracker/src/main/**/*.sql /monorepo/services/tracker/src/main/**/*.sqm /monorepo/services/tracker/src/main/resources/**/* /
 COPY --from=services_tracker-setup_srcs --parents /monorepo/services/tracker/gradle/wrapper/gradle-wrapper.properties /monorepo/services/tracker/[m]ise.toml /monorepo/services/tracker/[.]mise.toml /monorepo/services/tracker/[m]ise.lock /
 COPY --from=libraries_logs-build_srcs --parents /monorepo/libraries/logs/build.gradle.kts /monorepo/libraries/logs/src/main/**/*.gradle.kts /monorepo/libraries/logs/gradle.properties /monorepo/libraries/logs/gradle/wrapper/gradle-wrapper.jar /monorepo/libraries/logs/gradlew /monorepo/libraries/logs/src/main/**/*.java /monorepo/libraries/logs/src/main/**/*.kt /monorepo/libraries/logs/gradle/lib[s].versions.toml /monorepo/libraries/logs/settings.gradle.kts /monorepo/libraries/logs/src/main/**/*.sq /monorepo/libraries/logs/src/main/**/*.sql /monorepo/libraries/logs/src/main/**/*.sqm /monorepo/libraries/logs/gradle/wrapper/gradle-wrapper.properties /monorepo/libraries/logs/[m]ise.toml /monorepo/libraries/logs/[.]mise.toml /monorepo/libraries/logs/[m]ise.lock /
@@ -56,8 +56,33 @@ if [ -n "$BUILDKIT_SYNTAX" ]; then
   find /monorepo -path '*/.bayt/Dockerfile.*' -type f -exec sed -i "1i # syntax=$BUILDKIT_SYNTAX" {} \;
 fi
 [ -n "$DEPOT_TOKEN" ] && bake="depot bake --project $DEPOT_PROJECT_ID" || bake="docker buildx bake"
-[ -f .bayt/depot.hcl ] && tgt="-f .bayt/depot.hcl depot-build" || tgt="integrate"
-docker compose --profile "*" config | docker buildx bake --allow=fs.read=/monorepo -f - --print integrate | $bake -f - ${SAYT_NO_CACHE:+--no-cache --set "*.cache-from=" --set "*.cache-to="} ${SAYT_NO_CACHE_FROM:+--set "*.cache-from="} ${SAYT_NO_CACHE_TO:+--set "*.cache-to="} $tgt
-exec docker compose up integrate --abort-on-container-failure --exit-code-from integrate --remove-orphans
+[ -f .bayt/depot.hcl ] && tgt="-f .bayt/depot.hcl depot-build" || tgt="bayt"
+docker compose -f .bayt/compose.integrate.closure.yaml config | docker buildx bake --allow=fs.read=/monorepo -f - --print bayt | $bake -f - ${SAYT_NO_CACHE:+--no-cache --set "*.cache-from=" --set "*.cache-to="} ${SAYT_NO_CACHE_FROM:+--set "*.cache-from="} ${SAYT_NO_CACHE_TO:+--set "*.cache-to="} $tgt
+exec docker compose -f .bayt/compose.integrate.closure.yaml up bayt --abort-on-container-failure --exit-code-from bayt --remove-orphans
 BAYT_INJECT
 COPY .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/bayt.ci.json .bayt/init.gradle.kts ./.bayt/
+
+FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223 AS ci_bayt_ctxs
+WORKDIR /monorepo/services/tracker
+COPY --parents .bayt/compose.ci.yaml .bayt/Dockerfile.ci .bayt/bayt.ci.json .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/init.gradle.kts ./
+COPY --from=services_tracker-dindbox_bayt /monorepo /monorepo
+COPY --from=services_tracker-integrate_bayt /monorepo /monorepo
+COPY --from=services_tracker-build_bayt /monorepo /monorepo
+COPY --from=services_tracker-setup_bayt /monorepo /monorepo
+COPY --from=libraries_logs-build_bayt /monorepo /monorepo
+COPY --from=libraries_pbtables-build_bayt /monorepo /monorepo
+COPY --from=libraries_xproto-build_bayt /monorepo /monorepo
+COPY --from=plugins_libstoml-build_bayt /monorepo /monorepo
+COPY --from=plugins_jvm-build_bayt /monorepo /monorepo
+COPY --from=plugins_micronaut-build_bayt /monorepo /monorepo
+COPY --from=workspaceroot-setup_bayt /monorepo /monorepo
+COPY --from=plugins_libstoml-setup_bayt /monorepo /monorepo
+COPY --from=plugins_jvm-setup_bayt /monorepo /monorepo
+COPY --from=libraries_logs-setup_bayt /monorepo /monorepo
+COPY --from=plugins_micronaut-setup_bayt /monorepo /monorepo
+COPY --from=libraries_xproto-setup_bayt /monorepo /monorepo
+COPY --from=libraries_pbtables-setup_bayt /monorepo /monorepo
+ARG SOURCE_DATE_EPOCH
+RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+FROM scratch AS ci_bayt
+COPY --from=ci_bayt_ctxs /monorepo /monorepo

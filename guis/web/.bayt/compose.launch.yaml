@@ -17,6 +17,17 @@ services:
       - action: rebuild
         path: ../pnpm-lock.yaml
     image: bayt-guis_web-launch:${BAYT_IMAGE_TAG:-latest}
+  guis_web-launch_bayt:
+    build:
+      additional_contexts:
+        guis_web-build_bayt: service:guis_web-build_bayt
+        guis_web-setup_bayt: service:guis_web-setup_bayt
+        workspaceroot-setup_bayt: service:workspaceroot-setup_bayt
+      context: ..
+      dockerfile: .bayt/Dockerfile.launch
+      target: launch_bayt
+    image: bayt-guis_web-launch_bayt:latest
+    scale: 0
   guis_web-launch_srcs:
     build:
       additional_contexts:

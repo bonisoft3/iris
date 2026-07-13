@@ -16,3 +16,14 @@ ARG SOURCE_DATE_EPOCH
 RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
 FROM scratch AS release_srcs
 COPY --from=release_ctxs /monorepo /monorepo
+
+FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223 AS release_bayt_ctxs
+WORKDIR /monorepo/guis/web
+COPY --parents .bayt/compose.release.yaml .bayt/Dockerfile.release .bayt/bayt.release.json .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml ./
+COPY --from=guis_web-build_bayt /monorepo /monorepo
+COPY --from=guis_web-setup_bayt /monorepo /monorepo
+COPY --from=workspaceroot-setup_bayt /monorepo /monorepo
+ARG SOURCE_DATE_EPOCH
+RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+FROM scratch AS release_bayt
+COPY --from=release_bayt_ctxs /monorepo /monorepo

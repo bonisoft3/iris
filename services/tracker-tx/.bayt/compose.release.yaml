@@ -12,6 +12,16 @@ services:
         - linux/amd64
     image: bayt-services_tracker-tx-release:${BAYT_IMAGE_TAG:-latest}
     scale: 0
+  services_tracker-tx-release_bayt:
+    build:
+      additional_contexts:
+        services_tracker-tx-build_bayt: service:services_tracker-tx-build_bayt
+        services_tracker-tx-setup_bayt: service:services_tracker-tx-setup_bayt
+      context: ..
+      dockerfile: .bayt/Dockerfile.release
+      target: release_bayt
+    image: bayt-services_tracker-tx-release_bayt:latest
+    scale: 0
   services_tracker-tx-release_srcs:
     build:
       additional_contexts:

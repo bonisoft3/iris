@@ -12,13 +12,3 @@ include:
   required: false
 - path: ../../../.bayt/compose.bayt.yaml
   required: false
-services:
-  guis_web-bayt:
-    build:
-      additional_contexts:
-        workspaceroot-bayt: service:workspaceroot-bayt
-      context: ..
-      dockerfile: .bayt/Dockerfile.bayt
-      target: bayt
-    image: bayt-guis_web-bayt:latest
-    scale: 0
