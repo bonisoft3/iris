@@ -27,7 +27,7 @@
       {
         "from": {
           "name": "bayt",
-          "image": "bonitao/bayt:0.29.0@sha256:2fc2073fb6010dd0f52ebcb1b8acba72f4620ee94b3f0bf0d447571a2cd85518"
+          "image": "bonitao/bayt:0.30.0@sha256:ee06977b662c976525a5c8170f53ca78985ee06f02bff8125584cae6d6705a7d"
         },
         "srcs": [
           "runtime"
@@ -674,9 +674,8 @@
             {
               "id": "buildx_instance",
               "var": {
-                "path": "/root/.docker/buildx/instances/$BUILDX_BUILDER"
-              },
-              "mode": "0600"
+                "contents": "BUILDX_INSTANCE"
+              }
             },
             {
               "id": "docker_config",
@@ -688,6 +687,11 @@
             }
           ],
           "defaultSteps": {
+            "buildx-instance": {
+              "name": "buildx-instance",
+              "priority": 11,
+              "pre": "if [ -n \"$BUILDX_BUILDER\" ] && [ -n \"$BUILDX_INSTANCE\" ]; then\n  install -d -m 0700 /root/.docker/buildx/instances\n  printf '%s' \"$BUILDX_INSTANCE\" > \"/root/.docker/buildx/instances/$BUILDX_BUILDER\"\n  chmod 0600 \"/root/.docker/buildx/instances/$BUILDX_BUILDER\"\nfi"
+            },
             "unix-socket-forward": {
               "name": "unix-socket-forward",
               "priority": 10,
