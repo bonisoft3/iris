@@ -6,7 +6,8 @@ say:
     do: "run-task bayt:test"
     use: "./tools.nu [run-task]"
   integrate:
-    args: "--bake"
+    # Skip the depot cache for local buildkit; CI re-enables it via action flags.
+    args: "--bake --no-up --no-cache-from --no-cache-to"
   generate:
     rulemap:
       nuxt-prepare:

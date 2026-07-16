@@ -39,5 +39,5 @@ WORKDIR /monorepo/.
 FROM release AS integrate
 WORKDIR /monorepo/./plugins/devserver/
 COPY ./plugins/devserver/Dockerfile ./plugins/devserver/compose.yaml ./
-RUN  --mount=type=secret,id=host.env,required set -a && . /run/secrets/host.env && docker compose build develop
+RUN  --mount=type=secret,id=host.env,required set -a && . /run/secrets/host.env && DOCKER_HOST=${DOCKER_HOST:-$DOCKER_HOST_TCP} docker compose build develop
 RUN  --mount=type=secret,id=host.env,required dind.sh docker compose build develop

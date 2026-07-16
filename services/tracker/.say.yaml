@@ -17,7 +17,7 @@ say:
   # then write to depot, with chain IDs that drift from outer's, and
   # the warm cache breaks across runs.
   integrate:
-    args: '--bake --set "*.cache-to="'
+    args: '--bake --no-up --no-cache-from --no-cache-to'
   # Goreleaser-OSS doesn't understand sayt's path-prefixed monorepo
   # tags (services/tracker/v0.2.1) — that's a pro feature. --snapshot
   # keeps goreleaser in dev mode (skips the strict tag-on-HEAD

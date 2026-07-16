@@ -1,0 +1,3 @@
+say:
+  integrate:
+    args: "--with-host-env"

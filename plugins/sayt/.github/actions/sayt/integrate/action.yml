@@ -11,9 +11,10 @@ inputs:
     description: |
       `compose` (default): the action drives bake + the digest-marker cache +
       compose-up (your `integrate` service is the test runner; honors the
-      cache-* inputs). `bake`: run `sayt integrate --bake` so the bake
-      graph's own `ci`-style target drives the cascade and its `x-bake` refs
-      do the caching. Usually selected for you by `sayt/ci`.
+      cache-* inputs). `bake`: run `sayt integrate --bake --no-up` (the
+      envelope — the bake graph's own `ci`-style target drives the cascade in
+      its RUN and its `x-bake` refs do the caching). Usually selected for you
+      by `sayt/ci`.
     required: false
     default: "compose"
   debug:
@@ -131,7 +132,9 @@ runs:
         SOURCE_DATE_EPOCH: "0"
         BUILDKIT_SYNTAX: ${{ inputs.buildkit-syntax }}
       run: |
-        sayt integrate --bake --builder ${{ steps.buildx.outputs.name }} --target ${{ inputs.target }}
+        # ci-run is runtime-only: it gets the bridged daemon but no builder injection.
+        buildx=$([ "${{ inputs.target }}" = "ci-run" ] || echo "--with-buildx")
+        sayt integrate --bake --no-up --dind-bridge $buildx --builder ${{ steps.buildx.outputs.name }} --target ${{ inputs.target }}
 
     # ===== compose mode (default): socat-bridge the host daemon to TCP and
     # export the buildx instance + docker auth so sandboxes reach it. Carry the
