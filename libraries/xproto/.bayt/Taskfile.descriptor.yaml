@@ -4,8 +4,8 @@ tasks:
     status:
     - ../../plugins/bayt/runtime/bayt fingerprint --manifest {{.TASKFILE_DIR}}/bayt.descriptor.json --stamp-file .task/bayt/descriptor.hash
     vars:
-      BAYTW: ../../plugins/bayt/runtime/bayt cache run --manifest {{.TASKFILE_DIR}}/bayt.descriptor.json -- mise x -- sh -c
+      BAYTW: ../../plugins/bayt/runtime/bayt cache run --manifest {{.TASKFILE_DIR}}/bayt.descriptor.json -- mise x --
     cmds:
-    - '{{.BAYTW}} "mkdir -p out && mise x -- buf build --as-file-descriptor-set --exclude-source-info -o ''out/xproto.desc.pb#format=binpb'' ."'
+    - '{{.BAYTW}} sh -c "mkdir -p out && mise x -- buf build --as-file-descriptor-set --exclude-source-info -o ''out/xproto.desc.pb#format=binpb'' ."'
     - defer: '{{if not .EXIT_CODE}}../../plugins/bayt/runtime/bayt fingerprint --manifest {{.TASKFILE_DIR}}/bayt.descriptor.json --stamp-file .task/bayt/descriptor.hash --update-stamp{{end}}'
 version: '3'

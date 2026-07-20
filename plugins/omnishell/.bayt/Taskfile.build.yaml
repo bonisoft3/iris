@@ -6,8 +6,8 @@ tasks:
     status:
     - ../../plugins/bayt/runtime/bayt fingerprint --manifest {{.TASKFILE_DIR}}/bayt.build.json --stamp-file .task/bayt/build.hash
     vars:
-      BAYTW: ../../plugins/bayt/runtime/bayt cache run --manifest {{.TASKFILE_DIR}}/bayt.build.json -- mise x -- sh -c
+      BAYTW: ../../plugins/bayt/runtime/bayt cache run --manifest {{.TASKFILE_DIR}}/bayt.build.json -- mise x --
     cmds:
-    - '{{.BAYTW}} "sh -c ''bun install --frozen-lockfile && bun run check''"'
+    - '{{.BAYTW}} sh -c "sh -c ''bun install --frozen-lockfile && bun run check''"'
     - defer: '{{if not .EXIT_CODE}}../../plugins/bayt/runtime/bayt fingerprint --manifest {{.TASKFILE_DIR}}/bayt.build.json --stamp-file .task/bayt/build.hash --update-stamp{{end}}'
 version: '3'

@@ -2,7 +2,7 @@
 FROM plugins_libstoml-build AS integrate
 WORKDIR /monorepo/plugins/libstoml
 COPY --parents src/it/**/*.java src/it/**/*.kt src/it/resources/**/* ./
-RUN --mount=type=cache,target=/root/.gradle,id=plugins_libstoml-integrate:/root/.gradle,sharing=locked --mount=type=cache,target=.gradle/configuration-cache,id=plugins_libstoml-integrate:.gradle/configuration-cache,sharing=locked ["mise", "x", "--", "./gradlew", "--init-script", ".bayt/init.gradle.kts", "integrationTest", "--rerun"]
+RUN --mount=type=cache,target=/root/.gradle,id=plugins_libstoml:/root/.gradle,sharing=shared --mount=type=cache,target=.gradle/configuration-cache,id=plugins_libstoml-integrate:.gradle/configuration-cache,sharing=locked ["mise", "x", "--", "./gradlew", "--init-script", ".bayt/init.gradle.kts", "integrationTest", "--rerun"]
 COPY .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/Taskfile.integrate.yaml .bayt/bayt.integrate.json .bayt/init.gradle.kts ./.bayt/
 
 FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223 AS integrate_ctxs

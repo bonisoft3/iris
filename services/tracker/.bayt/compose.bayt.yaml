@@ -2,6 +2,8 @@
 include:
 - path: ./compose.setup.yaml
   required: false
+- path: ./compose.deps.yaml
+  required: false
 - path: ./compose.build.yaml
   required: false
 - path: ./compose.release-artifact.yaml

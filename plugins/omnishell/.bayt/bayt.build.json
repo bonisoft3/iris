@@ -143,6 +143,9 @@
   "deps": [
     "setup"
   ],
+  "sameProjectDeps": [
+    "setup"
+  ],
   "transitiveDeps": [
     "setup"
   ],

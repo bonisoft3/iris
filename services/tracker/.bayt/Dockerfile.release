@@ -15,6 +15,7 @@ WORKDIR /monorepo/services/tracker
 COPY --from=services_tracker-release-layers_srcs /monorepo /monorepo
 COPY --from=services_tracker-release-artifact_srcs /monorepo /monorepo
 COPY --from=services_tracker-build_srcs /monorepo /monorepo
+COPY --from=services_tracker-deps_srcs /monorepo /monorepo
 COPY --from=services_tracker-setup_srcs /monorepo /monorepo
 ARG SOURCE_DATE_EPOCH
 RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
@@ -27,6 +28,7 @@ COPY --parents .bayt/compose.release.yaml .bayt/Dockerfile.release .bayt/bayt.re
 COPY --from=services_tracker-release-layers_bayt /monorepo /monorepo
 COPY --from=services_tracker-release-artifact_bayt /monorepo /monorepo
 COPY --from=services_tracker-build_bayt /monorepo /monorepo
+COPY --from=services_tracker-deps_bayt /monorepo /monorepo
 COPY --from=services_tracker-setup_bayt /monorepo /monorepo
 COPY --from=libraries_logs-build_bayt /monorepo /monorepo
 COPY --from=libraries_pbtables-build_bayt /monorepo /monorepo

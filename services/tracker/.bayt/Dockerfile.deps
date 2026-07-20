@@ -1,0 +1,45 @@
+# generated from bayt.cue — do not edit
+FROM services_tracker-setup AS deps
+WORKDIR /monorepo/services/tracker
+COPY --from=libraries_logs-build --link /monorepo/libraries/logs /monorepo/libraries/logs
+COPY --from=libraries_pbtables-build --link /monorepo/libraries/pbtables /monorepo/libraries/pbtables
+COPY --from=libraries_xproto-build --link /monorepo/libraries/xproto /monorepo/libraries/xproto
+COPY --from=plugins_libstoml-build --link /monorepo/plugins/libstoml /monorepo/plugins/libstoml
+COPY --from=plugins_jvm-build --link /monorepo/plugins/jvm /monorepo/plugins/jvm
+COPY --from=plugins_micronaut-build --link /monorepo/plugins/micronaut /monorepo/plugins/micronaut
+COPY --parents build.gradle.kts gradle/gradle-daemon-jvm.propertie[s] gradle.properties gradle/wrapper/**/* gradlew gradle/lib[s].versions.toml settings.gradle.kts ./
+ENV GRADLE_RO_DEP_CACHE=/opt/gradle-ro-cache
+RUN --mount=type=cache,target=/root/.gradle,id=services_tracker:/root/.gradle,sharing=shared mise x -- ./gradlew --write-verification-metadata sha256 help && rm -f gradle/verification-metadata.xml
+RUN --mount=type=cache,target=/root/.gradle,id=services_tracker:/root/.gradle,sharing=shared --network=none mise x -- mkdir -p /opt/gradle-ro-cache && cp -a /root/.gradle/caches/modules-2 /opt/gradle-ro-cache/
+COPY .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/Taskfile.deps.yaml .bayt/bayt.deps.json .bayt/init.gradle.kts ./.bayt/
+
+FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223 AS deps_ctxs
+WORKDIR /monorepo/services/tracker
+COPY --parents build.gradle.kts gradle/gradle-daemon-jvm.propertie[s] gradle.properties gradle/wrapper/**/* gradlew gradle/lib[s].versions.toml settings.gradle.kts ./
+COPY --from=services_tracker-setup_srcs /monorepo /monorepo
+COPY --from=libraries_logs-build_srcs /monorepo /monorepo
+COPY --from=libraries_pbtables-build_srcs /monorepo /monorepo
+COPY --from=libraries_xproto-build_srcs /monorepo /monorepo
+COPY --from=plugins_libstoml-build_srcs /monorepo /monorepo
+COPY --from=plugins_jvm-build_srcs /monorepo /monorepo
+COPY --from=plugins_micronaut-build_srcs /monorepo /monorepo
+ARG SOURCE_DATE_EPOCH
+RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+FROM scratch AS deps_srcs
+COPY --from=deps_ctxs /monorepo /monorepo
+
+FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223 AS deps_bayt_ctxs
+WORKDIR /monorepo/services/tracker
+COPY --parents .bayt/compose.deps.yaml .bayt/Dockerfile.deps .bayt/bayt.deps.json .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/Taskfile.deps.yaml .bayt/init.gradle.kts ./
+COPY --from=services_tracker-setup_bayt /monorepo /monorepo
+COPY --from=libraries_logs-build_bayt /monorepo /monorepo
+COPY --from=libraries_pbtables-build_bayt /monorepo /monorepo
+COPY --from=libraries_xproto-build_bayt /monorepo /monorepo
+COPY --from=plugins_libstoml-build_bayt /monorepo /monorepo
+COPY --from=plugins_jvm-build_bayt /monorepo /monorepo
+COPY --from=plugins_micronaut-build_bayt /monorepo /monorepo
+COPY --from=workspaceroot-setup_bayt /monorepo /monorepo
+ARG SOURCE_DATE_EPOCH
+RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+FROM scratch AS deps_bayt
+COPY --from=deps_bayt_ctxs /monorepo /monorepo

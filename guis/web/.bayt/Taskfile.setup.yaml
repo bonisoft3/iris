@@ -7,6 +7,7 @@ tasks:
     - pnpm
   builtin:
     env:
+      MISE_ALWAYS_KEEP_DOWNLOAD: '1'
       SHARP_IGNORE_GLOBAL_LIBVIPS: '1'
     internal: true
     vars:
@@ -22,6 +23,7 @@ tasks:
     deps:
     - builtin
     env:
+      MISE_ALWAYS_KEEP_DOWNLOAD: '1'
       SHARP_IGNORE_GLOBAL_LIBVIPS: '1'
     internal: true
     vars:
@@ -31,6 +33,6 @@ tasks:
     generates:
     - .task/bayt/setup.pnpm.hash
     cmds:
-    - '{{.BAYTW}} mise x -- pnpm install --frozen-lockfile --filter Iris...'
+    - '{{.BAYTW}} mise x -- pnpm install --prefer-offline --frozen-lockfile --package-import-method copy --filter Iris...'
     - defer: '{{if not .EXIT_CODE}}../../plugins/bayt/runtime/bayt fingerprint --manifest {{.TASKFILE_DIR}}/bayt.setup.json --cmd pnpm --stamp-file .task/bayt/setup.pnpm.hash --update-stamp{{end}}'
 version: '3'

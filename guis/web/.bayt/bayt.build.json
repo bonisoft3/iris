@@ -216,6 +216,9 @@
   "deps": [
     "setup"
   ],
+  "sameProjectDeps": [
+    "setup"
+  ],
   "transitiveDeps": [
     "setup"
   ],
@@ -288,6 +291,7 @@
           {
             "type": "cache",
             "target": "/root/.local/share/pnpm/store",
+            "scope": "project",
             "required": false
           }
         ]

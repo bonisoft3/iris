@@ -56,7 +56,9 @@
     ],
     "exclude": []
   },
-  "env": {},
+  "env": {
+    "MISE_ALWAYS_KEEP_DOWNLOAD": "1"
+  },
   "synthetics": {
     "bayt": {
       "name": "setup_bayt",
@@ -295,6 +297,7 @@
   "class": "build",
   "emitsSrcs": true,
   "deps": [],
+  "sameProjectDeps": [],
   "transitiveDeps": [],
   "transitiveCrossDeps": [
     {
@@ -366,7 +369,27 @@
     "plugins/libstoml/.bayt/compose.build.yaml",
     "plugins/libstoml/.bayt/compose.setup.yaml"
   ],
-  "chainedDeps": [],
+  "chainedDeps": [
+    {
+      "name": "build",
+      "project": "plugins_jvm",
+      "dir": "plugins/jvm",
+      "outs": {
+        "globs": [
+          "build/**/*",
+          ".gradle/**/*",
+          "build.gradle.kts",
+          "settings.gradle.kts",
+          "gradle.properties",
+          "gradlew",
+          "gradle/wrapper/**/*",
+          "gradle/lib[s].versions.toml"
+        ],
+        "exclude": []
+      },
+      "class": "build"
+    }
+  ],
   "cmds": [
     {
       "srcs": {
@@ -384,6 +407,16 @@
         "defaultExclude": null
       },
       "do": "mise install",
+      "dockerfile": {
+        "mounts": [
+          {
+            "type": "cache",
+            "target": "/root/.local/share/mise/downloads",
+            "scope": "project",
+            "required": false
+          }
+        ]
+      },
       "name": "builtin",
       "shell": "exec",
       "stop": false

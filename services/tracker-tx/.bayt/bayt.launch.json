@@ -246,6 +246,9 @@
     "build",
     "descriptor"
   ],
+  "sameProjectDeps": [
+    "build"
+  ],
   "transitiveDeps": [
     "build",
     "setup"

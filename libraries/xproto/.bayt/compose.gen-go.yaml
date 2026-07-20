@@ -1,0 +1,62 @@
+# generated from bayt.cue — do not edit
+services:
+  libraries_xproto-gen-go:
+    build:
+      additional_contexts:
+        workspaceroot-setup: service:workspaceroot-setup
+      context: ..
+      dockerfile: .bayt/Dockerfile.gen-go
+      target: gen-go
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-gen-go
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-gen-go
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-gen-go,mode=min,image-manifest=true,oci-mediatypes=true
+    image: bayt-libraries_xproto-gen-go:${BAYT_IMAGE_TAG:-latest}
+    scale: 0
+  libraries_xproto-gen-go_bayt:
+    build:
+      additional_contexts:
+        workspaceroot-setup_bayt: service:workspaceroot-setup_bayt
+      context: ..
+      dockerfile: .bayt/Dockerfile.gen-go
+      target: gen-go_bayt
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_xproto-gen-go_bayt
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_xproto-gen-go_bayt
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_xproto-gen-go_bayt,mode=max,image-manifest=true,oci-mediatypes=true
+    image: bayt-libraries_xproto-gen-go_bayt:latest
+    scale: 0
+  libraries_xproto-gen-go_srcs:
+    build:
+      additional_contexts:
+        workspaceroot-setup_srcs: service:workspaceroot-setup_srcs
+      context: ..
+      dockerfile: .bayt/Dockerfile.gen-go
+      target: gen-go_srcs
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_xproto-gen-go_srcs
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_xproto-gen-go_srcs
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_xproto-gen-go_srcs,mode=max,image-manifest=true,oci-mediatypes=true
+    image: bayt-libraries_xproto-gen-go_srcs:latest
+    scale: 0
+  libraries_xproto-gen-go_outs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.gen-go
+      target: gen-go_outs
+      additional_contexts:
+        libraries_xproto-gen-go: service:libraries_xproto-gen-go
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_xproto-gen-go_outs
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_xproto-gen-go_outs
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_xproto-gen-go_outs,mode=max,image-manifest=true,oci-mediatypes=true
+    image: bayt-libraries_xproto-gen-go_outs:latest
+    scale: 0

@@ -27,6 +27,9 @@
   "deps": [
     "release"
   ],
+  "sameProjectDeps": [
+    "release"
+  ],
   "transitiveDeps": [
     "release",
     "build",
@@ -110,6 +113,7 @@
           {
             "type": "cache",
             "target": "/root/.local/share/pnpm/store",
+            "scope": "project",
             "required": false
           }
         ]

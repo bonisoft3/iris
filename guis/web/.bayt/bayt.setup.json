@@ -31,6 +31,7 @@
     "exclude": []
   },
   "env": {
+    "MISE_ALWAYS_KEEP_DOWNLOAD": "1",
     "SHARP_IGNORE_GLOBAL_LIBVIPS": "1"
   },
   "synthetics": {
@@ -82,6 +83,7 @@
   "class": "build",
   "emitsSrcs": false,
   "deps": [],
+  "sameProjectDeps": [],
   "transitiveDeps": [],
   "transitiveCrossDeps": [
     {
@@ -111,7 +113,29 @@
     "guis/web/.bayt/compose.setup.yaml",
     ".bayt/compose.setup.yaml"
   ],
-  "chainedDeps": [],
+  "chainedDeps": [
+    {
+      "name": "setup",
+      "project": "workspaceroot",
+      "dir": "",
+      "outs": {
+        "globs": [
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock",
+          "pnpm-lock.yaml",
+          "pnpm-workspace.yaml",
+          "package.json",
+          "gradle/libs.versions.toml",
+          "plugins/devserver/dind.sh",
+          "**/package.json",
+          ".task/bayt/setup.hash"
+        ],
+        "exclude": []
+      },
+      "class": "build"
+    }
+  ],
   "cmds": [
     {
       "srcs": {
@@ -125,6 +149,16 @@
         "defaultExclude": null
       },
       "do": "mise install",
+      "dockerfile": {
+        "mounts": [
+          {
+            "type": "cache",
+            "target": "/root/.local/share/mise/downloads",
+            "scope": "project",
+            "required": false
+          }
+        ]
+      },
       "name": "builtin",
       "shell": "exec",
       "stop": false
@@ -132,18 +166,20 @@
     {
       "srcs": {
         "globs": [
-          "package.json"
+          "package.json",
+          "[p]npm-lock.yaml"
         ],
         "exclude": [],
         "defaultGlobs": null,
         "defaultExclude": null
       },
-      "do": "mise x -- pnpm install --frozen-lockfile --filter Iris...",
+      "do": "mise x -- pnpm install --prefer-offline --frozen-lockfile --package-import-method copy --filter Iris...",
       "dockerfile": {
         "mounts": [
           {
             "type": "cache",
             "target": "/root/.local/share/pnpm/store",
+            "scope": "project",
             "required": false
           }
         ]

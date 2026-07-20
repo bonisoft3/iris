@@ -21,6 +21,12 @@ services:
       service: libraries_xproto-descriptor
     profiles:
     - descriptor
+  gen-go:
+    extends:
+      file: ./compose.gen-go.yaml
+      service: libraries_xproto-gen-go
+    profiles:
+    - gen-go
   integrate:
     extends:
       file: ./compose.integrate.yaml

@@ -2,12 +2,20 @@
 tasks:
   default:
     deps:
-    - ::bayt:setup
+    - ::bayt:deps
     status:
     - ../../plugins/bayt/runtime/bayt fingerprint --manifest {{.TASKFILE_DIR}}/bayt.build.json --stamp-file .task/bayt/build.hash
     vars:
       BAYTW: ../../plugins/bayt/runtime/bayt cache run --manifest {{.TASKFILE_DIR}}/bayt.build.json --full -- mise x --
     cmds:
-    - '{{.BAYTW}} ./gradlew --init-script .bayt/init.gradle.kts assemble'
+    - cmd: '{{.BAYTW}} pwsh -c ".\\gradlew.bat --init-script .bayt/init.gradle.kts assemble"'
+      platforms:
+      - windows
+    - cmd: '{{.BAYTW}} ./gradlew --init-script .bayt/init.gradle.kts assemble'
+      platforms:
+      - linux
+    - cmd: '{{.BAYTW}} ./gradlew --init-script .bayt/init.gradle.kts assemble'
+      platforms:
+      - darwin
     - defer: '{{if not .EXIT_CODE}}../../plugins/bayt/runtime/bayt fingerprint --manifest {{.TASKFILE_DIR}}/bayt.build.json --stamp-file .task/bayt/build.hash --update-stamp{{end}}'
 version: '3'

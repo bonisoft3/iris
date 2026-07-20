@@ -213,6 +213,9 @@
   "deps": [
     "build"
   ],
+  "sameProjectDeps": [
+    "build"
+  ],
   "transitiveDeps": [
     "build",
     "setup"
@@ -297,6 +300,7 @@
           {
             "type": "cache",
             "target": "/root/.local/share/pnpm/store",
+            "scope": "project",
             "required": false
           }
         ]

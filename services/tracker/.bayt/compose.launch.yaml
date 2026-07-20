@@ -28,6 +28,7 @@ services:
     build:
       additional_contexts:
         services_tracker-build_bayt: service:services_tracker-build_bayt
+        services_tracker-deps_bayt: service:services_tracker-deps_bayt
         services_tracker-setup_bayt: service:services_tracker-setup_bayt
         libraries_logs-build_bayt: service:libraries_logs-build_bayt
         libraries_pbtables-build_bayt: service:libraries_pbtables-build_bayt
@@ -51,6 +52,7 @@ services:
     build:
       additional_contexts:
         services_tracker-build_srcs: service:services_tracker-build_srcs
+        services_tracker-deps_srcs: service:services_tracker-deps_srcs
         services_tracker-setup_srcs: service:services_tracker-setup_srcs
       context: ..
       dockerfile: .bayt/Dockerfile.launch

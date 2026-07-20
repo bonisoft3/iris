@@ -9,6 +9,12 @@ services:
       service: services_tracker-setup
     profiles:
     - setup
+  deps:
+    extends:
+      file: ./compose.deps.yaml
+      service: services_tracker-deps
+    profiles:
+    - deps
   build:
     extends:
       file: ./compose.build.yaml

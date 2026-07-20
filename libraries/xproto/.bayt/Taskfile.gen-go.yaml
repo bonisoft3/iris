@@ -1,0 +1,11 @@
+# generated from bayt.cue — do not edit
+tasks:
+  default:
+    status:
+    - ../../plugins/bayt/runtime/bayt fingerprint --manifest {{.TASKFILE_DIR}}/bayt.gen-go.json --stamp-file .task/bayt/gen-go.hash
+    vars:
+      BAYTW: ../../plugins/bayt/runtime/bayt cache run --manifest {{.TASKFILE_DIR}}/bayt.gen-go.json -- mise x --
+    cmds:
+    - '{{.BAYTW}} buf generate --template buf.go.gen.yaml'
+    - defer: '{{if not .EXIT_CODE}}../../plugins/bayt/runtime/bayt fingerprint --manifest {{.TASKFILE_DIR}}/bayt.gen-go.json --stamp-file .task/bayt/gen-go.hash --update-stamp{{end}}'
+version: '3'

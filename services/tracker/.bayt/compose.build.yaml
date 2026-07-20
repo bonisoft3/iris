@@ -3,14 +3,8 @@ services:
   services_tracker-build:
     build:
       additional_contexts:
-        libraries_logs-build: service:libraries_logs-build
-        libraries_pbtables-build: service:libraries_pbtables-build
-        libraries_xproto-build: service:libraries_xproto-build
-        plugins_libstoml-build: service:plugins_libstoml-build
-        plugins_jvm-build: service:plugins_jvm-build
-        plugins_micronaut-build: service:plugins_micronaut-build
         bayt: ../../../plugins/bayt/runtime
-        services_tracker-setup: service:services_tracker-setup
+        services_tracker-deps: service:services_tracker-deps
       context: ..
       dockerfile: .bayt/Dockerfile.build
       target: build
@@ -25,13 +19,14 @@ services:
   services_tracker-build_bayt:
     build:
       additional_contexts:
-        services_tracker-setup_bayt: service:services_tracker-setup_bayt
+        services_tracker-deps_bayt: service:services_tracker-deps_bayt
         libraries_logs-build_bayt: service:libraries_logs-build_bayt
         libraries_pbtables-build_bayt: service:libraries_pbtables-build_bayt
         libraries_xproto-build_bayt: service:libraries_xproto-build_bayt
         plugins_libstoml-build_bayt: service:plugins_libstoml-build_bayt
         plugins_jvm-build_bayt: service:plugins_jvm-build_bayt
         plugins_micronaut-build_bayt: service:plugins_micronaut-build_bayt
+        services_tracker-setup_bayt: service:services_tracker-setup_bayt
         workspaceroot-setup_bayt: service:workspaceroot-setup_bayt
       context: ..
       dockerfile: .bayt/Dockerfile.build
@@ -47,13 +42,14 @@ services:
   services_tracker-build_srcs:
     build:
       additional_contexts:
-        services_tracker-setup_srcs: service:services_tracker-setup_srcs
+        services_tracker-deps_srcs: service:services_tracker-deps_srcs
         libraries_logs-build_srcs: service:libraries_logs-build_srcs
         libraries_pbtables-build_srcs: service:libraries_pbtables-build_srcs
         libraries_xproto-build_srcs: service:libraries_xproto-build_srcs
         plugins_libstoml-build_srcs: service:plugins_libstoml-build_srcs
         plugins_jvm-build_srcs: service:plugins_jvm-build_srcs
         plugins_micronaut-build_srcs: service:plugins_micronaut-build_srcs
+        services_tracker-setup_srcs: service:services_tracker-setup_srcs
       context: ..
       dockerfile: .bayt/Dockerfile.build
       target: build_srcs

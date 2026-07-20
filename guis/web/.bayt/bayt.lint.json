@@ -23,6 +23,7 @@
   "class": "build",
   "emitsSrcs": false,
   "deps": [],
+  "sameProjectDeps": [],
   "transitiveDeps": [],
   "transitiveCrossDeps": [],
   "up": false,
@@ -42,6 +43,7 @@
           {
             "type": "cache",
             "target": "/root/.local/share/pnpm/store",
+            "scope": "project",
             "required": false
           }
         ]

@@ -12,6 +12,10 @@ includes:
     taskfile: ./Taskfile.descriptor.yaml
     dir: ../
     optional: true
+  gen-go:
+    taskfile: ./Taskfile.gen-go.yaml
+    dir: ../
+    optional: true
   doctor:
     taskfile: ./Taskfile.doctor.yaml
     dir: ../

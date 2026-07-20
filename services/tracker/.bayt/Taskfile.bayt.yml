@@ -4,6 +4,10 @@ includes:
     taskfile: ./Taskfile.setup.yaml
     dir: ../
     optional: true
+  deps:
+    taskfile: ./Taskfile.deps.yaml
+    dir: ../
+    optional: true
   build:
     taskfile: ./Taskfile.build.yaml
     dir: ../

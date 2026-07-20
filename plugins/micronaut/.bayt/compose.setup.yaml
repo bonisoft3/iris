@@ -33,6 +33,8 @@ services:
     scale: 0
   plugins_micronaut-setup_srcs:
     build:
+      additional_contexts:
+        plugins_jvm-build_srcs: service:plugins_jvm-build_srcs
       context: ..
       dockerfile: .bayt/Dockerfile.setup
       target: setup_srcs

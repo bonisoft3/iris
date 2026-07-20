@@ -32,6 +32,8 @@ services:
     scale: 0
   plugins_jvm-setup_srcs:
     build:
+      additional_contexts:
+        workspaceroot-setup_srcs: service:workspaceroot-setup_srcs
       context: ..
       dockerfile: .bayt/Dockerfile.setup
       target: setup_srcs

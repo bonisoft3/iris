@@ -21,6 +21,7 @@ include:
   - path: ./guis/web/.bayt/compose.bayt.yaml
   - path: ./services/boxer/.bayt/compose.bayt.yaml
   - path: ./plugins/omnishell/.bayt/compose.bayt.yaml
+  - path: ./services/shelfie/.bayt/compose.bayt.yaml
 
 services:
   services_tracker:
@@ -58,13 +59,9 @@ services:
         - host.env
 
   services_shelfie:
-    build:
-      context: .
-      network: host
-      dockerfile: ./services/shelfie/Dockerfile
-      target: integrate
-      secrets:
-        - host.env
+    extends:
+      file: ./services/shelfie/.bayt/compose.integrate.yaml
+      service: services_shelfie-integrate
   services_tracker_tx:
     build:
       context: .

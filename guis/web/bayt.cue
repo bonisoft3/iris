@@ -4,6 +4,7 @@ package web
 import (
 	bayt "bonisoft.org/plugins/bayt/core:bayt"
 	sayt "bonisoft.org/plugins/bayt/stacks/sayt"
+	Pnpm "bonisoft.org/plugins/bayt/stacks/pnpm"
 )
 
 _web: sayt.pnpm & {
@@ -24,7 +25,7 @@ _web: sayt.pnpm & {
 			// Without the filter, sibling workspace members' postinstalls
 			// run inside web's container (e.g. flashcards' `prisma
 			// generate` fails because its schema isn't COPYed in).
-			cmd: "pnpm": do: "mise x -- pnpm install --frozen-lockfile --filter Iris..."
+			cmd: "pnpm": do: "mise x -- pnpm install \(Pnpm.installFlags) --filter Iris..."
 		}
 
 		// Incremental build inside Docker: `task build:build` wraps
@@ -33,7 +34,7 @@ _web: sayt.pnpm & {
 		// reaches the container via the bayt-runtime
 		// additional_contexts wiring; stamps live in the image layer
 		// so downstream stages COPY --from inherit them.
-		"build": bayt.incremental & {}
+		"build": bayt.incremental
 
 		"release": {
 			// Nuxt SSR runtime contract — k8s preview manifest references
@@ -51,7 +52,6 @@ _web: sayt.pnpm & {
 			}
 			bake: {
 				image:      "gcr.io/trash-362115/guis.web"
-				push:       false
 				platforms: ["linux/amd64"]
 			}
 

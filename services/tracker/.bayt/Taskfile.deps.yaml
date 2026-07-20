@@ -1,0 +1,15 @@
+# generated from bayt.cue — do not edit
+tasks:
+  default:
+    deps:
+    - ::bayt:setup
+    env:
+      GRADLE_RO_DEP_CACHE: /opt/gradle-ro-cache
+    status:
+    - ../../plugins/bayt/runtime/bayt fingerprint --manifest {{.TASKFILE_DIR}}/bayt.deps.json --stamp-file .task/bayt/deps.hash
+    vars:
+      BAYTW: ../../plugins/bayt/runtime/bayt cache run --manifest {{.TASKFILE_DIR}}/bayt.deps.json -- mise x --
+    cmds:
+    - '{{.BAYTW}} sh -c "./gradlew --write-verification-metadata sha256 help && rm -f gradle/verification-metadata.xml"'
+    - defer: '{{if not .EXIT_CODE}}../../plugins/bayt/runtime/bayt fingerprint --manifest {{.TASKFILE_DIR}}/bayt.deps.json --stamp-file .task/bayt/deps.hash --update-stamp{{end}}'
+version: '3'

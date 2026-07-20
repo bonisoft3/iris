@@ -21,12 +21,9 @@ _xproto: sayt.gradle & {
 
 	targets: {
 		// Public: consumed by libraries/pbtables and services/tracker.
-		"build": visibility: "public"
-		// REPRODUCER: see plugins/jvm/bayt.cue for the gRPC limit context.
-		"setup": dockerfile: from: ref: "plugins_jvm:build"
-		// catalog plugin requires libstoml+jvm; top-level includeBuild("../../libraries/logs") needs logs.
-		// Proto source dir (input to bufGenerate task) must be in the build container.
+		// Proto source dir (bufGenerate input) must be in the build container.
 		"build": {
+			visibility: "public"
 			srcs: globs: [
 				"src/**/*.kt",
 				"src/**/*.gradle.kts",
@@ -45,10 +42,11 @@ _xproto: sayt.gradle & {
 				"buf.yaml",
 				"buf.lock",
 			]
-			// workspaceroot:setup flows via FROM chain (setup → jvm:build
-			// → workspaceroot:setup), so no explicit dep needed.
 			deps: ["plugins_libstoml:build", "plugins_jvm:build", "libraries_logs:build"]
 		}
+
+		// REPRODUCER: see plugins/jvm/bayt.cue for the gRPC limit context.
+		"setup": dockerfile: from: ref: "plugins_jvm:build"
 
 		// descriptor — single-artifact buf-built FileDescriptorSet,
 		// consumed by services that wire envoy's grpc_json_transcoder
@@ -69,6 +67,22 @@ _xproto: sayt.gradle & {
 				shell: "sh"
 				do:    "mkdir -p out && mise x -- buf build --as-file-descriptor-set --exclude-source-info -o 'out/xproto.desc.pb#format=binpb' ."
 			}
+			dockerfile: bayt.nubox
+		}
+
+		"gen-go": sayt.generate & {
+			visibility: "public"
+			deps: ["workspaceroot:setup"]
+			srcs: globs: [
+				"buf.yaml",
+				"buf.lock",
+				"buf.go.gen.yaml",
+				"**/*.proto",
+				"go.mod",
+				"go.sum",
+			]
+			outs: globs: ["gen/**/*.go", "go.mod", "go.sum"]
+			cmd: "builtin": do: "buf generate --template buf.go.gen.yaml"
 			dockerfile: bayt.nubox
 		}
 

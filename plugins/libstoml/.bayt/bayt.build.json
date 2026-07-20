@@ -263,6 +263,9 @@
   "deps": [
     "setup"
   ],
+  "sameProjectDeps": [
+    "setup"
+  ],
   "transitiveDeps": [
     "setup"
   ],
@@ -344,6 +347,7 @@
           {
             "type": "cache",
             "target": "/root/.gradle",
+            "scope": "project",
             "required": false
           },
           {

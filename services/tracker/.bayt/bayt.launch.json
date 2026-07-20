@@ -133,6 +133,7 @@
       "upClosure": [
         "services/tracker/.bayt/compose.launch.yaml",
         "services/tracker/.bayt/compose.build.yaml",
+        "services/tracker/.bayt/compose.deps.yaml",
         "services/tracker/.bayt/compose.setup.yaml",
         ".bayt/compose.setup.yaml",
         "libraries/logs/.bayt/compose.build.yaml",
@@ -173,6 +174,8 @@
           "src/main/**/*.sql",
           "src/main/**/*.sqm",
           "src/main/resources/**/*",
+          "gradle/gradle-daemon-jvm.propertie[s]",
+          "gradle/wrapper/**/*",
           "gradle/wrapper/gradle-wrapper.properties",
           "[m]ise.toml",
           "[.]mise.toml",
@@ -186,6 +189,7 @@
       "deps": [],
       "transitiveDeps": [
         "build_srcs",
+        "deps_srcs",
         "setup_srcs"
       ],
       "transitiveCrossDeps": [
@@ -497,6 +501,24 @@
         },
         {
           "project": "services_tracker",
+          "name": "deps_srcs",
+          "dir": "services/tracker",
+          "outs": {
+            "globs": [
+              "build.gradle.kts",
+              "gradle/gradle-daemon-jvm.propertie[s]",
+              "gradle.properties",
+              "gradle/wrapper/**/*",
+              "gradlew",
+              "gradle/lib[s].versions.toml",
+              "settings.gradle.kts"
+            ],
+            "exclude": []
+          },
+          "class": "build"
+        },
+        {
+          "project": "services_tracker",
           "name": "setup_srcs",
           "dir": "services/tracker",
           "outs": {
@@ -520,6 +542,7 @@
       "upClosure": [
         "services/tracker/.bayt/compose.launch.yaml",
         "services/tracker/.bayt/compose.build.yaml",
+        "services/tracker/.bayt/compose.deps.yaml",
         "services/tracker/.bayt/compose.setup.yaml",
         ".bayt/compose.setup.yaml",
         "libraries/logs/.bayt/compose.build.yaml",
@@ -543,8 +566,12 @@
   "deps": [
     "build"
   ],
+  "sameProjectDeps": [
+    "build"
+  ],
   "transitiveDeps": [
     "build",
+    "deps",
     "setup"
   ],
   "transitiveCrossDeps": [
@@ -688,6 +715,7 @@
   "upClosure": [
     "services/tracker/.bayt/compose.launch.yaml",
     "services/tracker/.bayt/compose.build.yaml",
+    "services/tracker/.bayt/compose.deps.yaml",
     "services/tracker/.bayt/compose.setup.yaml",
     ".bayt/compose.setup.yaml",
     "libraries/logs/.bayt/compose.build.yaml",
@@ -719,6 +747,16 @@
           "gradle/wrapper/**/*",
           "gradle/lib[s].versions.toml"
         ],
+        "exclude": []
+      },
+      "class": "build"
+    },
+    {
+      "name": "deps",
+      "project": "services_tracker",
+      "dir": "services/tracker",
+      "outs": {
+        "globs": [],
         "exclude": []
       },
       "class": "build"

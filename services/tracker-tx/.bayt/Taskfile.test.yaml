@@ -3,12 +3,11 @@ tasks:
   default:
     deps:
     - ::bayt:build
-    - ::bayt:setup
     status:
     - ../../plugins/bayt/runtime/bayt fingerprint --manifest {{.TASKFILE_DIR}}/bayt.test.json --stamp-file .task/bayt/test.hash
     vars:
-      BAYTW: ../../plugins/bayt/runtime/bayt cache run --manifest {{.TASKFILE_DIR}}/bayt.test.json -- mise x -- sh -c
+      BAYTW: ../../plugins/bayt/runtime/bayt cache run --manifest {{.TASKFILE_DIR}}/bayt.test.json -- mise x --
     cmds:
-    - '{{.BAYTW}} "yq . < out/transcoding.yaml.gcp.tpl"'
+    - '{{.BAYTW}} sh -c "yq . < out/transcoding.yaml.gcp.tpl"'
     - defer: '{{if not .EXIT_CODE}}../../plugins/bayt/runtime/bayt fingerprint --manifest {{.TASKFILE_DIR}}/bayt.test.json --stamp-file .task/bayt/test.hash --update-stamp{{end}}'
 version: '3'

@@ -152,6 +152,7 @@
         "services/tracker/.bayt/compose.dindbox.yaml",
         "services/tracker/.bayt/compose.integrate.yaml",
         "services/tracker/.bayt/compose.build.yaml",
+        "services/tracker/.bayt/compose.deps.yaml",
         "services/tracker/.bayt/compose.setup.yaml",
         ".bayt/compose.setup.yaml",
         "libraries/logs/.bayt/compose.build.yaml",
@@ -177,11 +178,17 @@
     "integrate_srcs",
     "integrate_bayt"
   ],
+  "sameProjectDeps": [
+    "dindbox",
+    "integrate_srcs",
+    "integrate_bayt"
+  ],
   "transitiveDeps": [
     "dindbox",
     "integrate_srcs",
     "integrate_bayt",
     "build_srcs",
+    "deps_srcs",
     "setup_srcs"
   ],
   "transitiveCrossDeps": [
@@ -474,6 +481,7 @@
     "services/tracker/.bayt/compose.dindbox.yaml",
     "services/tracker/.bayt/compose.integrate.yaml",
     "services/tracker/.bayt/compose.build.yaml",
+    "services/tracker/.bayt/compose.deps.yaml",
     "services/tracker/.bayt/compose.setup.yaml",
     ".bayt/compose.setup.yaml",
     "libraries/logs/.bayt/compose.build.yaml",
@@ -553,6 +561,24 @@
           "src/main/**/*.sql",
           "src/main/**/*.sqm",
           "src/main/resources/**/*"
+        ],
+        "exclude": []
+      },
+      "class": "build"
+    },
+    {
+      "name": "deps_srcs",
+      "project": "services_tracker",
+      "dir": "services/tracker",
+      "outs": {
+        "globs": [
+          "build.gradle.kts",
+          "gradle/gradle-daemon-jvm.propertie[s]",
+          "gradle.properties",
+          "gradle/wrapper/**/*",
+          "gradlew",
+          "gradle/lib[s].versions.toml",
+          "settings.gradle.kts"
         ],
         "exclude": []
       },

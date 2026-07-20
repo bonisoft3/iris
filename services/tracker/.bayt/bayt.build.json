@@ -20,8 +20,8 @@
       "ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}"
     ],
     "from": {
-      "ref": ":setup",
-      "name": "services_tracker-setup"
+      "ref": ":deps",
+      "name": "services_tracker-deps"
     },
     "incremental": true,
     "copy": [
@@ -121,6 +121,7 @@
       },
       "upClosure": [
         "services/tracker/.bayt/compose.build.yaml",
+        "services/tracker/.bayt/compose.deps.yaml",
         "services/tracker/.bayt/compose.setup.yaml",
         ".bayt/compose.setup.yaml",
         "libraries/logs/.bayt/compose.build.yaml",
@@ -173,6 +174,7 @@
       },
       "upClosure": [
         "services/tracker/.bayt/compose.build.yaml",
+        "services/tracker/.bayt/compose.deps.yaml",
         "services/tracker/.bayt/compose.setup.yaml",
         ".bayt/compose.setup.yaml",
         "libraries/logs/.bayt/compose.build.yaml",
@@ -213,6 +215,8 @@
           "src/main/**/*.sql",
           "src/main/**/*.sqm",
           "src/main/resources/**/*",
+          "gradle/gradle-daemon-jvm.propertie[s]",
+          "gradle/wrapper/**/*",
           "gradle/wrapper/gradle-wrapper.properties",
           "[m]ise.toml",
           "[.]mise.toml",
@@ -225,6 +229,7 @@
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [
+        "deps_srcs",
         "setup_srcs"
       ],
       "transitiveCrossDeps": [
@@ -512,6 +517,24 @@
         },
         {
           "project": "services_tracker",
+          "name": "deps_srcs",
+          "dir": "services/tracker",
+          "outs": {
+            "globs": [
+              "build.gradle.kts",
+              "gradle/gradle-daemon-jvm.propertie[s]",
+              "gradle.properties",
+              "gradle/wrapper/**/*",
+              "gradlew",
+              "gradle/lib[s].versions.toml",
+              "settings.gradle.kts"
+            ],
+            "exclude": []
+          },
+          "class": "build"
+        },
+        {
+          "project": "services_tracker",
           "name": "setup_srcs",
           "dir": "services/tracker",
           "outs": {
@@ -534,6 +557,7 @@
       },
       "upClosure": [
         "services/tracker/.bayt/compose.build.yaml",
+        "services/tracker/.bayt/compose.deps.yaml",
         "services/tracker/.bayt/compose.setup.yaml",
         ".bayt/compose.setup.yaml",
         "libraries/logs/.bayt/compose.build.yaml",
@@ -561,7 +585,7 @@
   "class": "build",
   "emitsSrcs": true,
   "deps": [
-    "setup",
+    "deps",
     "build",
     "build",
     "build",
@@ -569,7 +593,11 @@
     "build",
     "build"
   ],
+  "sameProjectDeps": [
+    "deps"
+  ],
   "transitiveDeps": [
+    "deps",
     "setup"
   ],
   "transitiveCrossDeps": [
@@ -712,6 +740,7 @@
   "up": false,
   "upClosure": [
     "services/tracker/.bayt/compose.build.yaml",
+    "services/tracker/.bayt/compose.deps.yaml",
     "services/tracker/.bayt/compose.setup.yaml",
     ".bayt/compose.setup.yaml",
     "libraries/logs/.bayt/compose.build.yaml",
@@ -729,17 +758,11 @@
   ],
   "chainedDeps": [
     {
-      "name": "setup",
+      "name": "deps",
       "project": "services_tracker",
       "dir": "services/tracker",
       "outs": {
-        "globs": [
-          "gradle/wrapper/gradle-wrapper.properties",
-          "[m]ise.toml",
-          "[.]mise.toml",
-          "[m]ise.lock",
-          ".task/bayt/setup.hash"
-        ],
+        "globs": [],
         "exclude": []
       },
       "class": "build"
@@ -857,6 +880,22 @@
         "exclude": []
       },
       "class": "build"
+    },
+    {
+      "name": "setup",
+      "project": "services_tracker",
+      "dir": "services/tracker",
+      "outs": {
+        "globs": [
+          "gradle/wrapper/gradle-wrapper.properties",
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock",
+          ".task/bayt/setup.hash"
+        ],
+        "exclude": []
+      },
+      "class": "build"
     }
   ],
   "cmds": [
@@ -891,6 +930,7 @@
           {
             "type": "cache",
             "target": "/root/.gradle",
+            "scope": "project",
             "required": false
           },
           {

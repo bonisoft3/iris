@@ -195,6 +195,7 @@
   "deps": [
     "setup"
   ],
+  "sameProjectDeps": [],
   "transitiveDeps": [],
   "transitiveCrossDeps": [
     {

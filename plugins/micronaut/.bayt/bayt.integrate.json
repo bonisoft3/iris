@@ -32,6 +32,7 @@
       {
         "type": "cache",
         "target": "/root/.gradle",
+        "scope": "project",
         "required": false
       },
       {
@@ -369,6 +370,9 @@
   "class": "build",
   "emitsSrcs": true,
   "deps": [
+    "build"
+  ],
+  "sameProjectDeps": [
     "build"
   ],
   "transitiveDeps": [

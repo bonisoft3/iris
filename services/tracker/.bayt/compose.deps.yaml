@@ -1,0 +1,66 @@
+# generated from bayt.cue — do not edit
+services:
+  services_tracker-deps:
+    build:
+      additional_contexts:
+        libraries_logs-build: service:libraries_logs-build
+        libraries_pbtables-build: service:libraries_pbtables-build
+        libraries_xproto-build: service:libraries_xproto-build
+        plugins_libstoml-build: service:plugins_libstoml-build
+        plugins_jvm-build: service:plugins_jvm-build
+        plugins_micronaut-build: service:plugins_micronaut-build
+        services_tracker-setup: service:services_tracker-setup
+      context: ..
+      dockerfile: .bayt/Dockerfile.deps
+      target: deps
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-deps
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-deps
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-deps,mode=min,image-manifest=true,oci-mediatypes=true
+    image: bayt-services_tracker-deps:${BAYT_IMAGE_TAG:-latest}
+    scale: 0
+  services_tracker-deps_bayt:
+    build:
+      additional_contexts:
+        services_tracker-setup_bayt: service:services_tracker-setup_bayt
+        libraries_logs-build_bayt: service:libraries_logs-build_bayt
+        libraries_pbtables-build_bayt: service:libraries_pbtables-build_bayt
+        libraries_xproto-build_bayt: service:libraries_xproto-build_bayt
+        plugins_libstoml-build_bayt: service:plugins_libstoml-build_bayt
+        plugins_jvm-build_bayt: service:plugins_jvm-build_bayt
+        plugins_micronaut-build_bayt: service:plugins_micronaut-build_bayt
+        workspaceroot-setup_bayt: service:workspaceroot-setup_bayt
+      context: ..
+      dockerfile: .bayt/Dockerfile.deps
+      target: deps_bayt
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-deps_bayt
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-deps_bayt
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-deps_bayt,mode=max,image-manifest=true,oci-mediatypes=true
+    image: bayt-services_tracker-deps_bayt:latest
+    scale: 0
+  services_tracker-deps_srcs:
+    build:
+      additional_contexts:
+        services_tracker-setup_srcs: service:services_tracker-setup_srcs
+        libraries_logs-build_srcs: service:libraries_logs-build_srcs
+        libraries_pbtables-build_srcs: service:libraries_pbtables-build_srcs
+        libraries_xproto-build_srcs: service:libraries_xproto-build_srcs
+        plugins_libstoml-build_srcs: service:plugins_libstoml-build_srcs
+        plugins_jvm-build_srcs: service:plugins_jvm-build_srcs
+        plugins_micronaut-build_srcs: service:plugins_micronaut-build_srcs
+      context: ..
+      dockerfile: .bayt/Dockerfile.deps
+      target: deps_srcs
+      x-bake:
+        cache-from:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-deps_srcs
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-deps_srcs
+        cache-to:
+        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-deps_srcs,mode=max,image-manifest=true,oci-mediatypes=true
+    image: bayt-services_tracker-deps_srcs:latest
+    scale: 0

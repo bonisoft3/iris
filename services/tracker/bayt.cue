@@ -7,6 +7,18 @@ import (
 	Gradle "bonisoft.org/plugins/bayt/stacks/gradle"
 )
 
+// The gradle composite-build includes — one list for both resolution
+// (deps target) and compilation (build target); drift between the two
+// would resolve a different include set than build compiles against.
+_composite: [
+	"libraries_logs:build",
+	"libraries_pbtables:build",
+	"libraries_xproto:build",
+	"plugins_libstoml:build",
+	"plugins_jvm:build",
+	"plugins_micronaut:build",
+]
+
 _tracker: sayt.gradle & {
 	// `dir` slash→underscore yields `services_tracker` — matches
 	// skaffold's metadata.name convention, so iris can reference this
@@ -24,17 +36,17 @@ _tracker: sayt.gradle & {
 	}
 
 	targets: {
-		// Install dind dependencies during setup so the layer builds
-		// in parallel with the cross-project lib chains rather than
-		// being gated behind them at integrate time. Tracker is the
-		// only project in the monorepo that runs integrate-with-dind;
-		// other gradle projects (libraries/*, plugins/*) keep their
-		// setup lean. Pinned to a specific socat version so layer
-		// cache keys don't churn on upstream package updates within
-		// a leap release. Bump alongside the leap pin in
-		// images.lock.cue — query with `zypper info socat` against
-		// the new leap base to find the matching version.
+		// setup chains off workspaceroot:setup (base image + mise
+		// toolchain). dind deps (socat) for the integrate-with-dind path
+		// are injected by bayt's dind modifier, not installed here.
 		"setup": dockerfile: from: ref: "workspaceroot:setup"
+
+		// RO dep cache layer (Gradle.depsResolve via the sayt.gradle
+		// opt-in). Needs the composite includes present for resolution
+		// to configure them — same set build compiles against.
+		"deps": {
+			deps: _composite
+		}
 
 		// Incremental build inside Docker: `task build:build` wraps the
 		// gradle invocation so go-task's status: hook short-circuits
@@ -49,20 +61,13 @@ _tracker: sayt.gradle & {
 			srcs: globs: ["src/main/resources/**/*"]
 			// workspaceroot:setup flows in via the FROM chain (setup
 			// FROMs workspaceroot:setup), so it's not listed explicitly.
-			deps: [
-				"libraries_logs:build",
-				"libraries_pbtables:build",
-				"libraries_xproto:build",
-				"plugins_libstoml:build",
-				"plugins_jvm:build",
-				"plugins_micronaut:build",
-			]
-			// Chain the build stage off setup via FROM so the mise toolchain
-			// (in /root/.local/) and .task/bayt/setup.hash flow in.
-			// In-container `task bayt:build` then short-circuits its
-			// `::bayt:setup` dep on the inherited stamp instead of re-running
-			// `mise install`.
-			dockerfile: from: ref: ":setup"
+			deps: _composite
+			// Chain the build stage off deps via FROM so the mise toolchain
+			// (via setup), the wrapper dist + RO dep cache layers, and the
+			// GRADLE_RO_DEP_CACHE env flow in. build reaches setup only
+			// through deps (build → deps → setup), so `task bayt:build`
+			// runs setup once — no parallel `mise install`.
+			dockerfile: from: ref: ":deps"
 		}
 
 		// release-artifact — runs gradle's jibBuildTar via the generic
@@ -152,7 +157,6 @@ _tracker: sayt.gradle & {
 			// leaves it false so the image lands in the docker daemon.
 			bake: {
 				image: "gcr.io/trash-362115/services.tracker"
-				push:  false // default; skaffold overrides via env
 				platforms: ["linux/amd64"]
 			}
 

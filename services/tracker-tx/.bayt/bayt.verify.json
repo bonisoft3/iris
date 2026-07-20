@@ -27,6 +27,9 @@
   "deps": [
     "release"
   ],
+  "sameProjectDeps": [
+    "release"
+  ],
   "transitiveDeps": [
     "release",
     "build",

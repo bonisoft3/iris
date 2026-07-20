@@ -56,7 +56,9 @@
     ],
     "exclude": []
   },
-  "env": {},
+  "env": {
+    "MISE_ALWAYS_KEEP_DOWNLOAD": "1"
+  },
   "synthetics": {
     "bayt": {
       "name": "setup_bayt",
@@ -199,6 +201,7 @@
   "class": "build",
   "emitsSrcs": true,
   "deps": [],
+  "sameProjectDeps": [],
   "transitiveDeps": [],
   "transitiveCrossDeps": [
     {
@@ -228,7 +231,29 @@
     "plugins/libstoml/.bayt/compose.setup.yaml",
     ".bayt/compose.setup.yaml"
   ],
-  "chainedDeps": [],
+  "chainedDeps": [
+    {
+      "name": "setup",
+      "project": "workspaceroot",
+      "dir": "",
+      "outs": {
+        "globs": [
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock",
+          "pnpm-lock.yaml",
+          "pnpm-workspace.yaml",
+          "package.json",
+          "gradle/libs.versions.toml",
+          "plugins/devserver/dind.sh",
+          "**/package.json",
+          ".task/bayt/setup.hash"
+        ],
+        "exclude": []
+      },
+      "class": "build"
+    }
+  ],
   "cmds": [
     {
       "srcs": {
@@ -246,6 +271,16 @@
         "defaultExclude": null
       },
       "do": "mise install",
+      "dockerfile": {
+        "mounts": [
+          {
+            "type": "cache",
+            "target": "/root/.local/share/mise/downloads",
+            "scope": "project",
+            "required": false
+          }
+        ]
+      },
       "name": "builtin",
       "shell": "exec",
       "stop": false
