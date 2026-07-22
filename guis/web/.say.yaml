@@ -1,10 +1,4 @@
 say:
-  build:
-    do: "run-task bayt:build"
-    use: "./tools.nu [run-task]"
-  test:
-    do: "run-task bayt:test"
-    use: "./tools.nu [run-task]"
   integrate:
     # Skip the depot cache for local buildkit; CI re-enables it via action flags.
     args: "--bake --no-up --no-cache-from --no-cache-to"

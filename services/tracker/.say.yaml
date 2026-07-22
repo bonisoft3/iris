@@ -2,12 +2,6 @@ say:
   generate:
     rulemap:
       auto-cue: null
-  build:
-    do: "run-task bayt:build"
-    use: "./tools.nu [run-task]"
-  test:
-    do: "run-task bayt:test"
-    use: "./tools.nu [run-task]"
   launch:
     do: "^mise x -- ./gradlew dev"
   # Local-dev defaults: pick bake branch, keep local pushes off shared

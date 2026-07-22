@@ -47,6 +47,9 @@
     "globs": [],
     "exclude": []
   },
+  "state": {
+    "globs": []
+  },
   "env": {},
   "synthetics": {
     "bayt": {
@@ -661,7 +664,9 @@
           "**/package.json",
           ".task/bayt/setup.hash"
         ],
-        "exclude": []
+        "exclude": [
+          "**/node_modules/**"
+        ]
       },
       "class": "build"
     }

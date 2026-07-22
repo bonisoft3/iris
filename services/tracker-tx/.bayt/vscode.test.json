@@ -3,13 +3,17 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "command": "mise x -- sh",
+      "args": [
+        "-c",
+        "yq . < out/transcoding.yaml.gcp.tpl"
+      ],
       "group": {
         "kind": "test",
         "isDefault": true
       },
       "label": "test",
       "type": "shell",
-      "command": "task -t .bayt/Taskfile.yml bayt:test",
       "options": {
         "cwd": "${workspaceFolder}/services/tracker-tx"
       }

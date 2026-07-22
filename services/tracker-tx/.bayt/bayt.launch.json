@@ -98,6 +98,9 @@
     "globs": [],
     "exclude": []
   },
+  "state": {
+    "globs": []
+  },
   "env": {
     "GRPC_ADDRESS": "127.0.0.1",
     "GRPC_PORT": "50051",
@@ -283,7 +286,9 @@
           "**/package.json",
           ".task/bayt/setup.hash"
         ],
-        "exclude": []
+        "exclude": [
+          "**/node_modules/**"
+        ]
       },
       "class": "build"
     }

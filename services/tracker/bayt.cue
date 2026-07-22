@@ -182,7 +182,7 @@ _tracker: sayt.gradle & {
 					}
 					test: [{
 						image: "gcr.io/trash-362115/services.tracker"
-						custom: [{command: "task bayt:integrate"}]
+						custom: [{command: "task bayt:integrate", timeoutSeconds: 3000}]
 					}]
 				}
 
@@ -205,18 +205,20 @@ _tracker: sayt.gradle & {
 		// Integration tests. integrate is a compose runtime service:
 		// image build = bayt-emitted Dockerfile that just COPYs the
 		// test sources onto :build (gradle, source already baked in
-		// upstream). cmd.builtin is a no-op `["true"]` at bake-time —
-		// the real test invocation lives in `compose.command` below.
+		// upstream). The real test invocation lives in `compose.command`
+		// below, executed at compose-up.
 		// Daemon access for testcontainers comes via the bind-mounted
 		// /var/run/docker.sock (host daemon → integrate container);
 		// no socat / sayt.inject plumbing needed at the integrate
 		// level because we're running on the host daemon directly.
 		//
-		// No bayt.incremental: tests run at compose-up, not at
-		// bake-time. The action's outer marker (sayt-integrate) gates
-		// warm-cache short-circuit across runs; the Taskfile machinery
-		// stays available for invocation from inside the container if
-		// the user shells in, but isn't load-bearing here.
+		// The gated cmd runs the rulemap engine, which applies
+		// say.integrate.args — the single flag source for the gated
+		// and direct paths alike; gate CLI args suppress them
+		// all-or-nothing like direct CLI args. dockerfile.do keeps the
+		// bake-time RUN a no-op — tests never run inside an image
+		// build. CI calls `sayt --script integrate.nu` with explicit
+		// flags (sayt/integrate action).
 		"integrate": {
 			// TrackerEndpointIT reads bottle_test.txt from src/test/resources/
 			// via a filesystem path (not classpath), so it must be present
@@ -224,7 +226,10 @@ _tracker: sayt.gradle & {
 			// flows in via Gradle.integrationTest's defaultGlobs — listing
 			// it here too would emit two COPY lines for the same tree.
 			srcs: globs: ["src/test/resources/**/*"]
-			cmd: "builtin": do: "true"
+			cmd: "builtin": {
+				do: "sayt --script rulemap.nu integrate"
+				dockerfile: do: "true"
+			}
 			dockerfile: from: ref: ":build"
 			compose: {
 				command: ["mise", "x", "--", "./gradlew", "--init-script", ".bayt/init.gradle.kts", "integrationTest", "--rerun"]
@@ -255,5 +260,3 @@ _tracker: sayt.gradle & {
 
 project: _tracker
 
-depManifestsIn: {[string]: _}
-_render: (bayt.#render & {project: _tracker, depManifests: depManifestsIn})

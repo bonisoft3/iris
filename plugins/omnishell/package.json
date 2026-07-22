@@ -5,6 +5,7 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "exports": {
+    ".": "./src/index.ts",
     "./playwright/camera-helpers": "./src/lint/playwright/camera-helpers.ts",
     "./playwright/visual-lint": "./src/lint/playwright/visual-lint.ts"
   },

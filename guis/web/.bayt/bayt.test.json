@@ -26,10 +26,12 @@
     ],
     "exclude": []
   },
+  "state": {
+    "globs": []
+  },
   "env": {},
   "taskfile": {
     "run": "when_changed",
-    "silent": false,
     "incremental": true,
     "preconditions": []
   },
@@ -64,7 +66,9 @@
           "**/package.json",
           ".task/bayt/setup.hash"
         ],
-        "exclude": []
+        "exclude": [
+          "**/node_modules/**"
+        ]
       },
       "class": "build"
     }
@@ -118,7 +122,7 @@
         "defaultGlobs": null,
         "defaultExclude": null
       },
-      "do": "mise x -- pnpm test",
+      "do": "pnpm test",
       "dockerfile": {
         "mounts": [
           {
@@ -142,8 +146,6 @@
     "group": {
       "kind": "test",
       "isDefault": true
-    },
-    "dependsOn": [],
-    "dependsOrder": "sequence"
+    }
   }
 }

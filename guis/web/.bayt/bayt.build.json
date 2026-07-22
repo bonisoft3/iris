@@ -62,6 +62,9 @@
     ],
     "exclude": []
   },
+  "state": {
+    "globs": []
+  },
   "env": {},
   "synthetics": {
     "bayt": {
@@ -206,7 +209,6 @@
   },
   "taskfile": {
     "run": "when_changed",
-    "silent": false,
     "incremental": true,
     "preconditions": []
   },
@@ -240,7 +242,9 @@
           "**/package.json",
           ".task/bayt/setup.hash"
         ],
-        "exclude": []
+        "exclude": [
+          "**/node_modules/**"
+        ]
       },
       "class": "build"
     }
@@ -285,7 +289,7 @@
         "defaultGlobs": null,
         "defaultExclude": null
       },
-      "do": "mise x -- pnpm build",
+      "do": "pnpm build",
       "dockerfile": {
         "mounts": [
           {
@@ -309,8 +313,6 @@
     "group": {
       "kind": "build",
       "isDefault": true
-    },
-    "dependsOn": [],
-    "dependsOrder": "sequence"
+    }
   }
 }

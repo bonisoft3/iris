@@ -3,15 +3,22 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "command": "mise x -- ./gradlew --init-script .bayt/init.gradle.kts assemble",
       "group": {
         "kind": "build",
         "isDefault": true
       },
       "label": "build",
       "type": "shell",
-      "command": "task -t .bayt/Taskfile.yml bayt:build",
       "options": {
         "cwd": "${workspaceFolder}/plugins/jvm"
+      },
+      "windows": {
+        "command": "mise x -- pwsh",
+        "args": [
+          "-c",
+          ".\\gradlew.bat --init-script .bayt/init.gradle.kts assemble"
+        ]
       }
     }
   ]

@@ -54,6 +54,9 @@
     "globs": [],
     "exclude": []
   },
+  "state": {
+    "globs": []
+  },
   "env": {},
   "synthetics": {
     "bayt": {
@@ -158,7 +161,6 @@
   },
   "taskfile": {
     "run": "when_changed",
-    "silent": false,
     "incremental": true,
     "preconditions": []
   },

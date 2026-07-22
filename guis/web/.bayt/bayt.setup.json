@@ -30,6 +30,11 @@
     "globs": [],
     "exclude": []
   },
+  "state": {
+    "globs": [
+      "node_modules"
+    ]
+  },
   "env": {
     "MISE_ALWAYS_KEEP_DOWNLOAD": "1",
     "SHARP_IGNORE_GLOBAL_LIBVIPS": "1"
@@ -75,7 +80,6 @@
   },
   "taskfile": {
     "run": "when_changed",
-    "silent": false,
     "incremental": true,
     "preconditions": []
   },
@@ -103,7 +107,9 @@
           "**/package.json",
           ".task/bayt/setup.hash"
         ],
-        "exclude": []
+        "exclude": [
+          "**/node_modules/**"
+        ]
       },
       "class": "build"
     }
@@ -131,7 +137,9 @@
           "**/package.json",
           ".task/bayt/setup.hash"
         ],
-        "exclude": []
+        "exclude": [
+          "**/node_modules/**"
+        ]
       },
       "class": "build"
     }

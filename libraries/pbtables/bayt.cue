@@ -2,7 +2,6 @@
 package pbtables
 
 import (
-	bayt "bonisoft.org/plugins/bayt/core:bayt"
 	sayt "bonisoft.org/plugins/bayt/stacks/sayt"
 )
 
@@ -41,5 +40,3 @@ _pbtables: sayt.gradle & {
 // target-level dep graphs.
 project: _pbtables
 
-depManifestsIn: {[string]: _}
-_render: (bayt.#render & {project: _pbtables, depManifests: depManifestsIn})

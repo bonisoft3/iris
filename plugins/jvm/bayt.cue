@@ -2,7 +2,6 @@
 package jvm
 
 import (
-	bayt "bonisoft.org/plugins/bayt/core:bayt"
 	sayt "bonisoft.org/plugins/bayt/stacks/sayt"
 )
 
@@ -48,5 +47,3 @@ _jvm: sayt.gradle & {
 // target-level dep graphs.
 project: _jvm
 
-depManifestsIn: {[string]: _}
-_render: (bayt.#render & {project: _jvm, depManifests: depManifestsIn})

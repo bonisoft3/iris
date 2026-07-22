@@ -17,10 +17,12 @@
     ],
     "exclude": []
   },
+  "state": {
+    "globs": []
+  },
   "env": {},
   "taskfile": {
     "run": "when_changed",
-    "silent": false,
     "incremental": true,
     "preconditions": []
   },
@@ -93,8 +95,6 @@
     "group": {
       "kind": "test",
       "isDefault": true
-    },
-    "dependsOn": [],
-    "dependsOrder": "sequence"
+    }
   }
 }

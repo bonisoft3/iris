@@ -25,7 +25,9 @@ tasks:
     desc: "Generate convention-based templates via CUE+gomplate"
     deps: [buf:generate]
     cmds:
-      - cue cmd generate tmpl_tool.cue
+      # mise x puts real tool bin dirs on PATH — the .cmd file shims
+      # Windows CI uses are invisible to the bash this tool spawns.
+      - mise x -- cue cmd generate tmpl_tool.cue
     sources:
       - "**/*.tmpl"
       - "**/*.cue"

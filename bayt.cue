@@ -19,7 +19,6 @@
 package root
 
 import (
-	bayt "bonisoft.org/plugins/bayt/core:bayt"
 	sayt "bonisoft.org/plugins/bayt/stacks/sayt"
 )
 
@@ -49,5 +48,3 @@ _wsroot: sayt.pnpmWorkspace & {
 
 project: _wsroot
 
-depManifestsIn: {[string]: _}
-_render: (bayt.#render & {project: _wsroot, depManifests: depManifestsIn})

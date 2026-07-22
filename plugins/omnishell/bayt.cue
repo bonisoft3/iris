@@ -107,5 +107,3 @@ _omnishell: bayt.#project & {
 
 project: _omnishell
 
-depManifestsIn: {[string]: _}
-_render: (bayt.#render & {project: _omnishell, depManifests: depManifestsIn})

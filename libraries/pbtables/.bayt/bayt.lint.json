@@ -27,10 +27,12 @@
     "globs": [],
     "exclude": []
   },
+  "state": {
+    "globs": []
+  },
   "env": {},
   "taskfile": {
     "run": "always",
-    "silent": false,
     "incremental": true,
     "preconditions": []
   },
@@ -52,7 +54,7 @@
         "defaultGlobs": null,
         "defaultExclude": null
       },
-      "do": "nu sayt.nu lint",
+      "do": "sayt --script rulemap.nu lint",
       "name": "builtin",
       "shell": "exec",
       "stop": false

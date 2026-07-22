@@ -12,10 +12,12 @@
     "globs": [],
     "exclude": []
   },
+  "state": {
+    "globs": []
+  },
   "env": {},
   "taskfile": {
     "run": "always",
-    "silent": false,
     "incremental": true,
     "preconditions": []
   },
@@ -37,17 +39,7 @@
         "defaultGlobs": null,
         "defaultExclude": null
       },
-      "do": "mise x -- pnpm lint",
-      "dockerfile": {
-        "mounts": [
-          {
-            "type": "cache",
-            "target": "/root/.local/share/pnpm/store",
-            "scope": "project",
-            "required": false
-          }
-        ]
-      },
+      "do": "sayt --script rulemap.nu lint",
       "name": "builtin",
       "shell": "exec",
       "stop": false

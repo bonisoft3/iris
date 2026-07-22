@@ -3,15 +3,22 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "command": "mise x -- ./gradlew --init-script .bayt/init.gradle.kts test",
       "group": {
         "kind": "test",
         "isDefault": true
       },
       "label": "test",
       "type": "shell",
-      "command": "task -t .bayt/Taskfile.yml bayt:test",
       "options": {
         "cwd": "${workspaceFolder}/libraries/xproto"
+      },
+      "windows": {
+        "command": "mise x -- pwsh",
+        "args": [
+          "-c",
+          ".\\gradlew.bat --init-script .bayt/init.gradle.kts test"
+        ]
       }
     }
   ]

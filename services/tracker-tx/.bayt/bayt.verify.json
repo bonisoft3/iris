@@ -14,10 +14,12 @@
     ],
     "exclude": []
   },
+  "state": {
+    "globs": []
+  },
   "env": {},
   "taskfile": {
     "run": "when_changed",
-    "silent": false,
     "incremental": true,
     "preconditions": []
   },
@@ -85,7 +87,7 @@
         "defaultGlobs": null,
         "defaultExclude": null
       },
-      "do": "nu sayt.nu verify",
+      "do": "sayt --script rulemap.nu verify",
       "name": "builtin",
       "shell": "exec",
       "stop": false

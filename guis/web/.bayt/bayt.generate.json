@@ -5,17 +5,27 @@
   "dir": "guis/web",
   "activate": "mise x --",
   "srcs": {
-    "globs": [],
+    "globs": [
+      "[b]ayt.cue",
+      "[.]say.cue",
+      "[.]say.yaml",
+      "[.]say.yml",
+      "[.]say.json",
+      "[.]say.toml",
+      "[.]say.nu"
+    ],
     "exclude": []
   },
   "outs": {
     "globs": [],
     "exclude": []
   },
+  "state": {
+    "globs": []
+  },
   "env": {},
   "taskfile": {
     "run": "when_changed",
-    "silent": false,
     "incremental": true,
     "preconditions": []
   },
@@ -32,12 +42,20 @@
   "cmds": [
     {
       "srcs": {
-        "globs": [],
+        "globs": [
+          "[b]ayt.cue",
+          "[.]say.cue",
+          "[.]say.yaml",
+          "[.]say.yml",
+          "[.]say.json",
+          "[.]say.toml",
+          "[.]say.nu"
+        ],
         "exclude": [],
         "defaultGlobs": null,
         "defaultExclude": null
       },
-      "do": "nu sayt.nu generate",
+      "do": "bayt generate",
       "name": "builtin",
       "shell": "exec",
       "stop": false

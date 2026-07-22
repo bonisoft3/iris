@@ -96,5 +96,3 @@ _xproto: sayt.gradle & {
 
 project: _xproto
 
-depManifestsIn: {[string]: _}
-_render: (bayt.#render & {project: _xproto, depManifests: depManifestsIn})

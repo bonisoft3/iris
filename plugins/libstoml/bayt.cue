@@ -2,7 +2,6 @@
 package libstoml
 
 import (
-	bayt "bonisoft.org/plugins/bayt/core:bayt"
 	sayt "bonisoft.org/plugins/bayt/stacks/sayt"
 )
 
@@ -38,5 +37,3 @@ _libstoml: sayt.gradle & {
 // cross-project Bazel-style refs (e.g. "plugins_libstoml:build").
 project: _libstoml
 
-depManifestsIn: {[string]: _}
-_render: (bayt.#render & {project: _libstoml, depManifests: depManifestsIn})

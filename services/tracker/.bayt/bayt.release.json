@@ -85,7 +85,8 @@
             "image": "gcr.io/trash-362115/services.tracker",
             "custom": [
               {
-                "command": "task bayt:integrate"
+                "command": "task bayt:integrate",
+                "timeoutSeconds": 3000
               }
             ]
           }
@@ -103,6 +104,9 @@
   "outs": {
     "globs": [],
     "exclude": []
+  },
+  "state": {
+    "globs": []
   },
   "env": {
     "PATH": "/opt/java/openjdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
@@ -728,7 +732,9 @@
           "**/package.json",
           ".task/bayt/setup.hash"
         ],
-        "exclude": []
+        "exclude": [
+          "**/node_modules/**"
+        ]
       },
       "class": "build"
     }

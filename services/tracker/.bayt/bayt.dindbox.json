@@ -82,6 +82,9 @@
     "globs": [],
     "exclude": []
   },
+  "state": {
+    "globs": []
+  },
   "env": {},
   "synthetics": {
     "bayt": {

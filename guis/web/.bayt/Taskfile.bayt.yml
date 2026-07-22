@@ -36,4 +36,12 @@ includes:
     taskfile: ../../../Taskfile.yml
     dir: ../../../
     optional: true
+tasks:
+  cross_workspaceroot_setup:
+    internal: true
+    run: once
+    status:
+    - test ! -e ../../.git
+    cmds:
+    - '{{.TASK_EXE}} -t ../../.bayt/Taskfile.yml bayt:setup'
 version: '3'

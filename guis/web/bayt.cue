@@ -104,5 +104,3 @@ _web: sayt.pnpm & {
 
 project: _web
 
-depManifestsIn: {[string]: _}
-_render: (bayt.#render & {project: _web, depManifests: depManifestsIn})

@@ -36,4 +36,19 @@ includes:
     taskfile: ../../../plugins/libstoml/Taskfile.yml
     dir: ../../../plugins/libstoml/
     optional: true
+tasks:
+  cross_workspaceroot_setup:
+    internal: true
+    run: once
+    status:
+    - test ! -e ../../.git
+    cmds:
+    - '{{.TASK_EXE}} -t ../../.bayt/Taskfile.yml bayt:setup'
+  cross_plugins_libstoml_build:
+    internal: true
+    run: once
+    status:
+    - test ! -e ../../.git
+    cmds:
+    - '{{.TASK_EXE}} -t ../../plugins/libstoml/.bayt/Taskfile.yml bayt:build'
 version: '3'

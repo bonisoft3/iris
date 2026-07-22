@@ -5,36 +5,65 @@
       "label": "install",
       "type": "shell",
       "command": "mise",
-      "args": ["exec", "--", "bun", "install", "--frozen-lockfile"],
+      "args": [
+        "exec",
+        "--",
+        "bun",
+        "install",
+        "--frozen-lockfile"
+      ],
       "problemMatcher": [],
-      "group": { "kind": "build" }
+      "group": {
+        "kind": "build"
+      }
     },
     {
+      "command": "mise x -- sh",
+      "args": [
+        "-c",
+        "sh -c 'bun install --frozen-lockfile && bun run check'"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
       "label": "build",
       "type": "shell",
-      "command": "mise",
-      "args": ["exec", "--", "bun", "run", "check"],
-      "group": { "kind": "build", "isDefault": true },
-      "problemMatcher": ["$tsc"],
-      "dependsOn": ["install"]
+      "options": {
+        "cwd": "${workspaceFolder}/plugins/omnishell"
+      }
     },
     {
+      "command": "mise x -- bun test",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
       "label": "test",
       "type": "shell",
-      "command": "mise",
-      "args": ["exec", "--", "bun", "test"],
-      "group": { "kind": "test", "isDefault": true },
-      "problemMatcher": [],
-      "dependsOn": ["install"]
+      "options": {
+        "cwd": "${workspaceFolder}/plugins/omnishell"
+      }
     },
     {
       "label": "test-pw",
       "type": "shell",
       "command": "mise",
-      "args": ["exec", "--", "bun", "x", "playwright", "test"],
+      "args": [
+        "exec",
+        "--",
+        "bun",
+        "x",
+        "playwright",
+        "test"
+      ],
       "problemMatcher": [],
-      "group": { "kind": "test" },
-      "dependsOn": ["install"]
+      "group": {
+        "kind": "test"
+      },
+      "dependsOn": [
+        "install"
+      ]
     }
   ]
 }

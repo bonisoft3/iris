@@ -186,13 +186,11 @@ _tx: bayt.#project & {
 				"bayt-run": null
 			}
 		}
-		"verify":   sayt.verify   & mise.exec & {cmd: "builtin": do: "nu sayt.nu verify"}
-		"generate": sayt.generate & {cmd: "builtin": do: "nu sayt.nu generate"}
-		"lint":     sayt.lint     & {cmd: "builtin": do: "nu sayt.nu lint"}
+		"verify":   sayt.verify   & mise.exec & {cmd: "builtin": do: "sayt --script rulemap.nu verify"}
+		"generate": sayt.generate & sayt.configSrcs & {cmd: "builtin": do: "bayt generate"}
+		"lint":     sayt.lint     & {cmd: "builtin": do: "sayt --script rulemap.nu lint"}
 	}
 }
 
 project: _tx
 
-depManifestsIn: {[string]: _}
-_render: (bayt.#render & {project: _tx, depManifests: depManifestsIn})

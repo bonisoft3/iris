@@ -49,6 +49,9 @@
     "globs": [],
     "exclude": []
   },
+  "state": {
+    "globs": []
+  },
   "env": {
     "MISE_ALWAYS_KEEP_DOWNLOAD": "1"
   },
@@ -92,7 +95,6 @@
   },
   "taskfile": {
     "run": "when_changed",
-    "silent": false,
     "incremental": true,
     "preconditions": []
   },

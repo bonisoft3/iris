@@ -26,3 +26,4 @@ profiles:
   - image: gcr.io/trash-362115/services.tracker
     custom:
     - command: task bayt:integrate
+      timeoutSeconds: 3000

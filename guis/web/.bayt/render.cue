@@ -1,0 +1,8 @@
+// generated from bayt.cue — do not edit
+package web
+
+import bayt_ "bonisoft.org/plugins/bayt/core:bayt"
+
+depManifestsIn: {[string]: _}
+runtimeIn: *"" | string
+_render: (bayt_.#render & {"project": project, depManifests: depManifestsIn, runtime: runtimeIn})
