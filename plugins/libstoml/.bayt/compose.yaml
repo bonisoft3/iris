@@ -15,10 +15,3 @@ services:
       service: plugins_libstoml-setup
     profiles:
     - setup
-  integrate:
-    extends:
-      file: ./compose.integrate.yaml
-      service: plugins_libstoml-integrate
-    profiles:
-    - integrate
-    scale: 1

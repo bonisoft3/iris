@@ -16,10 +16,6 @@ includes:
     taskfile: ./Taskfile.test.yaml
     dir: ../
     optional: true
-  integrate:
-    taskfile: ./Taskfile.integrate.yaml
-    dir: ../
-    optional: true
   generate:
     taskfile: ./Taskfile.generate.yaml
     dir: ../

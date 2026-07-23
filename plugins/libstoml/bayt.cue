@@ -26,10 +26,11 @@ _libstoml: sayt.gradle & {
 		"setup": dockerfile: from: ref: "workspaceroot:setup"
 
 		// Library: not deployed standalone, no dev server, no e2e
-		// preview.
-		"release": null
-		"launch":  null
-		"verify":  null
+		// preview, no integration tests.
+		"release":   null
+		"launch":    null
+		"verify":    null
+		"integrate": null
 	}
 }
 

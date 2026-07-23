@@ -4,7 +4,5 @@ include:
   required: false
 - path: ./compose.setup.yaml
   required: false
-- path: ./compose.integrate.yaml
-  required: false
 - path: ../../../.bayt/compose.bayt.yaml
   required: false

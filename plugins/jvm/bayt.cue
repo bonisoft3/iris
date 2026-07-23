@@ -35,10 +35,11 @@ _jvm: sayt.gradle & {
 		"build": deps: ["plugins_libstoml:build"]
 
 		// Library: not deployed standalone, no dev server, no e2e
-		// preview.
-		"release": null
-		"launch":  null
-		"verify":  null
+		// preview, no integration tests.
+		"release":   null
+		"launch":    null
+		"verify":    null
+		"integrate": null
 	}
 }
 
