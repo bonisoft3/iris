@@ -168,12 +168,14 @@ WORKFLOWS = [
             # On mirror: github.com/bonisoft3/bayt/* — matches the
             # mirror's cue.mod module path and lets external
             # consumers `cue mod tidy` against the Central Registry
-            # publish with no CUE_REGISTRY config.
+            # publish with no CUE_REGISTRY config. Covers .nuon because
+            # core/render_import.nuon feeds generate.nu the render.cue
+            # import, and .md for README/DESIGN import examples.
             core.transform(
                 [core.replace(
                     before = "bonisoft.org/plugins/bayt",
                     after = "github.com/bonisoft3/bayt",
-                    paths = glob(["**.cue"]),
+                    paths = glob(["**.cue", "**.nuon", "**.md"]),
                 )],
                 noop_behavior = "IGNORE_NOOP",
             ),
