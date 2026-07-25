@@ -802,7 +802,7 @@
           {
             "type": "cache",
             "target": "/root/.gradle",
-            "scope": "project",
+            "scope": "global",
             "required": false
           }
         ]
@@ -826,12 +826,12 @@
         "defaultExclude": null
       },
       "dockerfile": {
-        "do": "mkdir -p /opt/gradle-ro-cache && cp -a /root/.gradle/caches/modules-2 /opt/gradle-ro-cache/",
+        "do": "mkdir -p /opt/gradle-ro-cache /opt/gradle-home && cp -a /root/.gradle/caches/modules-2 /opt/gradle-ro-cache/ && cp -a /root/.gradle/wrapper /opt/gradle-home/",
         "mounts": [
           {
             "type": "cache",
             "target": "/root/.gradle",
-            "scope": "project",
+            "scope": "global",
             "required": false
           }
         ],

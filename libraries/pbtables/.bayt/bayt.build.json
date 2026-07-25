@@ -806,7 +806,7 @@
           {
             "type": "cache",
             "target": "/root/.gradle",
-            "scope": "project",
+            "scope": "global",
             "required": false
           },
           {

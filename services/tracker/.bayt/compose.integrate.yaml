@@ -25,6 +25,7 @@ services:
     - integrationTest
     - --rerun
     environment:
+      GRADLE_USER_HOME: /opt/gradle-home
       TESTCONTAINERS_HOST_OVERRIDE: host.docker.internal
     extra_hosts:
     - host.docker.internal:host-gateway

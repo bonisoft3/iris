@@ -15,6 +15,8 @@ services:
         - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-integrate,mode=min,image-manifest=true,oci-mediatypes=true
         output:
         - type=${BAYT_COMPOSE_OUTPUT:-docker}
+    environment:
+      GRADLE_USER_HOME: /opt/gradle-home
     image: bayt-libraries_logs-integrate:${BAYT_IMAGE_TAG:-latest}
     scale: 0
   libraries_logs-integrate_bayt:

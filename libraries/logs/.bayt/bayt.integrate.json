@@ -17,7 +17,9 @@
   },
   "compose": {
     "up": true,
-    "environment": {},
+    "environment": {
+      "GRADLE_USER_HOME": "/opt/gradle-home"
+    },
     "ports": [],
     "volumes": [],
     "depends_on": {}
@@ -32,7 +34,7 @@
       {
         "type": "cache",
         "target": "/root/.gradle",
-        "scope": "project",
+        "scope": "global",
         "required": false
       },
       {

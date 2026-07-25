@@ -28,6 +28,7 @@
       "--rerun"
     ],
     "environment": {
+      "GRADLE_USER_HOME": "/opt/gradle-home",
       "TESTCONTAINERS_HOST_OVERRIDE": "host.docker.internal"
     },
     "ports": [],
@@ -49,7 +50,7 @@
       {
         "type": "cache",
         "target": "/root/.gradle",
-        "scope": "project",
+        "scope": "global",
         "required": false
       },
       {
