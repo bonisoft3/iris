@@ -1,3 +1,6 @@
 say:
   integrate:
     args: "--with-host-env"
+  # Dockerfile.cue regenerates the tracked Dockerfile; overwrite it by default.
+  generate:
+    flags: "--force"
