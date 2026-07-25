@@ -128,7 +128,7 @@
           {
             "type": "cache",
             "target": "/root/.local/share/pnpm/store",
-            "scope": "project",
+            "scope": "global",
             "required": false
           }
         ]

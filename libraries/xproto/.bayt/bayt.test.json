@@ -217,6 +217,7 @@
           {
             "type": "cache",
             "target": ".gradle/configuration-cache",
+            "scope": "target",
             "required": false
           }
         ]
