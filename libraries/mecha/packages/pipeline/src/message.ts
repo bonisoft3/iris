@@ -9,12 +9,12 @@ export function createMessage(content: unknown, metadata?: Record<string, string
 }
 
 /**
- * Inject metadata into content as ._meta before jq processing.
- * Returns a new content object with ._meta merged in.
+ * Merge the message's metadata into its content under `._meta` for jq. Object
+ * content becomes a new merged object; non-object content passes through as-is.
  */
-export function injectMetadata(msg: PipelineMessage): unknown {
+export function injectMetadata(msg: PipelineMessage): string | object {
   if (typeof msg.content !== "object" || msg.content === null) {
-    return msg.content
+    return msg.content as string | object
   }
   return { ...msg.content as Record<string, unknown>, _meta: { ...msg.metadata } }
 }

@@ -28,7 +28,7 @@ export class BloblangRuntime {
 
     const go = new Go()
     const result = await WebAssembly.instantiate(options.wasmBinary as BufferSource, go.importObject)
-    go.run((result as WebAssembly.WebAssemblyInstantiatedSource).instance)
+    go.run((result as unknown as WebAssembly.WebAssemblyInstantiatedSource).instance)
 
     return new BloblangRuntime()
   }

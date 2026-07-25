@@ -36,7 +36,7 @@ function splitTopLevelPipes(filter: string): string[] {
  * to the original metadata when no prefix yields ._meta.
  */
 async function extractMutatedMeta(
-  input: unknown,
+  input: string | object,
   filter: string,
   originalMeta: Record<string, string>,
 ): Promise<Record<string, string>> {
