@@ -9,7 +9,7 @@ import plasticIcon from 'assets/classification-icons/water_bottle.svg'
 import metalIcon from 'assets/classification-icons/attachment.svg'
 import woodIcon from 'assets/classification-icons/forest.svg'
 import undefinedIcon from 'assets/classification-icons/help.svg'
-import type { Map } from '#build/interfaces/Map'
+import type { Map } from '@/interfaces/Map'
 
 export function categories(tag: string) {
   const icon: Map = {

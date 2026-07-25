@@ -1,5 +1,6 @@
 import { ref } from 'vue'
+import type { RouteLocationNormalized } from 'vue-router'
 
-const prevRoute: Ref<any> = ref()
+const prevRoute = ref<RouteLocationNormalized>()
 
 export default prevRoute

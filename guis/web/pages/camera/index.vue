@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Camera from 'simple-vue-camera'
+import type { RouteLocationNormalized } from 'vue-router'
 import { FilesetResolver, InteractiveSegmenter } from '@mediapipe/tasks-vision'
 import IndeterminateQuestionBox from '../../components/IndeterminateQuestionBox.vue'
 import XButton from '../../components/XButton.vue'
@@ -10,7 +11,6 @@ import ImageModalComponents from './components/ImageModalComponents.vue'
 import ImageModalInfo from './components/ImageModalInfo.vue'
 
 const progressDisplay = ref<boolean>(true)
-const progressColor = ref<string>('primary')
 const maincam = ref<InstanceType<typeof Camera>>()
 const snapshotUrl = ref<string>('')
 const snapshotLoading = ref<boolean>(false)
@@ -20,7 +20,6 @@ const userCity = ref('')
 const { t, locale } = useI18n()
 const allowedModels = ['openai', 'gemini']
 const selectedModel = ref('gemini')
-const localePath = useLocalePath()
 const lastThumbnail = ref('')
 const sendPhotoError = ref(false)
 const sendingPhoto = ref(false)
@@ -81,10 +80,6 @@ function hideImageModal() {
 }
 
 const showsModalInfo = ref(false)
-
-function openModalInfo() {
-  showsModalInfo.value = true
-}
 
 function setModel() {
   const storedModel = localStorage.getItem('ai_model') || ""
@@ -202,20 +197,20 @@ export default {
   components: {
     XButton,
   },
-  beforeRouteLeave(_to: any, _from: any) {
-    if (prevRoute.value.name.search('tips') !== -1) {
+  beforeRouteLeave(_to: RouteLocationNormalized, _from: RouteLocationNormalized) {
+    if (typeof prevRoute.value?.name === 'string' && prevRoute.value.name.includes('tips')) {
       const router = useRouter()
       router.back()
     }
   },
-  beforeRouteEnter(_: any, from: any) {
+  beforeRouteEnter(_to: RouteLocationNormalized, from: RouteLocationNormalized) {
     prevRoute.value = from
   },
   methods: {
     updateXButtonCamera() {
       const router = useRouter()
       router.go(-2)
-      prevRoute.value.name = ''
+      if (prevRoute.value) prevRoute.value.name = ''
     },
   },
 }
@@ -288,8 +283,8 @@ export default {
       </div>
     </Transition>
     <IndeterminateQuestionBox :loading="snapshotLoading" />
-    <Transition v-if="!progressDisplay" name="bounce">
-      <div>
+    <Transition name="bounce">
+      <div v-if="!progressDisplay">
         <ImageModalComponents
           :image="snapshotUrl"
           :show="showImageModal"

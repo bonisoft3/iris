@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import MasonryWallComponent from '../../../components/MasonryWallComponent.vue'
 import EmptyGallery from '../../../components/EmptyGallery.vue'
-import type { TrashItem } from '#build/interfaces/trashItem'
+import type { TrashItem } from '@/interfaces/trashItem'
 
 const { t } = useI18n()
 const props = defineProps<{

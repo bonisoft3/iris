@@ -1,5 +1,6 @@
 <script lang="ts">
 import { onMounted } from 'vue'
+import type { RouteLocationNormalized } from 'vue-router'
 
 import { GoogleMap, Marker } from 'vue3-google-map'
 import WasteCategory from '../components/WasteCategory.vue'
@@ -13,13 +14,15 @@ import { useQuery } from '@tanstack/vue-query'
 import { initLogRocket } from '../composables/useLogRocket';
 
 export default {
-  beforeRouteEnter(_: any, from: any) {
+  beforeRouteEnter(_: RouteLocationNormalized, from: RouteLocationNormalized) {
     prevRoute.value = from
   },
 }
 </script>
 
 <script setup lang="ts">
+import type { User } from 'firebase/auth'
+
 const localePath = useLocalePath()
 
 definePageMeta({
@@ -28,13 +31,6 @@ definePageMeta({
 
 interface Label {
   label: string
-}
-
-interface WasteCategoryInterface {
-  icon: string
-  style: string
-  title: string
-  description: string
 }
 
 interface Post {
@@ -139,7 +135,7 @@ function getCenterForDisposalPlace(disposalPlaces: DisposalPlace[]): { lat: numb
   return { lat, lng: long }
 }
 
-const { isPending: isPendingPredominantTypes, data: predominantTypesData } = useQuery({
+const { data: predominantTypesData } = useQuery({
   queryKey: ['predominantDiscardingTypes'],
   queryFn: getPredominantDiscardingTypes,
   enabled: !!userData,
@@ -147,7 +143,6 @@ const { isPending: isPendingPredominantTypes, data: predominantTypesData } = use
 })
 
 const {
-  isPending: isPendingDisposalPlaces,
   data: disposalPlacesData
 } = useQuery({
   queryKey: ['disposalPlaces'],
@@ -163,7 +158,7 @@ const {
 const wasteCategories = computed(() => predominantTypesData.value || [])
 const centerDisposalPlaces = computed(() => getCenterForDisposalPlace(disposalPlacesData.value as DisposalPlace[]))
 
-function generatePersonalizedCuriosity(userData : any) {
+function generatePersonalizedCuriosity(userData: User | null) {
   const randomCuriosity = randomizeCuriosity()
   if (!userData || userData.isAnonymous || !userData.displayName) return randomCuriosity
   const formattedCuriosity = randomCuriosity.charAt(0).toLowerCase() + randomCuriosity.substring(1)

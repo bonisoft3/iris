@@ -11,8 +11,12 @@ export default function setup() {
   // setBlocking call would crash global setup before any test runs.
   // Skip the call in that case — the redirect target handles its
   // own buffering.
-  const stdout = process.stdout as any
-  const stderr = process.stderr as any
+  // process.std{out,err} are Sockets whose internal `_handle` (only present
+  // for a TTY) exposes an undocumented `setBlocking`. Narrow to that shape
+  // instead of `any` so the optional-chained access stays type-checked.
+  type BlockingHandle = { _handle?: { setBlocking?: (blocking: boolean) => void } }
+  const stdout = process.stdout as unknown as BlockingHandle
+  const stderr = process.stderr as unknown as BlockingHandle
   stdout._handle?.setBlocking?.(true)
   stderr._handle?.setBlocking?.(true)
   process.stdout.write('Global setup modified stdout/stderr to be blocking\n')

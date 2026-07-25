@@ -1,4 +1,3 @@
-/* eslint-disable node/prefer-global/process */ // We are using process.server from NuxtJS which is injected into our code, eslint thinks we're trying to use https://nodejs.org/api/process.html
 import pino from 'pino'
 
 let opts

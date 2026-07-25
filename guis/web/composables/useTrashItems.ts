@@ -1,7 +1,7 @@
 import { useShape } from "./useShape";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import type { Row } from "@electric-sql/client";
-import type { TrashItem } from "#build/interfaces/trashItem";
+import type { TrashItem } from "@/interfaces/trashItem";
 
 function getAllTrashItems(data: Row[]): TrashItem[] {
   if (!data) return []

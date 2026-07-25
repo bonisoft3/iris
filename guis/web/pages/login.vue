@@ -19,7 +19,7 @@ getRedirectResult(auth)
   })
 
 onMounted(async () => {
-  const auth: any = useFirebaseAuth()
+  const auth = useFirebaseAuth()
   if (!auth)
     throw new Error('Firebase Auth instance not found')
   let ui = uiAuth.AuthUI.getInstance()
@@ -47,7 +47,8 @@ onMounted(async () => {
   }
   ui.start('#firebaseui-auth-container', uiConfig)
   // Monkey patch firebase 9 to have firebase 8 signature
-  auth.signInAnonymously = () => firebaseAuth.signInAnonymously(auth)
+  ;(auth as firebaseAuth.Auth & { signInAnonymously: () => Promise<firebaseAuth.UserCredential> })
+    .signInAnonymously = () => firebaseAuth.signInAnonymously(auth)
 })
 </script>
 

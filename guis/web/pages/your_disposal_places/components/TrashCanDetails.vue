@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { format } from 'date-fns'
 import getCityAndNeighborhood from '../../../utils/getCityAndNeighborhood'
-import type { DisposalPlace } from '#build/interfaces/disposalPlace'
+import type { DisposalPlace } from '@/interfaces/disposalPlace'
 
 const props = defineProps<{
   disposalPlace: DisposalPlace

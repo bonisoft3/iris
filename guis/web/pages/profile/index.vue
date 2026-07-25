@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import type { User } from "firebase/auth";
-import type UserIris from "#build/interfaces/UserIris";
-import type UserCityData from "#build/interfaces/UserCityData";
+import type UserIris from "@/interfaces/UserIris";
+import type UserCityData from "@/interfaces/UserCityData";
 import { usePlacesAutocomplete, geocodeByAddress, getLatLng } from 'vue-use-places-autocomplete';
 import { VPhoneInput } from 'v-phone-input';
 import 'flag-icons/css/flag-icons.min.css'
 import 'v-phone-input/dist/v-phone-input.css'
 import { GoogleMap, Marker } from 'vue3-google-map'
-import { update } from "firebase/database";
 const { t } = useI18n();
 const user: User | null = await getCurrentUser();
 const config = useRuntimeConfig();
@@ -69,9 +68,6 @@ watch(suggestions, () => {
 	suggestions.value.forEach(suggestion => completions.value.push(suggestion.description))
 })
 
-const data = reactive({
-	isExpanded: false,
-})
 async function userAlreadyRegistered(
 	firebaseId: string | undefined
 ): Promise<boolean> {
@@ -126,7 +122,7 @@ async function saveUser() {
 		} else {
 			window.location.href = "/gallery";
 		}
-	} catch (e) {
+	} catch {
 		userRegistered.value = false;
 	}
 	dialog.value = false;
@@ -154,7 +150,7 @@ async function editUser() {
 		} else {
 			window.location.href = "/gallery";
 		}
-	} catch (e) {
+	} catch {
 		userRegistered.value = false;
 	}
 	dialog.value = false;

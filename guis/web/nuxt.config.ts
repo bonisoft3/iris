@@ -4,6 +4,7 @@ import process from 'node:process'
 import mkcert from 'vite-plugin-mkcert'
 import pkg from './package.json'
 import { defineNuxtConfig } from 'nuxt/config'
+import type { NuxtI18nOptions } from '@nuxtjs/i18n'
 
 const services_tracker_url_prefix = process.env.SERVICES_TRACKER_URL_PREFIX || 'http://localhost:18080/'
 const services_pgrst_url_prefix = process.env.SERVICES_PGRST_URL_PREFIX || 'http://localhost:28080/'
@@ -342,7 +343,7 @@ export default defineNuxtConfig({
       cookieKey: 'i18n_redirected',
       redirectOn: 'root',
     },
-  } as any,
+  } as NuxtI18nOptions,
   image: {
     cloudflare: {
       baseURL: process.env.CLOUDFLARE_BASE_URL,

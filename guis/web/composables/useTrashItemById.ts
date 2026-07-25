@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { useQueryClient } from '@tanstack/vue-query'
-import type { TrashItem } from '#build/interfaces/trashItem'
+import type { TrashItem } from '@/interfaces/trashItem'
 
 export function useTrashItemById(id: string) {
   const trashItem = ref<TrashItem | null>(null)

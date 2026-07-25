@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import UserGalleryComponent from "./components/UserGalleryComponent.vue";
 import GlobalGalleryComponent from "./components/GlobalGalleryComponent.vue";
-import type UserIris from '#build/interfaces/UserIris'
+import type UserIris from '@/interfaces/UserIris'
 import type { User } from 'firebase/auth'
 
 const config = useRuntimeConfig()

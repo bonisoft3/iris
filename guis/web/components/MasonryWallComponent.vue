@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ImageComponent from '../pages/images/components/ImageComponent.vue'
-import type { TrashItem } from '#build/interfaces/trashItem'
+import type { TrashItem } from '@/interfaces/trashItem'
 
 const props = defineProps<{
   items: TrashItem[]

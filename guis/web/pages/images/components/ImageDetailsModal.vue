@@ -8,18 +8,17 @@ import getDisposalPlacesFromUser from '../../../utils/getDisposalPlacesFromUser'
 import { categories } from '../../../utils/imageCategories'
 import getCityAndNeighborhood from '../../../utils/getCityAndNeighborhood'
 import RecyclingCenterCard from './RecyclingCenterCard.vue'
-import type { TrashItem } from '#build/interfaces/trashItem'
-import type { DisposalInstructions } from '#build/interfaces/disposalInstructionsInterface'
-import type { DisposalPlace } from '#build/interfaces/disposalPlace'
-import type UserIris from '#build/interfaces/UserIris'
+import type { TrashItem } from '@/interfaces/trashItem'
+import type { DisposalInstructions } from '@/interfaces/disposalInstructionsInterface'
+import type { DisposalPlace } from '@/interfaces/disposalPlace'
 import { useShape } from "../../../composables/useShape";
+import type { Row } from "@electric-sql/client";
 
 const props = defineProps<{
   trashItem: TrashItem | null
   image: string
   donatedItems: Array<{ id: string, userid: string, itemid: string }> | null
 }>()
-const currentTrashItem = computed(() => props.trashItem)
 const route = useRoute()
 const imageSrc = computed(() => {
   if (props.image) {
@@ -36,10 +35,6 @@ interface TranslationInterface {
     caption: string
     disposalInstructions: string
   }
-}
-
-interface AlreadyRegisteredInterfaceEndpoint {
-  alreadyAskedForThisItem: boolean
 }
 
 const router = useRouter()
@@ -68,14 +63,11 @@ const disposalInstructions = ref<string | undefined>(props.trashItem?.pbjson.dis
 const latlngAvailable = props.trashItem?.pbjson && 'latlng' in props.trashItem.pbjson
 const userRegistered = ref(false)
 const userAlreadyAskedForDonation = ref(true)
-const relevantUnitValue = props.trashItem?.pbjson.price?.units && props.trashItem.pbjson.price.units >= 10
 const { t } = useI18n()
 const data = reactive({
   isExpanded: false
 })
 const infoLoading = ref(true)
-const checkingDonability = ref(true)
-const itemAvailable = ref(false)
 window.sessionStorage.setItem('previousUrl', window.location.href)
 
 async function fetchTranslatedTrashItem(language: string): Promise<string[] | null> {
@@ -88,7 +80,7 @@ async function fetchTranslatedTrashItem(language: string): Promise<string[] | nu
   const existingTranslations = useShape(options);
   if (existingTranslations.value?.data) {
     const foundTranslation = existingTranslations.value.data.find(
-      (translation: any) =>
+      (translation: Row) =>
         translation.item_id === route.params.id &&
         translation.language === language
     );
@@ -103,7 +95,7 @@ async function fetchTranslatedTrashItem(language: string): Promise<string[] | nu
 
   const apiPath = 'trash.tracker.v1.TrackerService/TranslateOnDemand'
   const apiUrl = config.public.SERVICES_TRACKER_URL_PREFIX + apiPath
-  const response: any = await $fetch(apiUrl, {
+  const response = await $fetch<{ translationId: string }>(apiUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -145,7 +137,8 @@ function expandImage() {
 }
 
 function hideImageModal() {
-  window.history.length > 1 ? router.back() : router.push('/gallery')
+  if (window.history.length > 1) router.back()
+  else router.push('/gallery')
 }
 
 function clipboard() {
@@ -242,14 +235,6 @@ async function getNearbyUserDiposalPlaces(userId: string | undefined): Promise<D
     })
     .slice(0, 4)
   return [nearbyUserDisposalPlaces]!.length > 0 ? nearbyUserDisposalPlaces : undefined
-}
-
-async function userAlreadyRegistered(firebaseId: string | undefined): Promise<boolean> {
-  const path = `useriris?firebaseid=eq.${firebaseId ?? ''}`
-  const url = config.public.SERVICES_PGRST_URL_PREFIX + path
-  const res = await fetch(url)
-  const userIris: UserIris[] = await res.json()
-  return userIris.length !== 0
 }
 
 async function registerDonation() {
@@ -368,7 +353,7 @@ onBeforeMount(async () => {
 </script>
 <template>
   <Transition name="slide-bottom">
-    <div class="primary-bg">
+    <div v-if="show" class="primary-bg">
       <div class="primary-bg d-flex align-center justify-space-between mb-5 mt-5">
         <div class="d-flex">
           <button class="ml-3 mr-2 modal-title text-left" @click="hideImageModal">
@@ -416,7 +401,7 @@ onBeforeMount(async () => {
             {{ t(subclassification.trim()) }}
           </div>
         </template>
-        <template v-else-if="infoLoading" || !splittedDisposalInstructions></template>
+        <template v-else-if="infoLoading || !splittedDisposalInstructions"></template>
       </div>
       <div class="d-flex justify-center px-2">
         <v-divider class="my-2 border-opacity-100" thickness="1px" color="#BFC9C3" />

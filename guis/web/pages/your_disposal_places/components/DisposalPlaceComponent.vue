@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ImageComponent from '../../images/components/ImageComponent.vue'
-import type { DisposalPlace } from '#build/interfaces/disposalPlace'
+import type { DisposalPlace } from '@/interfaces/disposalPlace'
 
 const _props = defineProps<{
   disposalPlace: DisposalPlace

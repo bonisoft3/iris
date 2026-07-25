@@ -1,14 +1,12 @@
 <script setup lang="ts">
-import { useRoute } from 'vue-router'
 import ImageDetailsModal from '../../images/components/ImageDetailsModal.vue'
 import { useFetchElectricImage } from '../../../composables/useFetchElectricImage'
-import type { TrashItem } from '#build/interfaces/trashItem'
+import type { TrashItem } from '@/interfaces/trashItem'
 import { getCurrentInstance, ref } from 'vue'
 import type { InteractiveSegmenter, MPMask } from '@mediapipe/tasks-vision'
 
-const route = useRoute()
 const instance = getCurrentInstance()
-const imageId = ref<string | null>(null)
+const savedImageId = ref<string | null>(null)
 const localImageId = ref<string | null>(null)
 const trashItem = ref<TrashItem | null>(null)
 const cameraoverlay = ref<InstanceType<typeof HTMLCanvasElement>>()
@@ -22,7 +20,7 @@ const props = defineProps<{
   imageId: string | null
   sendingPhoto: boolean
 }>()
-const emits = defineEmits(['hideImageModal', 'update:show', 'confirmImageSaveModal'])
+defineEmits(['hideImageModal', 'update:show', 'confirmImageSaveModal'])
 const donatedItems = null
 watch(
   trashItem,
@@ -80,7 +78,7 @@ watch(
 )
 
 async function handleImageSaved(id: string) {
-  imageId.value = id
+  savedImageId.value = id
   const fetchedTrashItem = useFetchElectricImage(id as string)
   watch(
     fetchedTrashItem,
@@ -157,10 +155,10 @@ function hideImageModal() {
 function confirmImageSaveModal() {
   trashItem.value = null
   instance!.emit('update:show', false)
-  if (!imageId.value) {
+  if (!savedImageId.value) {
     console.warn('No imageId set before emitting event')
   }
-  instance!.emit('confirmImageSaveModal', imageId.value)
+  instance!.emit('confirmImageSaveModal', savedImageId.value)
 }
 
 function openDetailsModal() {

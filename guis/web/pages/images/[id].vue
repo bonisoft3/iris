@@ -2,7 +2,7 @@
 import { useRoute } from 'vue-router'
 import ImageDetailsModal from './components/ImageDetailsModal.vue'
 import { useTrashItemById } from '../../composables/useTrashItemById'
-import type { TrashItem } from '#build/interfaces/trashItem'
+import type { TrashItem } from '@/interfaces/trashItem'
 import { useFetchElectricDonate } from '../../composables/useFetchElectricDonate'
 
 const { t, locale } = useI18n()
@@ -41,7 +41,7 @@ interface TranslationInterface {
 async function fetchTranslatedTrashItem(language: string): Promise<string[] | null> {
   const apiPath = 'trash.tracker.v1.TrackerService/TranslateOnDemand'
   const apiUrl = config.public.SERVICES_TRACKER_URL_PREFIX + apiPath
-  const response: any = await $fetch(apiUrl, {
+  const response = await $fetch<{ translationId: string }>(apiUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

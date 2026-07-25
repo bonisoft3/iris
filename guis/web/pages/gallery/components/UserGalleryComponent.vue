@@ -2,7 +2,7 @@
 import LoggedAsGuest from '../../../components/LoggedAsGuest.vue'
 import EmptyGallery from '../../../components/EmptyGallery.vue'
 import MasonryWallComponent from '../../../components/MasonryWallComponent.vue'
-import type { TrashItem } from '#build/interfaces/trashItem'
+import type { TrashItem } from '@/interfaces/trashItem'
 
 const props = defineProps<{
   loggedAsGuest: boolean

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import LogRocket from 'logrocket'
 import { deleteUser, getAuth, reauthenticateWithCredential } from 'firebase/auth'
+import type { AuthCredential, User } from 'firebase/auth'
 import { useRouter } from 'vue-router'
 import * as firebaseAuth from 'firebase/auth'
 import * as firebaseui from 'firebaseui'
@@ -47,7 +48,7 @@ async function dropout() {
     await deleteAccount()
     router.push('/login')
   }
-  catch (error) {
+  catch {
     return null
   }
 }
@@ -79,7 +80,7 @@ onMounted(async () => {
       firebaseAuth.FacebookAuthProvider.PROVIDER_ID,
     ],
     callbacks: {
-      signInSuccessWithAuthResult: (authResult: any, _redirectUrl: string) => {
+      signInSuccessWithAuthResult: (authResult: { user: User, credential: AuthCredential }, _redirectUrl: string) => {
         reauthenticateWithCredential(authResult.user, authResult.credential)
         router.push({ path: '/dropout' })
         reauthenticated.value = true

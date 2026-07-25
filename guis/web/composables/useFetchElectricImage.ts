@@ -1,5 +1,5 @@
 import { ref, watch } from 'vue'
-import type { TrashItem } from '#build/interfaces/trashItem'
+import type { TrashItem } from '@/interfaces/trashItem'
 import { useShape } from './useShape'
 
 export function useFetchElectricImage(imageId: string) {
