@@ -10,10 +10,10 @@ services:
       target: build
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-build
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-build
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-build
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-build
         cache-to:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-build,mode=min,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-build,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-services_tracker-build:${BAYT_IMAGE_TAG:-latest}
     scale: 0
   services_tracker-build_bayt:
@@ -33,10 +33,10 @@ services:
       target: build_bayt
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build_bayt
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-build_bayt
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build_bayt
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-build_bayt
         cache-to:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build_bayt,mode=max,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build_bayt,mode=max,image-manifest=true,oci-mediatypes=true
     image: bayt-services_tracker-build_bayt:latest
     scale: 0
   services_tracker-build_srcs:
@@ -55,10 +55,10 @@ services:
       target: build_srcs
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build_srcs
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-build_srcs
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build_srcs
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-build_srcs
         cache-to:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build_srcs,mode=max,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build_srcs,mode=max,image-manifest=true,oci-mediatypes=true
     image: bayt-services_tracker-build_srcs:latest
     scale: 0
   services_tracker-build_outs:
@@ -70,9 +70,9 @@ services:
         services_tracker-build: service:services_tracker-build
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build_outs
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-build_outs
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build_outs
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-build_outs
         cache-to:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build_outs,mode=max,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build_outs,mode=max,image-manifest=true,oci-mediatypes=true
     image: bayt-services_tracker-build_outs:latest
     scale: 0

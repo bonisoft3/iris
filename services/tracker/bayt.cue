@@ -2,8 +2,9 @@
 package tracker
 
 import (
-	bayt   "bonisoft.org/plugins/bayt/core:bayt"
-	sayt   "bonisoft.org/plugins/bayt/stacks/sayt"
+	bayt "bonisoft.org/plugins/bayt/core:bayt"
+	sayt "bonisoft.org/plugins/bayt/stacks/sayt"
+	Bake "bonisoft.org/bake"
 	Gradle "bonisoft.org/plugins/bayt/stacks/gradle"
 )
 
@@ -31,7 +32,7 @@ _tracker: sayt.gradle & {
 	// across runs. Mirrors iris's pattern.
 	bake: cache: {
 		type:     "registry"
-		registry: "registry.depot.dev/f5k5087x1b"
+		registry: Bake.cacheRegistry
 		scope:    "tracker-bake-cache-v1"
 	}
 
@@ -102,7 +103,7 @@ _tracker: sayt.gradle & {
 			// tree, so glob iteration suffices. Shell glob is sorted
 			// which matches jib's manifest ordering.
 			cmd: "builtin": {
-				shell: "sh"  // && chain + for-loop + glob expansion
+				shell: "sh" // && chain + for-loop + glob expansion
 				do:    "mkdir -p build/jib && tar xf build/jib-image.tar -C build/jib && mkdir -p build/layers && for tb in build/jib/*.tar.gz; do tar xzf \"$tb\" -C build/layers; done"
 			}
 			dockerfile: {
@@ -259,4 +260,3 @@ _tracker: sayt.gradle & {
 }
 
 project: _tracker
-

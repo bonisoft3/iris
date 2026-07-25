@@ -11,10 +11,10 @@ services:
       target: build
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-build
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-build
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-build
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-build
         cache-to:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-build,mode=min,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-build,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-plugins_jvm-build:${BAYT_IMAGE_TAG:-latest}
     scale: 0
   plugins_jvm-build_bayt:
@@ -28,10 +28,10 @@ services:
       target: build_bayt
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_jvm-build_bayt
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_jvm-build_bayt
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_jvm-build_bayt
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_jvm-build_bayt
         cache-to:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_jvm-build_bayt,mode=max,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_jvm-build_bayt,mode=max,image-manifest=true,oci-mediatypes=true
     image: bayt-plugins_jvm-build_bayt:latest
     scale: 0
   plugins_jvm-build_srcs:
@@ -44,10 +44,10 @@ services:
       target: build_srcs
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_jvm-build_srcs
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_jvm-build_srcs
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_jvm-build_srcs
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_jvm-build_srcs
         cache-to:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_jvm-build_srcs,mode=max,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_jvm-build_srcs,mode=max,image-manifest=true,oci-mediatypes=true
     image: bayt-plugins_jvm-build_srcs:latest
     scale: 0
   plugins_jvm-build_outs:
@@ -59,9 +59,9 @@ services:
         plugins_jvm-build: service:plugins_jvm-build
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_jvm-build_outs
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_jvm-build_outs
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_jvm-build_outs
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_jvm-build_outs
         cache-to:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_jvm-build_outs,mode=max,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_jvm-build_outs,mode=max,image-manifest=true,oci-mediatypes=true
     image: bayt-plugins_jvm-build_outs:latest
     scale: 0

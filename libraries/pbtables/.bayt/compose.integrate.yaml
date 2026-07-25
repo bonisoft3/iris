@@ -9,10 +9,10 @@ services:
       target: integrate
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-integrate
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-integrate
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-integrate
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-integrate
         cache-to:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-integrate,mode=min,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-integrate,mode=min,image-manifest=true,oci-mediatypes=true
         output:
         - type=${BAYT_COMPOSE_OUTPUT:-docker}
     environment:
@@ -34,10 +34,10 @@ services:
       target: integrate_bayt
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_pbtables-integrate_bayt
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_pbtables-integrate_bayt
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_pbtables-integrate_bayt
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_pbtables-integrate_bayt
         cache-to:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_pbtables-integrate_bayt,mode=max,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_pbtables-integrate_bayt,mode=max,image-manifest=true,oci-mediatypes=true
     image: bayt-libraries_pbtables-integrate_bayt:latest
     scale: 0
   libraries_pbtables-integrate_srcs:
@@ -50,10 +50,10 @@ services:
       target: integrate_srcs
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_pbtables-integrate_srcs
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_pbtables-integrate_srcs
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_pbtables-integrate_srcs
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_pbtables-integrate_srcs
         cache-to:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_pbtables-integrate_srcs,mode=max,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_pbtables-integrate_srcs,mode=max,image-manifest=true,oci-mediatypes=true
     image: bayt-libraries_pbtables-integrate_srcs:latest
     scale: 0
   libraries_pbtables-integrate_outs:
@@ -65,9 +65,9 @@ services:
         libraries_pbtables-integrate: service:libraries_pbtables-integrate
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_pbtables-integrate_outs
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_pbtables-integrate_outs
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_pbtables-integrate_outs
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_pbtables-integrate_outs
         cache-to:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_pbtables-integrate_outs,mode=max,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-libraries_pbtables-integrate_outs,mode=max,image-manifest=true,oci-mediatypes=true
     image: bayt-libraries_pbtables-integrate_outs:latest
     scale: 0

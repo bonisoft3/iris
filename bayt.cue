@@ -20,6 +20,7 @@ package root
 
 import (
 	sayt "bonisoft.org/plugins/bayt/stacks/sayt"
+	Bake "bonisoft.org/bake"
 )
 
 _wsroot: sayt.pnpmWorkspace & {
@@ -29,11 +30,7 @@ _wsroot: sayt.pnpmWorkspace & {
 	// cascade, hello's probe, etc.) get cache-hits on the
 	// workspaceroot-setup / workspaceroot-ops layers instead of
 	// rebuilding zypper+mise install fresh every run.
-	bake: cache: {
-		type:     "registry"
-		registry: "registry.depot.dev/f5k5087x1b"
-		scope:    "monorepo-bake-cache-v1"
-	}
+	bake: cache: Bake.monorepoCache
 
 	// Workspace-root setup is consumed by every project's setup via
 	// `deps: ["workspaceroot:setup"]`. Public so cross-project
@@ -47,4 +44,3 @@ _wsroot: sayt.pnpmWorkspace & {
 }
 
 project: _wsroot
-

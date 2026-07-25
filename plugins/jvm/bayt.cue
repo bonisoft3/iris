@@ -3,6 +3,7 @@ package jvm
 
 import (
 	sayt "bonisoft.org/plugins/bayt/stacks/sayt"
+	Bake "bonisoft.org/bake"
 )
 
 _jvm: sayt.gradle & {
@@ -10,11 +11,7 @@ _jvm: sayt.gradle & {
 
 	// Share the monorepo bake cache scope so downstream consumers
 	// (micronaut/libs/tracker) get warm-cache short-circuits on this plugin's layers.
-	bake: cache: {
-		type:     "registry"
-		registry: "registry.depot.dev/f5k5087x1b"
-		scope:    "monorepo-bake-cache-v1"
-	}
+	bake: cache: Bake.monorepoCache
 
 	targets: {
 		// Public: consumed by plugins/micronaut and downstream services.
@@ -47,4 +44,3 @@ _jvm: sayt.gradle & {
 // `deps: [<alias>.project.targets.<verb>]` for cross-project
 // target-level dep graphs.
 project: _jvm
-

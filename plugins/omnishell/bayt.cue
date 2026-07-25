@@ -23,6 +23,7 @@ import (
 	bayt "bonisoft.org/plugins/bayt/core:bayt"
 	mise "bonisoft.org/plugins/bayt/stacks/mise"
 	sayt "bonisoft.org/plugins/bayt/stacks/sayt"
+	Bake "bonisoft.org/bake"
 )
 
 _omnishell: bayt.#project & {
@@ -33,11 +34,7 @@ _omnishell: bayt.#project & {
 	// dindbox cascade transitively builds omnishell-setup / build /
 	// ops; without this they ran fresh every time and broke the
 	// outer cacheonly probe's cache-hit chain).
-	bake: cache: {
-		type:     "registry"
-		registry: "registry.depot.dev/f5k5087x1b"
-		scope:    "monorepo-bake-cache-v1"
-	}
+	bake: cache: Bake.monorepoCache
 
 	targets: {
 		"setup": sayt.setup & mise.install & {
@@ -106,4 +103,3 @@ _omnishell: bayt.#project & {
 }
 
 project: _omnishell
-

@@ -9,10 +9,10 @@ services:
       target: build
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-build
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-build
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-build
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-build
         cache-to:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-build,mode=min,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-build,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-plugins_omnishell-build:${BAYT_IMAGE_TAG:-latest}
     scale: 0
   plugins_omnishell-build_bayt:
@@ -24,10 +24,10 @@ services:
       target: build_bayt
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_omnishell-build_bayt
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_omnishell-build_bayt
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_omnishell-build_bayt
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_omnishell-build_bayt
         cache-to:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_omnishell-build_bayt,mode=max,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_omnishell-build_bayt,mode=max,image-manifest=true,oci-mediatypes=true
     image: bayt-plugins_omnishell-build_bayt:latest
     scale: 0
   plugins_omnishell-build_srcs:
@@ -37,9 +37,9 @@ services:
       target: build_srcs
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_omnishell-build_srcs
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_omnishell-build_srcs
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_omnishell-build_srcs
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_omnishell-build_srcs
         cache-to:
-        - type=registry,ref=registry.depot.dev/f5k5087x1b:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_omnishell-build_srcs,mode=max,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_omnishell-build_srcs,mode=max,image-manifest=true,oci-mediatypes=true
     image: bayt-plugins_omnishell-build_srcs:latest
     scale: 0
