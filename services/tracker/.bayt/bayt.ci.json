@@ -84,6 +84,9 @@
       "depot_project_id": {
         "environment": "DEPOT_PROJECT_ID"
       },
+      "depot_org_id": {
+        "environment": "DEPOT_ORG_ID"
+      },
       "depot_disable_otel": {
         "environment": "DEPOT_DISABLE_OTEL"
       }
@@ -692,6 +695,12 @@
               "id": "depot_project_id",
               "var": {
                 "contents": "DEPOT_PROJECT_ID"
+              }
+            },
+            {
+              "id": "depot_org_id",
+              "var": {
+                "contents": "DEPOT_ORG_ID"
               }
             },
             {

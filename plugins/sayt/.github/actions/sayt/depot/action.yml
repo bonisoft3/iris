@@ -171,6 +171,7 @@ runs:
         # integrate.nu.
         DEPOT_TOKEN: ${{ env.DEPOT_TOKEN }}
         DEPOT_PROJECT_ID: ${{ inputs.depot-project }}
+        DEPOT_ORG_ID: ${{ env.DEPOT_ORG_ID }}
         # SAYT_NO_CACHE_FROM / SAYT_NO_CACHE_TO — skip the inner bake's registry
         # cache import + export. Redundant on depot: the builder-native cache
         # warms the compile, so the registry cache layer is dead weight both

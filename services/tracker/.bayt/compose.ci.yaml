@@ -30,6 +30,8 @@ secrets:
     environment: DEPOT_TOKEN
   depot_project_id:
     environment: DEPOT_PROJECT_ID
+  depot_org_id:
+    environment: DEPOT_ORG_ID
   depot_disable_otel:
     environment: DEPOT_DISABLE_OTEL
 services:
@@ -74,6 +76,7 @@ services:
       - sayt_no_cache_to
       - depot_token
       - depot_project_id
+      - depot_org_id
       - depot_disable_otel
       target: ci
       x-bake:
@@ -100,6 +103,7 @@ services:
     - sayt_no_cache_to
     - depot_token
     - depot_project_id
+    - depot_org_id
     - depot_disable_otel
   services_tracker-ci_bayt:
     build:
