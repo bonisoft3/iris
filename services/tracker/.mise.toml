@@ -15,6 +15,7 @@ aqua.minisign = false
 [tools]
 java = "openjdk-25.0"
 "github:go-task/task" = "v3.49.1"
+"github:jdx/pitchfork" = "v2.18.0"   # for detached sayt launch
 
 # http: backend — URL template works for macOS/Linux; Windows override below.
 [tools."http:skaffold"]

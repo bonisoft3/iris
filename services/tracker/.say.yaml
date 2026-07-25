@@ -2,8 +2,10 @@ say:
   generate:
     rulemap:
       auto-cue: null
+  # launch must detach, but gradlew dev is foreground.
+  # pitchfork's supervisor doesn't inherit our mise env.
   launch:
-    do: "^mise x -- ./gradlew dev"
+    do: '^mise x -- pitchfork run tracker -f -o "Startup completed" -- mise x -- ./gradlew dev'
   # Local-dev defaults: pick bake branch, keep local pushes off shared
   # depot. Sayt's verb-level args are all-or-nothing, so CI's explicit
   # `--builder X --target ci` suppresses both. Don't inline the
