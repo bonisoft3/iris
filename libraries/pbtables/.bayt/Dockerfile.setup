@@ -11,7 +11,8 @@ WORKDIR /monorepo/libraries/pbtables
 COPY --parents gradle/wrapper/gradle-wrapper.properties [m]ise.toml [.]mise.toml [m]ise.lock ./
 COPY --from=plugins_jvm-build_srcs /monorepo /monorepo
 ARG SOURCE_DATE_EPOCH
-RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+ARG BAYT_CLAMP=1
+RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/libraries/pbtables -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/libraries; fi
 FROM scratch AS setup_srcs
 COPY --from=setup_ctxs /monorepo /monorepo
 
@@ -19,7 +20,8 @@ FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735
 WORKDIR /monorepo/libraries/pbtables
 COPY --from=libraries_pbtables-setup --parents /monorepo/libraries/pbtables/gradle/wrapper/gradle-wrapper.properties /monorepo/libraries/pbtables/[m]ise.toml /monorepo/libraries/pbtables/[.]mise.toml /monorepo/libraries/pbtables/[m]ise.lock /monorepo/libraries/pbtables/.task/bayt/setup.hash /
 ARG SOURCE_DATE_EPOCH
-RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+ARG BAYT_CLAMP=1
+RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/libraries/pbtables -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/libraries; fi
 FROM scratch AS setup_outs
 COPY --from=setup_outs_ctxs /monorepo /monorepo
 
@@ -29,6 +31,7 @@ COPY --parents .bayt/compose.setup.yaml .bayt/Dockerfile.setup .bayt/bayt.setup.
 COPY --from=plugins_jvm-build_bayt /monorepo /monorepo
 COPY --from=plugins_libstoml-build_bayt /monorepo /monorepo
 ARG SOURCE_DATE_EPOCH
-RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+ARG BAYT_CLAMP=1
+RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/libraries/pbtables -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/libraries; fi
 FROM scratch AS setup_bayt
 COPY --from=setup_bayt_ctxs /monorepo /monorepo

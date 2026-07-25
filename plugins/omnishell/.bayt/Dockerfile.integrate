@@ -10,7 +10,8 @@ WORKDIR /monorepo/plugins/omnishell
 COPY --parents test/**/* ./
 COPY --from=plugins_omnishell-build_srcs /monorepo /monorepo
 ARG SOURCE_DATE_EPOCH
-RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+ARG BAYT_CLAMP=1
+RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/plugins/omnishell -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/plugins; fi
 FROM scratch AS integrate_srcs
 COPY --from=integrate_ctxs /monorepo /monorepo
 
@@ -20,6 +21,7 @@ COPY --parents .bayt/compose.integrate.yaml .bayt/Dockerfile.integrate .bayt/bay
 COPY --from=plugins_omnishell-build_bayt /monorepo /monorepo
 COPY --from=plugins_omnishell-setup_bayt /monorepo /monorepo
 ARG SOURCE_DATE_EPOCH
-RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+ARG BAYT_CLAMP=1
+RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/plugins/omnishell -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/plugins; fi
 FROM scratch AS integrate_bayt
 COPY --from=integrate_bayt_ctxs /monorepo /monorepo

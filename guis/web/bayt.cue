@@ -60,15 +60,10 @@ _web: sayt.pnpm & {
 					build: {
 						artifact: {
 							image: "gcr.io/trash-362115/guis.web"
-							// `docker compose config` flattens the federated bayt
-							// graph; bake then uses additional_contexts from the
-							// flattened compose to resolve the cross-Dockerfile
-							// `FROM guis_web-build AS release` reference (a sibling
-							// target's image, not a stage in this Dockerfile).
-							// --allow=fs.read=../.. whitelists the worktree root
-							// for the bayt-runtime additional_context (lives at
-							// plugins/bayt/runtime/).
-							custom: buildCommand: "docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.release.hcl release"
+							// `bake` sugar → gen_skaffold expands the federated
+							// buildCommand; the flattened compose supplies
+							// additional_contexts + the BUILDKIT_SYNTAX build arg.
+							bake: target: "guis_web-release"
 						}
 						platforms: ["linux/amd64"]
 						local: push: true

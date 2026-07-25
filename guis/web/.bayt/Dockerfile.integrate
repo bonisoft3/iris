@@ -14,7 +14,8 @@ WORKDIR /monorepo/guis/web
 COPY --parents --exclude=node_modules/** --exclude=.nuxt/** --exclude=.output/** --exclude=dist/** --exclude=coverage/** **/*.spec.ts **/*.spec.tsx tests/**/* vitest.config.* vitest.integration.config.* ./
 COPY --from=guis_web-build_srcs /monorepo /monorepo
 ARG SOURCE_DATE_EPOCH
-RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+ARG BAYT_CLAMP=1
+RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/guis/web -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/guis; fi
 FROM scratch AS integrate_srcs
 COPY --from=integrate_ctxs /monorepo /monorepo
 
@@ -25,6 +26,7 @@ COPY --from=guis_web-build_bayt /monorepo /monorepo
 COPY --from=guis_web-setup_bayt /monorepo /monorepo
 COPY --from=workspaceroot-setup_bayt /monorepo /monorepo
 ARG SOURCE_DATE_EPOCH
-RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+ARG BAYT_CLAMP=1
+RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/guis/web -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/guis; fi
 FROM scratch AS integrate_bayt
 COPY --from=integrate_bayt_ctxs /monorepo /monorepo

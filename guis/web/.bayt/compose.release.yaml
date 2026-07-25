@@ -7,6 +7,8 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.release
       target: release
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.24@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
       x-bake:
         platforms:
         - linux/amd64
@@ -21,6 +23,8 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.release
       target: release_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.24@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
     image: bayt-guis_web-release_bayt:latest
     scale: 0
   guis_web-release_srcs:
@@ -30,5 +34,7 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.release
       target: release_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.24@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
     image: bayt-guis_web-release_srcs:latest
     scale: 0

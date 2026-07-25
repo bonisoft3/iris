@@ -14,6 +14,7 @@ WORKDIR /monorepo/guis/web
 COPY --parents .bayt/compose.setup.yaml .bayt/Dockerfile.setup .bayt/bayt.setup.json .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/Taskfile.setup.yaml ./
 COPY --from=workspaceroot-setup_bayt /monorepo /monorepo
 ARG SOURCE_DATE_EPOCH
-RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+ARG BAYT_CLAMP=1
+RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/guis/web -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/guis; fi
 FROM scratch AS setup_bayt
 COPY --from=setup_bayt_ctxs /monorepo /monorepo

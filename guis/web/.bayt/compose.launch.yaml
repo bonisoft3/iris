@@ -7,6 +7,8 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.launch
       target: launch
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.24@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
     develop:
       watch:
       - action: sync
@@ -26,6 +28,8 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.launch
       target: launch_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.24@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
     image: bayt-guis_web-launch_bayt:latest
     scale: 0
   guis_web-launch_srcs:
@@ -35,5 +39,7 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.launch
       target: launch_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.24@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
     image: bayt-guis_web-launch_srcs:latest
     scale: 0

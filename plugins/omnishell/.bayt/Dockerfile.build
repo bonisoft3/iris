@@ -9,7 +9,8 @@ FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735
 WORKDIR /monorepo/plugins/omnishell
 COPY --parents src/**/* scaffold/**/* package.json bun.lock tsconfig.json bunfig.toml ./
 ARG SOURCE_DATE_EPOCH
-RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+ARG BAYT_CLAMP=1
+RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/plugins/omnishell -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/plugins; fi
 FROM scratch AS build_srcs
 COPY --from=build_ctxs /monorepo /monorepo
 
@@ -18,6 +19,7 @@ WORKDIR /monorepo/plugins/omnishell
 COPY --parents .bayt/compose.build.yaml .bayt/Dockerfile.build .bayt/bayt.build.json .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/Taskfile.build.yaml ./
 COPY --from=plugins_omnishell-setup_bayt /monorepo /monorepo
 ARG SOURCE_DATE_EPOCH
-RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+ARG BAYT_CLAMP=1
+RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/plugins/omnishell -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/plugins; fi
 FROM scratch AS build_bayt
 COPY --from=build_bayt_ctxs /monorepo /monorepo

@@ -12,7 +12,8 @@ COPY --from=services_tracker-build_srcs /monorepo /monorepo
 COPY --from=services_tracker-deps_srcs /monorepo /monorepo
 COPY --from=services_tracker-setup_srcs /monorepo /monorepo
 ARG SOURCE_DATE_EPOCH
-RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+ARG BAYT_CLAMP=1
+RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/services/tracker -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/services; fi
 FROM scratch AS release-layers_srcs
 COPY --from=release-layers_ctxs /monorepo /monorepo
 
@@ -31,6 +32,7 @@ COPY --from=plugins_jvm-build_bayt /monorepo /monorepo
 COPY --from=plugins_micronaut-build_bayt /monorepo /monorepo
 COPY --from=workspaceroot-setup_bayt /monorepo /monorepo
 ARG SOURCE_DATE_EPOCH
-RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+ARG BAYT_CLAMP=1
+RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/services/tracker -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/services; fi
 FROM scratch AS release-layers_bayt
 COPY --from=release-layers_bayt_ctxs /monorepo /monorepo

@@ -7,6 +7,8 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.release-layers
       target: release-layers
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.24@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
       x-bake:
         cache-from:
         - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-release-layers
@@ -32,6 +34,8 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.release-layers
       target: release-layers_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.24@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
       x-bake:
         cache-from:
         - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-release-layers_bayt
@@ -50,6 +54,8 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.release-layers
       target: release-layers_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.24@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
       x-bake:
         cache-from:
         - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-release-layers_srcs

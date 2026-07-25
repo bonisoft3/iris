@@ -81,22 +81,24 @@ profiles:
       concurrency: 64
     artifacts:
       # Bayt-emitted children — `context: ../../<project>` so customBuild's
-      # cwd lands at the project root, where `.bayt/bake.release.hcl` lives.
+      # cwd lands at the project root, where `.bayt/bake.hcl` lives. The
+      # federated target is a bare positional the HCL's matrix names;
+      # BUILDKIT_SYNTAX rides each child's compose build.args.
       - image: gcr.io/trash-362115/services.tracker
         context: ../../services/tracker
         custom:
           buildCommand: |
-            docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.release.hcl release
+            docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.hcl services_tracker-release
       - image: gcr.io/trash-362115/services.tracker-tx-gcp
         context: ../../services/tracker-tx
         custom:
           buildCommand: |
-            docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.release.hcl release
+            docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.hcl services_tracker-tx-release
       - image: gcr.io/trash-362115/guis.web
         context: ../../guis/web
         custom:
           buildCommand: |
-            docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.release.hcl release
+            docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.hcl guis_web-release
       - image: gcr.io/trash-362115/shimmy
         context: images/shimmy
         docker:

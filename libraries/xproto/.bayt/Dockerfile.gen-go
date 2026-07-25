@@ -15,7 +15,8 @@ WORKDIR /monorepo/libraries/xproto
 COPY --parents buf.yaml buf.lock buf.go.gen.yaml **/*.proto go.mod go.sum ./
 COPY --from=workspaceroot-setup_srcs /monorepo /monorepo
 ARG SOURCE_DATE_EPOCH
-RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+ARG BAYT_CLAMP=1
+RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/libraries/xproto -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/libraries; fi
 FROM scratch AS gen-go_srcs
 COPY --from=gen-go_ctxs /monorepo /monorepo
 
@@ -23,7 +24,8 @@ FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735
 WORKDIR /monorepo/libraries/xproto
 COPY --from=libraries_xproto-gen-go --parents /monorepo/libraries/xproto/gen/**/*.go /monorepo/libraries/xproto/go.mod /monorepo/libraries/xproto/go.sum /
 ARG SOURCE_DATE_EPOCH
-RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+ARG BAYT_CLAMP=1
+RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/libraries/xproto -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/libraries; fi
 FROM scratch AS gen-go_outs
 COPY --from=gen-go_outs_ctxs /monorepo /monorepo
 
@@ -32,6 +34,7 @@ WORKDIR /monorepo/libraries/xproto
 COPY --parents .bayt/compose.gen-go.yaml .bayt/Dockerfile.gen-go .bayt/bayt.gen-go.json .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/Taskfile.gen-go.yaml .bayt/init.gradle.kts ./
 COPY --from=workspaceroot-setup_bayt /monorepo /monorepo
 ARG SOURCE_DATE_EPOCH
-RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+ARG BAYT_CLAMP=1
+RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/libraries/xproto -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/libraries; fi
 FROM scratch AS gen-go_bayt
 COPY --from=gen-go_bayt_ctxs /monorepo /monorepo

@@ -8,7 +8,8 @@ FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735
 WORKDIR /monorepo/services/tracker-tx
 COPY --from=services_tracker-tx-build_srcs /monorepo /monorepo
 ARG SOURCE_DATE_EPOCH
-RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+ARG BAYT_CLAMP=1
+RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/services/tracker-tx -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/services; fi
 FROM scratch AS release_srcs
 COPY --from=release_ctxs /monorepo /monorepo
 
@@ -18,6 +19,7 @@ COPY --parents .bayt/compose.release.yaml .bayt/Dockerfile.release .bayt/bayt.re
 COPY --from=services_tracker-tx-build_bayt /monorepo /monorepo
 COPY --from=services_tracker-tx-setup_bayt /monorepo /monorepo
 ARG SOURCE_DATE_EPOCH
-RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+ARG BAYT_CLAMP=1
+RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/services/tracker-tx -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/services; fi
 FROM scratch AS release_bayt
 COPY --from=release_bayt_ctxs /monorepo /monorepo

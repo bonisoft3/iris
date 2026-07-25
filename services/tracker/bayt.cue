@@ -171,12 +171,10 @@ _tracker: sayt.gradle & {
 					build: {
 						artifact: {
 							image: "gcr.io/trash-362115/services.tracker"
-							// `compose config` flattens the federated bayt graph
-							// (dedupes bayt-runtime-stub across per-target files).
-							// Bake reads the flattened compose for additional_contexts
-							// cross-Dockerfile FROM wiring and the HCL for output /
-							// cache / push settings.
-							custom: buildCommand: "docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.release.hcl release"
+							// `bake` sugar → gen_skaffold expands the federated
+							// buildCommand; the flattened compose supplies
+							// additional_contexts + the BUILDKIT_SYNTAX build arg.
+							bake: target: "services_tracker-release"
 						}
 						platforms: ["linux/amd64"]
 						local: push: true

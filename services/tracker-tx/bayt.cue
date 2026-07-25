@@ -169,11 +169,10 @@ _tx: bayt.#project & {
 					build: {
 						artifact: {
 							image: "gcr.io/trash-362115/services.tracker-tx-gcp"
-							// `docker compose config` flattens the federated bayt
-							// graph so bake can resolve cross-Dockerfile FROM refs
-							// (Dockerfile.release `COPY --from=services_tracker-tx-build`
-							// is a sibling target, not a local stage).
-							custom: buildCommand: "docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.release.hcl release"
+							// `bake` sugar → gen_skaffold expands the federated
+							// buildCommand; the flattened compose supplies
+							// additional_contexts + the BUILDKIT_SYNTAX build arg.
+							bake: target: "services_tracker-tx-release"
 						}
 						platforms: ["linux/amd64"]
 						local: push: true

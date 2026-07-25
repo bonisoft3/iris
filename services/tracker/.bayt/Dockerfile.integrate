@@ -12,7 +12,8 @@ COPY --from=services_tracker-build_srcs /monorepo /monorepo
 COPY --from=services_tracker-deps_srcs /monorepo /monorepo
 COPY --from=services_tracker-setup_srcs /monorepo /monorepo
 ARG SOURCE_DATE_EPOCH
-RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+ARG BAYT_CLAMP=1
+RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/services/tracker -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/services; fi
 FROM scratch AS integrate_srcs
 COPY --from=integrate_ctxs /monorepo /monorepo
 
@@ -20,7 +21,8 @@ FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735
 WORKDIR /monorepo/services/tracker
 COPY --from=services_tracker-integrate --parents /monorepo/services/tracker/build/test-results/integrationTest/**/*.xml /monorepo/services/tracker/build/reports/tests/integrationTest/**/* /
 ARG SOURCE_DATE_EPOCH
-RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+ARG BAYT_CLAMP=1
+RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/services/tracker -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/services; fi
 FROM scratch AS integrate_outs
 COPY --from=integrate_outs_ctxs /monorepo /monorepo
 
@@ -38,6 +40,7 @@ COPY --from=plugins_jvm-build_bayt /monorepo /monorepo
 COPY --from=plugins_micronaut-build_bayt /monorepo /monorepo
 COPY --from=workspaceroot-setup_bayt /monorepo /monorepo
 ARG SOURCE_DATE_EPOCH
-RUN touch -hd @${SOURCE_DATE_EPOCH:-0} /tmp/ref && find /monorepo -newer /tmp/ref -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && rm /tmp/ref
+ARG BAYT_CLAMP=1
+RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/services/tracker -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/services; fi
 FROM scratch AS integrate_bayt
 COPY --from=integrate_bayt_ctxs /monorepo /monorepo

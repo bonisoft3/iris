@@ -10,7 +10,7 @@ profiles:
   build:
     artifacts:
     - custom:
-        buildCommand: docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.release.hcl release
+        buildCommand: docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.hcl guis_web-release
       image: gcr.io/trash-362115/guis.web
       context: .
     local:

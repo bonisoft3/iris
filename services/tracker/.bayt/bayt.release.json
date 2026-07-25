@@ -61,8 +61,8 @@
               "manual": [],
               "auto": false
             },
-            "custom": {
-              "buildCommand": "docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.release.hcl release"
+            "bake": {
+              "target": "services_tracker-release"
             }
           },
           "local": {

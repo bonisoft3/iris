@@ -10,7 +10,7 @@ profiles:
   build:
     artifacts:
     - custom:
-        buildCommand: docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.release.hcl release
+        buildCommand: docker compose config | docker buildx bake --allow=fs.read=../.. -f- -f .bayt/bake.hcl services_tracker-tx-release
       image: gcr.io/trash-362115/services.tracker-tx-gcp
       context: .
     local:
