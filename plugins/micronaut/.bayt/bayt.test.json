@@ -1,7 +1,6 @@
 {
   "_generated_from": "bayt.cue (do not edit)",
   "bake": {
-    "push": false,
     "platforms": [],
     "tags": [],
     "args": {},
@@ -45,7 +44,6 @@
     "preconditions": []
   },
   "visibility": "internal",
-  "class": "build",
   "emitsSrcs": false,
   "deps": [
     "build"
@@ -74,8 +72,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build",
@@ -93,8 +90,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "setup",
@@ -116,11 +112,9 @@
         "exclude": [
           "**/node_modules/**"
         ]
-      },
-      "class": "build"
+      }
     }
   ],
-  "up": false,
   "upClosure": [
     "plugins/micronaut/.bayt/compose.build.yaml",
     "plugins/micronaut/.bayt/compose.setup.yaml",
@@ -147,8 +141,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "setup",
@@ -163,8 +156,7 @@
           ".task/bayt/setup.hash"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     }
   ],
   "cmds": [

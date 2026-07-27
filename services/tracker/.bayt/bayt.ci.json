@@ -1,7 +1,6 @@
 {
   "_generated_from": "bayt.cue (do not edit)",
   "bake": {
-    "push": false,
     "platforms": [],
     "tags": [],
     "args": {},
@@ -142,7 +141,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [],
@@ -177,7 +175,6 @@
     }
   },
   "visibility": "internal",
-  "class": "build",
   "emitsSrcs": false,
   "deps": [
     "dindbox",
@@ -222,8 +219,7 @@
           "[m]ise.lock"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build_srcs",
@@ -249,8 +245,7 @@
           "[m]ise.lock"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build_srcs",
@@ -286,8 +281,7 @@
           "[m]ise.lock"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build_srcs",
@@ -313,8 +307,7 @@
           "[m]ise.lock"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build_srcs",
@@ -340,8 +333,7 @@
           "[m]ise.lock"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build_srcs",
@@ -367,8 +359,7 @@
           "[m]ise.lock"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "setup_srcs",
@@ -387,8 +378,7 @@
           "**/package.json"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "project": "plugins_libstoml",
@@ -402,8 +392,7 @@
           "[m]ise.lock"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "project": "plugins_jvm",
@@ -417,8 +406,7 @@
           "[m]ise.lock"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "project": "libraries_logs",
@@ -432,8 +420,7 @@
           "[m]ise.lock"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "project": "plugins_micronaut",
@@ -447,8 +434,7 @@
           "[m]ise.lock"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "project": "libraries_xproto",
@@ -462,8 +448,7 @@
           "[m]ise.lock"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "project": "libraries_pbtables",
@@ -477,11 +462,9 @@
           "[m]ise.lock"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     }
   ],
-  "up": false,
   "upClosure": [
     "services/tracker/.bayt/compose.ci.yaml",
     "services/tracker/.bayt/compose.dindbox.yaml",
@@ -511,8 +494,7 @@
       "outs": {
         "globs": [],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "integrate_srcs",
@@ -526,8 +508,7 @@
           "src/test/resources/**/*"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "integrate_bayt",
@@ -545,8 +526,7 @@
           ".bayt/init.gradle.kts"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build_srcs",
@@ -569,8 +549,7 @@
           "src/main/resources/**/*"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "deps_srcs",
@@ -587,8 +566,7 @@
           "settings.gradle.kts"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "setup_srcs",
@@ -602,8 +580,7 @@
           "[m]ise.lock"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     }
   ],
   "cmds": [
@@ -615,7 +592,7 @@
         "defaultExclude": null
       },
       "shell": "sh",
-      "do": "if [ -n \"$BUILDKIT_SYNTAX\" ]; then\n  # depot frontend-pin workaround (full rationale in stacks/sayt/sayt.cue)\n  find /monorepo -path '*/.bayt/Dockerfile.*' -type f -exec sed -i \"1i # syntax=$BUILDKIT_SYNTAX\" {} \\;\nfi\n[ -n \"$DEPOT_TOKEN\" ] && bake=\"depot bake --project $DEPOT_PROJECT_ID\" || bake=\"docker buildx bake\"\n[ -f .bayt/depot.hcl ] && tgt=\"-f .bayt/depot.hcl depot-build\" || tgt=\"bayt\"\ndocker compose -f .bayt/compose.integrate.closure.yaml config | docker buildx bake --allow=fs.read=/monorepo -f - --print bayt | $bake -f - ${SAYT_NO_CACHE:+--no-cache --set \"*.cache-from=\" --set \"*.cache-to=\"} ${SAYT_NO_CACHE_FROM:+--set \"*.cache-from=\"} ${SAYT_NO_CACHE_TO:+--set \"*.cache-to=\"} $tgt\nexec docker compose -f .bayt/compose.integrate.closure.yaml up bayt --abort-on-container-failure --exit-code-from bayt --remove-orphans",
+      "do": "if [ -n \"$BUILDKIT_SYNTAX\" ]; then\n  # depot frontend-pin workaround (full rationale in stacks/sayt/sayt.cue)\n  find /monorepo -path '*/.bayt/Dockerfile.*' -type f -exec sed -i \"1i # syntax=$BUILDKIT_SYNTAX\" {} \\;\nfi\n[ -n \"$DEPOT_TOKEN\" ] && bake=\"depot bake --project $DEPOT_PROJECT_ID\" || bake=\"docker buildx bake\"\n[ -f .bayt/depot.hcl ] && tgt=\"-f .bayt/depot.hcl depot-build\" || tgt=\"bayt\"\ndocker compose --profile '*' -f .bayt/compose.integrate.closure.yaml config | docker buildx bake --allow=fs.read=/monorepo -f - --print bayt | $bake -f - ${SAYT_NO_CACHE:+--no-cache --set \"*.cache-from=\" --set \"*.cache-to=\"} ${SAYT_NO_CACHE_FROM:+--set \"*.cache-from=\"} ${SAYT_NO_CACHE_TO:+--set \"*.cache-to=\"} $tgt\nexec docker compose --profile '*' -f .bayt/compose.integrate.closure.yaml up bayt --abort-on-container-failure --exit-code-from bayt --remove-orphans",
       "dockerfile": {
         "inject": {
           "secrets": [

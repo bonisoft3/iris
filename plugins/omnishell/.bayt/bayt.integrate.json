@@ -1,7 +1,6 @@
 {
   "_generated_from": "bayt.cue (do not edit)",
   "bake": {
-    "push": false,
     "platforms": [],
     "tags": [],
     "args": {},
@@ -17,6 +16,7 @@
   },
   "compose": {
     "up": true,
+    "manual": true,
     "environment": {},
     "ports": [],
     "volumes": [],
@@ -81,7 +81,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [],
@@ -120,7 +119,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [
@@ -142,8 +140,7 @@
               "bunfig.toml"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         }
       ],
       "chainedDeps": [],
@@ -165,7 +162,6 @@
     "preconditions": []
   },
   "visibility": "internal",
-  "class": "build",
   "emitsSrcs": true,
   "deps": [
     "build"
@@ -178,7 +174,6 @@
     "setup"
   ],
   "transitiveCrossDeps": [],
-  "up": true,
   "upClosure": [
     "plugins/omnishell/.bayt/compose.integrate.yaml",
     "plugins/omnishell/.bayt/compose.build.yaml",
@@ -192,8 +187,7 @@
       "outs": {
         "globs": [],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "setup",
@@ -202,8 +196,7 @@
       "outs": {
         "globs": [],
         "exclude": []
-      },
-      "class": "build"
+      }
     }
   ],
   "cmds": [

@@ -24,7 +24,6 @@
     "preconditions": []
   },
   "visibility": "internal",
-  "class": "build",
   "emitsSrcs": false,
   "deps": [
     "release"
@@ -58,11 +57,9 @@
         "exclude": [
           "**/node_modules/**"
         ]
-      },
-      "class": "build"
+      }
     }
   ],
-  "up": false,
   "upClosure": [
     "guis/web/.bayt/compose.release.yaml",
     "guis/web/.bayt/compose.build.yaml",
@@ -77,8 +74,7 @@
       "outs": {
         "globs": [],
         "exclude": []
-      },
-      "class": "runtime"
+      }
     },
     {
       "name": "build",
@@ -89,8 +85,7 @@
           ".output/**/*"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "setup",
@@ -99,8 +94,7 @@
       "outs": {
         "globs": [],
         "exclude": []
-      },
-      "class": "build"
+      }
     }
   ],
   "cmds": [

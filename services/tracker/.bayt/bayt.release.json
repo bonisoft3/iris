@@ -2,7 +2,6 @@
   "_generated_from": "bayt.cue (do not edit)",
   "bake": {
     "image": "gcr.io/trash-362115/services.tracker",
-    "push": false,
     "platforms": [
       "linux/amd64"
     ],
@@ -137,7 +136,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [],
@@ -204,7 +202,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [
@@ -239,8 +236,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "name": "build_srcs",
@@ -266,8 +262,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "name": "build_srcs",
@@ -303,8 +298,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "name": "build_srcs",
@@ -330,8 +324,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "name": "build_srcs",
@@ -357,8 +350,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "name": "build_srcs",
@@ -384,8 +376,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "name": "setup_srcs",
@@ -404,8 +395,7 @@
               "**/package.json"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "project": "plugins_libstoml",
@@ -419,8 +409,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "project": "plugins_jvm",
@@ -434,8 +423,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "project": "libraries_logs",
@@ -449,8 +437,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "project": "plugins_micronaut",
@@ -464,8 +451,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "project": "libraries_xproto",
@@ -479,8 +465,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "project": "libraries_pbtables",
@@ -494,8 +479,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "project": "services_tracker",
@@ -518,8 +502,7 @@
               "src/main/resources/**/*"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "project": "services_tracker",
@@ -536,8 +519,7 @@
               "settings.gradle.kts"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "project": "services_tracker",
@@ -551,8 +533,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         }
       ],
       "chainedDeps": [],
@@ -585,7 +566,6 @@
     }
   },
   "visibility": "internal",
-  "class": "runtime",
   "emitsSrcs": true,
   "deps": [
     "release-layers"
@@ -617,8 +597,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build",
@@ -636,8 +615,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build",
@@ -655,8 +633,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build",
@@ -674,8 +651,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build",
@@ -693,8 +669,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build",
@@ -712,8 +687,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "setup",
@@ -735,11 +709,9 @@
         "exclude": [
           "**/node_modules/**"
         ]
-      },
-      "class": "build"
+      }
     }
   ],
-  "up": false,
   "upClosure": [
     "services/tracker/.bayt/compose.release.yaml",
     "services/tracker/.bayt/compose.release-layers.yaml",
@@ -769,8 +741,7 @@
       "outs": {
         "globs": [],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "release-artifact",
@@ -781,8 +752,7 @@
           "build/jib-image.tar"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build",
@@ -800,8 +770,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "deps",
@@ -810,8 +779,7 @@
       "outs": {
         "globs": [],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "setup",
@@ -826,8 +794,7 @@
           ".task/bayt/setup.hash"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     }
   ],
   "cmds": [],

@@ -2,7 +2,6 @@
   "_generated_from": "bayt.cue (do not edit)",
   "bake": {
     "image": "gcr.io/trash-362115/services.tracker-tx-gcp",
-    "push": false,
     "platforms": [
       "linux/amd64"
     ],
@@ -120,7 +119,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [],
@@ -136,76 +134,20 @@
         "services/tracker-tx/.bayt/compose.build.yaml",
         "services/tracker-tx/.bayt/compose.setup.yaml"
       ]
-    },
-    "srcs": {
-      "name": "release_srcs",
-      "project": "services_tracker-tx",
-      "dir": "services/tracker-tx",
-      "activate": "",
-      "srcs": {
-        "globs": [],
-        "exclude": []
-      },
-      "outs": {
-        "globs": [
-          "transcoding.yaml",
-          "cloud_run_tls.yaml",
-          "edge.yaml"
-        ],
-        "exclude": []
-      },
-      "env": {},
-      "class": "build",
-      "visibility": "internal",
-      "deps": [],
-      "transitiveDeps": [
-        "build_srcs",
-        "setup_srcs"
-      ],
-      "transitiveCrossDeps": [
-        {
-          "project": "services_tracker-tx",
-          "name": "build_srcs",
-          "dir": "services/tracker-tx",
-          "outs": {
-            "globs": [
-              "transcoding.yaml",
-              "cloud_run_tls.yaml",
-              "edge.yaml"
-            ],
-            "exclude": []
-          },
-          "class": "build"
-        }
-      ],
-      "chainedDeps": [],
-      "cmds": [],
-      "cache": {
-        "full": false,
-        "similar": false
-      },
-      "upClosure": [
-        "services/tracker-tx/.bayt/compose.release.yaml",
-        "services/tracker-tx/.bayt/compose.build.yaml",
-        "services/tracker-tx/.bayt/compose.setup.yaml"
-      ]
     }
   },
   "visibility": "internal",
-  "class": "runtime",
-  "emitsSrcs": true,
+  "emitsSrcs": false,
   "deps": [
-    "build"
+    "build_outs"
   ],
   "sameProjectDeps": [
-    "build"
+    "build_outs"
   ],
   "transitiveDeps": [
-    "build",
-    "setup"
+    "build_outs"
   ],
   "transitiveCrossDeps": [],
-  "up": false,
   "upClosure": [
     "services/tracker-tx/.bayt/compose.release.yaml",
     "services/tracker-tx/.bayt/compose.build.yaml",
@@ -213,7 +155,7 @@
   ],
   "chainedDeps": [
     {
-      "name": "build",
+      "name": "build_outs",
       "project": "services_tracker-tx",
       "dir": "services/tracker-tx",
       "outs": {
@@ -222,18 +164,7 @@
           "out/transcoding.yaml.gcp.tpl"
         ],
         "exclude": []
-      },
-      "class": "build"
-    },
-    {
-      "name": "setup",
-      "project": "services_tracker-tx",
-      "dir": "services/tracker-tx",
-      "outs": {
-        "globs": [],
-        "exclude": []
-      },
-      "class": "build"
+      }
     }
   ],
   "cmds": [],

@@ -1,7 +1,6 @@
 {
   "_generated_from": "bayt.cue (do not edit)",
   "bake": {
-    "push": false,
     "platforms": [],
     "tags": [],
     "args": {},
@@ -82,7 +81,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "public",
       "deps": [],
       "transitiveDeps": [],
@@ -114,7 +112,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "public",
       "deps": [],
       "transitiveDeps": [],
@@ -148,7 +145,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "public",
       "deps": [],
       "transitiveDeps": [],
@@ -170,8 +166,7 @@
               "**/package.json"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         }
       ],
       "chainedDeps": [],
@@ -192,7 +187,6 @@
     "preconditions": []
   },
   "visibility": "public",
-  "class": "build",
   "emitsSrcs": true,
   "deps": [
     "setup"
@@ -220,11 +214,9 @@
         "exclude": [
           "**/node_modules/**"
         ]
-      },
-      "class": "build"
+      }
     }
   ],
-  "up": false,
   "upClosure": [
     "libraries/xproto/.bayt/compose.descriptor.yaml",
     ".bayt/compose.setup.yaml"
@@ -250,8 +242,7 @@
         "exclude": [
           "**/node_modules/**"
         ]
-      },
-      "class": "build"
+      }
     }
   ],
   "cmds": [

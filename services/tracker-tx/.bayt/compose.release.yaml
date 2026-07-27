@@ -18,22 +18,10 @@ services:
     build:
       additional_contexts:
         services_tracker-tx-build_bayt: service:services_tracker-tx-build_bayt
-        services_tracker-tx-setup_bayt: service:services_tracker-tx-setup_bayt
       context: ..
       dockerfile: .bayt/Dockerfile.release
       target: release_bayt
       args:
         BUILDKIT_SYNTAX: docker/dockerfile:1.24@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
     image: bayt-services_tracker-tx-release_bayt:latest
-    scale: 0
-  services_tracker-tx-release_srcs:
-    build:
-      additional_contexts:
-        services_tracker-tx-build_srcs: service:services_tracker-tx-build_srcs
-      context: ..
-      dockerfile: .bayt/Dockerfile.release
-      target: release_srcs
-      args:
-        BUILDKIT_SYNTAX: docker/dockerfile:1.24@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
-    image: bayt-services_tracker-tx-release_srcs:latest
     scale: 0

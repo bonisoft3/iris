@@ -12,5 +12,3 @@ include:
   required: false
 - path: ../../../libraries/xproto/.bayt/compose.bayt.yaml
   required: false
-- path: ../../../.bayt/compose.bayt.yaml
-  required: false

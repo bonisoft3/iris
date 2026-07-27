@@ -1,7 +1,6 @@
 {
   "_generated_from": "bayt.cue (do not edit)",
   "bake": {
-    "push": false,
     "platforms": [],
     "tags": [],
     "args": {},
@@ -39,7 +38,6 @@
     "preconditions": []
   },
   "visibility": "internal",
-  "class": "build",
   "emitsSrcs": false,
   "deps": [
     "release"
@@ -72,8 +70,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build",
@@ -91,8 +88,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build",
@@ -110,8 +106,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build",
@@ -129,8 +124,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build",
@@ -148,8 +142,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build",
@@ -167,8 +160,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "setup",
@@ -190,11 +182,9 @@
         "exclude": [
           "**/node_modules/**"
         ]
-      },
-      "class": "build"
+      }
     }
   ],
-  "up": false,
   "upClosure": [
     "services/tracker/.bayt/compose.release.yaml",
     "services/tracker/.bayt/compose.release-layers.yaml",
@@ -224,8 +214,7 @@
       "outs": {
         "globs": [],
         "exclude": []
-      },
-      "class": "runtime"
+      }
     },
     {
       "name": "release-layers",
@@ -234,8 +223,7 @@
       "outs": {
         "globs": [],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "release-artifact",
@@ -246,8 +234,7 @@
           "build/jib-image.tar"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build",
@@ -265,8 +252,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "deps",
@@ -275,8 +261,7 @@
       "outs": {
         "globs": [],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "setup",
@@ -291,8 +276,7 @@
           ".task/bayt/setup.hash"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     }
   ],
   "cmds": [

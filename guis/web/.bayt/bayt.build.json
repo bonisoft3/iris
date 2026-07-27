@@ -88,7 +88,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [],
@@ -121,7 +120,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [],
@@ -166,7 +164,6 @@
         ]
       },
       "env": {},
-      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [
@@ -190,8 +187,7 @@
               "**/package.json"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         }
       ],
       "chainedDeps": [],
@@ -213,7 +209,6 @@
     "preconditions": []
   },
   "visibility": "internal",
-  "class": "build",
   "emitsSrcs": true,
   "deps": [
     "setup"
@@ -245,11 +240,9 @@
         "exclude": [
           "**/node_modules/**"
         ]
-      },
-      "class": "build"
+      }
     }
   ],
-  "up": false,
   "upClosure": [
     "guis/web/.bayt/compose.build.yaml",
     "guis/web/.bayt/compose.setup.yaml",
@@ -263,8 +256,7 @@
       "outs": {
         "globs": [],
         "exclude": []
-      },
-      "class": "build"
+      }
     }
   ],
   "cmds": [

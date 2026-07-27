@@ -1,7 +1,6 @@
 {
   "_generated_from": "bayt.cue (do not edit)",
   "bake": {
-    "push": false,
     "platforms": [],
     "tags": [],
     "args": {},
@@ -78,7 +77,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "public",
       "deps": [],
       "transitiveDeps": [],
@@ -115,7 +113,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "public",
       "deps": [],
       "transitiveDeps": [
@@ -140,7 +137,6 @@
     "preconditions": []
   },
   "visibility": "public",
-  "class": "build",
   "emitsSrcs": true,
   "deps": [
     "setup"
@@ -152,7 +148,6 @@
     "setup"
   ],
   "transitiveCrossDeps": [],
-  "up": false,
   "upClosure": [
     "plugins/omnishell/.bayt/compose.build.yaml",
     "plugins/omnishell/.bayt/compose.setup.yaml"
@@ -165,8 +160,7 @@
       "outs": {
         "globs": [],
         "exclude": []
-      },
-      "class": "build"
+      }
     }
   ],
   "cmds": [

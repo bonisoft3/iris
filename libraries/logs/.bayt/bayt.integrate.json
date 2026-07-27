@@ -1,7 +1,6 @@
 {
   "_generated_from": "bayt.cue (do not edit)",
   "bake": {
-    "push": false,
     "platforms": [],
     "tags": [],
     "args": {},
@@ -17,6 +16,7 @@
   },
   "compose": {
     "up": true,
+    "manual": true,
     "environment": {
       "GRADLE_USER_HOME": "/opt/gradle-home"
     },
@@ -102,7 +102,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [],
@@ -141,7 +140,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [],
@@ -197,7 +195,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [
@@ -229,8 +226,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "name": "build_srcs",
@@ -256,8 +252,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "name": "setup_srcs",
@@ -276,8 +271,7 @@
               "**/package.json"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "project": "plugins_libstoml",
@@ -291,8 +285,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "project": "plugins_jvm",
@@ -306,8 +299,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "project": "libraries_logs",
@@ -329,8 +321,7 @@
               "src/main/**/*.sqm"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "project": "libraries_logs",
@@ -344,8 +335,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         }
       ],
       "chainedDeps": [],
@@ -372,7 +362,6 @@
     "preconditions": []
   },
   "visibility": "internal",
-  "class": "build",
   "emitsSrcs": true,
   "deps": [
     "build"
@@ -401,8 +390,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build",
@@ -420,8 +408,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "setup",
@@ -443,11 +430,9 @@
         "exclude": [
           "**/node_modules/**"
         ]
-      },
-      "class": "build"
+      }
     }
   ],
-  "up": true,
   "upClosure": [
     "libraries/logs/.bayt/compose.integrate.yaml",
     "libraries/logs/.bayt/compose.build.yaml",
@@ -475,8 +460,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "setup",
@@ -491,8 +475,7 @@
           ".task/bayt/setup.hash"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     }
   ],
   "cmds": [

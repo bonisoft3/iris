@@ -67,7 +67,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [],
@@ -100,7 +99,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [],
@@ -134,7 +132,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [
@@ -159,7 +156,6 @@
     "preconditions": []
   },
   "visibility": "internal",
-  "class": "build",
   "emitsSrcs": true,
   "deps": [
     "setup"
@@ -171,7 +167,6 @@
     "setup"
   ],
   "transitiveCrossDeps": [],
-  "up": false,
   "upClosure": [
     "services/tracker-tx/.bayt/compose.build.yaml",
     "services/tracker-tx/.bayt/compose.setup.yaml"
@@ -184,8 +179,7 @@
       "outs": {
         "globs": [],
         "exclude": []
-      },
-      "class": "build"
+      }
     }
   ],
   "cmds": [

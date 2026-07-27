@@ -99,7 +99,7 @@ _tx: bayt.#project & {
 			// pulls in xproto's compose.bayt.deps.yaml (build/setup/
 			// release/descriptor only — no integrate composes that
 			// would conflict on top-level secrets).
-			deps: [":build", "libraries_xproto:descriptor"]
+			deps: [":build", "libraries_xproto:descriptor:outs"]
 			dockerfile: {
 				from: ref: ":build"
 				preamble: [
@@ -158,10 +158,13 @@ _tx: bayt.#project & {
 			// drop the inherited builtin cmd via `cmd: "builtin":
 			// null`. No RUN line gets emitted in Dockerfile.release.
 			dockerfile: bayt.busybox
+			// Packaging image copies only build's declared outs (the
+			// .tpl files), not its workdir; artifacts otherwise arrive
+			// via explicit COPY --from= chains.
+			deps: [":build:outs"]
 			cmd: "builtin": null
 			bake: {
 				image:      "gcr.io/trash-362115/services.tracker-tx-gcp"
-				push:       false
 				platforms: ["linux/amd64"]
 			}
 			skaffold: profiles: {

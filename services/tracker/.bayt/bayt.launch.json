@@ -1,7 +1,6 @@
 {
   "_generated_from": "bayt.cue (do not edit)",
   "bake": {
-    "push": false,
     "platforms": [],
     "tags": [],
     "args": {},
@@ -17,6 +16,7 @@
   },
   "compose": {
     "up": true,
+    "manual": false,
     "environment": {},
     "ports": [],
     "volumes": [],
@@ -122,7 +122,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [],
@@ -187,7 +186,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [
@@ -220,8 +218,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "name": "build_srcs",
@@ -247,8 +244,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "name": "build_srcs",
@@ -284,8 +280,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "name": "build_srcs",
@@ -311,8 +306,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "name": "build_srcs",
@@ -338,8 +332,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "name": "build_srcs",
@@ -365,8 +358,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "name": "setup_srcs",
@@ -385,8 +377,7 @@
               "**/package.json"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "project": "plugins_libstoml",
@@ -400,8 +391,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "project": "plugins_jvm",
@@ -415,8 +405,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "project": "libraries_logs",
@@ -430,8 +419,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "project": "plugins_micronaut",
@@ -445,8 +433,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "project": "libraries_xproto",
@@ -460,8 +447,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "project": "libraries_pbtables",
@@ -475,8 +461,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "project": "services_tracker",
@@ -499,8 +484,7 @@
               "src/main/resources/**/*"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "project": "services_tracker",
@@ -517,8 +501,7 @@
               "settings.gradle.kts"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "project": "services_tracker",
@@ -532,8 +515,7 @@
               "[m]ise.lock"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         }
       ],
       "chainedDeps": [],
@@ -564,7 +546,6 @@
     }
   },
   "visibility": "internal",
-  "class": "runtime",
   "emitsSrcs": true,
   "deps": [
     "build"
@@ -594,8 +575,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build",
@@ -613,8 +593,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build",
@@ -632,8 +611,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build",
@@ -651,8 +629,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build",
@@ -670,8 +647,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "build",
@@ -689,8 +665,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "setup",
@@ -712,11 +687,9 @@
         "exclude": [
           "**/node_modules/**"
         ]
-      },
-      "class": "build"
+      }
     }
   ],
-  "up": true,
   "upClosure": [
     "services/tracker/.bayt/compose.launch.yaml",
     "services/tracker/.bayt/compose.build.yaml",
@@ -753,8 +726,7 @@
           "gradle/lib[s].versions.toml"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "deps",
@@ -763,8 +735,7 @@
       "outs": {
         "globs": [],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "setup",
@@ -779,8 +750,7 @@
           ".task/bayt/setup.hash"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     }
   ],
   "cmds": [

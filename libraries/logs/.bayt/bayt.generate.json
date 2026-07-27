@@ -1,7 +1,6 @@
 {
   "_generated_from": "bayt.cue (do not edit)",
   "bake": {
-    "push": false,
     "platforms": [],
     "tags": [],
     "args": {},
@@ -45,13 +44,11 @@
     "preconditions": []
   },
   "visibility": "internal",
-  "class": "build",
   "emitsSrcs": false,
   "deps": [],
   "sameProjectDeps": [],
   "transitiveDeps": [],
   "transitiveCrossDeps": [],
-  "up": false,
   "upClosure": [],
   "chainedDeps": [],
   "cmds": [

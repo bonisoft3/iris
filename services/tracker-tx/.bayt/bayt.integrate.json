@@ -2,6 +2,7 @@
   "_generated_from": "bayt.cue (do not edit)",
   "compose": {
     "up": true,
+    "manual": true,
     "environment": {},
     "ports": [],
     "volumes": [],
@@ -74,7 +75,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [],
@@ -107,7 +107,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [],
@@ -142,7 +141,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [
@@ -161,8 +159,7 @@
               "edge.yaml"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         }
       ],
       "chainedDeps": [],
@@ -184,7 +181,6 @@
     "preconditions": []
   },
   "visibility": "internal",
-  "class": "build",
   "emitsSrcs": true,
   "deps": [
     "build"
@@ -197,7 +193,6 @@
     "setup"
   ],
   "transitiveCrossDeps": [],
-  "up": true,
   "upClosure": [
     "services/tracker-tx/.bayt/compose.integrate.yaml",
     "services/tracker-tx/.bayt/compose.build.yaml",
@@ -214,8 +209,7 @@
           "out/transcoding.yaml.gcp.tpl"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "setup",
@@ -224,8 +218,7 @@
       "outs": {
         "globs": [],
         "exclude": []
-      },
-      "class": "build"
+      }
     }
   ],
   "cmds": [

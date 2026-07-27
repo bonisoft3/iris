@@ -27,7 +27,6 @@
     "preconditions": []
   },
   "visibility": "internal",
-  "class": "build",
   "emitsSrcs": false,
   "deps": [
     "build"
@@ -40,7 +39,6 @@
     "setup"
   ],
   "transitiveCrossDeps": [],
-  "up": false,
   "upClosure": [
     "services/tracker-tx/.bayt/compose.build.yaml",
     "services/tracker-tx/.bayt/compose.setup.yaml"
@@ -56,8 +54,7 @@
           "out/transcoding.yaml.gcp.tpl"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "setup",
@@ -66,8 +63,7 @@
       "outs": {
         "globs": [],
         "exclude": []
-      },
-      "class": "build"
+      }
     }
   ],
   "cmds": [

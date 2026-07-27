@@ -2,6 +2,7 @@
   "_generated_from": "bayt.cue (do not edit)",
   "compose": {
     "up": true,
+    "manual": false,
     "environment": {},
     "ports": [],
     "volumes": [],
@@ -120,7 +121,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [],
@@ -154,7 +154,6 @@
         "exclude": []
       },
       "env": {},
-      "class": "build",
       "visibility": "internal",
       "deps": [],
       "transitiveDeps": [
@@ -179,8 +178,7 @@
               "**/package.json"
             ],
             "exclude": []
-          },
-          "class": "build"
+          }
         },
         {
           "project": "guis_web",
@@ -203,8 +201,7 @@
               "**/*.spec.*",
               "tests/**"
             ]
-          },
-          "class": "build"
+          }
         }
       ],
       "chainedDeps": [],
@@ -222,7 +219,6 @@
     }
   },
   "visibility": "internal",
-  "class": "runtime",
   "emitsSrcs": true,
   "deps": [
     "build"
@@ -255,11 +251,9 @@
         "exclude": [
           "**/node_modules/**"
         ]
-      },
-      "class": "build"
+      }
     }
   ],
-  "up": true,
   "upClosure": [
     "guis/web/.bayt/compose.launch.yaml",
     "guis/web/.bayt/compose.build.yaml",
@@ -276,8 +270,7 @@
           ".output/**/*"
         ],
         "exclude": []
-      },
-      "class": "build"
+      }
     },
     {
       "name": "setup",
@@ -286,8 +279,7 @@
       "outs": {
         "globs": [],
         "exclude": []
-      },
-      "class": "build"
+      }
     }
   ],
   "cmds": [],
