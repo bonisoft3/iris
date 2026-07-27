@@ -22,7 +22,7 @@
     "copy": [
       {
         "from": {
-          "name": "alpine/socat:latest@sha256:bfd2550379212e087dc18db2f4611f43477be4b575d660c8f18c5b9a1b2e2757"
+          "name": "mirror.gcr.io/alpine/socat:1.8.0.0@sha256:a6be4c0262b339c53ddad723cdd178a1a13271e1137c65e27f90a08c16de02b8"
         },
         "srcs": [
           "/usr/bin/socat1"
@@ -34,7 +34,7 @@
       },
       {
         "from": {
-          "name": "alpine/socat:latest@sha256:bfd2550379212e087dc18db2f4611f43477be4b575d660c8f18c5b9a1b2e2757"
+          "name": "mirror.gcr.io/alpine/socat:1.8.0.0@sha256:a6be4c0262b339c53ddad723cdd178a1a13271e1137c65e27f90a08c16de02b8"
         },
         "srcs": [
           "/usr/lib/libreadline.so.8",
