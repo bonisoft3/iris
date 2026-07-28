@@ -10,7 +10,7 @@ command: generate: {
 			"""
 set -euo pipefail
 # Generate database schema from root CUE entity data
-cue export . | jq '{entities: .Entities}' | gomplate -d data=stdin:///data.json -f services/database/schemas/schema.hcl.tmpl -o services/database/schemas/schema.hcl
+cue export .:tmpl | jq '{entities: .Entities}' | gomplate -d data=stdin:///data.json -f services/database/schemas/schema.hcl.tmpl -o services/database/schemas/schema.hcl
 echo "Generated services/database/schemas/schema.hcl"
 """,
 		]

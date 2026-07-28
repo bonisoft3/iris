@@ -87,7 +87,9 @@ tasks:
     desc: "Run unit tests: cue vet + buf lint (pure, cross-platform)"
     deps: [buf:generate]
     cmds:
-      - cue vet ./...
+      # Select packages explicitly: bayt.cue adds a `mecha` package to the
+      # root, so an unqualified `cue vet ./...` errors on the mixed dir.
+      - cue vet ./...:tmpl ./...:database
       - buf lint proto
 
   # ================================================================
