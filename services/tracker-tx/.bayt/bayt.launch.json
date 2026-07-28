@@ -152,6 +152,38 @@
         ".bayt/compose.setup.yaml"
       ]
     },
+    "outs": {
+      "name": "launch_outs",
+      "project": "services_tracker-tx",
+      "dir": "services/tracker-tx",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [],
+        "exclude": []
+      },
+      "env": {},
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "services/tracker-tx/.bayt/compose.launch.yaml",
+        "services/tracker-tx/.bayt/compose.build.yaml",
+        "services/tracker-tx/.bayt/compose.setup.yaml",
+        "libraries/xproto/.bayt/compose.descriptor.yaml",
+        ".bayt/compose.setup.yaml"
+      ]
+    },
     "srcs": {
       "name": "launch_srcs",
       "project": "services_tracker-tx",

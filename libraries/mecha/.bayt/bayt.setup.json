@@ -78,6 +78,34 @@
         "libraries/mecha/.bayt/compose.setup.yaml"
       ]
     },
+    "outs": {
+      "name": "setup_outs",
+      "project": "libraries_mecha",
+      "dir": "libraries/mecha",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [],
+        "exclude": []
+      },
+      "env": {},
+      "visibility": "public",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "libraries/mecha/.bayt/compose.setup.yaml"
+      ]
+    },
     "srcs": {
       "name": "setup_srcs",
       "project": "libraries_mecha",

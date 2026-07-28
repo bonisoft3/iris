@@ -97,6 +97,36 @@
         "plugins/omnishell/.bayt/compose.setup.yaml"
       ]
     },
+    "outs": {
+      "name": "integrate_outs",
+      "project": "plugins_omnishell",
+      "dir": "plugins/omnishell",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [],
+        "exclude": []
+      },
+      "env": {},
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "plugins/omnishell/.bayt/compose.integrate.yaml",
+        "plugins/omnishell/.bayt/compose.build.yaml",
+        "plugins/omnishell/.bayt/compose.setup.yaml"
+      ]
+    },
     "srcs": {
       "name": "integrate_srcs",
       "project": "plugins_omnishell",
