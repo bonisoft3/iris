@@ -75,6 +75,16 @@ test.describe("checkFocusOrder", () => {
     console.log(`Focus order: ${bugs.length} issues`)
     expect(Array.isArray(bugs)).toBe(true)
   })
+
+  // Fixed containers are independent focus sequences: a bottom-anchored
+  // rail button before top-of-page flow content is fine, and a focusable
+  // that is itself fixed is its own sequence — while out-of-order pairs
+  // WITHIN one sequence must still be flagged.
+  test("groups focus sequences per fixed container", async ({ page }) => {
+    await page.goto(`file://${fixturesDir}/focus-order.html`)
+    const bugs = await checkFocusOrder(page)
+    expect(bugs.map((b) => b.element).sort()).toEqual(["flow-upper", "rail-upper"])
+  })
 })
 
 test.describe("checkThemeStability", () => {
