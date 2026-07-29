@@ -39,7 +39,7 @@ The core development commands adapt their behavior based on the current director
 Before using the context-dependent commands, ensure your environment is properly set up:
 
 1. **Check Environment Status**: Run `just doctor` to see which environment components are available:
-   - **pkg**: Package manager (pkgx/scoop) 
+   - **pkg**: Package manager (mise)
    - **cli**: CLI tools (cue, aider)
    - **ide**: IDE integration (cue + .vscode/tasks.json)
    - **cnt**: Container tools (docker)
@@ -49,17 +49,23 @@ Before using the context-dependent commands, ensure your environment is properly
 
 2. **Install Missing Tools**: Run `just setup` in the relevant directory to install via mise.
 
-### `just setup` - Install Development Dependencies
-**Context-dependent dependency installation based on `.pkgx.yaml`**
+### `just setup` - Install the Toolchain
+**Context-dependent toolchain installation based on `.mise.toml`**
 
-- **guis/web**: Installs `nodejs.org@22.14.0 pnpm.io@9.15.2`
-- **services/shelfie**: Installs `buf@1.32.1 go@1.22 github.com/gotestyourself/gotestsum@1.12.0`  
-- **services/tracker**: Installs `openjdk.org@21.0.3.6`
+- **guis/web**: node + pnpm
+- **services/shelfie**: buf, go, gotestsum
+- **services/tracker**: the JDK
 
-The command reads each directory's `.pkgx.yaml` file and:
-- **Linux/Mac**: Uses `pkgx` to install dependencies
-- **Windows**: Uses `scoop` with platform-specific package names
-- **Recursive**: Calls local `.sayt.nu` files if present
+The command runs `mise install` against the current directory's `.mise.toml`,
+with versions pinned by the sibling `mise.lock`. That is its entire job: it
+installs *tools*, never project dependencies. `pnpm install`, `pip install`,
+`go mod download` and friends belong in the Dockerfile as cacheable `RUN`
+steps, or in a `Taskfile.yml` `deps:` entry — keeping `setup` fast and
+idempotent, and out of the inner loop.
+
+A project that needs a dependency install on the host wires it explicitly, by
+adding a second cmd to the `builtin` rule of `setup` in `.say.yaml`
+(`services/esocial-rpa` does this to populate its pip venv).
 
 ### `just build` - Compile Code
 **Delegates to VS Code tasks via CUE-based task runner**
@@ -99,10 +105,15 @@ Implementation: `docker compose run --build integrate` using local compose confi
 
 The unified interface works through:
 
-1. **`.pkgx.yaml`** - Environment-specific dependencies per directory
+1. **`.mise.toml`** + **`mise.lock`** - Pinned toolchain per directory
 2. **`.vscode/tasks.json`** - Build/test commands for each technology stack
 3. **`compose.yaml`** - Containerized development and integration environments
-4. **`plugins/sayt/sayt.nu`** - Central orchestrator reading context from current directory
+4. **`.say.yaml`** - Per-verb overrides and declarative lint rules
+5. **`bayt.cue`** - The build graph, where a project has one. bayt generates
+   the `.bayt/` tree (Taskfiles, per-target Dockerfiles, compose fragments)
+   that the container-layer verbs drive; `just generate` regenerates it and
+   the result is checked in. See `services/boxer` for the smallest example.
+6. **`plugins/sayt/sayt.nu`** - Central orchestrator reading context from current directory
 
 This creates a consistent developer experience where the same commands (`just setup/build/test/integrate`) work across Node.js, Kotlin, Go, and Python services by adapting to the local technology context.
 
@@ -233,8 +244,8 @@ The tracker service integrates with multiple AI providers:
 - Integration tests run in parallel with no shared resources
 
 ### CLI Environment
-- Uses pkgx.sh (Linux/Mac) or scoop.sh (Windows)
-- Installs development tools globally
+- Uses mise, driven by per-directory `.mise.toml` + `mise.lock`
+- Installs tools per project, not globally, so versions don't collide across the monorepo
 - Leverages cuelang for code validation
 - Provides copy-and-paste support across YAML configurations
 
