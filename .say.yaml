@@ -1,3 +1,18 @@
 say:
   generate:
     rulemap: { "auto-cue": null }
+
+  lint:
+    # omnishell's playwright helpers are imported by both guis/iris and
+    # guis/snapcards, so every consumer plus the base image whose chromium they
+    # drive must carry one version. Bumping it means editing this literal too —
+    # a partial bump fails here as "pattern not found".
+    shared:
+      - pattern: '1\.59\.1'
+        files:
+          - package.json
+          - guis/snapcards/package.json
+          - guis/iris/package.json
+          - guis/iris/tests/playwright/package.json
+          - guis/iris/bayt.cue
+          - plugins/omnishell/package.json

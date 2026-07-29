@@ -18,7 +18,6 @@
     "@anthropic-ai/sdk": "^0.89.0",
     "@simplewebauthn/browser": "^13.1.0",
     "@simplewebauthn/server": "^13.1.1",
-    "firebase-admin": "^13.0.0",
     "jose": "^6.0.11"
   },
   "devDependencies": {
@@ -31,11 +30,14 @@
     "react": "^19.0.0",
     "tailwindcss": "^4.1.4",
     "typescript": "^5.8.3",
-    "@playwright/test": "1.52.0"
+    "@playwright/test": "1.59.1",
+    "firebase-admin": "^13.0.0"
   },
   "peerDependencies": {
     "@tanstack/react-router": ">=1.121.0",
-    "react": ">=19.0.0"
+    "react": ">=19.0.0",
+    "@playwright/test": ">=1.59.1",
+    "firebase-admin": ">=13.0.0"
   },
   "peerDependenciesMeta": {
     "@anthropic-ai/sdk": {
@@ -45,6 +47,12 @@
       "optional": false
     },
     "@tanstack/react-router": {
+      "optional": true
+    },
+    "@playwright/test": {
+      "optional": true
+    },
+    "firebase-admin": {
       "optional": true
     }
   }
