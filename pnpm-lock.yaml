@@ -157,7 +157,7 @@ importers:
         specifier: ^1.0.42
         version: 1.0.42(react@19.2.4)
       '@mediapipe/tasks-vision':
-        specifier: ^0.10.32
+        specifier: 0.10.32
         version: 0.10.32
       '@serwist/next':
         specifier: ^9.5.7

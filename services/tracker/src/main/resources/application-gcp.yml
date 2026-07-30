@@ -98,6 +98,6 @@ gemini:
     url: "https://generativelanguage.googleapis.com"
     key: ${GEMINI_API_KEY}
   endpoint:
-    generate-content: "/v1/models/gemini-2.0-flash:generateContent"
+    generate-content: "/v1/models/gemini-2.5-flash:generateContent"
 
 prompt-path-prefix: "classpath:prompts/open_ai_"
