@@ -36,7 +36,10 @@ def _sayt_pin_siblings(ctx):
     ctx.run(core.replace(
         before = "./.github/actions/sayt/integrate",
         after = "bonisoft3/sayt/.github/actions/sayt/integrate@" + version,
-        paths = glob([".github/actions/sayt/ci/action.yml"]),
+        paths = glob([
+            ".github/actions/sayt/ci/action.yml",
+            ".github/actions/sayt/depot/action.yml",
+        ]),
     ))
     ctx.run(core.replace(
         before = "./.github/actions/sayt/summary",
