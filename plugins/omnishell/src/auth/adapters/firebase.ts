@@ -1,4 +1,3 @@
-import type { Auth as FirebaseAuth } from "firebase-admin/auth"
 import type {
   BiometricAdapter,
   UserInfo,
@@ -7,8 +6,18 @@ import type {
   AuthenticationChallenge,
 } from "../types"
 
+/**
+ * The slice of firebase-admin's `Auth` this adapter calls. Structural on
+ * purpose: firebase-admin is an optional peer, so each consumer resolves its
+ * own copy, and `Auth` carries private members that make two copies mutually
+ * unassignable however closely their versions match.
+ */
+export interface FirebaseIdTokenVerifier {
+  verifyIdToken(idToken: string): Promise<{ uid: string }>
+}
+
 export interface FirebaseAdapterConfig {
-  auth: FirebaseAuth
+  auth: FirebaseIdTokenVerifier
 }
 
 export class FirebaseAdapter implements BiometricAdapter {
