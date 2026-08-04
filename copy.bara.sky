@@ -19,43 +19,25 @@ def scoped_message_transform(scope):
         ctx.set_message("Sync: " + first_line + "\n\nFrom worldsense/trash")
     return core.dynamic_transform(_transform, params = {"scope": scope})
 
-# Per-commit VERSION read for sayt composite-action sibling pinning.
-# Source action.yml files keep relative refs (`./.github/actions/sayt/<x>`)
-# so monorepo self-CI and target-repo clones test local code via local
-# paths. On mirror sync we rewrite those refs to absolute self-pinned
-# form `bonisoft3/sayt/.github/actions/sayt/<x>@<VERSION>` so downstream
-# consumers fetching the tagged composite find sibling actions on the
-# same commit. ITERATIVE mode replays each source commit independently,
-# so reading VERSION inside the dynamic transform yields the per-commit
-# value and the pin matches the release that commit represents.
+# Source keeps sibling refs relative so a local checkout resolves them locally;
+# the mirror needs them absolute and self-pinned. ITERATIVE replay reads VERSION
+# per commit, so each synced commit pins the release it represents.
+SAYT_COMPOSITES = ["ci", "depot", "install", "integrate", "summary"]
+
 def _sayt_pin_siblings(ctx):
     version_path = ctx.new_path("VERSION")
     if not version_path.exists():
         return
     version = ctx.read_path(version_path).strip()
-    ctx.run(core.replace(
-        before = "./.github/actions/sayt/integrate",
-        after = "bonisoft3/sayt/.github/actions/sayt/integrate@" + version,
-        paths = glob([
-            ".github/actions/sayt/ci/action.yml",
-            ".github/actions/sayt/depot/action.yml",
-        ]),
-    ))
-    ctx.run(core.replace(
-        before = "./.github/actions/sayt/summary",
-        after = "bonisoft3/sayt/.github/actions/sayt/summary@" + version,
-        paths = glob([".github/actions/sayt/integrate/action.yml"]),
-    ))
-    ctx.run(core.replace(
-        before = "./.github/actions/sayt/install",
-        after = "bonisoft3/sayt/.github/actions/sayt/install@" + version,
-        paths = glob([".github/actions/sayt/integrate/action.yml"]),
-    ))
-    ctx.run(core.replace(
-        before = "./.github/actions/sayt/ci",
-        after = "bonisoft3/sayt/.github/actions/sayt/ci@" + version,
-        paths = glob([".github/actions/sayt/depot/action.yml"]),
-    ))
+    for composite in SAYT_COMPOSITES:
+        ctx.run(core.transform(
+            [core.replace(
+                before = "./.github/actions/sayt/" + composite,
+                after = "bonisoft3/sayt/.github/actions/sayt/" + composite + "@" + version,
+                paths = glob([".github/actions/sayt/*/action.yml"]),
+            )],
+            noop_behavior = "IGNORE_NOOP",
+        ))
 
 WORKFLOWS = [
     struct(
