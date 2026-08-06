@@ -1,5 +1,5 @@
 import type { Page } from "@playwright/test"
-import { expect } from "@playwright/test"
+import { assertIs } from "./assert"
 
 export async function assertVisionReview(
   page: Page,
@@ -74,7 +74,7 @@ If there are no bugs, return: {"bugs":[],"passed":true}`,
 
   if (failingBugs.length > 0) {
     const summary = failingBugs.map((b) => `[${b.severity}] ${b.description}`).join("\n")
-    expect(failingBugs.length, `Vision review found ${failingBugs.length} bug(s) at ${viewport}:\n${summary}`).toBe(0)
+    assertIs(failingBugs.length, 0, `Vision review found ${failingBugs.length} bug(s) at ${viewport}:\n${summary}`)
   }
 }
 
@@ -145,6 +145,6 @@ export async function assertFeatureParity(
   if (result.missing_from_B.length > 0) issues.push(`Missing from ${opts.viewportB.name}: ${result.missing_from_B.join(", ")}`)
 
   if (issues.length > 0) {
-    expect(issues.length, `Feature parity failed:\n${issues.join("\n")}`).toBe(0)
+    assertIs(issues.length, 0, `Feature parity failed:\n${issues.join("\n")}`)
   }
 }

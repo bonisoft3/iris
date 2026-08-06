@@ -1,3 +1,5 @@
+/// <reference lib="dom" />
+/// <reference lib="dom.iterable" />
 import type { Page } from "@playwright/test"
 import type { VisualBug } from "../types"
 
@@ -11,8 +13,7 @@ export async function checkViewportBounds(page: Page): Promise<VisualBug[]> {
 
     for (const el of elements) {
       const htmlEl = el as HTMLElement
-      const style = getComputedStyle(htmlEl)
-      if (style.display === "none" || style.visibility === "hidden") continue
+      if (!htmlEl.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true, contentVisibilityAuto: true })) continue
       const rect = htmlEl.getBoundingClientRect()
       if (rect.top > viewportH * 2 || rect.left > viewportW * 2) continue
       if (rect.width < 5 || rect.height < 5) continue

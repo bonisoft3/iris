@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test"
+import { describe, test, expect } from "@test/harness"
 import { createAuth, FirebaseAdapter, MemoryStorage } from "../../src/index"
 
 function makeFakeAuth(uid: string) {
@@ -31,7 +31,6 @@ describe("FirebaseAdapter integration via createAuth", () => {
     expect(regCookie).toBeTruthy()
     expect(regCookie).toContain("omnishell_session=")
 
-    // Subsequent authenticate also succeeds and returns the same user
     const authRes = await auth.handleRequest(new Request("http://test/auth/authenticate/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

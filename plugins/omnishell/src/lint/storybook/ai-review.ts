@@ -1,3 +1,5 @@
+import type { Buffer } from "node:buffer"
+
 export interface ReviewResult {
   passed: boolean
   issues: Array<{ description: string; severity: string }>

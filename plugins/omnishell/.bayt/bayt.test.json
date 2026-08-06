@@ -6,11 +6,11 @@
     "args": {},
     "cache": {
       "from": [
-        "type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-test",
-        "type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-test"
+        "type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-test",
+        "type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-test"
       ],
       "to": [
-        "type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-test,mode=min,image-manifest=true,oci-mediatypes=true"
+        "type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-test,mode=min,image-manifest=true,oci-mediatypes=true"
       ]
     }
   },
@@ -20,7 +20,8 @@
   "activate": "mise x --",
   "srcs": {
     "globs": [
-      "test/**/*"
+      "test/**/*",
+      "interpreter/**/*"
     ],
     "exclude": []
   },
@@ -78,15 +79,31 @@
     {
       "srcs": {
         "globs": [
-          "test/**/*"
+          "test/**/*",
+          "interpreter/**/*"
         ],
         "exclude": [],
         "defaultGlobs": null,
         "defaultExclude": null
       },
-      "do": "bun test",
-      "name": "builtin",
+      "do": "deno cache --config interpreter/deno.json --lock interpreter/deno.lock --frozen --allow-import=cdn.jsdelivr.net:443 interpreter/handler-smoke.js interpreter/hatch-smoke.js interpreter/login-smoke.js interpreter/nav-smoke.js interpreter/pending-smoke.js interpreter/renderer-smoke.js interpreter/widget-smoke.js",
+      "name": "cache-smokes",
       "shell": "exec",
+      "stop": false
+    },
+    {
+      "srcs": {
+        "globs": [
+          "test/**/*",
+          "interpreter/**/*"
+        ],
+        "exclude": [],
+        "defaultGlobs": null,
+        "defaultExclude": null
+      },
+      "do": "sh -c 'deno test --config test/deno.json --lock test/deno.lock --frozen --cached-only --no-check --allow-env --allow-read --allow-import --allow-net --allow-sys test/ && deno test --config interpreter/deno.json --lock interpreter/deno.lock --frozen --cached-only --allow-env --allow-read interpreter/handler-smoke.js interpreter/hatch-smoke.js interpreter/login-smoke.js interpreter/nav-smoke.js interpreter/pending-smoke.js interpreter/renderer-smoke.js interpreter/widget-smoke.js'",
+      "shell": "sh",
+      "name": "builtin",
       "stop": false
     }
   ],

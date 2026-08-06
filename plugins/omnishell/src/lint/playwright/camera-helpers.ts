@@ -1,3 +1,5 @@
+/// <reference lib="dom" />
+/// <reference lib="dom.iterable" />
 import type { Page, BrowserContext } from "@playwright/test"
 import * as fs from "fs"
 import * as path from "path"

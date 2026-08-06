@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test"
+import { describe, test, expect } from "@test/harness"
 
 describe("vision review response parsing", () => {
   test("parses valid JSON response with bugs", () => {

@@ -1,3 +1,5 @@
+/// <reference lib="dom" />
+/// <reference lib="dom.iterable" />
 import type { Page } from "@playwright/test"
 import type { VisualBug } from "../types"
 
@@ -8,8 +10,13 @@ export async function checkInteractiveOverlap(page: Page): Promise<VisualBug[]> 
 
     for (const el of interactives) {
       const htmlEl = el as HTMLElement
-      const style = getComputedStyle(htmlEl)
-      if (style.display === "none" || style.visibility === "hidden" || style.opacity === "0" || htmlEl.offsetWidth === 0 || htmlEl.offsetHeight === 0) continue
+      // Computed style is not enough to know whether a reader can see this.
+      // Content inside a collapsed <details> keeps display:block, visibility
+      // visible, opacity 1 and a non-zero box, so every hand-rolled test
+      // passes while nothing is on screen — and elementFromPoint then reports
+      // whatever genuinely occupies that space as an obscuring blocker.
+      if (!htmlEl.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true, contentVisibilityAuto: true })) continue
+      if (htmlEl.offsetWidth === 0 || htmlEl.offsetHeight === 0) continue
 
       const rect = htmlEl.getBoundingClientRect()
       if (rect.bottom < 0 || rect.top > window.innerHeight || rect.right < 0 || rect.left > window.innerWidth) continue

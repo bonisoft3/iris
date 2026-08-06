@@ -11,10 +11,10 @@ services:
         BUILDKIT_SYNTAX: docker/dockerfile:1.24@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-setup
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-setup
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-setup
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-setup
         cache-to:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-setup,mode=min,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-setup,mode=min,image-manifest=true,oci-mediatypes=true
     image: bayt-plugins_libstoml-setup:${BAYT_IMAGE_TAG:-latest}
     scale: 0
   plugins_libstoml-setup_bayt:
@@ -28,10 +28,10 @@ services:
         BUILDKIT_SYNTAX: docker/dockerfile:1.24@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_libstoml-setup_bayt
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_libstoml-setup_bayt
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_libstoml-setup_bayt
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_libstoml-setup_bayt
         cache-to:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_libstoml-setup_bayt,mode=max,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_libstoml-setup_bayt,mode=max,image-manifest=true,oci-mediatypes=true
     image: bayt-plugins_libstoml-setup_bayt:latest
     scale: 0
   plugins_libstoml-setup_srcs:
@@ -45,10 +45,10 @@ services:
         BUILDKIT_SYNTAX: docker/dockerfile:1.24@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_libstoml-setup_srcs
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_libstoml-setup_srcs
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_libstoml-setup_srcs
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_libstoml-setup_srcs
         cache-to:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_libstoml-setup_srcs,mode=max,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_libstoml-setup_srcs,mode=max,image-manifest=true,oci-mediatypes=true
     image: bayt-plugins_libstoml-setup_srcs:latest
     scale: 0
   plugins_libstoml-setup_outs:
@@ -62,9 +62,9 @@ services:
         plugins_libstoml-setup: service:plugins_libstoml-setup
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_libstoml-setup_outs
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_libstoml-setup_outs
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_libstoml-setup_outs
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_libstoml-setup_outs
         cache-to:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-plugins_libstoml-setup_outs,mode=max,image-manifest=true,oci-mediatypes=true
+        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_libstoml-setup_outs,mode=max,image-manifest=true,oci-mediatypes=true
     image: bayt-plugins_libstoml-setup_outs:latest
     scale: 0

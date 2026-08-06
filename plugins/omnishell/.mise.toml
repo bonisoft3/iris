@@ -18,3 +18,6 @@ aqua.minisign = false
 # (glibc). github backend with mise >= 2026.5.2 (bundled in lazybox
 # v0.8.3) correctly picks bun-linux-x64.zip for glibc.
 "github:oven-sh/bun" = "bun-v1.3.12"
+# interpreter/*-smoke.js run under deno, not bun: they lock down SES and need
+# deno's own permission flags and lockfile.
+"github:denoland/deno" = "v2.3.7"

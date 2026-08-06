@@ -24,7 +24,7 @@ WORKDIR /monorepo/guis/web
 COPY --parents .bayt/compose.integrate.yaml .bayt/Dockerfile.integrate .bayt/bayt.integrate.json .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/Taskfile.integrate.yaml .bayt/compose.integrate.closure.yaml ./
 COPY --from=guis_web-build_bayt /monorepo /monorepo
 COPY --from=guis_web-setup_bayt /monorepo /monorepo
-COPY --from=workspaceroot-setup_bayt /monorepo /monorepo
+COPY --from=workspaceroot-setup-js_bayt /monorepo /monorepo
 ARG SOURCE_DATE_EPOCH
 ARG BAYT_CLAMP=1
 RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/guis/web -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/guis; fi

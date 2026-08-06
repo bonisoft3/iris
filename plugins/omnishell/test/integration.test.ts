@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test"
+import { describe, test, expect } from "@test/harness"
 import { createAuth } from "../src/index"
 import { MemoryStorage } from "../src/auth/storage/memory"
 import type { BiometricAdapter, BiometricCredential, UserInfo } from "../src/auth/types"
@@ -46,7 +46,6 @@ describe("createAuth integration", () => {
   test("register flow: startRegistration → verifyRegistration → session cookie", async () => {
     const { auth, biometric } = setup()
 
-    // Start registration
     const startRes = await auth.handleRequest(
       new Request("http://localhost/auth/register/start", {
         method: "POST",
@@ -58,7 +57,6 @@ describe("createAuth integration", () => {
     const startBody = await startRes.json()
     expect(startBody.challenge).toBeTruthy()
 
-    // Simulate biometric producing a credential
     biometric.setNextCredential({
       credentialId: "reg-cred-1",
       publicKey: new Uint8Array([10, 20, 30]),
@@ -67,7 +65,6 @@ describe("createAuth integration", () => {
       backedUp: false,
     })
 
-    // Verify registration
     const verifyRes = await auth.handleRequest(
       new Request("http://localhost/auth/register/verify", {
         method: "POST",
@@ -84,7 +81,6 @@ describe("createAuth integration", () => {
   test("authenticate flow: startAuthentication → verifyAuthentication → session cookie", async () => {
     const { auth, biometric } = setup()
 
-    // Register first
     biometric.setNextCredential({
       credentialId: "auth-cred-1",
       publicKey: new Uint8Array([1, 2, 3]),
@@ -107,7 +103,6 @@ describe("createAuth integration", () => {
       })
     )
 
-    // Authenticate
     const startRes = await auth.handleRequest(
       new Request("http://localhost/auth/authenticate/start", { method: "POST" })
     )
@@ -240,7 +235,6 @@ describe("createAuth integration", () => {
       })
     )
 
-    // Clear the credential so verification fails
     biometric.setNextCredential(null as any)
 
     const res = await auth.handleRequest(

@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test"
+import { describe, test, expect } from "@test/harness"
 import { createSessionManager } from "../src/auth/session"
 
 const SECRET = "test-secret-that-is-long-enough-for-hs256-signing-key"
@@ -30,7 +30,8 @@ describe("SessionManager", () => {
   test("verifyToken returns null for expired token", async () => {
     const sm = createSessionManager({ secret: SECRET, maxAge: 0 })
     const token = await sm.createToken("user-expired")
-    // Wait 1 second so the token is definitely expired
+    // JWT exp is in whole seconds, so a maxAge of 0 only bites once the
+    // clock crosses the next second.
     await new Promise((r) => setTimeout(r, 1100))
     const payload = await sm.verifyToken(token)
     expect(payload).toBeNull()

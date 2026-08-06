@@ -11,14 +11,14 @@ _web: sayt.pnpm & {
 	dir: "guis/web"
 
 	targets: {
-		// Setup chains FROM workspaceroot:setup so we inherit lazybox
+		// Setup chains FROM workspaceroot:setup-js so we inherit lazybox
 		// + the workspace-level mise install (act/just/nu/cue/uv) +
 		// pnpm-lock.yaml / pnpm-workspace.yaml / root package.json.
 		// This project then only adds its own pnpm install on top
 		// (no repeat of the workspace tools mise install). Cuts ~10-15s
 		// off cold setup builds.
 		"setup": {
-			dockerfile: from: ref: "workspaceroot:setup"
+			dockerfile: from: ref: "workspaceroot:setup-js"
 			// Filter by package name to web's transitive deps.
 			// Path-based `--filter ./guis/web...` doesn't resolve from
 			// /monorepo/guis/web (relative to cwd, not workspace root).

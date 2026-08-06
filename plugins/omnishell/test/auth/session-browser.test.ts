@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach } from "bun:test"
+import { describe, test, expect, beforeEach } from "@test/harness"
 import { createBrowserSessionManager } from "../../src/auth/session-browser"
 
 class MockStorage {

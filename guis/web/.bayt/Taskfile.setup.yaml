@@ -7,7 +7,7 @@ tasks:
     - pnpm
   builtin:
     deps:
-    - ::bayt:cross_workspaceroot_setup
+    - ::bayt:cross_workspaceroot_setup-js
     env:
       MISE_ALWAYS_KEEP_DOWNLOAD: '1'
       SHARP_IGNORE_GLOBAL_LIBVIPS: '1'

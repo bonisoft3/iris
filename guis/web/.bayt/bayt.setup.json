@@ -3,8 +3,8 @@
   "dockerfile": {
     "preamble": [],
     "from": {
-      "ref": "workspaceroot:setup",
-      "name": "workspaceroot-setup"
+      "ref": "workspaceroot:setup-js",
+      "name": "workspaceroot-setup-js"
     },
     "add": [],
     "mounts": [],
@@ -73,6 +73,7 @@
       },
       "upClosure": [
         "guis/web/.bayt/compose.setup.yaml",
+        ".bayt/compose.setup-js.yaml",
         ".bayt/compose.setup.yaml"
       ]
     },
@@ -102,6 +103,7 @@
       },
       "upClosure": [
         "guis/web/.bayt/compose.setup.yaml",
+        ".bayt/compose.setup-js.yaml",
         ".bayt/compose.setup.yaml"
       ]
     }
@@ -118,21 +120,15 @@
   "transitiveDeps": [],
   "transitiveCrossDeps": [
     {
-      "name": "setup",
+      "name": "setup-js",
       "project": "workspaceroot",
       "dir": "",
       "outs": {
         "globs": [
-          "[m]ise.toml",
-          "[.]mise.toml",
-          "[m]ise.lock",
           "pnpm-lock.yaml",
           "pnpm-workspace.yaml",
           "package.json",
-          "gradle/libs.versions.toml",
-          "plugins/devserver/dind.sh",
-          "**/package.json",
-          ".task/bayt/setup.hash"
+          "**/package.json"
         ],
         "exclude": [
           "**/node_modules/**"
@@ -142,25 +138,20 @@
   ],
   "upClosure": [
     "guis/web/.bayt/compose.setup.yaml",
+    ".bayt/compose.setup-js.yaml",
     ".bayt/compose.setup.yaml"
   ],
   "chainedDeps": [
     {
-      "name": "setup",
+      "name": "setup-js",
       "project": "workspaceroot",
       "dir": "",
       "outs": {
         "globs": [
-          "[m]ise.toml",
-          "[.]mise.toml",
-          "[m]ise.lock",
           "pnpm-lock.yaml",
           "pnpm-workspace.yaml",
           "package.json",
-          "gradle/libs.versions.toml",
-          "plugins/devserver/dind.sh",
-          "**/package.json",
-          ".task/bayt/setup.hash"
+          "**/package.json"
         ],
         "exclude": [
           "**/node_modules/**"

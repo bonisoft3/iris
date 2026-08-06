@@ -100,6 +100,20 @@ WORKFLOWS = [
                 )],
                 noop_behavior = "IGNORE_NOOP",
             ),
+            # cue.mod staging + import-identity rewrite, as in the bayt
+            # stanza below (loop.cue imports its own :say package).
+            core.transform(
+                [core.move(".mirror/cue.mod", "cue.mod")],
+                noop_behavior = "IGNORE_NOOP",
+            ),
+            core.transform(
+                [core.replace(
+                    before = "bonisoft.org/plugins/sayt",
+                    after = "github.com/bonisoft3/sayt",
+                    paths = glob(["**.cue"]),
+                )],
+                noop_behavior = "IGNORE_NOOP",
+            ),
         ],
         submodules = "",
         mode = "ITERATIVE",
@@ -168,6 +182,64 @@ WORKFLOWS = [
         submodules = "",
         mode = "ITERATIVE",
         scope = "bayt",
+    ),
+    struct(
+        name = "mecha",
+        destination = "git@github.com:bonisoft3/mecha.git",
+        origin_files = [
+            "libraries/mecha/**",
+        ],
+        origin_excludes = [],
+        transformations = [
+            core.transform(
+                [core.move("libraries/mecha", "")],
+                noop_behavior = "IGNORE_NOOP",
+            ),
+            core.transform(
+                [core.move(".mirror/cue.mod", "cue.mod")],
+                noop_behavior = "IGNORE_NOOP",
+            ),
+            core.transform(
+                [core.replace(
+                    before = "bonisoft.org/libraries/mecha",
+                    after = "github.com/bonisoft3/mecha",
+                    paths = glob(["**.cue"]),
+                )],
+                noop_behavior = "IGNORE_NOOP",
+            ),
+        ],
+        submodules = "",
+        mode = "ITERATIVE",
+        scope = "mecha",
+    ),
+    struct(
+        name = "omnishell",
+        destination = "git@github.com:bonisoft3/omnishell.git",
+        origin_files = [
+            "plugins/omnishell/**",
+        ],
+        origin_excludes = [],
+        transformations = [
+            core.transform(
+                [core.move("plugins/omnishell", "")],
+                noop_behavior = "IGNORE_NOOP",
+            ),
+            core.transform(
+                [core.move(".mirror/cue.mod", "cue.mod")],
+                noop_behavior = "IGNORE_NOOP",
+            ),
+            core.transform(
+                [core.replace(
+                    before = "bonisoft.org/plugins/omnishell",
+                    after = "github.com/bonisoft3/omnishell",
+                    paths = glob(["**.cue"]),
+                )],
+                noop_behavior = "IGNORE_NOOP",
+            ),
+        ],
+        submodules = "",
+        mode = "ITERATIVE",
+        scope = "omnishell",
     ),
     struct(
         name = "lazybox",

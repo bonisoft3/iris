@@ -20,7 +20,10 @@
   },
   "dependencies": {
     "@mecha/collections": "workspace:*",
-    "@electric-sql/client": "^1.0.0"
+    "@electric-sql/client": "^1.5.24",
+    "@tanstack/db": "^0.6.17",
+    "@tanstack/electric-db-collection": "^0.3.15",
+    "@tanstack/offline-transactions": "^1.0.42"
   },
   "devDependencies": {
     "typescript": "^5.8.0",

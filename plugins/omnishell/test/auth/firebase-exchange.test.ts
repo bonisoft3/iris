@@ -1,4 +1,4 @@
-import { describe, test, expect, mock } from "bun:test"
+import { describe, test, expect, mock } from "@test/harness"
 import { exchangeFirebaseToken } from "../../src/auth/client/firebase-exchange"
 
 describe("exchangeFirebaseToken", () => {

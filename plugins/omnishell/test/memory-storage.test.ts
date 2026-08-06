@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test"
+import { describe, test, expect } from "@test/harness"
 import { MemoryStorage } from "../src/auth/storage/memory"
 import type { StoredCredential } from "../src/auth/types"
 

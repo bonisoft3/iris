@@ -1,3 +1,5 @@
+/// <reference lib="dom" />
+/// <reference lib="dom.iterable" />
 import type { Page } from "@playwright/test"
 import type { VisualBug } from "../types"
 

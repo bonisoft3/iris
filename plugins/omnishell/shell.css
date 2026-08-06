@@ -1,0 +1,92 @@
+/* Shell chrome — the terminal owns everything outside the screen.
+   Screens theme it through the --shell-* custom properties. */
+body { margin: 0; font: 1rem/1.5 system-ui, sans-serif;
+  background: var(--shell-bg, #fff); color: var(--shell-fg, #1a1a1a); }
+/* Sticky, because the navigation stack restores a screen's scroll
+   position on return: without it the user comes back to exactly where
+   they left, which is often a place with the primary navigation
+   scrolled out of reach and no way to it but scrolling up. Needs its
+   own background — a sticky element is transparent, and the content
+   would run under it. */
+nav { position: sticky; top: 0; z-index: 10;
+  background: var(--shell-bg, #fff);
+  display: flex; gap: 20px; padding: 14px 24px; font-weight: 600;
+  border-bottom: 1px solid var(--shell-rule, #00000014); }
+nav a { color: inherit; text-decoration: none; }
+nav a:hover { text-decoration: underline; }
+
+/* The signed-in person, pushed to the far end of the strip: the name they
+   chose, their handle beside it, and the way out. Name-then-handle is the
+   shape a byline draws, so the chrome and the content name someone the same
+   way; the name collapses for anyone who has not set one. */
+nav .shell-me { margin-left: auto; display: flex; gap: 20px; min-width: 0; }
+nav .shell-who { display: flex; gap: 5px; min-width: 0; }
+nav .shell-who .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+nav .shell-who .name:empty { display: none; }
+nav .shell-who .name:not(:empty)::after { content: " ·"; }
+/* The handle ellipses for the same reason the name does. All four rules are
+   load-bearing: `nowrap` alone leaves a long handle unable to shrink, widening
+   the document past the viewport, and min-width:0 is what lets a flex item
+   shrink below its content width at all. */
+nav .shell-who .handle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+nav .shell-signout { font-weight: 400; opacity: .65; }
+
+/* Motion vocabulary. The terminal owns WHEN — every slot below is
+   stamped by the interpreter at a lifecycle moment no screen can
+   observe, so no screen could time it — and owns these tokens too:
+   a screen consumes them with var() and never redeclares one, which
+   check-screens enforces. */
+:root {
+  --motion-fast: 110ms;
+  --motion-base: 180ms;
+  --motion-ease: cubic-bezier(.2, 0, 0, 1);
+  --motion-shift: 6px;
+}
+/* Not a preference to weigh against the design: durations collapse and
+   the interpreter's exit path, which waits on running animations,
+   finds none and removes immediately. */
+@media (prefers-reduced-motion: reduce) {
+  :root { --motion-fast: 0s; --motion-base: 0s; --motion-shift: 0px; }
+}
+
+/* Keyframes, not transitions. Screens style their rows with
+   `transition` — a card's hover shadow, a chip's border — and the
+   cascade would hand them the whole shorthand, silently reducing
+   arrival and departure to a snap. `animation` is a property no
+   emitted screen writes, so these cannot be clobbered by one.
+   Only rows the interpreter keys carry data-id, so this reaches
+   exactly the nodes it owns. */
+@keyframes shell-item-enter {
+  from { opacity: 0; transform: translateY(var(--motion-shift)); }
+}
+@keyframes shell-item-exit {
+  to { opacity: 0; transform: scale(.98); }
+}
+[data-id][data-enter] { animation: shell-item-enter var(--motion-base) var(--motion-ease); }
+/* forwards holds the departed row invisible for the frames between the
+   animation ending and the interpreter removing the node. */
+[data-id][data-exit] { animation: shell-item-exit var(--motion-base) var(--motion-ease) forwards; }
+
+/* The platform's own affordances: the empty-state paragraph the
+   interpreter appends, and the two messages it unhides when a write is
+   refused. How they look is the screen's; that they arrive rather than
+   blink into place is the terminal's. Unhiding restarts the animation,
+   so a second refusal reads as a second event. */
+@keyframes shell-reveal {
+  from { opacity: 0; transform: translateY(calc(var(--motion-shift) * -1)); }
+}
+.empty, .invalid, .store-error {
+  animation: shell-reveal var(--motion-base) var(--motion-ease);
+}
+
+/* A screen arriving on the navigation stack. The screen it replaces is
+   hidden at once rather than cross-faded: overlapping two live screens
+   would need them stacked, and the terminal does not own their
+   layout. */
+.shell-screen { transition: opacity var(--motion-fast) var(--motion-ease); }
+.shell-screen[data-entering] { opacity: 0; }

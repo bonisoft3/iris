@@ -1,0 +1,144 @@
+{
+  "version": "5",
+  "specifiers": {
+    "jsr:@b-fuze/deno-dom@*": "0.1.56"
+  },
+  "jsr": {
+    "@b-fuze/deno-dom@0.1.56": {
+      "integrity": "8030e2dc1d8750f1682b53462ab893d9c3470f2287feecbe22f44a88c54ab148"
+    }
+  },
+  "workspace": {
+    "packageJson": {
+      "dependencies": [
+        "npm:@anthropic-ai/sdk@0.90",
+        "npm:@playwright/test@1.59.1",
+        "npm:playwright@1.59.1",
+        "npm:re2@1.23.2",
+        "npm:turbo@^1.12.4"
+      ]
+    },
+    "members": {
+      "libraries/mecha/packages/bloblang-js": {
+        "packageJson": {
+          "dependencies": [
+            "npm:typescript@^5.7.0",
+            "npm:vitest@3"
+          ]
+        }
+      },
+      "libraries/mecha/packages/caddy-js": {
+        "packageJson": {
+          "dependencies": [
+            "npm:msw@^2.7.0",
+            "npm:typescript@^5.7.0",
+            "npm:vitest@3"
+          ]
+        }
+      },
+      "libraries/mecha/packages/client": {
+        "dependencies": [
+          "npm:@electric-sql/client@1.5.24",
+          "npm:@tanstack/db@0.6.17",
+          "npm:@tanstack/electric-db-collection@0.3.15",
+          "npm:@tanstack/offline-transactions@1.0.42"
+        ],
+        "packageJson": {
+          "dependencies": [
+            "npm:@electric-sql/client@^1.5.24",
+            "npm:@tanstack/db@~0.6.17",
+            "npm:@tanstack/electric-db-collection@~0.3.15",
+            "npm:@tanstack/offline-transactions@^1.0.42",
+            "npm:typescript@^5.8.0",
+            "npm:vitest@^4.1.4"
+          ]
+        }
+      },
+      "libraries/mecha/packages/collections": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@tanstack/db@0.6",
+            "npm:typescript@^5.8.0",
+            "npm:vitest@^4.1.4"
+          ]
+        }
+      },
+      "libraries/mecha/packages/conduit-js": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@electric-sql/pglite@0.4",
+            "npm:typescript@^5.7.0",
+            "npm:vitest@3"
+          ]
+        }
+      },
+      "libraries/mecha/packages/mecha-browser": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@electric-sql/pglite@0.4",
+            "npm:@tanstack/db@0.6",
+            "npm:@types/bun@^1.2.0",
+            "npm:msw@^2.7.0",
+            "npm:typescript@^5.7.0",
+            "npm:vitest@3"
+          ]
+        }
+      },
+      "libraries/mecha/packages/pipeline": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@electric-sql/pglite@0.4",
+            "npm:@types/js-yaml@^4.0.9",
+            "npm:jq-wasm@1.1.0-jq-1.8.1",
+            "npm:js-yaml@^4.1.0",
+            "npm:typescript@^5.8.0",
+            "npm:vitest@^4.1.4"
+          ]
+        }
+      },
+      "libraries/mecha/packages/postgrest-js": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@electric-sql/pglite@0.4",
+            "npm:typescript@^5.7.0",
+            "npm:vitest@3"
+          ]
+        }
+      },
+      "libraries/mecha/packages/rclone-js": {
+        "packageJson": {
+          "dependencies": [
+            "npm:typescript@^5.7.0",
+            "npm:vitest@3"
+          ]
+        }
+      },
+      "libraries/mecha/packages/tanstackdb-pglite": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@electric-sql/pglite@0.4",
+            "npm:@tanstack/db@0.6",
+            "npm:typescript@^5.7.0",
+            "npm:vitest@3"
+          ]
+        }
+      },
+      "libraries/mecha/packages/webllm": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@huggingface/transformers@3",
+            "npm:typescript@^5.8.0"
+          ]
+        }
+      },
+      "libraries/mecha/packages/websd": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@huggingface/transformers@3",
+            "npm:typescript@^5.8.0"
+          ]
+        }
+      }
+    }
+  }
+}

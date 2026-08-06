@@ -1,3 +1,5 @@
+/// <reference lib="dom" />
+/// <reference lib="dom.iterable" />
 import type { Page } from "@playwright/test"
 import type { VisualBug } from "../types"
 
@@ -5,7 +7,6 @@ export async function checkConstrainedImages(page: Page): Promise<VisualBug[]> {
   return page.evaluate(() => {
     const bugs: Array<{ rule: string; description: string; severity: "critical" | "major" | "minor"; element?: string }> = []
 
-    // Check explicit constrained image containers
     const containers = document.querySelectorAll("[data-constrained-image]")
     for (const container of containers) {
       const el = container as HTMLElement
@@ -28,18 +29,19 @@ export async function checkConstrainedImages(page: Page): Promise<VisualBug[]> {
       }
     }
 
-    // Check unconstrained object-cover images
     const images = document.querySelectorAll("img")
     for (const img of images) {
       const imgStyle = getComputedStyle(img)
       if (imgStyle.objectFit !== "cover") continue
-      if (imgStyle.display === "none" || imgStyle.visibility === "hidden") continue
+      if (!img.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true, contentVisibilityAuto: true })) continue
       if (img.offsetWidth === 0 || img.offsetHeight === 0) continue
 
-      let container = img.parentElement
+      // The walk starts at the image, not its parent: an aspect-ratio set on
+      // the <img> itself constrains the box just as well as one on a wrapper.
+      let container: Element | null = img
       let foundAspect = false
       let depth = 0
-      while (container && depth < 3) {
+      while (container && depth < 4) {
         const containerStyle = getComputedStyle(container)
         if ((containerStyle.aspectRatio && containerStyle.aspectRatio !== "auto") || container.hasAttribute("data-constrained-image")) {
           foundAspect = true
@@ -48,6 +50,21 @@ export async function checkConstrainedImages(page: Page): Promise<VisualBug[]> {
         container = container.parentElement
         depth++
       }
+
+      // object-fit:cover crops unpredictably only when the box's own ratio can
+      // move — a percentage width against a variable container changes the
+      // ratio and with it the crop. Both dimensions being absolute lengths
+      // pins the box, so there is nothing to warn about. Computed values
+      // absolutize em/rem but leave percentages as percentages, which is
+      // exactly the distinction that matters, so read the computed value
+      // rather than the resolved one getComputedStyle would report in px.
+      if (!foundAspect) {
+        const box = (img as unknown as { computedStyleMap(): StylePropertyMapReadOnly }).computedStyleMap()
+        const w = box.get("width") as CSSUnitValue | undefined
+        const h = box.get("height") as CSSUnitValue | undefined
+        if (w?.unit === "px" && h?.unit === "px") foundAspect = true
+      }
+
       if (!foundAspect) {
         const alt = img.getAttribute("alt") || ""
         const src = img.getAttribute("src") || ""

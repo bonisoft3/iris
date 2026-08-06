@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach } from "bun:test"
+import { describe, test, expect, beforeEach } from "@test/harness"
 import { LocalStorageAdapter } from "../../src/auth/storage/local-storage"
 import type { StoredCredential } from "../../src/auth/types"
 

@@ -1,16 +1,8 @@
-/**
- * Crawl-based vision review with route coverage for TanStack Router apps.
- *
- * Strategy:
- * 1. Read route files from routesDir to build a manifest
- * 2. Login as guest (clicks "Continue as Guest" if visible)
- * 3. Crawl internal links via BFS starting from /
- * 4. Match visited URLs against the route manifest
- * 5. Run AI vision review on each discovered route
- * 6. Report a coverage tree
- */
+/// <reference lib="dom" />
+/// <reference lib="dom.iterable" />
+// Crawl-based vision review with route coverage for TanStack Router apps.
 import type { Page } from "@playwright/test"
-import { expect } from "@playwright/test"
+import { assertAtLeast, assertIs } from "./assert"
 import { readdirSync } from "node:fs"
 import { assertVisionReview } from "./vision-review"
 
@@ -23,13 +15,11 @@ export interface CrawlAndReviewOptions {
 
 const SKIP_FILES = new Set(["__root"])
 
-/** Map route filename to URL pattern */
 function fileToPattern(file: string): string {
   if (file === "index") return "/"
   return "/" + file.replace(/\./g, "/").replace(/\$(\w+)/g, ":$1")
 }
 
-/** Check if a URL matches a route pattern */
 function matchPattern(url: string, pattern: string): boolean {
   const urlParts = url.split("/").filter(Boolean)
   const patternParts = pattern.split("/").filter(Boolean)
@@ -37,7 +27,6 @@ function matchPattern(url: string, pattern: string): boolean {
   return patternParts.every((p, i) => p.startsWith(":") || p === urlParts[i])
 }
 
-/** Read route manifest from filesystem */
 function getRouteManifest(routesDir: string): Array<{ file: string; pattern: string }> {
   return readdirSync(routesDir)
     .filter((f) => f.endsWith(".tsx"))
@@ -46,7 +35,6 @@ function getRouteManifest(routesDir: string): Array<{ file: string; pattern: str
     .map((file) => ({ file, pattern: fileToPattern(file) }))
 }
 
-/** Extract all internal links from a page, filtering to app routes only */
 async function extractInternalLinks(
   page: Page,
   manifest: Array<{ pattern: string }>,
@@ -64,13 +52,6 @@ async function extractInternalLinks(
   return hrefs.filter((href) => manifest.some((r) => matchPattern(href, r.pattern)))
 }
 
-/**
- * Crawl an omnishell/TanStack Router app and run AI vision review on each route.
- *
- * - Automatically logs in as guest if the "Continue as Guest" button is visible.
- * - Skips with a console.warn if ANTHROPIC_API_KEY is not set.
- * - Sets the Playwright test timeout to 180s internally.
- */
 export async function crawlAndReview(page: Page, options: CrawlAndReviewOptions): Promise<void> {
   const {
     routesDir,
@@ -89,7 +70,6 @@ export async function crawlAndReview(page: Page, options: CrawlAndReviewOptions)
   const queue: string[] = ["/"]
   const routeHits = new Map<string, string>() // pattern → first concrete URL that matched
 
-  // Step 1: Login as guest
   await page.goto(`${baseUrl}/login`, { waitUntil: "load" })
   await page.waitForTimeout(1000)
   const guestBtn = page.getByRole("button", { name: /continue as guest/i })
@@ -98,7 +78,6 @@ export async function crawlAndReview(page: Page, options: CrawlAndReviewOptions)
     await page.waitForTimeout(2000)
   }
 
-  // Step 2: Crawl — BFS through internal links
   while (queue.length > 0) {
     const url = queue.shift()!
     if (visited.has(url)) continue
@@ -122,7 +101,6 @@ export async function crawlAndReview(page: Page, options: CrawlAndReviewOptions)
     }
   }
 
-  // Step 3: Run vision review on each discovered route
   const results: Array<{
     pattern: string
     url: string
@@ -169,7 +147,6 @@ export async function crawlAndReview(page: Page, options: CrawlAndReviewOptions)
     }
   }
 
-  // Step 4: Coverage report
   const total = manifest.length
   const hit = results.filter((r) => r.status !== "missed").length
   const passed = results.filter((r) => r.status === "pass").length
@@ -193,8 +170,6 @@ export async function crawlAndReview(page: Page, options: CrawlAndReviewOptions)
   console.log(`║ Crawled:  ${visited.size} unique URLs visited                      ║`)
   console.log("╚══════════════════════════════════════════════════════╝\n")
 
-  expect(failed, `${failed} route(s) failed vision review`).toBe(0)
-  expect(pct, `Route coverage ${pct}% is below ${minCoverage}%`).toBeGreaterThanOrEqual(
-    minCoverage,
-  )
+  assertIs(failed, 0, `${failed} route(s) failed vision review`)
+  assertAtLeast(pct, minCoverage, `Route coverage ${pct}% is below ${minCoverage}%`)
 }

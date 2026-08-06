@@ -33,14 +33,18 @@ _wsroot: sayt.pnpmWorkspace & {
 	bake: cache: Bake.monorepoCache
 
 	// Workspace-root setup is consumed by every project's setup via
-	// `deps: ["workspaceroot:setup"]`. Public so cross-project
-	// consumers may reference it. workspaceroot:setup's srcs/outs
-	// already carry `plugins/devserver/dind.sh` (per sayt.pnpmWorkspace),
-	// so dind.sh flows to consumers via the setup FROM chain — no
-	// separate scaffolding target needed. Bake-graph scaffolding
-	// (.bayt/**, Taskfile.yml, compose.yaml) flows via the auto-emitted
-	// `:bayt` synthetic, transitive across cross-project deps.
-	targets: "setup": visibility: "public"
+	// `deps: ["workspaceroot:setup"]` (toolchain + cross-stack files);
+	// pnpm-workspace consumers take `workspaceroot:setup-js` instead
+	// (pnpm state + every member's package.json) so JVM warm floors
+	// survive JS dep churn. Public so cross-project consumers may
+	// reference them. workspaceroot:setup's srcs/outs already carry
+	// `plugins/devserver/dind.sh` (per sayt.pnpmWorkspace), so dind.sh
+	// flows to consumers via the setup FROM chain — no separate
+	// scaffolding target needed. Bake-graph scaffolding (.bayt/**,
+	// Taskfile.yml, compose.yaml) flows via the auto-emitted `:bayt`
+	// synthetic, transitive across cross-project deps.
+	targets: "setup": visibility:    "public"
+	targets: "setup-js": visibility: "public"
 }
 
 project: _wsroot

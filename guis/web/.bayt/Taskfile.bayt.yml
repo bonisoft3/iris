@@ -37,11 +37,11 @@ includes:
     dir: ../../../
     optional: true
 tasks:
-  cross_workspaceroot_setup:
+  cross_workspaceroot_setup-js:
     internal: true
     run: once
     status:
     - test ! -e ../../.git
     cmds:
-    - '{{.TASK_EXE}} -t ../../.bayt/Taskfile.yml bayt:setup'
+    - '{{.TASK_EXE}} -t ../../.bayt/Taskfile.yml bayt:setup-js'
 version: '3'

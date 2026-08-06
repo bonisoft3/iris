@@ -6,11 +6,11 @@
     "args": {},
     "cache": {
       "from": [
-        "type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-build",
-        "type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-build"
+        "type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-build",
+        "type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-build"
       ],
       "to": [
-        "type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v1-${CACHE_SCOPE:-unscoped}-build,mode=min,image-manifest=true,oci-mediatypes=true"
+        "type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-build,mode=min,image-manifest=true,oci-mediatypes=true"
       ]
     }
   },
@@ -370,12 +370,8 @@
               "[m]ise.toml",
               "[.]mise.toml",
               "[m]ise.lock",
-              "pnpm-lock.yaml",
-              "pnpm-workspace.yaml",
-              "package.json",
               "gradle/libs.versions.toml",
-              "plugins/devserver/dind.sh",
-              "**/package.json"
+              "plugins/devserver/dind.sh"
             ],
             "exclude": []
           }
@@ -609,17 +605,11 @@
           "[m]ise.toml",
           "[.]mise.toml",
           "[m]ise.lock",
-          "pnpm-lock.yaml",
-          "pnpm-workspace.yaml",
-          "package.json",
           "gradle/libs.versions.toml",
           "plugins/devserver/dind.sh",
-          "**/package.json",
           ".task/bayt/setup.hash"
         ],
-        "exclude": [
-          "**/node_modules/**"
-        ]
+        "exclude": []
       }
     }
   ],

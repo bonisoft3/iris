@@ -59,7 +59,7 @@ export class WebAuthnAdapter implements BiometricAdapter {
       rpName: this.config.rpName,
       rpID: this.config.rpID,
       userName: user.name,
-      userID: new TextEncoder().encode(user.id),
+      userID: new TextEncoder().encode(user.id) as Uint8Array<ArrayBuffer>,
       attestationType: "none",
       authenticatorSelection: {
         residentKey: "preferred",

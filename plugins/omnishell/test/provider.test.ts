@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test"
+import { describe, test, expect } from "@test/harness"
 import { DefaultAuthProvider } from "../src/auth/provider"
 import { MemoryStorage } from "../src/auth/storage/memory"
 import { createSessionManager } from "../src/auth/session"
@@ -70,7 +70,6 @@ describe("DefaultAuthProvider", () => {
 
   test("revokeSession is a no-op for stateless JWT", async () => {
     const { provider } = makeProvider()
-    // Should not throw
     await provider.revokeSession("any-token")
   })
 })

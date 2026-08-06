@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test"
+import { describe, test, expect } from "@test/harness"
 import { createLayout } from "../../src/layout/create-layout"
 import type { NavItem } from "../../src/layout/types"
 

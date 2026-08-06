@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test"
+import { describe, test, expect } from "@test/harness"
 import * as omnishell from "../../src/index"
 
 describe("Firebase adapter exports", () => {

@@ -3,7 +3,7 @@ services:
   guis_web-setup:
     build:
       additional_contexts:
-        workspaceroot-setup: service:workspaceroot-setup
+        workspaceroot-setup-js: service:workspaceroot-setup-js
       context: ..
       dockerfile: .bayt/Dockerfile.setup
       target: setup
@@ -14,7 +14,7 @@ services:
   guis_web-setup_bayt:
     build:
       additional_contexts:
-        workspaceroot-setup_bayt: service:workspaceroot-setup_bayt
+        workspaceroot-setup-js_bayt: service:workspaceroot-setup-js_bayt
       context: ..
       dockerfile: .bayt/Dockerfile.setup
       target: setup_bayt

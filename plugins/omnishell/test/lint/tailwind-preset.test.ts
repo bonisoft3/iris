@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test"
+import { describe, test, expect } from "@test/harness"
 import { omnishellPreset } from "../../src/lint/eslint/tailwind-preset"
 
 describe("omnishellPreset", () => {

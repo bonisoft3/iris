@@ -105,14 +105,6 @@ AI component review + regression gate.
 import { reviewComponentScreenshot, detectRegression } from "@omnishell/core/lint/storybook/ai-review"
 ```
 
-## Scaffold
-
-The `scaffold/` directory is a working TanStack Start app demonstrating all patterns:
-
-```bash
-cd scaffold && bun run dev  # starts app (port 3000) + Storybook (port 6006)
-```
-
 ## TODO: Distribution
 
 Omnishell is consumed as TypeScript source, which is ideal for HMR (edit a lint rule, see the change immediately). But ESLint under Node ESM can't resolve extensionless `.ts` inter-module imports. Current workaround: `bun build` a bundle on demand, but this breaks HMR.
@@ -133,7 +125,7 @@ The right fix: make omnishell a **workspace package** so bun/pnpm resolve import
 3. Publish to npm as `@omnishell/core`
 4. External consumers install from npm — same import paths, built output
 
-**Also affected:** `createLayout` and `createAuth` — the scaffold imports these via relative paths (`../../../src/...`) which break in worktrees. With workspace linking, these become `@omnishell/core/layout` and `@omnishell/core/auth`.
+**Also affected:** `createLayout` and `createAuth` — any consumer reaching them via relative paths (`../../../src/...`) breaks in worktrees. With workspace linking, these become `@omnishell/core/layout` and `@omnishell/core/auth`.
 
 ## Development
 

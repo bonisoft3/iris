@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test"
+import { describe, test, expect } from "@test/harness"
 import { parseReviewResponse, parseRegressionResponse } from "../../src/lint/storybook/ai-review"
 
 describe("AI component review parsing", () => {

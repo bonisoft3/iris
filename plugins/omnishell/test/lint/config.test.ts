@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test"
+import { describe, test, expect } from "@test/harness"
 import { omnishellLint } from "../../src/lint/eslint/index"
 
 describe("omnishellLint config", () => {

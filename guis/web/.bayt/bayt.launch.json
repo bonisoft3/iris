@@ -135,6 +135,7 @@
         "guis/web/.bayt/compose.launch.yaml",
         "guis/web/.bayt/compose.build.yaml",
         "guis/web/.bayt/compose.setup.yaml",
+        ".bayt/compose.setup-js.yaml",
         ".bayt/compose.setup.yaml"
       ]
     },
@@ -166,6 +167,7 @@
         "guis/web/.bayt/compose.launch.yaml",
         "guis/web/.bayt/compose.build.yaml",
         "guis/web/.bayt/compose.setup.yaml",
+        ".bayt/compose.setup-js.yaml",
         ".bayt/compose.setup.yaml"
       ]
     },
@@ -193,20 +195,35 @@
       ],
       "transitiveCrossDeps": [
         {
-          "name": "setup_srcs",
+          "name": "setup-js_srcs",
           "project": "workspaceroot",
+          "dir": "",
+          "outs": {
+            "globs": [
+              "pnpm-lock.yaml",
+              "pnpm-workspace.yaml",
+              "package.json",
+              "**/package.json",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock",
+              "gradle/libs.versions.toml",
+              "plugins/devserver/dind.sh"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "workspaceroot",
+          "name": "setup_srcs",
           "dir": "",
           "outs": {
             "globs": [
               "[m]ise.toml",
               "[.]mise.toml",
               "[m]ise.lock",
-              "pnpm-lock.yaml",
-              "pnpm-workspace.yaml",
-              "package.json",
               "gradle/libs.versions.toml",
-              "plugins/devserver/dind.sh",
-              "**/package.json"
+              "plugins/devserver/dind.sh"
             ],
             "exclude": []
           }
@@ -245,6 +262,7 @@
         "guis/web/.bayt/compose.launch.yaml",
         "guis/web/.bayt/compose.build.yaml",
         "guis/web/.bayt/compose.setup.yaml",
+        ".bayt/compose.setup-js.yaml",
         ".bayt/compose.setup.yaml"
       ]
     }
@@ -263,21 +281,15 @@
   ],
   "transitiveCrossDeps": [
     {
-      "name": "setup",
+      "name": "setup-js",
       "project": "workspaceroot",
       "dir": "",
       "outs": {
         "globs": [
-          "[m]ise.toml",
-          "[.]mise.toml",
-          "[m]ise.lock",
           "pnpm-lock.yaml",
           "pnpm-workspace.yaml",
           "package.json",
-          "gradle/libs.versions.toml",
-          "plugins/devserver/dind.sh",
-          "**/package.json",
-          ".task/bayt/setup.hash"
+          "**/package.json"
         ],
         "exclude": [
           "**/node_modules/**"
@@ -289,6 +301,7 @@
     "guis/web/.bayt/compose.launch.yaml",
     "guis/web/.bayt/compose.build.yaml",
     "guis/web/.bayt/compose.setup.yaml",
+    ".bayt/compose.setup-js.yaml",
     ".bayt/compose.setup.yaml"
   ],
   "chainedDeps": [

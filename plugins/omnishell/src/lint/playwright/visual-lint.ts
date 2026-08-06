@@ -1,5 +1,7 @@
+/// <reference lib="dom" />
+/// <reference lib="dom.iterable" />
 import type { Page, Locator } from "@playwright/test"
-import { expect } from "@playwright/test"
+import { assertAtMost, assertIs, assertTruthy } from "./assert"
 import type { VisualLintResult } from "./types"
 import { checkInteractiveOverlap } from "./checks/interactive-overlap"
 import { checkHorizontalOverflow } from "./checks/horizontal-overflow"
@@ -20,12 +22,6 @@ export {
   type ConsoleCapture,
 } from "./checks/console-messages"
 
-/**
- * Run the standard DOM-based visual lint battery.
- * Pass a `consoleCapture` (from `captureConsole(page)` before navigation) to
- * include console errors/warnings in the result. If omitted, console checks
- * are skipped.
- */
 export async function visualLint(
   page: Page,
   consoleCapture?: ConsoleCapture,
@@ -38,8 +34,8 @@ export async function visualLint(
     checkTouchTargets(page),
     checkFocusOrder(page),
     checkThemeStability(page),
-    // CLS is excluded from the default battery — it requires a 3-second wait
-    // Use checkCLS(page) separately in tests that care about layout shift
+    // CLS is not in this battery — see check-visual.ts. A test that wants it
+    // calls checkCLS(page) directly.
   ])
   const bugs = results.flat()
   if (consoleCapture) {
@@ -54,18 +50,14 @@ export async function assertVisualLint(page: Page) {
     const summary = result.bugs
       .map((b) => `[${b.severity}] ${b.rule}: ${b.description}`)
       .join("\n")
-    expect(result.passed, `Visual lint failed:\n${summary}`).toBe(true)
+    assertIs(result.passed, true, `Visual lint failed:\n${summary}`)
   }
 }
 
-/**
- * Assert that a specific element is not obscured at its center.
- * More targeted than the full visual lint — use for specific known-fragile elements.
- */
 export async function assertNotObscured(locator: Locator, label?: string) {
   const page = locator.page()
   const box = await locator.boundingBox()
-  expect(box, `${label || "element"} should be visible`).toBeTruthy()
+  assertTruthy(box, `${label || "element"} should be visible`)
 
   const center = {
     x: box!.x + box!.width / 2,
@@ -80,16 +72,9 @@ export async function assertNotObscured(locator: Locator, label?: string) {
     { x: center.x, y: center.y },
   )
 
-  expect(
-    isClickable,
-    `${label || "element"} is obscured at center (${Math.round(center.x)}, ${Math.round(center.y)})`,
-  ).toBe(true)
+  assertIs(isClickable, true, `${label || "element"} is obscured at center (${Math.round(center.x)}, ${Math.round(center.y)})`)
 }
 
-/**
- * Assert that an element's dimensions remain stable during a state transition.
- * Use to catch image cropping bugs during classification, loading states, etc.
- */
 export async function assertDimensionStability(
   locator: Locator,
   trigger: () => Promise<void>,
@@ -98,23 +83,17 @@ export async function assertDimensionStability(
   const { tolerance = 2, waitMs = 500 } = opts
 
   const before = await locator.boundingBox()
-  expect(before, "element should be visible before trigger").toBeTruthy()
+  assertTruthy(before, "element should be visible before trigger")
 
   await trigger()
   await locator.page().waitForTimeout(waitMs)
 
   const after = await locator.boundingBox()
-  expect(after, "element should be visible after trigger").toBeTruthy()
+  assertTruthy(after, "element should be visible after trigger")
 
-  expect(
-    Math.abs(after!.width - before!.width),
-    `Width changed from ${before!.width} to ${after!.width}`,
-  ).toBeLessThanOrEqual(tolerance)
+  assertAtMost(Math.abs(after!.width - before!.width), tolerance, `Width changed from ${before!.width} to ${after!.width}`)
 
-  expect(
-    Math.abs(after!.height - before!.height),
-    `Height changed from ${before!.height} to ${after!.height}`,
-  ).toBeLessThanOrEqual(tolerance)
+  assertAtMost(Math.abs(after!.height - before!.height), tolerance, `Height changed from ${before!.height} to ${after!.height}`)
 }
 
 export { assertVisionReview, assertFeatureParity } from "./vision-review"

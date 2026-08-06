@@ -407,12 +407,8 @@
               "[m]ise.toml",
               "[.]mise.toml",
               "[m]ise.lock",
-              "pnpm-lock.yaml",
-              "pnpm-workspace.yaml",
-              "package.json",
               "gradle/libs.versions.toml",
-              "plugins/devserver/dind.sh",
-              "**/package.json"
+              "plugins/devserver/dind.sh"
             ],
             "exclude": []
           }
@@ -700,17 +696,11 @@
           "[m]ise.toml",
           "[.]mise.toml",
           "[m]ise.lock",
-          "pnpm-lock.yaml",
-          "pnpm-workspace.yaml",
-          "package.json",
           "gradle/libs.versions.toml",
           "plugins/devserver/dind.sh",
-          "**/package.json",
           ".task/bayt/setup.hash"
         ],
-        "exclude": [
-          "**/node_modules/**"
-        ]
+        "exclude": []
       }
     }
   ],

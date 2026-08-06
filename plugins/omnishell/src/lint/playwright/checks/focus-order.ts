@@ -1,3 +1,5 @@
+/// <reference lib="dom" />
+/// <reference lib="dom.iterable" />
 import type { Page } from "@playwright/test"
 import type { VisualBug } from "../types"
 
@@ -34,11 +36,11 @@ export async function checkFocusOrder(page: Page): Promise<VisualBug[]> {
     for (const el of focusable) {
       const htmlEl = el as HTMLElement
       const style = getComputedStyle(htmlEl)
-      if (style.display === "none" || style.visibility === "hidden") continue
+      // An unseen control is not a stop in the tab sequence being judged.
+      if (!htmlEl.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true, contentVisibilityAuto: true })) continue
       if (htmlEl.offsetWidth === 0 || htmlEl.offsetHeight === 0) continue
 
       const rect = htmlEl.getBoundingClientRect()
-      // Skip off-screen elements
       if (rect.bottom < 0 || rect.top > window.innerHeight) continue
 
       const id =
@@ -64,8 +66,6 @@ export async function checkFocusOrder(page: Page): Promise<VisualBug[]> {
     else sequences.set(p.group, [p])
   }
 
-  // Check that elements are roughly in visual order
-  // Allow some tolerance for elements on the same "row" (within 20px vertically)
   const ROW_TOLERANCE = 20
   for (const sequence of sequences.values()) {
     for (let i = 1; i < sequence.length; i++) {
@@ -74,7 +74,6 @@ export async function checkFocusOrder(page: Page): Promise<VisualBug[]> {
 
       const sameRow = Math.abs(curr.top - prev.top) < ROW_TOLERANCE
       if (sameRow) {
-        // Same row: current should be to the right of previous
         if (curr.left < prev.left - ROW_TOLERANCE) {
           bugs.push({
             rule: "focus-order",
@@ -84,7 +83,6 @@ export async function checkFocusOrder(page: Page): Promise<VisualBug[]> {
           })
         }
       } else {
-        // Different row: current should be below previous
         if (curr.top < prev.top - ROW_TOLERANCE) {
           bugs.push({
             rule: "focus-order",

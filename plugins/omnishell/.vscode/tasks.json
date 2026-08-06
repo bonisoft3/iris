@@ -34,13 +34,87 @@
       }
     },
     {
-      "command": "mise x -- bun test",
-      "group": {
-        "kind": "test",
-        "isDefault": true
-      },
+      "label": "cache-smokes",
+      "type": "shell",
+      "command": "mise",
+      "args": [
+        "exec",
+        "--",
+        "deno",
+        "cache",
+        "--config",
+        "interpreter/deno.json",
+        "--lock",
+        "interpreter/deno.lock",
+        "--frozen",
+        "--allow-import=cdn.jsdelivr.net:443",
+        "interpreter/handler-smoke.js",
+        "interpreter/hatch-smoke.js",
+        "interpreter/incremental-smoke.js",
+        "interpreter/login-smoke.js",
+        "interpreter/nav-smoke.js",
+        "interpreter/pending-smoke.js",
+        "interpreter/renderer-smoke.js",
+        "interpreter/signout-smoke.js",
+        "interpreter/subscribe-smoke.js",
+        "interpreter/widget-smoke.js"
+      ],
+      "problemMatcher": [],
+      "group": { "kind": "test" }
+    },
+    {
+      "label": "test-smoke",
+      "type": "shell",
+      "command": "mise",
+      "args": [
+        "exec",
+        "--",
+        "deno",
+        "test",
+        "--config",
+        "interpreter/deno.json",
+        "--lock",
+        "interpreter/deno.lock",
+        "--frozen",
+        "--cached-only",
+        "--allow-env",
+        "--allow-read",
+        "interpreter/handler-smoke.js",
+        "interpreter/hatch-smoke.js",
+        "interpreter/incremental-smoke.js",
+        "interpreter/login-smoke.js",
+        "interpreter/nav-smoke.js",
+        "interpreter/pending-smoke.js",
+        "interpreter/renderer-smoke.js",
+        "interpreter/signout-smoke.js",
+        "interpreter/subscribe-smoke.js",
+        "interpreter/widget-smoke.js"
+      ],
+      "problemMatcher": [],
+      "group": { "kind": "test" }
+    },
+    {
       "label": "test",
       "type": "shell",
+      "command": "mise",
+      "args": [
+        "exec",
+        "--",
+        "deno",
+        "test",
+        "--config",
+        "test/deno.json",
+        "--no-check",
+        "--allow-env",
+        "--allow-read",
+        "--allow-import",
+        "--allow-net",
+        "--allow-sys",
+        "test/"
+      ],
+      "group": { "kind": "test", "isDefault": true },
+      "problemMatcher": [],
+      "dependsOn": ["cache-smokes", "test-smoke"],
       "options": {
         "cwd": "${workspaceFolder}/plugins/omnishell"
       }
@@ -52,18 +126,25 @@
       "args": [
         "exec",
         "--",
-        "bun",
-        "x",
-        "playwright",
-        "test"
+        "deno",
+        "test",
+        "--config",
+        "playwright-tests/deno.json",
+        "--no-check",
+        "--allow-env",
+        "--allow-read",
+        "--allow-write",
+        "--allow-net",
+        "--allow-run",
+        "--allow-sys",
+        "--allow-import",
+        "playwright-tests/visual-lint.pw.ts"
       ],
       "problemMatcher": [],
       "group": {
         "kind": "test"
       },
-      "dependsOn": [
-        "install"
-      ]
+      "dependsOn": []
     }
   ]
 }

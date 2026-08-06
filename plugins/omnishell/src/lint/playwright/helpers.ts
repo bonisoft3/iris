@@ -1,10 +1,12 @@
+/// <reference lib="dom" />
+/// <reference lib="dom.iterable" />
 import type { Locator } from "@playwright/test"
-import { expect } from "@playwright/test"
+import { assertAtMost, assertIs, assertTruthy } from "./assert"
 
 export async function assertNotObscured(locator: Locator, label?: string) {
   const page = locator.page()
   const box = await locator.boundingBox()
-  expect(box, `${label || "element"} should be visible`).toBeTruthy()
+  assertTruthy(box, `${label || "element"} should be visible`)
   const center = { x: box!.x + box!.width / 2, y: box!.y + box!.height / 2 }
   const isClickable = await locator.evaluate(
     (el, { x, y }) => {
@@ -13,7 +15,7 @@ export async function assertNotObscured(locator: Locator, label?: string) {
     },
     { x: center.x, y: center.y },
   )
-  expect(isClickable, `${label || "element"} is obscured at center (${Math.round(center.x)}, ${Math.round(center.y)})`).toBe(true)
+  assertIs(isClickable, true, `${label || "element"} is obscured at center (${Math.round(center.x)}, ${Math.round(center.y)})`)
 }
 
 export async function assertDimensionStability(
@@ -23,11 +25,11 @@ export async function assertDimensionStability(
 ) {
   const { tolerance = 2, waitMs = 500 } = opts
   const before = await locator.boundingBox()
-  expect(before, "element should be visible before trigger").toBeTruthy()
+  assertTruthy(before, "element should be visible before trigger")
   await trigger()
   await locator.page().waitForTimeout(waitMs)
   const after = await locator.boundingBox()
-  expect(after, "element should be visible after trigger").toBeTruthy()
-  expect(Math.abs(after!.width - before!.width), `Width changed from ${before!.width} to ${after!.width}`).toBeLessThanOrEqual(tolerance)
-  expect(Math.abs(after!.height - before!.height), `Height changed from ${before!.height} to ${after!.height}`).toBeLessThanOrEqual(tolerance)
+  assertTruthy(after, "element should be visible after trigger")
+  assertAtMost(Math.abs(after!.width - before!.width), tolerance, `Width changed from ${before!.width} to ${after!.width}`)
+  assertAtMost(Math.abs(after!.height - before!.height), tolerance, `Height changed from ${before!.height} to ${after!.height}`)
 }
