@@ -17,7 +17,7 @@
   "dockerfile": {
     "preamble": [],
     "from": {
-      "name": "docker:29.2.0-cli@sha256:ae2609c051339b48c157d97edc4f1171026251607b29a2b0f25f990898586334"
+      "name": "docker:29.7.1-cli@sha256:27a51d5ab1cd38d9eeaba7b415b8c07bc10c31e1cf1ec8d78f6413fcfab3f44f"
     },
     "copy": [
       {
@@ -47,7 +47,7 @@
       },
       {
         "from": {
-          "name": "ghcr.io/depot/cli:2.101.65@sha256:08d7a79775468e59711cc8269b6830bb0c8bd0091a36c049cdc1534b44e4c3e5"
+          "name": "ghcr.io/depot/cli:2.101.78@sha256:71fc7e6cf9f10ee1699bdba40e9461387f3a8406bc7bb9a9b1857c38587a7254"
         },
         "srcs": [
           "/usr/bin/depot"

@@ -2,7 +2,7 @@
 
 tool = "github:docker/buildx"
 version = "0.36.1"
-bin = "buildx"
+bin = "buildx-v0.36.1.darwin"
 
 # Platform configurations
 [platforms.linux-arm64]
@@ -32,5 +32,5 @@ checksum = "sha256:52a39ee4012d18f83373656712102ebda55656121dcdabbbb1ccfbd41b7de
 [platforms.windows-x64]
 url = "https://github.com/docker/buildx/releases/download/v0.36.1/buildx-v0.36.1.windows-amd64.exe"
 checksum = "sha256:cd7d06a00d924b5800d2654b507afe100378a4685fcec6585eeadc599a527330"
-bin = "buildx.exe"
+bin = "buildx-v0.36.1.darwin.exe"
 

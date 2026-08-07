@@ -1,31 +1,37 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
 tool = "http:docker-cli"
-version = "29.3.0"
+version = "29.7.2"
 bin = "docker-cli"
 strip_components = 1
 
 # Platform configurations
 [platforms.darwin-amd64]
-url = "https://download.docker.com/mac/static/stable/x86_64/docker-29.3.0.tgz"
+url = "https://download.docker.com/mac/static/stable/x86_64/docker-29.7.2.tgz"
+checksum = "sha256:fb1f1aa7ac7af4364165b9eadfda92e96c8ced508fca74f53079719891367438"
 
 [platforms.darwin-arm64]
-url = "https://download.docker.com/mac/static/stable/aarch64/docker-29.3.0.tgz"
+url = "https://download.docker.com/mac/static/stable/aarch64/docker-29.7.2.tgz"
+checksum = "sha256:b8683ed19d1f06048a496f9b8429e2c71d0b088d475b7487c054ea3666c02a3c"
 
 [platforms.linux-amd64]
-url = "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz"
+url = "https://download.docker.com/linux/static/stable/x86_64/docker-29.7.2.tgz"
+checksum = "sha256:803d433f226db4776e1768fd319fc6c6e4935a456acf84fcc0080818b854bc8f"
 
 [platforms.linux-arm64]
-url = "https://download.docker.com/linux/static/stable/aarch64/docker-29.3.0.tgz"
+url = "https://download.docker.com/linux/static/stable/aarch64/docker-29.7.2.tgz"
+checksum = "sha256:43d143448adf2c2787704e7d7704fd6d62d367a54c5edaef0a3f75509cb0938d"
 
 [platforms.linux-x64]
-url = "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz"
+url = "https://download.docker.com/linux/static/stable/x86_64/docker-29.7.2.tgz"
+checksum = "sha256:803d433f226db4776e1768fd319fc6c6e4935a456acf84fcc0080818b854bc8f"
 
 [platforms.macos-arm64]
-url = "https://download.docker.com/mac/static/stable/aarch64/docker-29.3.0.tgz"
-checksum = "blake3:e0f987762cbcb9fa7640f4a5f8b58e0e534442d48cc293b8023a81291906ccac"
+url = "https://download.docker.com/mac/static/stable/aarch64/docker-29.7.2.tgz"
+checksum = "blake3:c8ca1f8853af6be97265b4a9ea68a3edc34cf844d4a7485a9420fd574ad3404a"
 
 [platforms.windows-amd64]
-url = "https://download.docker.com/win/static/stable/x86_64/docker-29.3.0.zip"
+url = "https://download.docker.com/win/static/stable/x86_64/docker-29.7.2.zip"
+checksum = "sha256:ed9222f478a5d143ac90e8e2fd3209b5076382cdb4b210321f97aa4b68bc6811"
 bin = "docker-cli.exe"
 
