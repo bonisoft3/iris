@@ -56,8 +56,7 @@
         "interpreter/pending-smoke.js",
         "interpreter/renderer-smoke.js",
         "interpreter/signout-smoke.js",
-        "interpreter/subscribe-smoke.js",
-        "interpreter/widget-smoke.js"
+        "interpreter/subscribe-smoke.js"
       ],
       "problemMatcher": [],
       "group": { "kind": "test" }
@@ -87,8 +86,7 @@
         "interpreter/pending-smoke.js",
         "interpreter/renderer-smoke.js",
         "interpreter/signout-smoke.js",
-        "interpreter/subscribe-smoke.js",
-        "interpreter/widget-smoke.js"
+        "interpreter/subscribe-smoke.js"
       ],
       "problemMatcher": [],
       "group": { "kind": "test" }

@@ -278,3 +278,6 @@ services/shelfie/shelfie
 **/.omc/
 plugins/omnishell/test-results/
 .gstack/
+
+# mkcert pair issued per machine by `just setup` (see mecha cluster checks.certs)
+apps/*/.certs/

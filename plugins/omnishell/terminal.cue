@@ -239,7 +239,8 @@ _zagBundle: _ @embed(glob="interpreter/vendor/zag/*.js", type=text)
 		modules: list.Concat([
 			[
 				"shell.js", "screen.js", "data.js", "data-crud.js", "render.js", "hatch.js",
-				"storybook.js", "widget.js", "tier2-engine.js", "vendor/mecha-client.js",
+				"storybook.js", "widget.js", "tier2-engine.js", "jessie.js",
+				"vendor/mecha-client.js",
 			],
 			// One module per kind in capabilities.widgets plus their shared
 			// chunks, hash-named and so globbed rather than listed.
@@ -251,17 +252,29 @@ _zagBundle: _ @embed(glob="interpreter/vendor/zag/*.js", type=text)
 		handlers: [...#Jessie]
 		handlers: *[] | [...#Jessie]
 
+		// The renderer modules backing app-declared `data-text-format` names
+		// (see `renderer` above). Served like a handler and resolved like one,
+		// by basename out of each route's files.renderers.
+		renderers: [...#Jessie]
+		renderers: *[] | [...#Jessie]
+
 		// Stylesheets screens share. Served like any other static; the list is
 		// the union of what screens name, so it holds only referenced files.
 		shared: [...#Path]
 		shared: *[] | [...#Path]
+
+		// Fold modules named by `pipelines[].fold`. Served because the terminal
+		// runs them itself — over the local collections, to show a sink's total
+		// before the CDC loop has folded this session's own writes in.
+		folds: [...#Jessie]
+		folds: *[] | [...#Jessie]
 
 		// Invariants of the terminal's own rendering surface, which no app can
 		// re-derive — the same reason auth, text-formats and widgets are
 		// published here. `verb` is the layer the check needs: this battery
 		// measures a laid-out page against real content, so it cannot run
 		// without the cluster up, however cheap `lint` would look.
-		checks: [Name=string]: {verb: "lint" | "test" | "integrate", cmds: [...string], note: string}
+		checks: [Name=string]: {verb: "setup" | "lint" | "test" | "integrate", cmds: [...string], note: string}
 		checks: visual: {
 			verb: "integrate"
 			cmds: [
@@ -269,7 +282,12 @@ _zagBundle: _ @embed(glob="interpreter/vendor/zag/*.js", type=text)
 				// Broad permissions are playwright's, not the checker's: it reads
 				// the browser bundle, writes a throwaway profile, spawns the
 				// browser and reads the host platform.
-				"deno run --allow-read --allow-write --allow-net --allow-env --allow-run --allow-sys \(T.surface.visualCheck) .",
+				// The door is TLS on a per-developer mkcert certificate this
+				// runner does not trust. Playwright's own contexts are told to
+				// ignore it in the checker, but the checker ALSO fetches
+				// /auth/guest with Deno's fetch, which that flag does not reach —
+				// hence the runtime flag here as well.
+				"deno run --allow-read --allow-write --allow-net --allow-env --allow-run --allow-sys --unsafely-ignore-certificate-errors \(T.surface.visualCheck) .",
 			]
 			note: "DOM checks over every route at two viewports; only critical findings fail"
 		}
@@ -297,10 +315,22 @@ _zagBundle: _ @embed(glob="interpreter/vendor/zag/*.js", type=text)
 				target: "/srv/\(h)"
 				watch:  true
 			}],
+			[for r in T.surface.renderers {
+				source: "renderer-\(strings.Replace(r, "/", "-", -1))"
+				file:   r
+				target: "/srv/\(r)"
+				watch:  true
+			}],
 			[for c in T.surface.shared {
 				source: "shared-\(strings.Replace(c, "/", "-", -1))"
 				file:   c
 				target: "/srv/\(c)"
+				watch:  true
+			}],
+			[for f in T.surface.folds {
+				source: "fold-\(strings.Replace(f, "/", "-", -1))"
+				file:   f
+				target: "/srv/\(f)"
 				watch:  true
 			}],
 			[for m in T.surface.modules {

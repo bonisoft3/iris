@@ -99,7 +99,7 @@ _devJwtSecret: "pronto-dev-secret-please-override-32ch"
 						DATABASE_URL:     "postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-\(X.meta.app)}"
 						PGRST_JWT_SECRET: "${PGRST_JWT_SECRET:-\(_devJwtSecret)}"
 						WEBAUTHN_RP_ID:   "${WEBAUTHN_RP_ID:-localhost}"
-						WEBAUTHN_ORIGIN:  "http://localhost:${CADDY_HOST_PORT:-8080}"
+						WEBAUTHN_ORIGIN:  "https://localhost:${CADDY_TLS_HOST_PORT:-8443}"
 					}
 				}
 			}
@@ -119,12 +119,21 @@ _devJwtSecret: "pronto-dev-secret-please-override-32ch"
 					dockerfile: "docker/shell.Dockerfile"
 					additional_contexts: root: "../.."
 				}
-				// 8443 is the h2/TLS QA listener (see the proxy Caddyfile); the
-				// browser-facing pool limit it lifts only exists over HTTP/1.1.
+				// One published door, and it is h2 over TLS. The plain listener
+				// still exists inside the container — the healthcheck below uses
+				// it — but it is deliberately NOT published: the browser's
+				// six-connections-per-origin cap only exists on HTTP/1.1, and a
+				// second front door is a path that only ever runs on a laptop
+				// (plugins/pronto/docs/2026-08-09-connection-ceiling.md).
 				ports: [
-					"${CADDY_HOST_PORT:-8080}:8080",
 					"${CADDY_TLS_HOST_PORT:-8443}:8443",
 				]
+				// mkcert's pair, issued on the host by `just setup` and trusted
+				// there once with `mkcert -install`. A DIRECTORY mount, not two
+				// file mounts: an editor or a re-issue replaces a file's inode and
+				// leaves a file-mount pointing at something deleted, which is the
+				// same trap the baked statics avoid.
+				volumes: ["./.certs:/certs:ro"]
 				healthcheck: {
 					test: ["CMD", "/bin/httpcheck", "http://127.0.0.1:8080/health"]
 					interval:       "5s"
@@ -294,11 +303,38 @@ _devJwtSecret: "pronto-dev-secret-please-override-32ch"
 		// Checks the cluster asserts about its own surface. `verb` is the layer
 		// the check needs, not a label: caddy validate reads a file and so
 		// belongs at lint. The loop routes each into the matching rulemap.
-		checks: [Name=string]: {verb: "lint" | "test" | "integrate", cmds: [...string], note: string}
+		checks: [Name=string]: {verb: "setup" | "lint" | "test" | "integrate", cmds: [...string], note: string}
 		checks: caddy: {
 			verb: "lint"
-			cmds: ["mise exec -- caddy validate --config docker/Caddyfile --adapter caddyfile"]
-			note: "validates the cluster's own proxy config"
+			// `adapt`, not `validate`: validate also PROVISIONS, which loads the
+			// TLS certificate — and the path in the config is the container's,
+			// so a host-side lint would fail on every machine for a file that is
+			// only ever mounted at runtime. adapt still fails on anything
+			// malformed, which is what a lint is for. Piped to `ignore` because
+			// it prints the adapted JSON on success and sayt runs it in nu.
+			cmds: ["mise exec -- caddy adapt --config docker/Caddyfile --adapter caddyfile | ignore"]
+			note: "checks the cluster's own proxy config parses"
+		}
+		// The door is h2, h2 needs TLS, and TLS needs a certificate the
+		// developer's browser trusts — so the cluster asks for one at setup
+		// rather than issuing an untrusted one at boot. Issuing is idempotent
+		// and touches nothing outside the app dir; TRUSTING it is the one step
+		// left to a human, because it writes to the system keychain:
+		//
+		//   mise exec -- mkcert -install
+		//
+		// Without that the cert is still served and the battery still drives it
+		// (it ignores certificate errors); only a human browser complains.
+		checks: certs: {
+			verb: "setup"
+			// Two cmds, not one joined with `&&`: sayt runs these through
+			// nushell, which rejects the shell operator outright. nu's mkdir
+			// makes parents and is idempotent, so re-running setup is free.
+			cmds: [
+				"mkdir .certs",
+				"mise exec -- mkcert -cert-file .certs/localhost.pem -key-file .certs/localhost-key.pem localhost 127.0.0.1 ::1",
+			]
+			note: "issues the locally-trusted certificate the https door serves"
 		}
 	}
 

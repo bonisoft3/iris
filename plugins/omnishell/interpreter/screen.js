@@ -5,7 +5,8 @@ import { renderInto } from "./render.js";
 import { mountHatch } from "./hatch.js";
 // Statically, not on demand: a dynamic import issued after the handler
 // compartment has locked down never settles (vendor/entry-zag/index.ts).
-import { hydrateFieldWidget, hydrateWidget } from "./widget.js";
+import { hydrateFieldWidget } from "./widget.js";
+import { evaluateRole } from "./jessie.js";
 
 async function fetchText(url) {
   const res = await fetch(url);
@@ -16,64 +17,6 @@ async function fetchText(url) {
 const HAS_PLACEHOLDER = /\{[\w.]+\}/;
 const PLACEHOLDER = /\{([\w.]+)\}/g;
 
-// ses pin: umd dist chosen over +esm so the <script> tag can carry the
-// integrity hash (dynamic import has no SRI). One load + one lockdown per
-// page; hosts that pre-install Compartment (the deno smoke) skip injection.
-const SES_URL = "https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js";
-const SES_SRI = "sha384-ENn5RvADmXXAkQE68rmuwSv7MiAk081oTWxzmlm5gz1LA2vEk20IBp5FYUZknoIq";
-
-let sesReady;
-function ensureSes() {
-  return (sesReady ??= (async () => {
-    if (!globalThis.Compartment) {
-      await new Promise((resolve, reject) => {
-        const script = document.createElement("script");
-        script.src = SES_URL;
-        script.integrity = SES_SRI;
-        script.crossOrigin = "anonymous";
-        script.onload = resolve;
-        script.onerror = () => reject(new Error(`failed loading ${SES_URL}`));
-        document.head.append(script);
-      });
-    }
-    // lockdown throws when repeated; the flag survives multiple module
-    // instances of this file on one page.
-    if (!globalThis.__prontoLockdown) {
-      globalThis.__prontoLockdown = true;
-      lockdown({ errorTaming: "unsafe" });
-    }
-  })());
-}
-
-// A Jessie role is a module the app writes and the platform runs: the source's
-// last expression is the Compartment's completion value, and the role decides
-// both what shape that value must have and what the compartment endows.
-// Nothing here endows ambient authority — an absent global cannot be argued
-// with, which is the only reason app source is safe to run unread.
-const ROLES = {
-  // reduce(state, event) -> {updates}. Needs nothing.
-  handler: {endow: () => ({}), ok: (v) => typeof v === "function", want: "its reduce function"},
-  // {toItems(rows), toValue?(details)}. Data in the app's vocabulary out to a
-  // widget's and back; needs nothing either.
-  adapter: {
-    endow: () => ({}),
-    ok: (v) => v !== null && typeof v === "object" && typeof v.toItems === "function",
-    want: "an object with toItems()",
-  },
-  // render(value) -> node description; render.js owns what one may become.
-  renderer: {endow: () => ({}), ok: (v) => typeof v === "function", want: "its render function"},
-};
-
-export async function evaluateRole(source, role = "handler") {
-  await ensureSes();
-  const spec = ROLES[role];
-  if (spec === undefined) throw new Error(`unknown Jessie role "${role}"`);
-  const value = new Compartment(spec.endow()).evaluate(source);
-  if (!spec.ok(value)) throw new Error(`${role} source must end in ${spec.want}`);
-  return value;
-}
-
-export const evaluateHandler = (source) => evaluateRole(source, "handler");
 
 // Every role resolves the same way: the attribute names the role, its value
 // names the module, and route.files.handlers is the app's list of Jessie
@@ -92,9 +35,6 @@ async function loadRole(screen, appBase, route, attr, role) {
 
 const loadHandlers = (screen, appBase, route) =>
   loadRole(screen, appBase, route, "data-handler", "handler");
-
-export const loadAdapters = (screen, appBase, route) =>
-  loadRole(screen, appBase, route, "data-adapter", "adapter");
 
 // An item template's markup never appears in the screen's own tree, so
 // anything resolved before hydration has to look inside it too.
@@ -236,7 +176,7 @@ const raf = (fn) => (globalThis.requestAnimationFrame ?? ((f) => setTimeout(f, 0
 // Chromium-only.
 const HAS_MOVE_BEFORE = typeof globalThis.Element?.prototype?.moveBefore === "function";
 
-// Motion slots (plugins/omnishell/shell.css) drive keyframes, so a slot released
+// Motion slots drive whatever keyframes the design layer binds, so a slot released
 // before its animation ends cancels it mid-play. Both slots therefore wait on
 // the animations the stamp actually started, and fall back to releasing at
 // once where none run — a reduced-motion viewer, or an engine without the
@@ -481,10 +421,6 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
   mount.replaceChildren(screen);
 
   const handlers = opts.handlers === false ? new Map() : await loadHandlers(screen, appBase, route);
-  // Widgets ride the same gate as handlers: the fixture tier evaluates no
-  // Jessie, so a storyboard frame shows a widget's markup unenhanced rather
-  // than half-driven by a machine with no adapter behind it.
-  const adapters = opts.handlers === false ? new Map() : await loadAdapters(screen, appBase, route);
   const renderers = opts.handlers === false
     ? {}
     : await loadRenderers(screen, appBase, route);
@@ -558,7 +494,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
           if (input.checked) out[input.name] = input.value;
         } else if (input.type === "checkbox") out[input.name] = input.checked;
         else if (input.type === "file" && input.dataset.upload !== undefined) {
-          // A file control's anatomy belongs to the terminal (shell.css), not
+          // A file control's anatomy belongs to the terminal's markup, not
           // to the screen: the native widget is unstylable, so it is only
           // clipped and the label wrapper is what the user clicks. The input
           // keeps its name, form and validity, and the screen supplies the
@@ -604,6 +540,10 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         return;
       }
       setState("form-submit");
+      // form-submit is a SCREEN state, so a rule keyed on it alone dims every
+      // submit button in view — favouriting a piece flashed its author's
+      // Follow arm. This marks the one form actually in flight.
+      form.dataset.submitting = "";
       const editsAtSubmit = edits;
       // A store refusal (e.g. a trigger's RAISE) earns words, not just a
       // state: the submitting form's .store-error paragraph is revealed.
@@ -623,6 +563,10 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       };
       try {
         if (action === "create") await store.create(entity, await values(), refused);
+        // Write the row for this natural key, existing or not. The form says
+        // what the row should be; whether that is an insert or an update is the
+        // store's question, answered against the collection.
+        else if (action === "upsert") await store.upsert(entity, await values(), refused);
         else if (action === "update") await store.update(entity, rowId(), await values(), refused);
         else if (action === "delete" && form.dataset.filter !== undefined) {
           // Filter-scoped bulk delete: the filter, not the row context,
@@ -639,6 +583,8 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         }, 600);
       } catch (err) {
         refused(err);
+      } finally {
+        delete form.dataset.submitting;
       }
     });
     form.addEventListener("input", () => {
@@ -745,33 +691,6 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     // as the page still assembling itself, and delays the moment it looks
     // ready. Only rows that arrive afterwards play.
     let first = true;
-
-    // A widget's selection comes back in the adapter's vocabulary — mutation
-    // values — and lands on the enclosing form's hidden fields by name. That
-    // is how a widget submits without the form knowing what a widget is, and
-    // without the widget knowing there is a store.
-    // The region is the list and the widget is the box around it: a region
-    // owns its children absolutely — anything that is not a current row is
-    // removed — so a widget whose chrome sat inside one would have its own
-    // control and positioner swept away on the first render.
-    const widgetRoot = region.closest?.("[data-widget]") ?? null;
-    let widget = null;
-    const mountWidget = async () => {
-      const name = widgetRoot.dataset.adapter;
-      const adapter = adapters.get(name);
-      if (adapter === undefined) throw new Error(`no adapter for data-adapter="${name}"`);
-      return hydrateWidget(widgetRoot, {
-        adapter,
-        rows: currentRows,
-        onValue: (values) => {
-          const form = widgetRoot.closest("form");
-          for (const [field, value] of Object.entries(values ?? {})) {
-            const input = form?.querySelector(`input[type="hidden"][name="${field}"]`);
-            if (input !== null && input !== undefined) input.value = value ?? "";
-          }
-        },
-      });
-    };
 
     // Regions nested inside an item, excluding any that sit under a deeper
     // one — those belong to that region's own pass.
@@ -926,15 +845,6 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
           if (reduce && template.content.querySelector("[data-drag-handle]")) {
             wireDrag(region, order, () => currentRows, reduce);
           }
-          // A region that is also a widget feeds the machine the same rows it
-          // just rendered: the DOM gets the items, the collection gets the
-          // adapter's view of them, and the parts are re-applied over nodes
-          // the reconciler kept. Driving the machine from anywhere else would
-          // mean two readings of the same rows.
-          if (widgetRoot !== null && adapters.size > 0) {
-            widget ??= await mountWidget();
-            widget.update(rows);
-          }
           first = false;
         }
         if (top) {
@@ -1039,8 +949,6 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       },
       stop: () => {
         detach();
-        widget?.destroy();
-        widget = null;
         dropAll();
       },
     };

@@ -4,6 +4,7 @@
 // to their declared shims; the real bloblang runs at container tier).
 
 import { PGlite } from "https://cdn.jsdelivr.net/npm/@electric-sql/pglite@0.5.4/dist/index.js";
+import { evaluateFold } from "./jessie.js";
 
 const IDENT = /^[a-z_][a-z0-9_]*$/;
 
@@ -26,7 +27,12 @@ export async function createStore(appBase, config) {
   }
 
   const shims = new Map();
+  const folds = new Map();
   for (const p of config.pipelines) {
+    if (p.fold) {
+      folds.set(p.name, await evaluateFold(await fetchText(new URL(p.fold, appBase))));
+      continue;
+    }
     const mod = await import(new URL(p.shim, appBase));
     if (typeof mod.default !== "function") throw new Error(`${p.shim}: shim must default-export a function`);
     shims.set(p.name, mod.default);
@@ -50,20 +56,40 @@ export async function createStore(appBase, config) {
     return (await db.query(sql)).rows;
   }
 
+  async function upsert(table, conflict, row) {
+    const keys = Object.keys(row).map(ident);
+    const sets = keys.filter((k) => k !== conflict).map((k) => `${k} = EXCLUDED.${k}`);
+    await db.query(
+      `INSERT INTO ${ident(table)} (${keys.join(", ")}) VALUES (${keys.map((_, i) => `$${i + 1}`).join(", ")})
+       ON CONFLICT (${ident(conflict)}) DO UPDATE SET ${sets.join(", ")}`,
+      keys.map((k) => row[k]),
+    );
+  }
+
   async function runPipeline(p) {
     // PostgREST-subset aggregate: "select=a,b" — the absolute re-read that
     // keeps the sink idempotent, same as the rpk twin.
     const params = new URLSearchParams(p.aggregate);
     const cols = (params.get("select") ?? "*").split(",").map(ident);
     const rows = (await db.query(`SELECT ${cols.join(", ")} FROM ${ident(p.from)}`)).rows;
-    const row = shims.get(p.name)(rows);
-    const keys = Object.keys(row).map(ident);
-    const sets = keys.filter((k) => k !== "id").map((k) => `${k} = EXCLUDED.${k}`);
-    await db.query(
-      `INSERT INTO ${ident(p.to)} (${keys.join(", ")}) VALUES (${keys.map((_, i) => `$${i + 1}`).join(", ")})
-       ON CONFLICT (id) DO UPDATE SET ${sets.join(", ")}`,
-      keys.map((k) => row[k]),
-    );
+    if (!p.fold) {
+      await upsert(p.to, "id", shims.get(p.name)(rows));
+      return;
+    }
+    // The same module the container tier runs. There is no CDC event here to
+    // narrow by, so every group is recounted — and a group whose last source
+    // row is gone must still be driven to zero, which a recount of what
+    // remains cannot do on its own.
+    const fold = folds.get(p.name);
+    const groups = new Map();
+    for (const row of rows) {
+      const k = row[p.key];
+      groups.set(k, fold.step(groups.get(k) ?? fold.empty(k), row));
+    }
+    for (const { [p.key]: k } of (await db.query(`SELECT ${ident(p.key)} FROM ${ident(p.to)}`)).rows) {
+      if (!groups.has(k)) groups.set(k, fold.empty(k));
+    }
+    for (const acc of groups.values()) await upsert(p.to, p.key, fold.result(acc));
   }
 
   async function cascade(table, seen = new Set()) {

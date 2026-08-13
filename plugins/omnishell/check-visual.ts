@@ -196,7 +196,7 @@ async function baseUrl(appDir: string): Promise<string> {
   const fromEnv = Deno.env.get("APP_URL")
   if (fromEnv) return fromEnv
   const out = await new Deno.Command("docker", {
-    args: ["compose", "port", "caddy", "8080"],
+    args: ["compose", "port", "caddy", "8443"],
     cwd: appDir,
     stdout: "piped",
     stderr: "piped",
@@ -206,7 +206,7 @@ async function baseUrl(appDir: string): Promise<string> {
   if (!out.success || !port) {
     throw new Error(`could not read the published caddy port: ${new TextDecoder().decode(out.stderr).trim()}`)
   }
-  return `http://localhost:${port}`
+  return `https://localhost:${port}`
 }
 
 async function main(appDir: string): Promise<number> {
@@ -238,7 +238,13 @@ async function main(appDir: string): Promise<number> {
   const browser = await chromium.launch()
   try {
     for (const viewport of VIEWPORTS) {
-      const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height } })
+      // The door is TLS on a certificate mkcert issued for the developer's own
+      // trust store, which this browser does not share. Ignoring it is the
+      // whole reason the battery can drive h2 without a per-CI trust install.
+      const context = await browser.newContext({
+        ignoreHTTPSErrors: true,
+        viewport: { width: viewport.width, height: viewport.height },
+      })
       await context.addInitScript((s) => sessionStorage.setItem("pronto-token", JSON.stringify(s)), session)
       for (const route of routes) {
         if (route.path.split("/").some((s) => s.startsWith(":") && params[s.slice(1)] === undefined)) continue

@@ -458,7 +458,92 @@ export function createStore(base = "", cfg = {}) {
     return parts.join("&");
   };
 
-  async function query(table, order, opts = {}) {
+  // Pipeline sinks lag their source by the whole CDC loop, so a count read
+  // straight from the sink is a second old. A fold sink is not opaque though:
+  // its row IS the accumulator, so the reader can resume the fold over the
+  // rows the sink has not seen yet and show the total now.
+  //
+  //   shown = result(combine(sink, fold of this session's uncounted rows))
+  //
+  // Both sides come from the local collections — never a server read. The
+  // identical rule failed as a region filter precisely because relational
+  // operators are not maintainable there, so the gate hit PostgREST while the
+  // value came from Electric and the number visibly dipped between them.
+  const foldSinks = new Map(
+    (cfg.pipelines ?? []).filter((p) => p.fold).map((p) => [p.to, p]),
+  );
+  // A derived count, as the reader should see it:
+  //
+  //     shown = others + intent
+  //
+  // `others` is how many OTHER people have favourited, and no write of this
+  // reader's can change it — which is the whole reason nothing here has to be
+  // held, waited for, or reconciled. `intent` is local fact, so it applies the
+  // instant it is expressed, online or off.
+  //
+  // The earlier shape of this was `total − mine_counted + intent`, with
+  // `mine_counted` inferred from the reader's own row. That cannot work: it is
+  // a property of the READ that produced the total, not of the data now, and a
+  // bounded row cannot carry unbounded history. Every rule tried here failed at
+  // some number of changes. So the pipeline states it instead, per reader, in a
+  // table RLS keeps private.
+  const naturalOf = (p, r) => {
+    const owner = access[p.from]?.owner;
+    const cols = p.dedupe?.length ? p.dedupe : [keyOf(p.from)];
+    return cols.map((c) => r[c] ?? (c === owner ? userId() : undefined)).join("\u0000");
+  };
+  const stateOf = (p, r) => (r[p.retracted] == null ? 1 : 0);
+
+  // Every input is a synced, persisted collection, so this answers at boot and
+  // stays answerable offline — there is no branch that waits on the network.
+  function othersFor(p, sinkRow, mine) {
+    const total = sinkRow.favorite_count;
+    const acked = mine !== undefined && mine.$synced !== false && mine.txid != null;
+    // The public total's read is at or after this exact acknowledged version,
+    // so it counted the reader as the row now reads. No pair needed, and this
+    // is the one question a watermark answers exactly: two server txids about
+    // versions that exist. It is also what keeps a first favourite from
+    // spiking — the total starts including the reader before their pair
+    // arrives, and without this the reader adds themselves twice.
+    if (acked && sinkRow[p.watermark] != null && sinkRow[p.watermark] >= mine.txid) {
+      return total - stateOf(p, mine);
+    }
+    const pairs = client.collections[p.pair.table];
+    const pair = pairs?.toArray.find(
+      (r) => visible(p.pair.table, r) && String(r[p.key]) === String(sinkRow[p.key]),
+    );
+    // The read predates the reader's latest change, so the freshest total
+    // cannot be paired with anything the reader knows. The pair's own read is
+    // internally consistent whatever has happened since: older, never wrong,
+    // and never a frozen pixel.
+    if (pair !== undefined) return pair[p.pair.total] - pair[p.pair.counted];
+    // No pair was ever written, so no read has ever counted this reader.
+    return total;
+  }
+
+  async function project(table, rows) {
+    const p = foldSinks.get(table);
+    if (p === undefined || rows.length === 0 || p.pair === undefined) return rows;
+    const source = client.collections[p.from];
+    if (source === undefined) return rows;
+    return rows.map((sinkRow) => {
+      const k = sinkRow[p.key];
+      // One row per natural key: the unique index says the reader holds at
+      // most one, and the newest wins.
+      let mine;
+      for (const r of source.toArray) {
+        if (r[p.key] !== k || !visible(p.from, r)) continue;
+        if (mine === undefined || (mine.txid ?? Infinity) < (r.txid ?? Infinity)) mine = r;
+      }
+      const intent = mine === undefined ? 0 : stateOf(p, mine);
+      return { ...sinkRow, favorite_count: othersFor(p, sinkRow, mine) + intent };
+    });
+  }
+
+  const query = async (table, order, opts = {}) =>
+    project(table, await read(table, order, opts));
+
+  async function read(table, order, opts = {}) {
     // A read the engine already maintains needs no re-derivation: the view is
     // the filter and the order, kept current by the deltas that woke us.
     const held = maintainedView(table, opts);
@@ -536,6 +621,16 @@ export function createStore(base = "", cfg = {}) {
     return promise;
   }
 
+  // A fold sink's shown value depends on the source rows the sink has not
+  // folded in yet, so its region has to wake on the source too — the sink row
+  // itself does not move when this session favourites something.
+  const foldSourceOf = (table) => {
+    const p = foldSinks.get(table);
+    // The reader's private pair is an input to the shown value exactly as the
+    // source rows are: when it lands, `others` changes.
+    return p === undefined ? [] : [p.from, p.pair?.table].filter(Boolean);
+  };
+
   function subscribe(table, fn, opts = {}) {
     // A maintained view's own changes ARE this region's input changing —
     // computed by the engine against the actual query rather than guessed
@@ -568,6 +663,16 @@ export function createStore(base = "", cfg = {}) {
         else unattributed = true;
         wake();
       });
+      // The engine maintains the view over the sink alone; the projection is
+      // applied after it, so the source's changes have to arrive separately.
+      const sourceStops = foldSourceOf(table)
+        .filter((t) => client.collections[t] !== undefined)
+        .map((t) =>
+          client.collections[t].subscribeChanges(() => {
+            unattributed = true;
+            wake();
+          })
+        );
       const settle = () => {
         unattributed = true;
         wake();
@@ -575,11 +680,19 @@ export function createStore(base = "", cfg = {}) {
       settleListeners.set(table, (settleListeners.get(table) ?? new Set()).add(settle));
       return () => {
         (typeof stop === "function" ? stop : stop.unsubscribe?.bind(stop))?.();
+        for (const s of sourceStops) {
+          (typeof s === "function" ? s : s.unsubscribe?.bind(s))?.();
+        }
         settleListeners.get(table).delete(settle);
         held.release();
       };
     }
-    const deps = [table, ...embedTables(opts.select), ...accessDeps(table)].filter(
+    const deps = [
+      table,
+      ...embedTables(opts.select),
+      ...accessDeps(table),
+      ...foldSourceOf(table),
+    ].filter(
       (t) => client.collections[t] !== undefined,
     );
     // The region's own filter as predicates. A change to a row this region
@@ -637,18 +750,75 @@ export function createStore(base = "", cfg = {}) {
     await settle(onSettled(client.update(table, id, values), table), ACCEPT_MS, onRefused);
   }
 
+  // Write the row for a natural key, whether or not it exists yet.
+  //
+  // The decision is local and stays local: the collection holds every row this
+  // reader may see, so "does my row exist" is a lookup rather than a round
+  // trip, and the write leaves as an insert or an update accordingly. The
+  // gateway injects resolution=ignore-duplicates on POST, so a create aimed at
+  // a row that already exists would be swallowed in silence — which is exactly
+  // what this resolves before anything reaches the wire.
+  //
+  // The owner column is filled from the session when the form omits it: it is
+  // DEFAULT auth_uid() and materialises server-side, so the reader's own rows
+  // carry it while the row they are about to write does not.
+  async function upsert(table, values, onRefused) {
+    const owner = access[table]?.owner;
+    const keys = (cfg.uniques?.[table] ?? []).find((cols) =>
+      cols.every((c) => values[c] !== undefined || c === owner)
+    );
+    if (keys === undefined) {
+      throw new Error(`upsert ${table}: no natural key covers ${Object.keys(values).join(",")}`);
+    }
+    const collection = client.collections[table];
+    if (collection === undefined) throw new Error(`upsert on unsynced table: ${table}`);
+    if (!collection.isReady()) await collection.toArrayWhenReady();
+    const at = (r, c) => String(r[c] ?? (c === owner ? userId() : ""));
+    const wanted = keys.map((c) => at(values, c));
+    const existing = collection.toArray.find(
+      (r) => visible(table, r) && keys.every((c, i) => at(r, c) === wanted[i]),
+    );
+    if (existing === undefined) return create(table, values, onRefused);
+    return update(table, existing[keyOf(table)], values, onRefused);
+  }
+
   async function remove(table, id, onRefused) {
     await settle(onSettled(client.remove(table, id), table), ACCEPT_MS, onRefused);
   }
 
   // Filter-scoped bulk delete (SPEC #Form.filter): resolve the matching keys,
   // then one durable per-row delete each — at-least-once row by row.
+  //
+  // The keys come from the local collection whenever the filter translates,
+  // and that is a correctness requirement, not an optimisation. Resolving them
+  // server-side returns rows the server still holds — including one whose
+  // optimistic delete has already been applied here — and deleting a key the
+  // collection no longer has throws, rolls the mutation back and aborts its
+  // own DELETE in flight. A reader toggling quickly then gets a refusal on
+  // every subsequent click while other sessions are unaffected. The collection
+  // holds every row this reader may see (the shape is the whole table), so it
+  // is the same set, read from the tier that owns the optimistic state.
   async function removeWhere(table, filter, onRefused) {
-    const rows = await (await http(`${crud(table)}?${filter}&select=id`)).json();
+    const preds = parseFilter(filter);
+    const collection = client.collections[table];
+    // A precondition, not a branch: resolving these keys anywhere but the
+    // collection reintroduces the divergence this comment block describes, so
+    // an untranslatable delete filter is a program error rather than a quieter
+    // path that works until it doesn't.
+    if (preds === null) throw new Error(`delete filter is not translatable: ${filter}`);
+    if (collection === undefined) throw new Error(`delete on unsynced table: ${table}`);
+    if (!collection.isReady()) await collection.toArrayWhenReady();
+    const rows = collection.toArray.filter((r) => visible(table, r) && preds.every((f) => f(r)));
+    // Re-check presence at the moment of the delete: resolution and mutation
+    // are separated by an await, and a concurrent settle can retire a row in
+    // between.
+    const keys = rows
+      .map((r) => r[keyOf(table)])
+      .filter((k) => collection === undefined || collection.has?.(k) !== false);
     await Promise.all(
-      rows.map((r) => settle(onSettled(client.remove(table, r.id), table), ACCEPT_MS, onRefused)),
+      keys.map((k) => settle(onSettled(client.remove(table, k), table), ACCEPT_MS, onRefused)),
     );
   }
 
-  return { query, create, update, remove, removeWhere, subscribe };
+  return { query, create, update, upsert, remove, removeWhere, subscribe };
 }

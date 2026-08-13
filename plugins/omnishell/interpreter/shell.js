@@ -17,6 +17,38 @@
 import { load } from "https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/+esm";
 import { interpretScreen } from "./screen.js";
 
+/** Whether the account a stored token names still exists.
+ *
+ * Deliberately fails OPEN: a cluster that cannot be reached is a cluster that
+ * cannot answer the question, and signing somebody out because their wifi
+ * dropped would be a worse bug than the one this prevents. Only a definite
+ * empty answer — the request succeeded and the row is not there — ends the
+ * session.
+ */
+async function accountLives(session) {
+  const sub = claimsOf(session.token)?.sub;
+  if (!sub) return true;
+  try {
+    const res = await fetch(`/crud/app_user?id=eq.${encodeURIComponent(sub)}&select=id&limit=1`, {
+      headers: { Authorization: `Bearer ${session.token}` },
+    });
+    if (!res.ok) return true;
+    return (await res.json()).length > 0;
+  } catch {
+    return true;
+  }
+}
+
+/** The JWT payload, or null if it is not one. */
+function claimsOf(token) {
+  try {
+    const part = String(token).split(".")[1];
+    return JSON.parse(atob(part.replace(/-/g, "+").replace(/_/g, "/")));
+  } catch {
+    return null;
+  }
+}
+
 async function fetchText(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${res.status} fetching ${url}`);
@@ -110,36 +142,9 @@ async function loginCeremony(service) {
   });
 }
 
-const LOGIN_CSS = `
-.shell-login { display: grid; place-items: center; min-height: 70vh; }
-.shell-login form { display: grid; gap: 12px; width: min(320px, 90vw);
-  padding: 24px; border: 1px solid var(--shell-rule, #00000014);
-  border-radius: 8px; background: var(--shell-bg, #fff); }
-.shell-login h1 { margin: 0; font-size: 1.25rem; }
-.shell-login label { display: grid; gap: 4px; font-weight: 600; }
-.shell-login input { font: inherit; padding: 8px 10px; border-radius: 6px;
-  border: 1px solid var(--shell-rule, #00000014);
-  background: var(--shell-bg, #fff); color: var(--shell-fg, #1a1a1a); }
-.shell-login button { font: inherit; font-weight: 600; padding: 8px 10px;
-  border-radius: 6px; border: 1px solid var(--shell-rule, #00000014);
-  background: var(--shell-fg, #1a1a1a); color: var(--shell-bg, #fff);
-  cursor: pointer; }
-.shell-login .login-hint { margin: 0; font-weight: 400; font-size: .875rem;
-  color: var(--shell-fg, #1a1a1a); opacity: .65; }
-.shell-login .login-guest { background: var(--shell-bg, #fff);
-  color: var(--shell-fg, #1a1a1a); font-weight: 400; }
-.shell-login .login-error { color: #B8422E; margin: 0; }
-`;
-
 // Resolves {token, user} once a ceremony succeeds; failures surface inline
 // and leave the form live for another attempt.
 function renderLogin(mount, cfg) {
-  if (!document.getElementById("shell-login-css")) {
-    const style = document.createElement("style");
-    style.id = "shell-login-css";
-    style.textContent = LOGIN_CSS;
-    document.head.append(style);
-  }
   const wrap = document.createElement("div");
   wrap.className = "shell-login";
   wrap.innerHTML = `<form>
@@ -301,8 +306,21 @@ export async function createShell({ config, mount }) {
     let session = null;
     if (cfg.auth?.required && search.get("tier") !== "browser") {
       const stored = sessionStorage.getItem("pronto-token");
-      if (stored) {
-        session = JSON.parse(stored);
+      // A stored token is not a session. The account it names can be gone —
+      // the row dropped, the database recreated — and nothing about the token
+      // says so: it is still correctly signed and unexpired, reads are public
+      // so every screen still paints, and only writes fail, as a foreign key
+      // violation (23503, "Key is not present in table app_user") behind copy
+      // that says "try again". Retrying cannot work. One read at boot is
+      // cheaper than that experience, and it is the read the auth plane
+      // guarantees: app_user is the cluster's own table, written by the auth
+      // service itself, so this holds for any app on this terminal.
+      if (stored && !(await accountLives(JSON.parse(stored)))) {
+        sessionStorage.removeItem("pronto-token");
+      }
+      const live = sessionStorage.getItem("pronto-token");
+      if (live) {
+        session = JSON.parse(live);
       } else {
         session = await renderLogin(mount, cfg);
         // The gate takes its own chrome down. The navigation stack appends
@@ -320,7 +338,7 @@ export async function createShell({ config, mount }) {
       store = await browser.createStore(appBase, cfg);
     } else {
       const cluster = await import("./data-crud.js");
-      store = cluster.createStore("", cfg);
+      store = cluster.createStore("", { ...cfg, appBase });
     }
 
     // The navigation stack belongs to the terminal — there is one back button,
@@ -334,7 +352,7 @@ export async function createShell({ config, mount }) {
     let seq = 0;
     const raf = (fn) => (globalThis.requestAnimationFrame ?? ((f) => setTimeout(f, 0)))(fn);
     // The arriving-screen slot, released a frame later so the browser has a
-    // style to transition from (plugins/omnishell/shell.css).
+    // style to transition from (the design layer's .shell-screen rules).
     const enter = (el) => {
       el.dataset.entering = "";
       raf(() => raf(() => delete el.dataset.entering));
@@ -390,6 +408,13 @@ export async function createShell({ config, mount }) {
 
     const show = async (navigationType = "push") => {
       const { route, params } = currentRoute();
+      // The strip's state is an attribute, not a style: aria-current names
+      // the link that is this page (none, on parametrized routes) and CSS
+      // decides what that looks like.
+      for (const a of nav?.querySelectorAll("a") ?? []) {
+        if (a.getAttribute("href") === `#${route.path}`) a.setAttribute("aria-current", "page");
+        else a.removeAttribute("aria-current");
+      }
       const key = keyOf(route, params);
       if (current) {
         current.scrollY = window.scrollY;

@@ -9,10 +9,9 @@
 // each part's props, and applies them. A second kind costs markup and a
 // roster entry, not code here.
 //
-// What the app contributes is a Jessie adapter — a pure module saying what its
-// rows mean in the widget's vocabulary, and what a selection means as a
-// mutation. That keeps the widget ignorant of the store and the store ignorant
-// of the widget, with nothing in between that can reach for either.
+// Only field-backed kinds remain: a machine dressing a native control the
+// form still owns. Row-backed selection is the platform <select>'s job —
+// options bound as an ordinary region — so no adapter seam exists here.
 
 import {buildNodes} from "./render.js";
 import {hydrateTier2DataflowWidget} from "./tier2-engine.js";
@@ -122,37 +121,6 @@ async function mount(root, kind, {context = {}, onValueChange, itemsRef} = {}) {
       stop?.();
       machine.stop();
     },
-  };
-}
-
-/**
- * @param root      the [data-widget] element, itself data-part="root"
- * @param adapter   Jessie completion value: {toItems(rows), toValue?(details)}
- * @param rows      current rows from the region backing this widget
- * @param onValue   called with the adapter's value when the selection changes
- */
-export async function hydrateWidget(root, {adapter, rows = [], onValue} = {}) {
-  const kind = loadKind(root.dataset.widget);
-  let items = adapter.toItems(rows);
-  const w = await mount(root, kind, {
-    context: {collection: kind.collection({items})},
-    onValueChange: (details) => onValue?.(adapter.toValue ? adapter.toValue(details) : details.value),
-    itemsRef: () => items,
-  });
-  return {
-    // Rows change under a live region; the collection is rebuilt from the
-    // adapter's view of them and the parts re-applied.
-    update(next) {
-      items = adapter.toItems(next);
-      w.send({type: "COLLECTION.SET", value: kind.collection({items})});
-      w.render();
-    },
-    // Selection driven by the app rather than the pointer — the screen's own
-    // affordances, and the seam a test can hold.
-    select(value) {
-      w.api().setValue([String(value)]);
-    },
-    destroy: w.destroy,
   };
 }
 
