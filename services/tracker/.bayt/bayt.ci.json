@@ -88,6 +88,12 @@
       },
       "depot_disable_otel": {
         "environment": "DEPOT_DISABLE_OTEL"
+      },
+      "actions_results_url": {
+        "environment": "ACTIONS_RESULTS_URL"
+      },
+      "actions_runtime_token": {
+        "environment": "ACTIONS_RUNTIME_TOKEN"
       }
     },
     "add": [],
@@ -726,6 +732,18 @@
               "id": "depot_disable_otel",
               "var": {
                 "contents": "DEPOT_DISABLE_OTEL"
+              }
+            },
+            {
+              "id": "actions_results_url",
+              "var": {
+                "contents": "ACTIONS_RESULTS_URL"
+              }
+            },
+            {
+              "id": "actions_runtime_token",
+              "var": {
+                "contents": "ACTIONS_RUNTIME_TOKEN"
               }
             },
             {

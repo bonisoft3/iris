@@ -34,6 +34,10 @@ secrets:
     environment: DEPOT_ORG_ID
   depot_disable_otel:
     environment: DEPOT_DISABLE_OTEL
+  actions_results_url:
+    environment: ACTIONS_RESULTS_URL
+  actions_runtime_token:
+    environment: ACTIONS_RUNTIME_TOKEN
 services:
   services_tracker-ci:
     build:
@@ -78,6 +82,8 @@ services:
       - depot_project_id
       - depot_org_id
       - depot_disable_otel
+      - actions_results_url
+      - actions_runtime_token
       target: ci
       args:
         BUILDKIT_SYNTAX: docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
@@ -107,6 +113,8 @@ services:
     - depot_project_id
     - depot_org_id
     - depot_disable_otel
+    - actions_results_url
+    - actions_runtime_token
   services_tracker-ci_bayt:
     build:
       additional_contexts:

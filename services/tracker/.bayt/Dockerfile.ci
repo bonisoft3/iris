@@ -23,7 +23,7 @@ COPY --from=libraries_xproto-setup_srcs --parents /monorepo/libraries/xproto/gra
 COPY --from=libraries_pbtables-setup_srcs --parents /monorepo/libraries/pbtables/gradle/wrapper/gradle-wrapper.properties /monorepo/libraries/pbtables/[m]ise.toml /monorepo/libraries/pbtables/[.]mise.toml /monorepo/libraries/pbtables/[m]ise.lock /
 ENV BUILDX_BAKE_ENTITLEMENTS_FS=0
 ENV COMPOSE_BAKE=true
-RUN --mount=type=secret,id=docker_host --mount=type=secret,id=buildx_builder --mount=type=secret,id=testcontainers_host --mount=type=secret,id=cache_scope --mount=type=secret,id=cache_scope_fallback --mount=type=secret,id=sayt_buildkit_syntax --mount=type=secret,id=sayt_no_cache --mount=type=secret,id=bayt_image_tag --mount=type=secret,id=bayt_pull_policy --mount=type=secret,id=sayt_no_cache_from --mount=type=secret,id=sayt_no_cache_to --mount=type=secret,id=depot_token --mount=type=secret,id=depot_project_id --mount=type=secret,id=depot_org_id --mount=type=secret,id=depot_disable_otel --mount=type=secret,id=buildx_instance --mount=type=secret,id=docker_config,mode=0600 <<BAYT_INJECT
+RUN --mount=type=secret,id=docker_host --mount=type=secret,id=buildx_builder --mount=type=secret,id=testcontainers_host --mount=type=secret,id=cache_scope --mount=type=secret,id=cache_scope_fallback --mount=type=secret,id=sayt_buildkit_syntax --mount=type=secret,id=sayt_no_cache --mount=type=secret,id=bayt_image_tag --mount=type=secret,id=bayt_pull_policy --mount=type=secret,id=sayt_no_cache_from --mount=type=secret,id=sayt_no_cache_to --mount=type=secret,id=depot_token --mount=type=secret,id=depot_project_id --mount=type=secret,id=depot_org_id --mount=type=secret,id=depot_disable_otel --mount=type=secret,id=actions_results_url --mount=type=secret,id=actions_runtime_token --mount=type=secret,id=buildx_instance --mount=type=secret,id=docker_config,mode=0600 <<BAYT_INJECT
 set -e
 export DOCKER_HOST="$(cat /run/secrets/docker_host)"
 export BUILDX_BUILDER="$(cat /run/secrets/buildx_builder)"
@@ -40,6 +40,8 @@ export DEPOT_TOKEN="$(cat /run/secrets/depot_token)"
 export DEPOT_PROJECT_ID="$(cat /run/secrets/depot_project_id)"
 export DEPOT_ORG_ID="$(cat /run/secrets/depot_org_id)"
 export DEPOT_DISABLE_OTEL="$(cat /run/secrets/depot_disable_otel)"
+export ACTIONS_RESULTS_URL="$(cat /run/secrets/actions_results_url)"
+export ACTIONS_RUNTIME_TOKEN="$(cat /run/secrets/actions_runtime_token)"
 export BUILDX_INSTANCE="$(cat /run/secrets/buildx_instance)"
 export DOCKER_AUTH_CONFIG="$(cat /run/secrets/docker_config)"
 if [ -s "/run/secrets/docker_config" ]; then mkdir -p "$(dirname "/root/.docker/config.json")"; cp -p "/run/secrets/docker_config" "/root/.docker/config.json"; fi
