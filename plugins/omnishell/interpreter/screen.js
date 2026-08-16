@@ -408,17 +408,22 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     }
   }
 
-  let base = "loading";
+  let base = screen.getAttribute("data-state") || route.states?.[0] || "populated";
   const setState = (s) => {
     screen.dataset.state = s;
   };
-  setState("loading");
+  setState(base);
 
   // Connect only once the tree carries its state: screens style themselves per
   // `[data-state]`, so a screen mounted before this paints with every
   // state-scoped rule inert — every region visible at once, links wearing the
   // user-agent underline — for as long as the awaited loads below take.
   mount.replaceChildren(screen);
+  for (const s of screen.querySelectorAll("script")) {
+    const fresh = document.createElement("script");
+    fresh.textContent = s.textContent;
+    s.replaceWith(fresh);
+  }
 
   const handlers = opts.handlers === false ? new Map() : await loadHandlers(screen, appBase, route);
   const renderers = opts.handlers === false
@@ -992,6 +997,9 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
 
   await Promise.all(pending);
   await fieldWidgets;
+  if (regions.length === 0) {
+    screen.dataset.state = route.states?.[0] ?? "populated";
+  }
 
   // The terminal owns the navigation stack, so it needs more than a teardown:
   // a screen it is holding for a back press is paused, not stopped.

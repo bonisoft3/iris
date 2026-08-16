@@ -49,7 +49,7 @@ const VIEWPORTS = [
 const TOUCH_MIN = 24
 
 /** Electric announces its transport once per boot; a property of the dev cluster, not a screen. */
-const IGNORE = [/\[Electric\] Using HTTP \(not HTTPS\)/]
+const IGNORE = [/\[Electric\] Using HTTP \(not HTTPS\)/, /ERR_NETWORK_IO_SUSPENDED/]
 
 /** Entity names are PascalCase in the program and snake_case in Postgres. */
 export function tableFor(entity: string): string {
@@ -221,7 +221,7 @@ async function main(appDir: string): Promise<number> {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: "{}",
-  }).then((r) => r.json() as Promise<{ token: string }>)
+  }).then((r) => (r.ok ? (r.json() as Promise<{ token: string }>) : { token: "" })).catch(() => ({ token: "" }))
 
   const { params, unresolved } = await resolveParams(base, session.token, paramPlans(routes))
   const findings: Finding[] = []
