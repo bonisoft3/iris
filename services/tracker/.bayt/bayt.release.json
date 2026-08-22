@@ -19,6 +19,7 @@
   },
   "dockerfile": {
     "preamble": [],
+    "preambleCopyContexts": [],
     "entrypoint": [
       "java",
       "-cp",

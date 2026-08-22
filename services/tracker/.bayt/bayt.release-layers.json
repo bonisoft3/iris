@@ -16,8 +16,9 @@
   },
   "dockerfile": {
     "preamble": [
-      "RUN zypper -n install tar=1.35-160000.3.1 gzip=1.13-160000.2.2 && zypper clean -a"
+      "RUN --mount=type=cache,target=/zypper-store,id=/zypper-store,sharing=shared --mount=type=cache,target=/var/cache/zypp,id=services_tracker-release-layers:/var/cache/zypp,sharing=locked s=/zypper-store; d=/var/cache/zypp/packages; mkdir -p \"$s\" \"$d\"; cp -r \"$s\"/. \"$d\"/ 2>/dev/null || true; zypper -n modifyrepo --keep-packages --all && zypper -n install tar=1.35-160000.3.1 gzip=1.13-160000.2.2 || exit; cd \"$d\" && for f in */*.rpm */*/*.rpm; do [ -f \"$f\" ] || continue; o=\"$s/$f\"; [ -e \"$o\" ] && continue; mkdir -p \"$(dirname \"$o\")\"; t=\"$(mktemp \"$(dirname \"$o\")/.pXXXXXX\")\" && cp \"$f\" \"$t\" && mv -f \"$t\" \"$o\"; done; zypper -n modifyrepo --no-keep-packages --all || true"
     ],
+    "preambleCopyContexts": [],
     "from": {
       "ref": ":release-artifact",
       "name": "services_tracker-release-artifact"

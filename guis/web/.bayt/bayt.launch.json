@@ -10,6 +10,7 @@
   },
   "dockerfile": {
     "preamble": [],
+    "preambleCopyContexts": [],
     "from": {
       "ref": ":build",
       "name": "guis_web-build"

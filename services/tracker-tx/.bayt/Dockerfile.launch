@@ -1,8 +1,8 @@
 # generated from bayt.cue — do not edit
 FROM services_tracker-tx-build AS launch
 WORKDIR /monorepo/services/tracker-tx
+RUN --mount=type=cache,target=/zypper-store,id=/zypper-store,sharing=shared --mount=type=cache,target=/var/cache/zypp,id=services_tracker-tx-launch:/var/cache/zypp,sharing=locked s=/zypper-store; d=/var/cache/zypp/packages; mkdir -p "$s" "$d"; cp -r "$s"/. "$d"/ 2>/dev/null || true; zypper -n modifyrepo --keep-packages --all && zypper -n install gettext-runtime=0.22.5-160000.2.2 || exit; cd "$d" && for f in */*.rpm */*/*.rpm; do [ -f "$f" ] || continue; o="$s/$f"; [ -e "$o" ] && continue; mkdir -p "$(dirname "$o")"; t="$(mktemp "$(dirname "$o")/.pXXXXXX")" && cp "$f" "$t" && mv -f "$t" "$o"; done; zypper -n modifyrepo --no-keep-packages --all || true
 COPY --from=envoyproxy/envoy:v1.35.3@sha256:4d496918618a7ebd6c71ae8285e31ebff092f3a0a5ad642d50decf4a54eb2456 /usr/local/bin/envoy /usr/local/bin/envoy
-RUN zypper -n install gettext-runtime=0.22.5-160000.2.2 && zypper clean -a
 ENV PATH=/root/.local/share/mise/shims:$PATH
 COPY --from=libraries_xproto-descriptor_outs --parents /monorepo/libraries/xproto/out/xproto.desc.pb /
 ENV GRPC_ADDRESS=127.0.0.1

@@ -24,6 +24,7 @@
   },
   "dockerfile": {
     "preamble": [],
+    "preambleCopyContexts": [],
     "from": {
       "ref": ":build",
       "name": "plugins_omnishell-build"

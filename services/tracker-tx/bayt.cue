@@ -32,6 +32,7 @@ import (
 	bayt "bonisoft.org/plugins/bayt/core:bayt"
 	mise "bonisoft.org/plugins/bayt/stacks/mise"
 	sayt "bonisoft.org/plugins/bayt/stacks/sayt"
+	zypper "bonisoft.org/plugins/bayt/distros/zypper"
 )
 
 _tx: bayt.#project & {
@@ -102,9 +103,11 @@ _tx: bayt.#project & {
 			deps: [":build", "libraries_xproto:descriptor:outs"]
 			dockerfile: {
 				from: ref: ":build"
+				defaultPreamble: "gettext": (zypper.#install & {
+					pkgs: ["gettext-runtime=0.22.5-160000.2.2"]
+				}).out
 				preamble: [
 					"COPY --from=\(bayt.lock.images.envoy) /usr/local/bin/envoy /usr/local/bin/envoy",
-					"RUN zypper -n install gettext-runtime=0.22.5-160000.2.2 && zypper clean -a",
 					"ENV PATH=/root/.local/share/mise/shims:$PATH",
 				]
 				expose: [8080]

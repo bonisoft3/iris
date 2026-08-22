@@ -10,24 +10,16 @@
   },
   "dockerfile": {
     "preamble": [
+      "COPY --from=bayt runtime /monorepo/plugins/bayt/runtime",
       "ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}"
     ],
-    "incremental": true,
-    "copy": [
+    "preambleCopyContexts": [
       {
-        "from": {
-          "name": "bayt",
-          "image": "bonitao/bayt:0.42.3@sha256:c483fbdaddd732f8f94dc04b8ae493ca9ed76f4fdc8d3026df746954cb6a78db"
-        },
-        "srcs": [
-          "runtime"
-        ],
-        "dst": "/monorepo/plugins/bayt/runtime",
-        "link": true,
-        "parents": false,
-        "exclude": []
+        "name": "bayt",
+        "image": "bonitao/bayt:0.42.3@sha256:c483fbdaddd732f8f94dc04b8ae493ca9ed76f4fdc8d3026df746954cb6a78db"
       }
     ],
+    "incremental": true,
     "from": {
       "ref": ":build",
       "name": "guis_web-build"
@@ -37,6 +29,7 @@
     "secrets": {},
     "extra_hosts": [],
     "epilogue": [],
+    "copy": [],
     "healthcheck": null,
     "expose": [],
     "entrypoint": null,

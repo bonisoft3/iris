@@ -16,6 +16,7 @@
   },
   "dockerfile": {
     "preamble": [],
+    "preambleCopyContexts": [],
     "from": {
       "ref": "workspaceroot:setup",
       "name": "workspaceroot-setup"

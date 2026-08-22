@@ -16,6 +16,7 @@
   },
   "dockerfile": {
     "preamble": [],
+    "preambleCopyContexts": [],
     "from": {
       "ref": "plugins_jvm:build",
       "name": "plugins_jvm-build"

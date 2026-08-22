@@ -2,6 +2,7 @@
   "_generated_from": "bayt.cue (do not edit)",
   "dockerfile": {
     "preamble": [],
+    "preambleCopyContexts": [],
     "from": {
       "ref": "workspaceroot:setup-js",
       "name": "workspaceroot-setup-js"

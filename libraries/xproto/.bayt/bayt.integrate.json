@@ -26,6 +26,7 @@
   },
   "dockerfile": {
     "preamble": [],
+    "preambleCopyContexts": [],
     "from": {
       "ref": ":build",
       "name": "libraries_xproto-build"

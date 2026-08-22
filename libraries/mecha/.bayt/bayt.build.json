@@ -2,6 +2,7 @@
   "_generated_from": "bayt.cue (do not edit)",
   "dockerfile": {
     "preamble": [],
+    "preambleCopyContexts": [],
     "from": {
       "ref": ":setup",
       "name": "libraries_mecha-setup"

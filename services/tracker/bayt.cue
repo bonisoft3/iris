@@ -4,6 +4,7 @@ package tracker
 import (
 	bayt "bonisoft.org/plugins/bayt/core:bayt"
 	sayt "bonisoft.org/plugins/bayt/stacks/sayt"
+	zypper "bonisoft.org/plugins/bayt/distros/zypper"
 	Bake "bonisoft.org/bake"
 	Gradle "bonisoft.org/plugins/bayt/stacks/gradle"
 )
@@ -111,7 +112,9 @@ _tracker: sayt.gradle & {
 				// nubox/leap doesn't ship `tar` by default, and lazybox's
 				// busybox subset doesn't include it either. zypper-install
 				// before the cmd RUN so the extraction can find /usr/bin/tar.
-				preamble: ["RUN zypper -n install tar=1.35-160000.3.1 gzip=1.13-160000.2.2 && zypper clean -a"]
+				defaultPreamble: "tar-gzip": (zypper.#install & {
+					pkgs: ["tar=1.35-160000.3.1", "gzip=1.13-160000.2.2"]
+				}).out
 			}
 		}
 

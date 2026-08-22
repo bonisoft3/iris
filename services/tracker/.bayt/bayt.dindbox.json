@@ -15,54 +15,31 @@
     }
   },
   "dockerfile": {
-    "preamble": [],
+    "preamble": [
+      "COPY --from=mirror.gcr.io/alpine/socat:1.8.0.0@sha256:a6be4c0262b339c53ddad723cdd178a1a13271e1137c65e27f90a08c16de02b8 /usr/bin/socat1 /usr/local/bin/socat",
+      "COPY --from=mirror.gcr.io/alpine/socat:1.8.0.0@sha256:a6be4c0262b339c53ddad723cdd178a1a13271e1137c65e27f90a08c16de02b8 /usr/lib/libreadline.so.8 /usr/lib/libncursesw.so.6 /usr/lib/",
+      "COPY --from=ghcr.io/depot/cli:2.101.78@sha256:71fc7e6cf9f10ee1699bdba40e9461387f3a8406bc7bb9a9b1857c38587a7254 /usr/bin/depot /usr/local/bin/depot"
+    ],
+    "preambleCopyContexts": [
+      {
+        "name": "mirror.gcr.io/alpine/socat:1.8.0.0@sha256:a6be4c0262b339c53ddad723cdd178a1a13271e1137c65e27f90a08c16de02b8"
+      },
+      {
+        "name": "mirror.gcr.io/alpine/socat:1.8.0.0@sha256:a6be4c0262b339c53ddad723cdd178a1a13271e1137c65e27f90a08c16de02b8"
+      },
+      {
+        "name": "ghcr.io/depot/cli:2.101.78@sha256:71fc7e6cf9f10ee1699bdba40e9461387f3a8406bc7bb9a9b1857c38587a7254"
+      }
+    ],
     "from": {
       "name": "docker:29.7.1-cli@sha256:27a51d5ab1cd38d9eeaba7b415b8c07bc10c31e1cf1ec8d78f6413fcfab3f44f"
     },
-    "copy": [
-      {
-        "from": {
-          "name": "mirror.gcr.io/alpine/socat:1.8.0.0@sha256:a6be4c0262b339c53ddad723cdd178a1a13271e1137c65e27f90a08c16de02b8"
-        },
-        "srcs": [
-          "/usr/bin/socat1"
-        ],
-        "dst": "/usr/local/bin/socat",
-        "link": true,
-        "parents": false,
-        "exclude": []
-      },
-      {
-        "from": {
-          "name": "mirror.gcr.io/alpine/socat:1.8.0.0@sha256:a6be4c0262b339c53ddad723cdd178a1a13271e1137c65e27f90a08c16de02b8"
-        },
-        "srcs": [
-          "/usr/lib/libreadline.so.8",
-          "/usr/lib/libncursesw.so.6"
-        ],
-        "dst": "/usr/lib/",
-        "link": true,
-        "parents": false,
-        "exclude": []
-      },
-      {
-        "from": {
-          "name": "ghcr.io/depot/cli:2.101.78@sha256:71fc7e6cf9f10ee1699bdba40e9461387f3a8406bc7bb9a9b1857c38587a7254"
-        },
-        "srcs": [
-          "/usr/bin/depot"
-        ],
-        "dst": "/usr/local/bin/depot",
-        "link": true,
-        "parents": false,
-        "exclude": []
-      }
-    ],
     "add": [],
     "mounts": [],
     "secrets": {},
     "extra_hosts": [],
     "epilogue": [],
+    "copy": [],
     "healthcheck": null,
     "expose": [],
     "entrypoint": null,
