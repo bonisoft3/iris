@@ -16,7 +16,7 @@
     "preambleCopyContexts": [
       {
         "name": "bayt",
-        "image": "bonitao/bayt:0.43.0@sha256:9f01f6631ae5c4791fa205d62362d3e83f6883810c946231e48ff7e61473de3e"
+        "image": "bonitao/bayt:0.44.0@sha256:81d2204944e4d26add5b88e55b73db831ac063a573003304da5e65610f4c8435"
       }
     ],
     "incremental": true,
