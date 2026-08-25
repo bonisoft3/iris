@@ -13,4 +13,5 @@
 **/.pnpm-store
 **/.aider.*
 .worktrees/
+.claude/worktrees/
 .playwright-mcp/
