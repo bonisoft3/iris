@@ -16,7 +16,7 @@
   },
   "dockerfile": {
     "preamble": [
-      "COPY --from=bayt runtime /monorepo/plugins/bayt/runtime",
+      "COPY --from=bayt . /monorepo/plugins/bayt/runtime",
       "ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}"
     ],
     "preambleCopyContexts": [

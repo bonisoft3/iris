@@ -155,6 +155,16 @@ WORKFLOWS = [
                 )],
                 noop_behavior = "IGNORE_NOOP",
             ),
+            # Tag mechanics are monorepo-only: prefixed tags, and the sync
+            # wait. Guarded by developing_scrub_test.nu.
+            core.transform(
+                [core.replace(
+                    before = "Tags are prefixed per component: `plugins/bayt/vX.Y.Z`,\n`plugins/bayt/runtime/vX.Y.Z`. Tag the merge commit, and only once its SHA\nappears downstream as a `GitOrigin-RevId:` trailer — CI going green is not the\nsignal.",
+                    after = "Tags are `vX.Y.Z` and `runtime/vX.Y.Z`. Tag the merge commit.",
+                    paths = glob(["DEVELOPING.md"]),
+                )],
+                noop_behavior = "IGNORE_NOOP",
+            ),
             # Stage cue.mod from .mirror/ → root. The monorepo
             # cannot host a nested cue.mod under plugins/bayt
             # without breaking in-monorepo CUE imports.

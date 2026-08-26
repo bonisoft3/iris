@@ -2,7 +2,7 @@
   "_generated_from": "bayt.cue (do not edit)",
   "dockerfile": {
     "preamble": [
-      "COPY --from=bayt runtime /monorepo/plugins/bayt/runtime",
+      "COPY --from=bayt . /monorepo/plugins/bayt/runtime",
       "ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}"
     ],
     "preambleCopyContexts": [
