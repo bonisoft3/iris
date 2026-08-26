@@ -22,7 +22,7 @@
     "preambleCopyContexts": [
       {
         "name": "bayt",
-        "image": "bonitao/bayt:0.44.0@sha256:81d2204944e4d26add5b88e55b73db831ac063a573003304da5e65610f4c8435"
+        "image": "plugins/bayt/runtime"
       }
     ],
     "from": {
