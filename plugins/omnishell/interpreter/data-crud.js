@@ -88,6 +88,14 @@ export function parseFilterSpec(filter) {
     if (col === "limit" && /^\d+$/.test(expr)) continue;
     if (col.includes(".")) return null; // embed-path filter — server-computed
     if (expr.startsWith("eq.")) spec.push({ col, op: "eq", value: decodeURIComponent(expr.slice(3)) });
+    else if (expr.startsWith("neq.")) spec.push({ col, op: "neq", value: decodeURIComponent(expr.slice(4)) });
+    // Pattern match, PostgREST's spelling: `*` is the wildcard (`%` is
+    // accepted too, since the wire form allows either) and `_` matches one
+    // character. `ilike` folds case; `like` does not.
+    else if (/^i?like\./.test(expr)) {
+      const at = expr.indexOf(".");
+      spec.push({ col, op: expr.slice(0, at), value: decodeURIComponent(expr.slice(at + 1)) });
+    }
     // Cursor comparisons. The value arrives as a string and the column's type
     // is not knowable here, which JS's relational operators handle the way
     // this needs: two timestamps compare lexically in the one format the
@@ -106,11 +114,22 @@ export function parseFilterSpec(filter) {
   return spec;
 }
 
+/** A LIKE pattern as regex source: metacharacters escaped, wildcards restored. */
+const likeSource = (pattern) =>
+  pattern.replace(/[.*+?^${}()|[\]\\%_]/g, (c) =>
+    c === "*" || c === "%" ? "\u0000*" : c === "_" ? "\u0000?" : `\\${c}`,
+  ).replace(/\u0000\*/g, ".*").replace(/\u0000\?/g, ".");
+
 export function parseFilter(filter) {
   const spec = parseFilterSpec(filter);
   if (spec === null) return null;
   return spec.map(({ col, op, value }) => {
     if (op === "eq") return (row) => String(row[col]) === value;
+    if (op === "neq") return (row) => String(row[col]) !== value;
+    if (op === "like" || op === "ilike") {
+      const re = new RegExp(`^${likeSource(value)}$`, op === "ilike" ? "is" : "s");
+      return (row) => row[col] != null && re.test(String(row[col]));
+    }
     if (op === "true") return (row) => row[col] === true;
     // An optimistic insert omits DB-defaulted columns; every boolean the
     // schema defaults defaults to false, so a missing column on an
@@ -162,6 +181,9 @@ export function isMaintainable(spec, embeds, access, accessOf = () => undefined)
   // type is not knowable here; the engine has its own comparison semantics,
   // and handing it a string for a numeric column is not the same question.
   if (spec.some((s) => s.op === "lt" || s.op === "lte" || s.op === "gt" || s.op === "gte")) return false;
+  // A pattern is a predicate the engine's clause vocabulary cannot state, and
+  // an unstatable clause would silently widen to "every row" — see `clause`.
+  if (spec.some((s) => s.op === "like" || s.op === "ilike")) return false;
   // An embed becomes a left join, and a left join has nowhere to put a
   // per-row visibility test: the snapshot path binds the whole embed null for
   // a row this reader cannot see, and a join would leak its columns instead.
@@ -385,9 +407,11 @@ export function createStore(base = "", cfg = {}) {
     const clause = (row, { col, op, value }) =>
       op === "eq"
         ? eq(row[col], value)
-        : op === "null"
-          ? isNull(row[col])
-          : not(isNull(row[col]));
+        : op === "neq"
+          ? not(eq(row[col], value))
+          : op === "null"
+            ? isNull(row[col])
+            : not(isNull(row[col]));
     // Without an index on the joined side's key the engine says so and loads
     // the whole collection per join. Created before the query is built, never
     // inside its builder: mutating a collection while its query is compiling
@@ -782,6 +806,22 @@ export function createStore(base = "", cfg = {}) {
     return update(table, existing[keyOf(table)], values, onRefused);
   }
 
+  // A row stated by its own key. Unlike upsert above there is no natural key to
+  // find: the caller derived the key from what the row identifies, so the same
+  // row written twice is the same row. Fields it does not name are left alone —
+  // it states a row, it does not replace one.
+  async function put(table, row, onRefused) {
+    const key = keyOf(table);
+    if (row?.[key] === undefined) throw new Error(`put ${table}: the row carries no ${key}`);
+    const collection = client.collections[table];
+    if (collection === undefined) throw new Error(`put on unsynced table: ${table}`);
+    if (!collection.isReady()) await collection.toArrayWhenReady();
+    const wanted = String(row[key]);
+    const existing = collection.toArray.find((r) => String(r[key]) === wanted);
+    if (existing === undefined) return create(table, row, onRefused);
+    return update(table, existing[key], row, onRefused);
+  }
+
   async function remove(table, id, onRefused) {
     await settle(onSettled(client.remove(table, id), table), ACCEPT_MS, onRefused);
   }
@@ -820,5 +860,5 @@ export function createStore(base = "", cfg = {}) {
     );
   }
 
-  return { query, create, update, upsert, remove, removeWhere, subscribe };
+  return { query, create, update, upsert, put, remove, removeWhere, subscribe };
 }

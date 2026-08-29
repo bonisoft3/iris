@@ -33,10 +33,23 @@ _devJwtSecret: "pronto-dev-secret-please-override-32ch"
 	}
 
 	capabilities: {
+		// The data plane. Off, nothing server-side is instantiated: no
+		// database, no crud gateway, no sync, no bus, no pipeline worker —
+		// caddy alone, serving the terminal. An app whose every entity is a
+		// browser tier (`tab`, `device`) stores nothing here to keep, and the
+		// services would then be a cluster running for nobody. The terminal
+		// is unchanged: its local collections never address a server, so the
+		// same screens, forms and handlers run against either topology.
+		server: *true | bool
 		// The auth plane: a WebAuthn auth service issuing app_user JWTs, JWT
 		// validation on crud, and the service token on transform. Off, the
-		// stack is the pre-auth one, byte for byte.
+		// stack is the pre-auth one, byte for byte. Identity is a row the
+		// cluster keeps, so it presupposes `server`.
 		auth: *false | bool
+		if auth {
+			server: true
+		}
+
 		// The blob plane: rclone-s3 object store (S3 wire protocol, bucket
 		// mecha-objects, no auth keys — dev posture) and imgproxy, behind the
 		// caddy /blobs and /img routes.
@@ -46,47 +59,49 @@ _devJwtSecret: "pronto-dev-secret-please-override-32ch"
 	surface: {
 		services: [string]: _
 		services: {
-			database: {
-				build: {context: "\(X.meta.mechaPath)/services/database", dockerfile: "Dockerfile"}
-				ports: ["5432"]
-				environment: {
-					POSTGRES_USER:        "${POSTGRES_USER:-postgres}"
-					POSTGRES_PASSWORD:    "${POSTGRES_PASSWORD:-postgres}"
-					POSTGRES_DB:          "${POSTGRES_DB:-\(X.meta.app)}"
-					POSTGRES_INITDB_ARGS: "--no-sync --no-locale --encoding=UTF8 --auth=trust"
+			if X.capabilities.server {
+				database: {
+					build: {context: "\(X.meta.mechaPath)/services/database", dockerfile: "Dockerfile"}
+					ports: ["5432"]
+					environment: {
+						POSTGRES_USER:        "${POSTGRES_USER:-postgres}"
+						POSTGRES_PASSWORD:    "${POSTGRES_PASSWORD:-postgres}"
+						POSTGRES_DB:          "${POSTGRES_DB:-\(X.meta.app)}"
+						POSTGRES_INITDB_ARGS: "--no-sync --no-locale --encoding=UTF8 --auth=trust"
+					}
+					command: ["postgres", "-c", "wal_level=logical", "-c", "fsync=off", "-c", "synchronous_commit=off",
+						"-c", "full_page_writes=off", "-c", "shared_buffers=32MB", "-c", "max_connections=200"]
+					tmpfs: ["/postgresql-data"]
+					healthcheck: {
+						test: ["CMD", "pg_isready", "-h", "localhost", "-p", "5432", "-d", "${POSTGRES_DB:-\(X.meta.app)}", "-U", "${POSTGRES_USER:-postgres}"]
+						start_interval: "100ms"
+						start_period:   "5m"
+					}
+					configs: [for m in X.state.migrations {
+						source: "migration-\(strings.SplitN(X._migBase[m], "_", 2)[0])"
+						target: "/docker-entrypoint-initdb.d/\(X._migBase[m])"
+					}]
+					develop: watch: [{action: "rebuild", path: "services/database/migrations"}]
 				}
-				command: ["postgres", "-c", "wal_level=logical", "-c", "fsync=off", "-c", "synchronous_commit=off",
-					"-c", "full_page_writes=off", "-c", "shared_buffers=32MB", "-c", "max_connections=200"]
-				tmpfs: ["/postgresql-data"]
-				healthcheck: {
-					test: ["CMD", "pg_isready", "-h", "localhost", "-p", "5432", "-d", "${POSTGRES_DB:-\(X.meta.app)}", "-U", "${POSTGRES_USER:-postgres}"]
-					start_interval: "100ms"
-					start_period:   "5m"
-				}
-				configs: [for m in X.state.migrations {
-					source: "migration-\(strings.SplitN(X._migBase[m], "_", 2)[0])"
-					target: "/docker-entrypoint-initdb.d/\(X._migBase[m])"
-				}]
-				develop: watch: [{action: "rebuild", path: "services/database/migrations"}]
-			}
-			crud: {
-				build: {context: X.meta.mechaPath, dockerfile: "services/crud/Dockerfile"}
-				depends_on: database: condition: "service_healthy"
-				healthcheck: {
-					test: ["CMD", "httpcheck", "http://127.0.0.1:3001/ready"]
-					interval:       "5s"
-					start_interval: "500ms"
-					start_period:   "30s"
-				}
-				environment: {
-					PGRST_DB_URI:            "postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-\(X.meta.app)}"
-					PGRST_DB_SCHEMA:         "public"
-					PGRST_DB_ANON_ROLE:      "anon"
-					PGRST_SERVER_HOST:       "*"
-					PGRST_SERVER_PORT:       3000
-					PGRST_ADMIN_SERVER_PORT: 3001
-					if X.capabilities.auth {
-						PGRST_JWT_SECRET: "${PGRST_JWT_SECRET:-\(_devJwtSecret)}"
+				crud: {
+					build: {context: X.meta.mechaPath, dockerfile: "services/crud/Dockerfile"}
+					depends_on: database: condition: "service_healthy"
+					healthcheck: {
+						test: ["CMD", "httpcheck", "http://127.0.0.1:3001/ready"]
+						interval:       "5s"
+						start_interval: "500ms"
+						start_period:   "30s"
+					}
+					environment: {
+						PGRST_DB_URI:            "postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-\(X.meta.app)}"
+						PGRST_DB_SCHEMA:         "public"
+						PGRST_DB_ANON_ROLE:      "anon"
+						PGRST_SERVER_HOST:       "*"
+						PGRST_SERVER_PORT:       3000
+						PGRST_ADMIN_SERVER_PORT: 3001
+						if X.capabilities.auth {
+							PGRST_JWT_SECRET: "${PGRST_JWT_SECRET:-\(_devJwtSecret)}"
+						}
 					}
 				}
 			}
@@ -145,41 +160,42 @@ _devJwtSecret: "pronto-dev-secret-please-override-32ch"
 					[for s in X.meta.statics {action: "sync+restart", path: s.file, target: s.target}],
 				])
 			}
-			electric: {
-				image: "electricsql/electric@sha256:f311edc272e227ddaea593c5205a02c3d1e5969c2db0f7655a039a5e24abb176"
-				depends_on: database: condition: "service_healthy"
-				environment: {
-					DATABASE_URL:      "postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-\(X.meta.app)}?sslmode=disable"
-					ELECTRIC_INSECURE: "true"
+			if X.capabilities.server {
+				electric: {
+					image: "electricsql/electric@sha256:f311edc272e227ddaea593c5205a02c3d1e5969c2db0f7655a039a5e24abb176"
+					depends_on: database: condition: "service_healthy"
+					environment: {
+						DATABASE_URL:      "postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-\(X.meta.app)}?sslmode=disable"
+						ELECTRIC_INSECURE: "true"
+					}
+					healthcheck: {
+						test: ["CMD", "curl", "-f", "http://localhost:3000/v1/health"]
+						interval:     "5s", timeout:         "5s", retries: 12
+						start_period: "60s", start_interval: "500ms"
+					}
+					restart: "on-failure"
 				}
-				healthcheck: {
-					test: ["CMD", "curl", "-f", "http://localhost:3000/v1/health"]
-					interval: "5s", timeout: "5s", retries: 12
-					start_period: "60s", start_interval: "500ms"
+				redis: {
+					image: "redis:7.4.1-alpine@sha256:59b6e694653476de2c992937ebe1c64182af4728e54bb49e9b7a6c26614d8933"
+					healthcheck: {
+						test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+						interval:     "5s", timeout:         "5s", retries: 6
+						start_period: "10s", start_interval: "500ms"
+					}
 				}
-				restart: "on-failure"
-			}
-			redis: {
-				image: "redis:7.4.1-alpine@sha256:59b6e694653476de2c992937ebe1c64182af4728e54bb49e9b7a6c26614d8933"
-				healthcheck: {
-					test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
-					interval: "5s", timeout: "5s", retries: 6
-					start_period: "10s", start_interval: "500ms"
+				"mesh-events": {
+					build: {context: X.meta.mechaPath, dockerfile: "services/mesh/Dockerfile", target: "events"}
+					depends_on: {caddy: condition: "service_started", redis: condition: "service_started"}
+					healthcheck: {
+						test: ["CMD", "/bin/portcheck", "--port", "3500"]
+						interval: "5s", start_interval: "500ms", start_period: "30s"
+					}
+					restart: "on-failure"
 				}
-			}
-			"mesh-events": {
-				build: {context: X.meta.mechaPath, dockerfile: "services/mesh/Dockerfile", target: "events"}
-				depends_on: {caddy: condition: "service_started", redis: condition: "service_started"}
-				healthcheck: {
-					test: ["CMD", "/bin/portcheck", "--port", "3500"]
-					interval: "5s", start_interval: "500ms", start_period: "30s"
-				}
-				restart: "on-failure"
-			}
-			conduit: {
-				build: {
-					context: "./docker"
-					dockerfile_inline: #"""
+				conduit: {
+					build: {
+						context: "./docker"
+						dockerfile_inline: #"""
 						FROM ghcr.io/conduitio/conduit:v0.14.0@sha256:dffc83f78caddac8fda0bf71b2b34212174e4a8cbe74ee5e1784a97a78b77e60
 						ARG TARGETARCH
 						RUN mkdir -p /app/connectors && \
@@ -193,20 +209,21 @@ _devJwtSecret: "pronto-dev-secret-please-override-32ch"
 						CMD ["sh", "-c", "envsubst < /conduit/pipelines/cdc-to-bus.yaml.tmpl > /conduit/pipelines/cdc-to-bus.yaml && rm /conduit/pipelines/cdc-to-bus.yaml.tmpl && exec /app/conduit run"]
 
 						"""#
+					}
+					depends_on: {database: condition: "service_healthy", "mesh-events": condition: "service_started"}
+					develop: watch: [{action: "rebuild", path: "docker/conduit-pipeline.yaml"}]
+					environment: {
+						DATABASE_URL:           "postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-\(X.meta.app)}"
+						CONDUIT_PIPELINES_PATH: "/conduit/pipelines"
+						CONDUIT_DB_TYPE:        "inmemory"
+					}
+					healthcheck: {
+						test: ["CMD", "httpcheck", "http://127.0.0.1:8080/healthz"]
+						interval:     "5s", timeout:          "5s", retries: 20
+						start_period: "120s", start_interval: "500ms"
+					}
+					restart: "on-failure"
 				}
-				depends_on: {database: condition: "service_healthy", "mesh-events": condition: "service_started"}
-				develop: watch: [{action: "rebuild", path: "docker/conduit-pipeline.yaml"}]
-				environment: {
-					DATABASE_URL:           "postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-\(X.meta.app)}"
-					CONDUIT_PIPELINES_PATH: "/conduit/pipelines"
-					CONDUIT_DB_TYPE:        "inmemory"
-				}
-				healthcheck: {
-					test: ["CMD", "httpcheck", "http://127.0.0.1:8080/healthz"]
-					interval: "5s", timeout: "5s", retries: 20
-					start_period: "120s", start_interval: "500ms"
-				}
-				restart: "on-failure"
 			}
 			if X.capabilities.blobs {
 				"rclone-s3": {
@@ -215,7 +232,7 @@ _devJwtSecret: "pronto-dev-secret-please-override-32ch"
 					command: ["serve", "s3", "--addr=0.0.0.0:3900", "--vfs-cache-mode=off", "/data"]
 					healthcheck: {
 						test: ["CMD-SHELL", "wget -S -O /dev/null http://127.0.0.1:3900/ 2>&1 | grep -q 'HTTP/'"]
-						interval: "5s", timeout: "5s", retries: 6
+						interval:     "5s", timeout:         "5s", retries: 6
 						start_period: "10s", start_interval: "500ms"
 					}
 				}
@@ -237,49 +254,53 @@ _devJwtSecret: "pronto-dev-secret-please-override-32ch"
 					}
 					healthcheck: {
 						test: ["CMD-SHELL", #"bash -c 'echo -e "GET /health HTTP/1.0\r\nHost: localhost\r\n\r\n" > /dev/tcp/127.0.0.1/8081'"#]
-						interval: "5s", timeout: "5s", retries: 6
+						interval:     "5s", timeout:         "5s", retries: 6
 						start_period: "10s", start_interval: "500ms"
 					}
 					restart: "on-failure"
 				}
 			}
-			transform: {
-				build: {
-					context: "."
-					dockerfile_inline: #"""
+			if X.capabilities.server {
+				transform: {
+					build: {
+						context: "."
+						dockerfile_inline: #"""
 						FROM redpandadata/connect:4.46.0@sha256:f84ebd666931dc667b8b33c70900ff49a34c73d1811b096f668e360d66a05d4c
 
 						"""# + strings.Join([for p in X.state.pipelines {"COPY \(p.file) /pipelines/\(p.name).yaml"}], "\n") + "\n"
-				}
-				command: list.Concat([["streams", "--no-api"], [for p in X.state.pipelines {"/pipelines/\(p.name).yaml"}]])
-				depends_on: {redis: condition: "service_healthy", crud: condition: "service_healthy"}
-				environment: {
-					// Straight to PostgREST: the proxy's client-facing Prefer
-					// injection would clobber the pipelines' merge-duplicates upserts.
-					CRUD_URL:  "http://crud:3000"
-					REDIS_URL: "redis://redis:6379"
-					if X.capabilities.auth {
-						SERVICE_JWT: "${SERVICE_JWT:-\(_devServiceJwt)}"
 					}
+					command: list.Concat([["streams", "--no-api"], [for p in X.state.pipelines {"/pipelines/\(p.name).yaml"}]])
+					depends_on: {redis: condition: "service_healthy", crud: condition: "service_healthy"}
+					environment: {
+						// Straight to PostgREST: the proxy's client-facing Prefer
+						// injection would clobber the pipelines' merge-duplicates upserts.
+						CRUD_URL:  "http://crud:3000"
+						REDIS_URL: "redis://redis:6379"
+						if X.capabilities.auth {
+							SERVICE_JWT: "${SERVICE_JWT:-\(_devServiceJwt)}"
+						}
+					}
+					restart: "on-failure"
+					develop: watch: [for p in X.state.pipelines {
+						action: "sync+restart"
+						path:   p.file
+						target: "/pipelines/\(p.name).yaml"
+					}]
 				}
-				restart: "on-failure"
-				develop: watch: [for p in X.state.pipelines {
-					action: "sync+restart"
-					path:   p.file
-					target: "/pipelines/\(p.name).yaml"
-				}]
 			}
 			launch: {
 				image: "alpine/curl:latest"
 				depends_on: {
-					database: condition:      "service_healthy"
-					crud: condition:          "service_healthy"
-					caddy: condition:         "service_healthy"
-					electric: condition:      "service_healthy"
-					redis: condition:         "service_healthy"
-					"mesh-events": condition: "service_healthy"
-					conduit: condition:       "service_healthy"
-					transform: condition:     "service_started"
+					caddy: condition: "service_healthy"
+					if X.capabilities.server {
+						database: condition:      "service_healthy"
+						crud: condition:          "service_healthy"
+						electric: condition:      "service_healthy"
+						redis: condition:         "service_healthy"
+						"mesh-events": condition: "service_healthy"
+						conduit: condition:       "service_healthy"
+						transform: condition:     "service_started"
+					}
 					if X.capabilities.auth {
 						auth: condition: "service_started"
 					}
@@ -287,6 +308,7 @@ _devJwtSecret: "pronto-dev-secret-please-override-32ch"
 						"rclone-s3": condition: "service_healthy"
 						imgproxy: condition:    "service_healthy"
 					}
+
 					// Consumer-added services (escape hatches) gate here by
 					// unification, which the closed definition would otherwise refuse.
 					...
@@ -294,8 +316,8 @@ _devJwtSecret: "pronto-dev-secret-please-override-32ch"
 				healthcheck: {
 					test: ["CMD", "echo", "\(X.meta.app) is healthy"]
 					interval: "5s"
-					timeout: "2s"
-					retries: 3
+					timeout:  "2s"
+					retries:  3
 				}
 				command: ["tail", "-f", "/dev/null"]
 			}
@@ -319,12 +341,12 @@ _devJwtSecret: "pronto-dev-secret-please-override-32ch"
 		// developer's browser trusts — so the cluster asks for one at setup
 		// rather than issuing an untrusted one at boot. Issuing is idempotent
 		// and touches nothing outside the app dir; TRUSTING it is the one step
-		// left to a human, because it writes to the system keychain:
+		// left to a human, because it writes to the system keychain — so setup
+		// ends by printing that command instead of running it.
 		//
-		//   mise exec -- mkcert -install
-		//
-		// Without that the cert is still served and the battery still drives it
-		// (it ignores certificate errors); only a human browser complains.
+		// Untrusted, the cert is still served and the battery still drives it
+		// (it ignores certificate errors); only a human browser complains, and
+		// its interstitial blocks WebAuthn outright.
 		checks: certs: {
 			verb: "setup"
 			// Two cmds, not one joined with `&&`: sayt runs these through
@@ -333,6 +355,7 @@ _devJwtSecret: "pronto-dev-secret-please-override-32ch"
 			cmds: [
 				"mkdir .certs",
 				"mise exec -- mkcert -cert-file .certs/localhost.pem -key-file .certs/localhost-key.pem localhost 127.0.0.1 ::1",
+				"print 'the browser trusts this certificate only once you run: mise exec -- mkcert -install'",
 			]
 			note: "issues the locally-trusted certificate the https door serves"
 		}
@@ -342,7 +365,7 @@ _devJwtSecret: "pronto-dev-secret-please-override-32ch"
 		app: string
 		// Path from the app dir to libraries/mecha, for the build contexts.
 		mechaPath: *"../../libraries/mecha" | string
-		statics:   [...#Static]
+		statics: [...#Static]
 	}
 
 	// The proxy image with this app's statics baked in. Emitted as

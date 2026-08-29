@@ -49,7 +49,15 @@ const VIEWPORTS = [
 const TOUCH_MIN = 24
 
 /** Electric announces its transport once per boot; a property of the dev cluster, not a screen. */
-const IGNORE = [/\[Electric\] Using HTTP \(not HTTPS\)/, /ERR_NETWORK_IO_SUSPENDED/]
+// SES announces every intrinsic it removes when a compartment is first built.
+// That is the terminal's own vendored runtime talking, and it says the same
+// dozen lines for every app that evaluates a Jessie module — it is not the
+// app's console and must not spend the app's advisory budget.
+const IGNORE = [
+  /\[Electric\] Using HTTP \(not HTTPS\)/,
+  /ERR_NETWORK_IO_SUSPENDED/,
+  /^Removing intrinsics\./,
+]
 
 /** Entity names are PascalCase in the program and snake_case in Postgres. */
 export function tableFor(entity: string): string {

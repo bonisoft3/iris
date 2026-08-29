@@ -14,6 +14,55 @@ async function fetchText(url) {
   return res.text();
 }
 
+// The terminal's own generator, seeded from the URL when one asks. Every draw
+// an app makes comes through here, so a replay is a property of the terminal
+// rather than something each app has to arrange.
+const params = new URLSearchParams(globalThis.location?.search ?? "");
+// How fast the terminal's clock runs. A reduce says how long to wait in the
+// table's own seconds; ?tempo= says how many of those go by in one of ours.
+// Shortening a wait is not the same as removing one: a mutation landing while
+// a chain waits is the whole shape of the bug this bounds, and it still lands
+// inside a tenth of a beat. Removing the wait would take the window with it.
+const TEMPO = Math.min(50, Math.max(1, Number(params.get("tempo")) || 1));
+
+// A clock something else can hold. Under ?clock=manual no wait comes due on
+// its own: it joins a queue, and whoever holds the clock says when time has
+// passed. A driver that owns the clock never samples a state it has already
+// missed and never waits real seconds for one it has not reached — and the
+// waits themselves stay, so a mutation landing while a chain is waiting still
+// lands there.
+const MANUAL = params.get("clock") === "manual";
+const pending = new Set();
+let held = 0;
+if (MANUAL) {
+  globalThis.__prontoClock = {
+    // Returns how many waits are still outstanding, so a caller can tell a
+    // table that is thinking from one that has stopped.
+    advance(ms) {
+      held += ms;
+      for (const w of [...pending]) {
+        if (w.at > held) continue;
+        pending.delete(w);
+        w.fire();
+      }
+      return pending.size;
+    },
+  };
+}
+const rest = (ms) =>
+  MANUAL
+    ? new Promise((fire) => pending.add({ at: held + ms, fire }))
+    : new Promise((resolve) => setTimeout(resolve, ms));
+const seeded = params.get("seed");
+let entropy = seeded === null ? 0 : Number(seeded) >>> 0;
+const draw = () => {
+  if (seeded === null) return crypto.getRandomValues(new Uint32Array(1))[0];
+  entropy = (entropy + 0x6D2B79F5) >>> 0;
+  let t = Math.imul(entropy ^ (entropy >>> 15), 1 | entropy);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return (t ^ (t >>> 14)) >>> 0;
+};
+
 const HAS_PLACEHOLDER = /\{[\w.]+\}/;
 const PLACEHOLDER = /\{([\w.]+)\}/g;
 
@@ -33,8 +82,32 @@ async function loadRole(screen, appBase, route, attr, role) {
   return loaded;
 }
 
-const loadHandlers = (screen, appBase, route) =>
-  loadRole(screen, appBase, route, "data-handler", "handler");
+// data-on-<dom-event>="<declared handler>". The event name is the DOM's, so
+// there is no vocabulary of ours to keep and no allow-list to maintain: the
+// check is that the name is an event and that the handler is declared. The
+// value is a REFERENCE and never a body, which is what keeps the assembly
+// lintable and the reduce pure — an inline on<event> would be neither.
+const onAttrs = (el) =>
+  [...el.attributes]
+    .filter((a) => a.name.startsWith("data-on-"))
+    .map((a) => ({ event: a.name.slice("data-on-".length), name: a.value }));
+
+async function loadHandlers(screen, appBase, route) {
+  const loaded = await loadRole(screen, appBase, route, "data-handler", "handler");
+  // The same modules, reached by the other spelling. An item's handler lives in
+  // a template, whose markup is never in the screen's own tree.
+  for (const scope of withTemplates(screen)) {
+    for (const el of scope.querySelectorAll("*")) {
+      for (const { name } of onAttrs(el)) {
+        if (loaded.has(name)) continue;
+        const path = route.files.handlers.find((f) => f.split("/").pop() === `${name}.js`);
+        if (!path) throw new Error(`no Jessie module for data-on-* handler "${name}"`);
+        loaded.set(name, await evaluateRole(await fetchText(new URL(path, appBase)), "handler"));
+      }
+    }
+  }
+  return loaded;
+}
 
 // An item template's markup never appears in the screen's own tree, so
 // anything resolved before hydration has to look inside it too.
@@ -77,6 +150,12 @@ const REGION_ATTRS = new Set(["data-text", "data-filter", "data-select", "data-e
 // Attributes the browser resolves as URLs, where the empty string is not
 // "unset" but a reference to the current document.
 const URL_ATTRS = new Set(["src", "href", "srcset", "poster", "action", "formaction", "data"]);
+// A bound boolean attribute is absent when its value is empty. `disabled=""`
+// is disabled, so interpolating an empty string would pin the control shut —
+// the same trap URL_ATTRS exists for, and the same answer.
+const BOOL_ATTRS = new Set([
+  "disabled", "checked", "readonly", "required", "selected", "hidden", "open", "multiple",
+]);
 const BLANK_PIXEL = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
 
 // {param.x} reads route params; any other expression is a dot path into the
@@ -212,6 +291,12 @@ function playExit(node, done) {
 
 // True when no [data-live] boundary sits between el (inclusive) and scope
 // (exclusive) — nested regions bind against their own row, never the parent's.
+/** Forms under a scope, the scope included when it is itself one. */
+const formsIn = (scope) => [
+  ...(scope.matches?.("form[data-action]") ? [scope] : []),
+  ...scope.querySelectorAll("form[data-action]"),
+];
+
 function ownedBy(el, scope) {
   for (let n = el; n && n !== scope; n = n.parentElement) {
     if (n.matches?.("[data-live]")) return false;
@@ -279,11 +364,19 @@ function bindAttributes(scope, ctx) {
     // setAttribute would consume the placeholder template; persistent regions
     // (singletons) re-bind on every refresh, so originals are stashed.
     const stash = (el._prontoAttrs ??= {});
-    for (const attr of [...(el.attributes ?? [])]) {
-      if (REGION_ATTRS.has(attr.name)) continue;
-      const template = stash[attr.name] ?? attr.value;
-      if (!HAS_PLACEHOLDER.test(template)) continue;
-      stash[attr.name] = template;
+    // The names to consider are the element's attributes AND every name already
+    // stashed. A binding that resolved to nothing had its attribute removed —
+    // an empty boolean is absent, an empty href is not a URL — and iterating
+    // only what is present would never visit it again, leaving it dead at the
+    // first empty value it ever took.
+    const names = new Set([...(el.attributes ?? [])].map((a) => a.name));
+    for (const name of Object.keys(stash)) names.add(name);
+    for (const name of names) {
+      if (REGION_ATTRS.has(name)) continue;
+      const template = stash[name] ?? el.getAttribute(name);
+      if (template === null || !HAS_PLACEHOLDER.test(template)) continue;
+      stash[name] = template;
+      const attr = { name, value: template };
       // Fixture tier: an interpolated img src would fire a real request the
       // moment it is set; a transparent pixel keeps the layout box instead.
       if (ctx.inert && el.localName === "img" && attr.name === "src") {
@@ -335,6 +428,10 @@ function bindAttributes(scope, ctx) {
       // A URL attribute that resolves to nothing must not stay empty: the
       // empty string is a valid relative URL meaning "this document", so
       // `src=""` fetches the page and paints it as a broken image.
+      if (value === "" && BOOL_ATTRS.has(attr.name)) {
+        el.removeAttribute(attr.name);
+        continue;
+      }
       if (value === "" && URL_ATTRS.has(attr.name)) {
         // An <img> is sized by CSS whether or not it has a source, and a
         // sized <img> with no src at all still gets the engine's missing-image
@@ -644,6 +741,164 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     }
   }
 
+  // Any DOM event the app declared, reduced against the region's rows. Same
+  // contract as the drag above: {type, id, items} in, {updates} out. The
+  // handler never receives a node or an Event — it is evaluated in a
+  // compartment with nothing endowed, so it could not use one, and it stays
+  // testable with no DOM. A region-level event (a tick) carries no id.
+  function wireEvents(region, items, getRows, handlers) {
+    // {updates, then}. The command goes in the return, which is the whole of
+    // how a reduce continues: evaluated in a compartment with nothing endowed
+    // it can neither write nor wait, so it names the next event and the
+    // terminal delivers it — after the writes, and after any delay it asked
+    // for. Keeping the command a VALUE is what makes the chain recordable; a
+    // promise would put the continuation on a stack nobody can serialise.
+    //
+    // An update may name its collection. A reduce over one region's rows
+    // routinely concludes about their parent — closing a trick is an update to
+    // the round the plays belong to. Omitted, it is the region's own, which is
+    // the drag's case.
+    // What else the reduce reads. The region's rows are its subject, but a
+    // conclusion about them routinely needs the rest of the screen's world:
+    // whether a card may be played is a fact about the table, not about the
+    // hand holding it. Declared on the region, so what a compartment can see
+    // stays something a reader can find in the markup, and whole collections
+    // rather than a second filter language — a reduce is code and can narrow
+    // what it was given.
+    const reads = (region.dataset.reads ?? "").split(",").map((t) => t.trim()).filter(Boolean);
+    const worldOf = async () => {
+      const rows = {};
+      for (const table of reads) rows[table] = await store.query(table, null, {});
+      return rows;
+    };
+
+    const STEPS = 8;
+    const step = async (reduce, event, depth) => {
+      const result = reduce({ items: getRows(), rows: await worldOf() }, event);
+      // A `then` that is callable is a promise, not a command: an async reduce
+      // otherwise resolves to undefined updates and does nothing at all.
+      if (typeof result?.then === "function") {
+        throw new Error(`handler for "${event.type}" returned a promise; a reduce returns its updates`);
+      }
+      // Two ways to write, and the difference is what the reduce knows. A
+      // patch changes named fields of a row that is there; a row states one
+      // whether or not it is, and is only safe because the key is derived from
+      // what the row identifies — the same conclusion reached twice is the
+      // same row, which is what lets a reduce be woken more than once.
+      for (const u of result?.updates ?? []) {
+        const entity = u.entity ?? region.dataset.live;
+        if (u.row !== undefined) await store.put(entity, u.row);
+        else await store.update(entity, u.id, u.patch);
+      }
+      const next = result?.then;
+      if (!next?.type) return;
+      // The terminal owns the depth. A cascade with no owner has no end, and
+      // an app cannot bound one it cannot see.
+      if (depth + 1 >= STEPS) {
+        throw new Error(`handler chain did not settle in ${STEPS} steps at "${next.type}"`);
+      }
+      if (next.delay > 0) await rest(next.delay / TEMPO);
+      const carried = { type: next.type };
+      // A draw the reduce asked for. It has no randomness of its own — the
+      // compartment endows nothing — so it says it wants one and is called
+      // again with it, the same way it says it wants to wait. The terminal
+      // owning the draw is also what lets a screen be replayed: with ?seed= it
+      // draws from that instead, and the same run comes back.
+      if (next.seed === true) carried.seed = draw();
+      await step(reduce, carried, depth + 1);
+    };
+
+    const bind = (el, id) => {
+      for (const { event, name } of onAttrs(el)) {
+        const reduce = handlers.get(name);
+        if (!reduce) continue;
+        // Item nodes outlive a refresh, so each is wired once — re-wiring would
+        // stack another listener on every render.
+        const once = `_prontoOn_${event}`;
+        if (el[once]) continue;
+        el[once] = true;
+        el.addEventListener(event, async (e) => {
+          try {
+            const fired = { type: event };
+            if (id !== undefined) fired.id = id;
+            // Which element fired, by the name it already has. A region binds
+            // one handler and a screen has more than one affordance on it —
+            // three answers to a raise are three buttons and one reduce — so
+            // an event that says only that a click happened says too little.
+            // The DOM id and not the class: the class is how a thing looks,
+            // and a reduce that branched on it would be reading the styling.
+            if (el.id !== "") fired.from = el.id;
+            // Which animation ended, when one did. A screen runs more than one
+            // clock — the terminal's own item arrivals among them — and they
+            // all bubble to a region that declared this event, so a reduce
+            // that means one of them has to be able to say which.
+            if (typeof e?.animationName === "string") fired.animation = e.animationName;
+            await step(reduce, fired, 0);
+          } catch (err) {
+            console.error(err);
+            setState("network-error");
+          }
+        });
+      }
+    };
+    // Down the tree, not just at its root: an affordance is rarely the element
+    // that declares the read. Inside an item it acts on that row and carries
+    // its id; outside one it acts on what the region read. The walk stops at
+    // the next [data-live], which binds its own.
+    const bindTree = (root, id, skip) => {
+      bind(root, id);
+      for (const el of root.querySelectorAll("*")) {
+        if (!ownedBy(el, root)) continue;
+        if (skip !== undefined && skip.some((it) => it.contains(el))) continue;
+        bind(el, id);
+      }
+    };
+    bindTree(region, undefined, items);
+    for (const item of items) bindTree(item, item.dataset.id);
+
+    // A mutation landed on this region's collection, and the terminal knows it
+    // because it is the one that rendered it — so it says so, rather than
+    // leaving an app to recover the fact by watching the DOM and reading rows
+    // back out of attributes it may not even carry. `mutation` is the store's
+    // word, which is mecha's word throughout, and never MutationObserver's: no
+    // DOM change fires this.
+    //
+    // The flag lives on the region because this runs once per refresh: a
+    // reduce that writes its own collection wakes itself, and the flag makes
+    // that a fixpoint rather than a spiral. A reduce that never settles is
+    // caught by the chain bound in step().
+    //
+    // A mutation arriving while the reduce runs is remembered, not dropped.
+    // Dropping it is only harmless for a reduce whose writes land somewhere
+    // it does not itself read; one that concludes about its own collection
+    // wakes itself, finds the flag up, and would sleep with its own last
+    // write unanswered — a hand that stops halfway through a rodada. Waking
+    // again terminates for the reason the flag does: a reduce that writes
+    // nothing produces no mutation, so a settled one is not re-entered.
+    const onRows = region.dataset.onMutation;
+    const rowsReduce = onRows && handlers.get(onRows);
+    if (rowsReduce) {
+      if (region._prontoInMutation) region._prontoMutationAgain = true;
+      else {
+        const wake = () => {
+          region._prontoInMutation = true;
+          step(rowsReduce, { type: "mutation" }, 0)
+            .catch((err) => {
+              console.error(err);
+              setState("network-error");
+            })
+            .finally(() => {
+              region._prontoInMutation = false;
+              if (!region._prontoMutationAgain) return;
+              region._prontoMutationAgain = false;
+              wake();
+            });
+        };
+        wake();
+      }
+    }
+  }
+
   // Field-backed widgets. A [data-widget] wrapping a region is that region's —
   // its rows are the items, and hydrateRegion mounts it below. One wrapping no
   // region dresses the form control inside it instead: the machine owns the
@@ -676,6 +931,14 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
   function hydrateRegion(region, ctx, top) {
     const table = region.dataset.live;
     const template = region.querySelector("template[data-item]");
+    // An item is the template's first element child, and only that: a second
+    // one is not rendered, not bound and not reported, so the region quietly
+    // draws half of what the markup says it draws.
+    if (template && template.content.children.length !== 1) {
+      throw new Error(
+        `region "${table}" has a template with ${template.content.children.length} elements; an item is exactly one`,
+      );
+    }
     const opts = {};
     if (region.dataset.filter) opts.filter = interpolateFilter(region.dataset.filter, ctx);
     if (region.dataset.select) opts.select = region.dataset.select;
@@ -770,7 +1033,11 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
               // The wired closures read entry.ctx, which is mutated in place
               // below: a form on a surviving node must see the current row,
               // not the one its node was born with.
-              for (const form of node.querySelectorAll("form[data-action]")) {
+              // The node itself counts: an item whose whole markup is one form
+              // — a row of per-label file buttons, a per-row action — is not
+              // inside itself, and querySelectorAll alone would leave it
+              // unwired, clicking into silence.
+              for (const form of formsIn(node)) {
                 if (ownedBy(form, node)) wireForm(form, () => node.dataset.id, () => entry.ctx);
               }
               // Stamped before the node is in the document, so its arriving
@@ -850,6 +1117,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
           if (reduce && template.content.querySelector("[data-drag-handle]")) {
             wireDrag(region, order, () => currentRows, reduce);
           }
+          wireEvents(region, order, () => currentRows, handlers);
           first = false;
         }
         if (top) {
@@ -875,6 +1143,9 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         }
         if (top && screen.dataset.state === "gone") setState(base);
         const rowCtx = { params: ctx.params, inert: ctx.inert, row };
+        // A singleton has affordances too, and its one row is what they act
+        // on: the reduce is handed it the way a list's is handed its rows.
+        wireEvents(region, [], () => (currentRow === undefined ? [] : [currentRow]), handlers);
         bindAttributes(region, rowCtx);
         bindTexts(region, rowCtx, renderers);
         bindHatches(region, rowCtx);

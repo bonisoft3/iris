@@ -50,12 +50,28 @@ function boot() {
     { id: "b", position: 20 },
     { id: "c", position: 30 },
   ];
-  const calls = { updates: [], creates: [], puts: [] };
+  const calls = { updates: [], creates: [], puts: [], rows: [] };
+  // put is the only write here that changes what a later read returns, so it
+  // is the only one that wakes a subscriber — which is what lets a smoke
+  // exercise a reduce concluding about its own collection.
+  const subs = new Set();
   const store = {
     query: async () => rows,
-    subscribe: () => () => {},
+    subscribe: (_table, cb) => {
+      subs.add(cb);
+      return () => subs.delete(cb);
+    },
     create: async (table, values) => calls.creates.push({ table, values }),
     update: async (table, id, patch) => calls.updates.push({ table, id, patch }),
+    // The real stores insert or patch by the row's own key; here the effect
+    // that matters is that one row lands once however often it is stated.
+    put: async (table, row) => {
+      calls.rows.push({ table, row });
+      const i = rows.findIndex((r) => r.id === row.id);
+      if (i < 0) rows.push({ ...row });
+      else rows[i] = { ...rows[i], ...row };
+      for (const cb of subs) setTimeout(cb, 0);
+    },
     remove: async () => {},
   };
 
@@ -170,5 +186,396 @@ Deno.test({
       `mutation carries the key string, got ${JSON.stringify(calls.creates[0].values)}`,
     );
     assert(mount.firstElementChild.dataset.state === "success", "success state set");
+  },
+});
+
+// The region declares a DOM event as a handler source, and the reduce names
+// what should happen next. Nothing is endowed: the compartment can neither
+// write nor wait, so both are things it asks the terminal for.
+const CLICKABLE = SCREEN_HTML.replace(
+  'data-handler="reorder-items"',
+  'data-handler="reorder-items" data-on-click="reorder-items"',
+);
+
+const withHandler = (source) => {
+  const inner = globalThis.fetch;
+  globalThis.fetch = (url, init) => {
+    const u = String(url);
+    if (u.endsWith("reorder-items.js")) return Promise.resolve(new Response(source));
+    if (u.endsWith(".html")) return Promise.resolve(new Response(CLICKABLE));
+    return inner(url, init);
+  };
+};
+
+Deno.test({
+  name: "a reduce continues by naming the next event, and the chain is a value",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, Event, store, calls } = boot();
+    withHandler(`const reduce = (state, event) => event.type === "click"
+  ? { updates: [{ id: "a", patch: { position: 1 } }], then: { type: "settle" } }
+  : { updates: [{ id: "b", patch: { position: 2 } }] };
+reduce;`);
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
+    mount.querySelector(".items").dispatchEvent(new Event("click"));
+    await tick(60);
+
+    assert(
+      JSON.stringify(calls.updates) ===
+        JSON.stringify([
+          { table: "note_item", id: "a", patch: { position: 1 } },
+          { table: "note_item", id: "b", patch: { position: 2 } },
+        ]),
+      `the writes of both steps applied in order, got ${JSON.stringify(calls.updates)}`,
+    );
+    assert(mount.firstElementChild.dataset.state === "populated", "screen state intact");
+  },
+});
+
+Deno.test({
+  name: "a mutation arriving while the reduce runs wakes it again",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, store, calls } = boot();
+    const inner = globalThis.fetch;
+    globalThis.fetch = (url) => {
+      const u = String(url);
+      if (u.endsWith("reorder-items.js")) {
+        // Each pass states one row that is not there yet and then waits — and
+        // the waiting is the point: the mutation its own write raises lands
+        // while the chain is still running, and the chain's last step writes
+        // nothing, so nothing else will ever wake it. Dropped, that wake is
+        // gone and this stops one row short.
+        return Promise.resolve(new Response(`const reduce = (state, event) => {
+  if (event.type !== "mutation") return { updates: [] };
+  const has = (id) => state.items.some((r) => r.id === id);
+  const wait = { type: "settle", delay: 60 };
+  if (!has("d1")) return { updates: [{ row: { id: "d1", position: 91 } }], then: wait };
+  if (!has("d2")) return { updates: [{ row: { id: "d2", position: 92 } }], then: wait };
+  return { updates: [] };
+};
+reduce;`));
+      }
+      if (u.endsWith(".html")) {
+        return Promise.resolve(new Response(
+          SCREEN_HTML.replace('data-handler="reorder-items"', 'data-on-mutation="reorder-items"'),
+        ));
+      }
+      return inner(url);
+    };
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
+    await tick(500);
+
+    assert(
+      JSON.stringify(calls.rows.map((c) => c.row.id)) === JSON.stringify(["d1", "d2"]),
+      `the reduce was woken by its own write until it settled, got ${JSON.stringify(calls.rows.map((c) => c.row.id))}`,
+    );
+  },
+});
+
+Deno.test({
+  name: "a region declares what else its reduce reads, and reads it",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, Event, store, calls } = boot();
+    const asked = [];
+    const inner = store.query;
+    store.query = async (table, order, opts) => {
+      asked.push(table);
+      return table === "note_attachment" ? [{ id: "x" }, { id: "y" }] : inner(table, order, opts);
+    };
+    const inner2 = globalThis.fetch;
+    globalThis.fetch = (url) => {
+      const u = String(url);
+      if (u.endsWith("reorder-items.js")) {
+        return Promise.resolve(new Response(`const reduce = (state) => ({
+  updates: [{ id: "a", patch: { position: state.rows.note_attachment.length } }],
+});
+reduce;`));
+      }
+      if (u.endsWith(".html")) {
+        return Promise.resolve(new Response(
+          CLICKABLE.replace('data-order="position.asc"', 'data-order="position.asc" data-reads="note_attachment"'),
+        ));
+      }
+      return inner2(url);
+    };
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
+    mount.querySelector(".items").dispatchEvent(new Event("click"));
+    await tick(40);
+
+    assert(asked.includes("note_attachment"), `the declared read was fetched, asked ${asked}`);
+    assert(
+      JSON.stringify(calls.updates) ===
+        JSON.stringify([{ table: "note_item", id: "a", patch: { position: 2 } }]),
+      `the reduce saw the other collection, got ${JSON.stringify(calls.updates)}`,
+    );
+  },
+});
+
+Deno.test({
+  name: "a reduce states a row, and stating it twice states the same row",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, Event, store, calls } = boot();
+    // The key is derived from what the row identifies, which is the whole
+    // reason a reduce is allowed to write a row it has not seen.
+    withHandler(`const reduce = (state, event) => ({
+  updates: [{ row: { id: \`d:\${state.items.length}\`, position: 40 } }],
+});
+reduce;`);
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
+    const region = mount.querySelector(".items");
+    region.dispatchEvent(new Event("click"));
+    await tick(40);
+    region.dispatchEvent(new Event("click"));
+    await tick(40);
+
+    assert(calls.rows.length === 2, `stated twice, got ${calls.rows.length}`);
+    assert(
+      JSON.stringify(calls.rows.map((c) => [c.table, c.row.id])) ===
+        JSON.stringify([["note_item", "d:3"], ["note_item", "d:4"]]),
+      `each stated against the rows it saw, got ${JSON.stringify(calls.rows)}`,
+    );
+    // The first row is a row now, not a second copy of one: the second pass
+    // counted four, which it could only do if the first had landed once.
+    assert(calls.updates.length === 0, "a stated row is not a patch");
+  },
+});
+
+Deno.test({
+  name: "an event names the element it fired on",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, Event, store, calls } = boot();
+    const inner = globalThis.fetch;
+    globalThis.fetch = (url) => {
+      const u = String(url);
+      if (u.endsWith("reorder-items.js")) {
+        return Promise.resolve(new Response(`const reduce = (state, event) => ({
+  updates: [{ id: "a", patch: { position: event.from ?? "nobody" } }],
+});
+reduce;`));
+      }
+      if (u.endsWith(".html")) {
+        return Promise.resolve(new Response(
+          // A singleton region, whose children are affordances rather than
+          // rows: a list region sweeps away anything that is not an item.
+          SCREEN_HTML.replace(
+            "</ul>",
+            '</ul><div data-live="note_item">' +
+              '<button id="btn-yes" data-on-click="reorder-items">yes</button>' +
+              '<button data-on-click="reorder-items">no</button></div>',
+          ),
+        ));
+      }
+      return inner(url);
+    };
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
+    mount.querySelector("#btn-yes").dispatchEvent(new Event("click"));
+    await tick(40);
+    mount.querySelectorAll("button")[1].dispatchEvent(new Event("click"));
+    await tick(40);
+
+    assert(
+      JSON.stringify(calls.updates.map((u) => u.patch.position)) ===
+        JSON.stringify(["btn-yes", "nobody"]),
+      `the reduce was told which button, got ${JSON.stringify(calls.updates)}`,
+    );
+  },
+});
+
+Deno.test({
+  name: "an animation event tells the reduce which animation ended",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, store, calls } = boot();
+    const inner = globalThis.fetch;
+    globalThis.fetch = (url) => {
+      const u = String(url);
+      if (u.endsWith("reorder-items.js")) {
+        return Promise.resolve(new Response(`const reduce = (state, event) => ({
+  updates: [{ id: "a", patch: { position: event.animation === "beat" ? 1 : 0 } }],
+});
+reduce;`));
+      }
+      if (u.endsWith(".html")) {
+        return Promise.resolve(new Response(
+          SCREEN_HTML.replace('data-handler="reorder-items"', 'data-on-animationend="reorder-items"'),
+        ));
+      }
+      return inner(url);
+    };
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
+    const region = mount.querySelector(".items");
+    // linkedom has no AnimationEvent; the field is what the listener reads.
+    const fire = (name) => {
+      const e = new document.defaultView.Event("animationend", { bubbles: true });
+      e.animationName = name;
+      region.dispatchEvent(e);
+    };
+    fire("shell-item-enter");
+    fire("beat");
+    await tick(40);
+
+    assert(
+      JSON.stringify(calls.updates.map((u) => u.patch.position)) === JSON.stringify([0, 1]),
+      `the reduce told one animation from the other, got ${JSON.stringify(calls.updates)}`,
+    );
+  },
+});
+
+Deno.test({
+  name: "a reduce asks for a draw and is called again with one",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, Event, store, calls } = boot();
+    withHandler(`const reduce = (state, event) => event.type === "click"
+  ? { updates: [], then: { type: "drawn", seed: true } }
+  : { updates: [{ id: "a", patch: { position: typeof event.seed } }] };
+reduce;`);
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
+    mount.querySelector(".items").dispatchEvent(new Event("click"));
+    await tick(60);
+
+    assert(
+      JSON.stringify(calls.updates) ===
+        JSON.stringify([{ table: "note_item", id: "a", patch: { position: "number" } }]),
+      `the draw arrived on the next event, got ${JSON.stringify(calls.updates)}`,
+    );
+  },
+});
+
+Deno.test({
+  name: "a step the reduce asked to be delayed does not land before its delay",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, Event, store, calls } = boot();
+    withHandler(`const reduce = (state, event) => event.type === "click"
+  ? { updates: [{ id: "a", patch: { position: 1 } }], then: { type: "settle", delay: 120 } }
+  : { updates: [{ id: "b", patch: { position: 2 } }] };
+reduce;`);
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
+    mount.querySelector(".items").dispatchEvent(new Event("click"));
+
+    // The wait is the terminal's: a compartment with nothing endowed has no
+    // clock, so a reduce that wants one asks for it and is called again.
+    await tick(40);
+    assert(calls.updates.length === 1, `the delayed step waited, got ${calls.updates.length}`);
+
+    await tick(160);
+    assert(
+      JSON.stringify(calls.updates.map((u) => u.id)) === JSON.stringify(["a", "b"]),
+      `the delayed step arrived, got ${JSON.stringify(calls.updates)}`,
+    );
+    assert(mount.firstElementChild.dataset.state === "populated", "screen state intact");
+  },
+});
+
+Deno.test({
+  name: "a chain that never settles is bounded by the terminal, not by the app",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, Event, store, calls } = boot();
+    withHandler(`const reduce = () => ({
+  updates: [{ id: "a", patch: { position: 1 } }],
+  then: { type: "again" },
+});
+reduce;`);
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
+    mount.querySelector(".items").dispatchEvent(new Event("click"));
+    await tick(80);
+
+    assert(calls.updates.length === 8, `the chain stopped at the bound, got ${calls.updates.length}`);
+    assert(
+      mount.firstElementChild.dataset.state === "network-error",
+      "a chain that does not settle surfaces as a refusal, not as a hang",
+    );
+  },
+});
+
+Deno.test({
+  name: "a mutation on the region's collection wakes its reduce with the rows",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, store, calls } = boot();
+    // The rows the reduce sees are the store's, not the DOM's: `position` is
+    // never rendered into the markup, so a fold that reads it could not have
+    // been fed by watching attributes.
+    const inner = globalThis.fetch;
+    globalThis.fetch = (url, init) => {
+      const u = String(url);
+      if (u.endsWith("reorder-items.js")) {
+        return Promise.resolve(new Response(`const reduce = (state, event) => ({
+  updates: [{ id: "sum", patch: { total: state.items.reduce((n, r) => n + r.position, 0), on: event.type } }],
+});
+reduce;`));
+      }
+      if (u.endsWith(".html")) {
+        return Promise.resolve(new Response(
+          SCREEN_HTML.replace('data-handler="reorder-items"', 'data-on-mutation="reorder-items"'),
+        ));
+      }
+      return inner(url, init);
+    };
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
+    await tick(40);
+
+    assert(calls.updates.length === 1, `woken once, got ${calls.updates.length}`);
+    assert(
+      JSON.stringify(calls.updates[0]) ===
+        JSON.stringify({ table: "note_item", id: "sum", patch: { total: 60, on: "mutation" } }),
+      `the reduce saw the store's rows, got ${JSON.stringify(calls.updates[0])}`,
+    );
   },
 });

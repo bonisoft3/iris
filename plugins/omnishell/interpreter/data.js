@@ -124,6 +124,23 @@ export async function createStore(appBase, config) {
     await cascade(table);
   }
 
+  // A row stated by its own key: the caller derived it, so writing the same row
+  // twice is writing the same row. Fields it does not name are left alone.
+  async function put(table, row) {
+    if (row?.id === undefined) throw new Error(`put ${table}: the row carries no id`);
+    const cols = Object.keys(row);
+    const keys = cols.map(ident);
+    const set = keys.filter((k) => k !== ident("id"));
+    await db.query(
+      `INSERT INTO ${ident(table)} (${keys.join(", ")}) VALUES (${keys.map((_, i) => `$${i + 1}`).join(", ")})` +
+        (set.length === 0
+          ? " ON CONFLICT (id) DO NOTHING"
+          : ` ON CONFLICT (id) DO UPDATE SET ${set.map((k) => `${k} = EXCLUDED.${k}`).join(", ")}`),
+      cols.map((c) => row[c]),
+    );
+    await cascade(table);
+  }
+
   async function remove(table, id) {
     await db.query(`DELETE FROM ${ident(table)} WHERE id = $1`, [id]);
     await cascade(table);
@@ -157,5 +174,5 @@ export async function createStore(appBase, config) {
     await runPipeline(p);
   }
 
-  return { query, create, update, remove, removeWhere, subscribe };
+  return { query, create, update, put, remove, removeWhere, subscribe };
 }
