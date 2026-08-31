@@ -539,6 +539,207 @@ reduce;`);
   },
 });
 
+// A store refusal, the client's contract for a 4xx: retrying cannot help and
+// the optimistic state has already rolled back.
+const refusal = (msg = "409 duplicate") => {
+  const e = new Error(msg);
+  e.name = "NonRetriableError";
+  return e;
+};
+
+Deno.test({
+  name: "a refused reduce write reaches validation-error, not network-error",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, Event, store, calls } = boot();
+    store.update = async () => {
+      throw refusal();
+    };
+    withHandler(`const reduce = () => ({ updates: [{ id: "a", patch: { position: 1 } }] });
+reduce;`);
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
+    mount.querySelector(".items").dispatchEvent(new Event("click"));
+    await tick(40);
+
+    assert(calls.updates.length === 0, "no update recorded");
+    assert(
+      mount.firstElementChild.dataset.state === "validation-error",
+      `the server's no is not a transport failure, got ${mount.firstElementChild.dataset.state}`,
+    );
+  },
+});
+
+Deno.test({
+  name: "a refusal that outruns the acceptance window still reaches the screen",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, Event, store } = boot();
+    // The write reports success (the optimistic window closed); the store's
+    // late-refusal callback is the only path left back to the screen.
+    let late;
+    store.update = async (_table, _id, _patch, onRefused) => {
+      late = onRefused;
+    };
+    withHandler(`const reduce = () => ({ updates: [{ id: "a", patch: { position: 1 } }] });
+reduce;`);
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
+    mount.querySelector(".items").dispatchEvent(new Event("click"));
+    await tick(40);
+
+    assert(typeof late === "function", "the reduce write carried a late-refusal callback");
+    assert(mount.firstElementChild.dataset.state === "populated", "accepted optimistically");
+    late(refusal());
+    await tick(20);
+    assert(
+      mount.firstElementChild.dataset.state === "validation-error",
+      `the late refusal landed, got ${mount.firstElementChild.dataset.state}`,
+    );
+  },
+});
+
+Deno.test({
+  name: "a refused write is an event the region's reduce renders as a row",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, Event, store, calls } = boot();
+    store.update = async () => {
+      throw refusal();
+    };
+    const inner = globalThis.fetch;
+    globalThis.fetch = (url, init) => {
+      const u = String(url);
+      if (u.endsWith("reorder-items.js")) {
+        return Promise.resolve(new Response(`const reduce = (state, event) => {
+  if (event.type === "click") return { updates: [{ id: "a", patch: { position: 1 } }] };
+  if (event.type === "refused") {
+    return { updates: [{ row: { id: "notice", position: 99, of: event.id, kind: event.kind, entity: event.entity } }] };
+  }
+  return { updates: [] };
+};
+reduce;`));
+      }
+      if (u.endsWith(".html")) {
+        return Promise.resolve(new Response(
+          CLICKABLE.replace('data-on-click="reorder-items"', 'data-on-click="reorder-items" data-on-mutation="reorder-items"'),
+        ));
+      }
+      return inner(url, init);
+    };
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
+    mount.querySelector(".items").dispatchEvent(new Event("click"));
+    await tick(60);
+
+    const notice = calls.rows.find((c) => c.row.id === "notice");
+    assert(notice, `the refusal reached the reduce as data, got ${JSON.stringify(calls.rows)}`);
+    assert(
+      notice.row.of === "a" && notice.row.kind === "refused" && notice.row.entity === "note_item",
+      `the event named the write it withdraws, got ${JSON.stringify(notice.row)}`,
+    );
+    assert(
+      mount.firstElementChild.dataset.state === "populated",
+      `the reduce owns the feedback, not a screen state, got ${mount.firstElementChild.dataset.state}`,
+    );
+  },
+});
+
+Deno.test({
+  name: "a refused drag does not vanish as network-error",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, Event, store, calls } = boot();
+    store.update = async () => {
+      throw refusal();
+    };
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
+    const [a, , c] = [...mount.querySelectorAll("li[data-id]")];
+    c.dispatchEvent(new Event("dragstart"));
+    a.dispatchEvent(new Event("drop"));
+    await tick(40);
+
+    assert(calls.updates.length === 0, "no update recorded");
+    assert(
+      mount.firstElementChild.dataset.state === "validation-error",
+      `the drag's refusal is classified like a form's, got ${mount.firstElementChild.dataset.state}`,
+    );
+  },
+});
+
+Deno.test({
+  name: "a form's refusal becomes the same event when its region mounts a reduce",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, Event, store, calls } = boot();
+    store.create = async () => {
+      throw refusal();
+    };
+    const inner = globalThis.fetch;
+    globalThis.fetch = (url, init) => {
+      const u = String(url);
+      if (u.endsWith("reorder-items.js")) {
+        return Promise.resolve(new Response(`const reduce = (state, event) => {
+  if (event.type === "refused") {
+    return { updates: [{ row: { id: "notice", position: 99, kind: event.kind, entity: event.entity } }] };
+  }
+  return { updates: [] };
+};
+reduce;`));
+      }
+      if (u.endsWith(".html")) {
+        return Promise.resolve(new Response(SCREEN_HTML.replace(
+          /<form[\s\S]*<\/form>/,
+          '<div data-live="note_item" data-on-mutation="reorder-items">' +
+            '<form data-form="attach" data-entity="note_attachment" data-action="create">' +
+            '<input type="hidden" name="kind" data-value="x">' +
+            "<button type=\"submit\">go</button></form></div>",
+        )));
+      }
+      return inner(url, init);
+    };
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
+    const form = mount.querySelector("form[data-entity=note_attachment]");
+    form.checkValidity ??= () => true;
+    form.reset ??= () => {};
+    form.dispatchEvent(new Event("submit"));
+    await tick(60);
+
+    const notice = calls.rows.find((c) => c.row.id === "notice");
+    assert(notice, `the form's refusal reached the reduce, got ${JSON.stringify(calls.rows)}`);
+    assert(
+      notice.row.kind === "refused" && notice.row.entity === "note_attachment",
+      `the event carries the form's entity, got ${JSON.stringify(notice.row)}`,
+    );
+    assert(
+      mount.firstElementChild.dataset.state === "populated",
+      `the submit state handed back, got ${mount.firstElementChild.dataset.state}`,
+    );
+  },
+});
+
 Deno.test({
   name: "a mutation on the region's collection wakes its reduce with the rows",
   sanitizeOps: false,

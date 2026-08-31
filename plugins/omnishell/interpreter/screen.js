@@ -575,7 +575,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     }
   }
 
-  function wireForm(form, rowId, getCtx = () => ({ params, row: {} })) {
+  function wireForm(form, rowId, getCtx = () => ({ params, row: {} }), region) {
     const entity = form.dataset.entity;
     const action = form.dataset.action;
     const invalid = form.querySelector(".invalid");
@@ -660,6 +660,18 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       // clobber the state within milliseconds.
       const refused = (err) => {
         console.error(err);
+        // With a mutation reduce mounted on the form's region, the refusal is
+        // the reduce's event (see wireEvents' deliver) — the reduce writes the
+        // words as a row, so the .store-error side channel stays untouched.
+        const deliver = region?._prontoRefusal;
+        if (deliver) {
+          const id = action === "create" || form.dataset.filter !== undefined ? undefined : rowId();
+          deliver(entity, id, err);
+          // The reduce owns the words; the submit state is still this form's
+          // to hand back, or a refused submit dims the screen forever.
+          if (screen.dataset.state === "form-submit") setState(base);
+          return;
+        }
         form.querySelector(".store-error")?.removeAttribute("hidden");
         setState(err?.name === "NonRetriableError" ? "validation-error" : "network-error");
       };
@@ -708,7 +720,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
   // current rows in DOM order; the handler's {updates: [{id, patch}]} apply as
   // ordinary update mutations. Handler failures surface as network-error,
   // never as a crashed screen.
-  function wireDrag(region, items, getRows, reduce) {
+  function wireDrag(region, items, getRows, reduce, deliver) {
     for (const item of items) {
       // Item nodes outlive a refresh, so each is wired once — re-wiring would
       // stack another listener pair on every render. The drag's origin lives
@@ -731,7 +743,14 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
           const state = { items: getRows().map((r) => ({ id: r.id, position: r.position })) };
           const result = reduce(state, { type: "move", fromId, toId });
           for (const u of result.updates ?? []) {
-            await store.update(region.dataset.live, u.id, u.patch);
+            const entity = region.dataset.live;
+            try {
+              await store.update(entity, u.id, u.patch, (err) => deliver(entity, u.id, err));
+            } catch (err) {
+              if (err?.name !== "NonRetriableError") throw err;
+              deliver(entity, u.id, err);
+              return;
+            }
           }
         } catch (err) {
           console.error(err);
@@ -772,6 +791,33 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       return rows;
     };
 
+    const rowsReduce = region.dataset.onMutation && handlers.get(region.dataset.onMutation);
+
+    // A refusal is an event, not a callback. A write settles twice — accepted
+    // optimistically, then confirmed or withdrawn — so the withdrawal cannot
+    // be a return value: the value is already on screen. With a mutation
+    // reduce mounted it arrives there as {type: "refused", entity, id?, kind}
+    // and the reduce renders it like any other conclusion; without one the
+    // terminal's default applies, the same states a form's refusal sets.
+    // `kind` tells the server's no ("refused" — NonRetriableError, the
+    // optimistic row already rolled back) from a transport or program failure
+    // ("failed").
+    const deliver = (entity, id, err) => {
+      console.error(err);
+      const kind = err?.name === "NonRetriableError" ? "refused" : "failed";
+      if (rowsReduce) {
+        const fired = { type: "refused", entity, kind };
+        if (id !== undefined) fired.id = id;
+        step(rowsReduce, fired, 0).catch((e) => {
+          console.error(e);
+          setState("network-error");
+        });
+        return;
+      }
+      setState(kind === "refused" ? "validation-error" : "network-error");
+    };
+    region._prontoRefusal = rowsReduce ? deliver : undefined;
+
     const STEPS = 8;
     const step = async (reduce, event, depth) => {
       const result = reduce({ items: getRows(), rows: await worldOf() }, event);
@@ -787,8 +833,20 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       // same row, which is what lets a reduce be woken more than once.
       for (const u of result?.updates ?? []) {
         const entity = u.entity ?? region.dataset.live;
-        if (u.row !== undefined) await store.put(entity, u.row);
-        else await store.update(entity, u.id, u.patch);
+        const id = u.row !== undefined ? u.row.id : u.id;
+        try {
+          if (u.row !== undefined) await store.put(entity, u.row, (err) => deliver(entity, id, err));
+          else await store.update(entity, u.id, u.patch, (err) => deliver(entity, id, err));
+        } catch (err) {
+          // A fast refusal (rejected inside the store's acceptance window) is
+          // the same fact as a late one and takes the same path; the chain
+          // stops, since its remaining writes conclude from a premise the
+          // store just withdrew. Anything else stays the outer catch's
+          // network-error.
+          if (err?.name !== "NonRetriableError") throw err;
+          deliver(entity, id, err);
+          return;
+        }
       }
       const next = result?.then;
       if (!next?.type) return;
@@ -875,8 +933,6 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     // write unanswered — a hand that stops halfway through a rodada. Waking
     // again terminates for the reason the flag does: a reduce that writes
     // nothing produces no mutation, so a settled one is not re-entered.
-    const onRows = region.dataset.onMutation;
-    const rowsReduce = onRows && handlers.get(onRows);
     if (rowsReduce) {
       if (region._prontoInMutation) region._prontoMutationAgain = true;
       else {
@@ -897,6 +953,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         wake();
       }
     }
+    return { deliver };
   }
 
   // Field-backed widgets. A [data-widget] wrapping a region is that region's —
@@ -1038,7 +1095,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
               // inside itself, and querySelectorAll alone would leave it
               // unwired, clicking into silence.
               for (const form of formsIn(node)) {
-                if (ownedBy(form, node)) wireForm(form, () => node.dataset.id, () => entry.ctx);
+                if (ownedBy(form, node)) wireForm(form, () => node.dataset.id, () => entry.ctx, region);
               }
               // Stamped before the node is in the document, so its arriving
               // style is the first one the browser ever computes for it.
@@ -1113,11 +1170,11 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
             p.textContent = region.dataset.empty;
             region.append(p);
           }
+          const { deliver } = wireEvents(region, order, () => currentRows, handlers);
           const reduce = handlers.get(region.dataset.handler);
           if (reduce && template.content.querySelector("[data-drag-handle]")) {
-            wireDrag(region, order, () => currentRows, reduce);
+            wireDrag(region, order, () => currentRows, reduce, deliver);
           }
-          wireEvents(region, order, () => currentRows, handlers);
           first = false;
         }
         if (top) {
@@ -1208,7 +1265,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     if (!template) {
       for (const form of region.querySelectorAll("form[data-action]")) {
         if (!ownedBy(form, region)) continue;
-        wireForm(form, () => currentRow.id, () => ({ params: ctx.params, row: currentRow }));
+        wireForm(form, () => currentRow.id, () => ({ params: ctx.params, row: currentRow }), region);
       }
     }
     return {

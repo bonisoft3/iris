@@ -293,6 +293,18 @@ export function settle(promise, acceptMs = ACCEPT_MS, onRefused) {
   });
 }
 
+/**
+ * The natural key an upsert resolves against: the declared composite uniques
+ * where the table has any, else the row's own pk — a single-row toggle must
+ * not restate its primary key as a unique. An owner column counts as covered
+ * (it materialises server-side from the session). null when nothing covers
+ * the values, which the caller turns into a program error.
+ */
+export function upsertKey(uniques, pk, owner, values) {
+  const candidates = uniques ?? [[pk]];
+  return candidates.find((cols) => cols.every((c) => values[c] !== undefined || c === owner)) ?? null;
+}
+
 export function createStore(base = "", cfg = {}) {
   // cfg.local names the browser-only tiers (shell.yaml `local:`), which are
   // collections like any other here — read by a region, mutated by a form —
@@ -788,10 +800,8 @@ export function createStore(base = "", cfg = {}) {
   // carry it while the row they are about to write does not.
   async function upsert(table, values, onRefused) {
     const owner = access[table]?.owner;
-    const keys = (cfg.uniques?.[table] ?? []).find((cols) =>
-      cols.every((c) => values[c] !== undefined || c === owner)
-    );
-    if (keys === undefined) {
+    const keys = upsertKey(cfg.uniques?.[table], keyOf(table), owner, values);
+    if (keys === null) {
       throw new Error(`upsert ${table}: no natural key covers ${Object.keys(values).join(",")}`);
     }
     const collection = client.collections[table];
