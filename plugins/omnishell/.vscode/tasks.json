@@ -136,7 +136,8 @@
         "--allow-run",
         "--allow-sys",
         "--allow-import",
-        "playwright-tests/visual-lint.pw.ts"
+        "playwright-tests/visual-lint.pw.ts",
+        "playwright-tests/settle.pw.ts"
       ],
       "problemMatcher": [],
       "group": {

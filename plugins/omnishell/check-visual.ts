@@ -32,21 +32,38 @@ type Finding = { severity: string; path: string; message: string }
 type PageLike = {
   goto(url: string, opts?: unknown): Promise<unknown>
   waitForFunction(fn: unknown, arg?: unknown, opts?: unknown): Promise<{ jsonValue(): Promise<unknown> }>
-  waitForTimeout(ms: number): Promise<void>
+  evaluate(fn: unknown, arg?: unknown): Promise<unknown>
   close(): Promise<void>
 }
+/** Likewise: the one method a lane calls on a viewport's context. */
+type ContextLike = { newPage(): Promise<PageLike> }
 type Read = { entity?: string; filter?: string }
 type Route = { path: string; reads?: Read[] }
 
-const VIEWPORTS = [
+type Viewport = { name: string; width: number; height: number }
+const VIEWPORTS: Viewport[] = [
   { name: "desktop", width: 1280, height: 900 },
   { name: "narrow", width: 400, height: 900 },
 ]
+
+// Routes in flight per viewport. The two viewports already run as separate
+// contexts, so the browser holds up to twice this many live pages. Past four
+// the wall clock flattens: what the battery spends is round trips to one
+// browser, not CPU it could spread wider.
+const LANES = 4
 
 // WCAG 2.5.8 (AA). The battery's own default is 2.5.5's 44px, which on a
 // content surface reports every article title and byline — real advice, but
 // not a gate. See checks/touch-targets.ts.
 const TOUCH_MIN = 24
+
+// A screen is ready to measure when it stops changing. This long without a
+// mutation, a moved box or a loading image means it has; past the cap it is
+// still changing and says so. A constant wait instead of a predicate would
+// have to be sized for the slowest screen, be paid by every screen, and still
+// be a guess on the slowest one.
+const SETTLE_STABLE_MS = 100
+const SETTLE_CAP_MS = 2500
 
 /** Electric announces its transport once per boot; a property of the dev cluster, not a screen. */
 // SES announces every intrinsic it removes when a compartment is first built.
@@ -180,7 +197,11 @@ async function resolveParams(
  * Never wait for networkidle: Electric holds its shape connections open, so
  * that state never arrives and the wait consumes the whole timeout.
  */
-async function openRoute(page: PageLike, base: string, url: string): Promise<string> {
+async function openRoute(
+  page: PageLike,
+  base: string,
+  url: string,
+): Promise<{ state: string; settled: boolean }> {
   await page.goto(`${base}/shell/#${url}`, { waitUntil: "domcontentloaded" })
   const state = await page
     .waitForFunction(
@@ -193,10 +214,87 @@ async function openRoute(page: PageLike, base: string, url: string): Promise<str
       { timeout: 20_000 },
     )
     .then((h) => h.jsonValue() as Promise<string>)
-  // Image decode and a second shape land after the first non-loading state and
-  // would otherwise be measured mid-flight.
-  await page.waitForTimeout(1200)
-  return state
+  return { state, settled: await settle(page) }
+}
+
+/**
+ * Hold until the screen stops becoming itself: no DOM mutation, no geometry
+ * change, no image still loading, for one quiet interval.
+ *
+ * Mutation matters as much as motion. A widget machine stamps `data-scope`
+ * without moving a box, and `checkWidgetsMounted` reads that attribute — a
+ * predicate watching only geometry would clear the screen before the widget
+ * it is about to call inert has mounted.
+ *
+ * Console messages need no separate window: measured across two apps, every
+ * error and warning arrived before this predicate cleared, because what logs
+ * during boot is what mutates the DOM. An error with no DOM effect at all
+ * could still outrun it, and always could.
+ *
+ * Sampling runs in the page — one round trip for the whole wait, and the
+ * geometry never crosses the wire. False means the cap came first, which the
+ * caller reports. The cap is armed before anything else is awaited:
+ * `page.evaluate` takes no timeout, so a promise that never settles in here
+ * would hang the run with no output at all.
+ */
+export async function settle(page: PageLike): Promise<boolean> {
+  return await page.evaluate(
+    ({ stableMs, capMs }: { stableMs: number; capMs: number }) =>
+      new Promise<boolean>((resolve) => {
+        let done = false
+        const finish = (quiet: boolean) => {
+          if (done) return
+          done = true
+          observer.disconnect()
+          resolve(quiet)
+        }
+        const cap = setTimeout(() => finish(false), capMs)
+
+        let mutated = true
+        const observer = new MutationObserver(() => {
+          mutated = true
+        })
+        observer.observe(document.documentElement, {
+          attributes: true,
+          characterData: true,
+          childList: true,
+          subtree: true,
+        })
+
+        const fingerprint = () => {
+          let h = 0
+          for (const el of document.querySelectorAll("*")) {
+            const r = el.getBoundingClientRect()
+            const s = `${r.x},${r.y},${r.width},${r.height}`
+            for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0
+          }
+          return h
+        }
+        // Read fresh each sample: an image the second shape inserts is not in
+        // any list taken earlier. `complete` covers errored images too, where
+        // awaiting decode() would wait on a promise that never settles.
+        const loading = () => [...document.images].some((img) => !img.complete)
+
+        let previous = fingerprint()
+        let stableSince = performance.now()
+        const sample = () => {
+          if (done) return
+          const now = performance.now()
+          const current = fingerprint()
+          if (mutated || current !== previous || loading()) {
+            mutated = false
+            previous = current
+            stableSince = now
+          } else if (now - stableSince >= stableMs) {
+            clearTimeout(cap)
+            return finish(true)
+          }
+          setTimeout(sample, 50)
+        }
+        setTimeout(sample, 50)
+      }),
+    { stableMs: SETTLE_STABLE_MS, capMs: SETTLE_CAP_MS },
+  ) as boolean
 }
 
 /** The host port compose actually published, rather than the compose default. */
@@ -243,75 +341,138 @@ async function main(appDir: string): Promise<number> {
     })
   }
 
+  // A route whose param never resolved was already reported above; linting it
+  // would measure the gone state.
+  const live = routes.filter(
+    (route) => !route.path.split("/").some((s) => s.startsWith(":") && params[s.slice(1)] === undefined),
+  )
+
+  const lintRoute = async (context: ContextLike, viewport: Viewport, route: Route, out: Finding[]) => {
+    const url = fillRoute(route.path, params)
+    const where = `${viewport.name} ${route.path}`
+    // Opening the page is inside the report: at eight pages in flight the
+    // browser can refuse one, and a lane that threw would take every finding
+    // both boards had collected with it.
+    let page: PageLike
+    let console_: ReturnType<typeof captureConsole>
+    try {
+      page = await context.newPage()
+      console_ = captureConsole(page as never)
+    } catch (err) {
+      out.push({
+        severity: "critical",
+        path: url,
+        message: `${where}: no page to lint in — ${err instanceof Error ? err.message : String(err)}`,
+      })
+      return
+    }
+    try {
+      const { state, settled } = await openRoute(page, base, url)
+      if (state === "gone") {
+        out.push({
+          severity: "major",
+          path: url,
+          message: `${where}: rendered the gone state, so nothing below was measured — the fixture value is stale.`,
+        })
+        return
+      }
+      if (!settled) {
+        out.push({
+          severity: "major",
+          path: url,
+          message: `${where}: still moving after ${SETTLE_CAP_MS}ms, so everything below measured a moving screen.`,
+        })
+      }
+      const p = page as never
+      // theme-stability is absent by design: it toggles a `.dark` class,
+      // and pronto themes through prefers-color-scheme plus a `-dark`
+      // state suffix, so the toggle changes no computed colour and the
+      // check passes without measuring. cls is absent because its 3s
+      // settle makes it a property of the harness's pacing here rather
+      // than of the screen.
+      const bugs: VisualBug[] = (
+        await Promise.all([
+          checkInteractiveOverlap(p),
+          checkHorizontalOverflow(p),
+          checkConstrainedImages(p),
+          checkViewportBounds(p),
+          checkTouchTargets(p, { minSize: TOUCH_MIN }),
+          checkWidgetsMounted(p),
+          checkFocusOrder(p),
+        ])
+      ).flat()
+      bugs.push(...analyzeConsole(console_, { ignore: IGNORE }))
+      for (const b of bugs) {
+        out.push({
+          severity: b.severity,
+          path: url,
+          message: `${where} [${b.rule}] ${b.description}`,
+        })
+      }
+    } catch (err) {
+      out.push({
+        severity: "critical",
+        path: url,
+        message: `${where}: could not be linted — ${err instanceof Error ? err.message : String(err)}`,
+      })
+    } finally {
+      console_.dispose()
+      // A page whose browser already died throws on close; the findings this
+      // route produced are worth more than the tidy teardown.
+      await page.close().catch(() => {})
+    }
+  }
+
+  // Each job owns the findings it produces. The lanes finish in whatever order
+  // they finish, and the output stays in viewport-then-route order — so the
+  // order is stable run to run even though the set need not be: a console
+  // message or a screen that misses the settle cap is wall-clock dependent.
+  const boards = VIEWPORTS.map((viewport) => ({
+    viewport,
+    failure: [] as Finding[],
+    jobs: live.map((route) => ({ route, out: [] as Finding[] })),
+  }))
+
   const browser = await chromium.launch()
   try {
-    for (const viewport of VIEWPORTS) {
-      // The door is TLS on a certificate mkcert issued for the developer's own
-      // trust store, which this browser does not share. Ignoring it is the
-      // whole reason the battery can drive h2 without a per-CI trust install.
-      const context = await browser.newContext({
-        ignoreHTTPSErrors: true,
-        viewport: { width: viewport.width, height: viewport.height },
-      })
-      await context.addInitScript((s) => sessionStorage.setItem("pronto-token", JSON.stringify(s)), session)
-      for (const route of routes) {
-        if (route.path.split("/").some((s) => s.startsWith(":") && params[s.slice(1)] === undefined)) continue
-        const url = fillRoute(route.path, params)
-        const page = await context.newPage()
-        const console_ = captureConsole(page as never)
-        const where = `${viewport.name} ${route.path}`
+    // Never rejects: a board that fails records why and lets its sibling
+    // finish, rather than reaching the browser.close() below while the other
+    // board still has pages open on it.
+    await Promise.all(
+      boards.map(async ({ viewport, failure, jobs }) => {
+        // The door is TLS on a certificate mkcert issued for the developer's own
+        // trust store, which this browser does not share. Ignoring it is the
+        // whole reason the battery can drive h2 without a per-CI trust install.
+        const context = await browser.newContext({
+          ignoreHTTPSErrors: true,
+          viewport: { width: viewport.width, height: viewport.height },
+        })
         try {
-          const state = await openRoute(page, base, url)
-          if (state === "gone") {
-            findings.push({
-              severity: "major",
-              path: url,
-              message: `${where}: rendered the gone state, so nothing below was measured — the fixture value is stale.`,
-            })
-            continue
+          await context.addInitScript((s) => sessionStorage.setItem("pronto-token", JSON.stringify(s)), session)
+          let next = 0
+          const lane = async () => {
+            for (;;) {
+              const job = jobs[next++]
+              if (!job) return
+              await lintRoute(context, viewport, job.route, job.out)
+            }
           }
-          const p = page as never
-          // theme-stability is absent by design: it toggles a `.dark` class,
-          // and pronto themes through prefers-color-scheme plus a `-dark`
-          // state suffix, so the toggle changes no computed colour and the
-          // check passes without measuring. cls is absent because its 3s
-          // settle makes it a property of the harness's pacing here rather
-          // than of the screen.
-          const bugs: VisualBug[] = (
-            await Promise.all([
-              checkInteractiveOverlap(p),
-              checkHorizontalOverflow(p),
-              checkConstrainedImages(p),
-              checkViewportBounds(p),
-              checkTouchTargets(p, { minSize: TOUCH_MIN }),
-              checkWidgetsMounted(p),
-              checkFocusOrder(p),
-            ])
-          ).flat()
-          bugs.push(...analyzeConsole(console_, { ignore: IGNORE }))
-          for (const b of bugs) {
-            findings.push({
-              severity: b.severity,
-              path: url,
-              message: `${where} [${b.rule}] ${b.description}`,
-            })
-          }
+          await Promise.all(Array.from({ length: Math.min(LANES, jobs.length) }, lane))
         } catch (err) {
-          findings.push({
+          failure.push({
             severity: "critical",
-            path: url,
-            message: `${where}: could not be linted — ${err instanceof Error ? err.message : String(err)}`,
+            path: "shell/shell.yaml",
+            message: `${viewport.name}: the viewport went unlinted — ${err instanceof Error ? err.message : String(err)}`,
           })
         } finally {
-          console_.dispose()
-          await page.close()
+          await context.close().catch(() => {})
         }
-      }
-      await context.close()
-    }
+      }),
+    )
   } finally {
     await browser.close()
   }
+  findings.push(...boards.flatMap((b) => [...b.failure, ...b.jobs.flatMap((j) => j.out)]))
 
   console.log(JSON.stringify(findings, null, 2))
   const critical = findings.filter((f) => f.severity === "critical")
