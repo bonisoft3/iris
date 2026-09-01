@@ -3,6 +3,7 @@
 // injection (linkedom does not execute scripts) and still runs lockdown +
 // compartment evaluation exactly as the browser does.
 import { parseHTML } from "npm:linkedom@0.18.4";
+import { parseFilter } from "./fragment.js";
 
 const SCREEN_HTML = `<div class="note-detail">
   <ul class="items" data-live="note_item" data-handler="reorder-items" data-order="position.asc">
@@ -56,7 +57,10 @@ function boot() {
   // exercise a reduce concluding about its own collection.
   const subs = new Set();
   const store = {
-    query: async () => rows,
+    // Honors the region's filter the way the real stores do — the slot
+    // fixtures below pin one row, as the cardinality precondition demands.
+    query: async (_table, _order, opts) =>
+      rows.filter((r) => (parseFilter(opts?.filter ?? "") ?? []).every((p) => p(r))),
     subscribe: (_table, cb) => {
       subs.add(cb);
       return () => subs.delete(cb);
@@ -329,6 +333,180 @@ reduce;`));
 });
 
 Deno.test({
+  name: "a named read arrives filtered and ordered, beside the sugar it leaves alone",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, Event, store, calls } = boot();
+    const asked = [];
+    const inner = store.query;
+    store.query = async (table, order, opts) => {
+      asked.push({ table, order, opts });
+      if (table !== "note_attachment") return inner(table, order, opts);
+      const all = [
+        { id: "x1", kind: "x", rank: 1 },
+        { id: "y1", kind: "y", rank: 9 },
+        { id: "x2", kind: "x", rank: 5 },
+      ];
+      const kept = all.filter((r) => (parseFilter(opts?.filter ?? "") ?? []).every((p) => p(r)));
+      if (opts?.order === "rank.desc") kept.sort((a, b) => b.rank - a.rank);
+      return kept;
+    };
+    const inner2 = globalThis.fetch;
+    globalThis.fetch = (url) => {
+      const u = String(url);
+      if (u.endsWith("reorder-items.js")) {
+        return Promise.resolve(new Response(`const reduce = (state) => ({
+  updates: [{ id: "a", patch: { position: state.rows.note_attachment.length + ":" + state.rows.top.map((r) => r.id).join(",") } }],
+});
+reduce;`));
+      }
+      if (u.endsWith(".html")) {
+        return Promise.resolve(new Response(CLICKABLE.replace(
+          'data-order="position.asc"',
+          'data-order="position.asc" data-reads="note_attachment"' +
+            ' data-read-top="note_attachment?kind=eq.x&order=rank.desc"',
+        )));
+      }
+      return inner2(url);
+    };
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
+    mount.querySelector(".items").dispatchEvent(new Event("click"));
+    await tick(40);
+
+    const top = asked.find((a) => a.opts?.filter !== undefined);
+    assert(
+      top !== undefined && top.table === "note_attachment" && top.order === "rank.desc" &&
+        top.opts.filter === "kind=eq.x" && top.opts.order === "rank.desc",
+      `the named read carries its whole fragment to the store, asked ${JSON.stringify(asked)}`,
+    );
+    assert(
+      JSON.stringify(calls.updates) ===
+        JSON.stringify([{ table: "note_item", id: "a", patch: { position: "3:x2,x1" } }]),
+      `filtered AND ordered under the name, the bare read whole under its table, got ${
+        JSON.stringify(calls.updates)
+      }`,
+    );
+  },
+});
+
+Deno.test({
+  name: "a named read's placeholders resolve against the region's own row",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, Event, store, calls } = boot();
+    const asked = [];
+    const inner = store.query;
+    store.query = async (table, order, opts) => {
+      asked.push({ table, order, opts });
+      return table === "note_attachment" ? [{ id: "m1" }] : inner(table, order, opts);
+    };
+    const inner2 = globalThis.fetch;
+    globalThis.fetch = (url) => {
+      const u = String(url);
+      if (u.endsWith("reorder-items.js")) {
+        return Promise.resolve(new Response(`const reduce = (state) => ({
+  updates: [{ id: "a", patch: { position: state.rows.mine.length } }],
+});
+reduce;`));
+      }
+      if (u.endsWith(".html")) {
+        return Promise.resolve(new Response(SCREEN_HTML.replace(
+          "</ul>",
+          '</ul><div data-live="note_item" data-filter="id=eq.a"' +
+            ' data-read-mine="note_attachment?of=eq.{id}"' +
+            ' data-on-click="reorder-items"></div>',
+        )));
+      }
+      return inner2(url);
+    };
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
+    mount.querySelector("[data-read-mine]").dispatchEvent(new Event("click"));
+    await tick(40);
+
+    const mine = asked.find((a) => a.table === "note_attachment");
+    assert(
+      mine !== undefined && mine.opts.filter === "of=eq.a",
+      `the placeholder resolved from the slot's row, asked ${JSON.stringify(asked)}`,
+    );
+    assert(
+      JSON.stringify(calls.updates) ===
+        JSON.stringify([{ table: "note_item", id: "a", patch: { position: 1 } }]),
+      `the read landed under its name, got ${JSON.stringify(calls.updates)}`,
+    );
+  },
+});
+
+// bind() wires a listener once, so the closure it holds must read the slot's
+// one mutated-in-place ctx — a fresh ctx per refresh would pin the read to
+// the first row the slot ever bound, and the shipped standing-slot idiom
+// (data-read-log="play?round_id=eq.{id}" on the current round) would follow
+// a retired round forever.
+Deno.test({
+  name: "a slot's named read tracks the row across re-binds",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, Event, store } = boot();
+    const asked = [];
+    const inner = store.query;
+    store.query = async (table, order, opts) => {
+      if (table === "note_attachment") {
+        asked.push(opts?.filter);
+        return [{ id: "m1" }];
+      }
+      return inner(table, order, opts);
+    };
+    const inner2 = globalThis.fetch;
+    globalThis.fetch = (url) => {
+      const u = String(url);
+      if (u.endsWith("reorder-items.js")) {
+        return Promise.resolve(new Response(`const reduce = () => ({ updates: [] });
+reduce;`));
+      }
+      if (u.endsWith(".html")) {
+        return Promise.resolve(new Response(SCREEN_HTML.replace(
+          "</ul>",
+          '</ul><div data-live="note_item" data-filter="id=eq.a"' +
+            ' data-read-mine="note_attachment?of=eq.{tag}"' +
+            ' data-on-click="reorder-items"></div>',
+        )));
+      }
+      return inner2(url);
+    };
+    const { interpretScreen } = await import("./screen.js");
+
+    await store.put("note_item", { id: "a", tag: "first" });
+    const mount = document.getElementById("shell");
+    await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
+    const slot = mount.querySelector("[data-read-mine]");
+    slot.dispatchEvent(new Event("click"));
+    await tick(40);
+    assert(asked[0] === "of=eq.first", `the first click read the first row, asked ${JSON.stringify(asked)}`);
+
+    // The slot's row rotates; the re-bind must reach the wired closures.
+    await store.put("note_item", { id: "a", tag: "second" });
+    await tick(40);
+    slot.dispatchEvent(new Event("click"));
+    await tick(40);
+    assert(
+      asked[asked.length - 1] === "of=eq.second",
+      `the read tracked the current row, asked ${JSON.stringify(asked)}`,
+    );
+  },
+});
+
+Deno.test({
   name: "a reduce states a row, and stating it twice states the same row",
   sanitizeOps: false,
   sanitizeResources: false,
@@ -385,7 +563,7 @@ reduce;`));
           // rows: a list region sweeps away anything that is not an item.
           SCREEN_HTML.replace(
             "</ul>",
-            '</ul><div data-live="note_item">' +
+            '</ul><div data-live="note_item" data-filter="id=eq.a">' +
               '<button id="btn-yes" data-on-click="reorder-items">yes</button>' +
               '<button data-on-click="reorder-items">no</button></div>',
           ),
@@ -422,7 +600,7 @@ Deno.test({
       const u = String(url);
       if (u.endsWith("reorder-items.js")) {
         return Promise.resolve(new Response(`const reduce = (state, event) => ({
-  updates: [{ id: "a", patch: { position: event.animation === "beat" ? 1 : 0 } }],
+  updates: [{ id: "a", patch: { position: event.animationName === "beat" ? 1 : 0 } }],
 });
 reduce;`));
       }
@@ -709,7 +887,7 @@ reduce;`));
       if (u.endsWith(".html")) {
         return Promise.resolve(new Response(SCREEN_HTML.replace(
           /<form[\s\S]*<\/form>/,
-          '<div data-live="note_item" data-on-mutation="reorder-items">' +
+          '<div data-live="note_item" data-filter="id=eq.a" data-on-mutation="reorder-items">' +
             '<form data-form="attach" data-entity="note_attachment" data-action="create">' +
             '<input type="hidden" name="kind" data-value="x">' +
             "<button type=\"submit\">go</button></form></div>",
@@ -777,6 +955,153 @@ reduce;`));
       JSON.stringify(calls.updates[0]) ===
         JSON.stringify({ table: "note_item", id: "sum", patch: { total: 60, on: "mutation" } }),
       `the reduce saw the store's rows, got ${JSON.stringify(calls.updates[0])}`,
+    );
+  },
+});
+
+Deno.test({
+  name: "two regions waking one fold open a single sitting, not one each",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, store, calls } = boot();
+    const inner = globalThis.fetch;
+    globalThis.fetch = (url, init) => {
+      const u = String(url);
+      if (u.endsWith("reorder-items.js")) {
+        // The open shape: a conclusion asks for a draw, and the row's id
+        // derives from that draw — so two concurrent runs of the fold would
+        // mint two rows for one conclusion. The seat, not the reduce, is what
+        // makes the second wake see the first's write.
+        return Promise.resolve(new Response(`const reduce = (state, event) => {
+  if (state.rows.note_item.some((r) => String(r.id).startsWith("m"))) return { updates: [] };
+  if (event.type !== "open") return { updates: [], then: { type: "open", seed: true } };
+  return { updates: [{ row: { id: "m" + event.seed, position: 99 } }] };
+};
+reduce;`));
+      }
+      if (u.endsWith(".html")) {
+        return Promise.resolve(new Response(`<section class="screen" data-screen="note">
+  <ul data-live="note_item" data-on-mutation="reorder-items" data-reads="note_item"><template data-item><li data-text="{id}"></li></template></ul>
+  <ol data-live="note_item" data-on-mutation="reorder-items" data-reads="note_item"><template data-item><li data-text="{id}"></li></template></ol>
+</section>`));
+      }
+      return inner(url, init);
+    };
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
+    await tick(200);
+
+    const minted = calls.rows.filter((c) => String(c.row.id).startsWith("m"));
+    assert(minted.length === 1, `one sitting opened, got ${minted.length}: ${JSON.stringify(calls.rows)}`);
+  },
+});
+
+// The seat is keyed by the handler AND its declared world: a region whose
+// data-read-* names a different filter concludes from a different world, so
+// coalescing it into another region's seat would replay closures over rows
+// it never declared.
+Deno.test({
+  name: "regions sharing a fold but declaring different reads keep separate seats",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, store, calls } = boot();
+    // Slowed so the first region's fold still holds its seat while the second
+    // region wires — the coalesced re-run is exactly the hazard: it would
+    // replay the first region's closures over a world the second declared
+    // differently. The fold concludes through update, which wakes no
+    // subscriber, so no later mutation hands the starved region another turn.
+    const innerQuery = store.query;
+    store.query = async (t, o, opts) => {
+      await tick(40);
+      return innerQuery(t, o, opts);
+    };
+    const inner = globalThis.fetch;
+    globalThis.fetch = (url, init) => {
+      const u = String(url);
+      if (u.endsWith("reorder-items.js")) {
+        return Promise.resolve(new Response(`const reduce = (state, event) => {
+  const world = state.rows.mine.map((r) => r.id).sort().join("+");
+  if (world === "") return { updates: [] };
+  return { updates: [{ id: "probe-" + world, patch: { seen: true } }] };
+};
+reduce;`));
+      }
+      if (u.endsWith(".html")) {
+        return Promise.resolve(new Response(`<section class="screen" data-screen="note">
+  <ul data-live="note_item" data-on-mutation="reorder-items" data-reads="note_item" data-read-mine="note_item?id=eq.a"><template data-item><li data-text="{id}"></li></template></ul>
+  <ol data-live="note_item" data-on-mutation="reorder-items" data-reads="note_item" data-read-mine="note_item?id=eq.b"><template data-item><li data-text="{id}"></li></template></ol>
+</section>`));
+      }
+      return inner(url, init);
+    };
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
+    await tick(400);
+
+    const probed = [...new Set(calls.updates.map((c) => c.id))].sort();
+    assert(
+      JSON.stringify(probed) === JSON.stringify(["probe-a", "probe-b"]),
+      `each seat concluded from its own declared world, got ${JSON.stringify(probed)}`,
+    );
+  },
+});
+
+// data-read-* placeholders resolve per step against the region's CURRENT row
+// — a slot that rebinds must not keep reading the world its first row
+// declared.
+Deno.test({
+  name: "a slot fold's named read tracks the current row across a rebind",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, store, calls } = boot();
+    const inner = globalThis.fetch;
+    globalThis.fetch = (url, init) => {
+      const u = String(url);
+      if (u.endsWith("reorder-items.js")) {
+        return Promise.resolve(new Response(`const reduce = (state, event) => {
+  const seen = state.rows.self.map((r) => r.id).join("+");
+  if (seen === "") return { updates: [] };
+  return { updates: [{ id: "probe-" + seen, patch: { seen: true } }] };
+};
+reduce;`));
+      }
+      if (u.endsWith(".html")) {
+        return Promise.resolve(new Response(`<section class="screen" data-screen="note">
+  <div data-live="note_item" data-filter="position=eq.10" data-on-mutation="reorder-items"
+       data-read-self="note_item?id=eq.{id}" data-text="{id}"></div>
+</section>`));
+      }
+      return inner(url, init);
+    };
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
+    await tick(60);
+    assert(
+      calls.updates.some((c) => c.id === "probe-a"),
+      `the first bind's world is row a's, got ${JSON.stringify(calls.updates)}`,
+    );
+
+    // Hand the slot's filter to a different row: a leaves, b arrives.
+    await store.put("note_item", { id: "a", position: 40 });
+    await tick(60);
+    await store.put("note_item", { id: "b", position: 10 });
+    await tick(120);
+
+    assert(
+      calls.updates.some((c) => c.id === "probe-b"),
+      `after the rebind the named read resolves against row b, got ${JSON.stringify(calls.updates)}`,
     );
   },
 });

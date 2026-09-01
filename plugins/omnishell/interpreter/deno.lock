@@ -3,7 +3,9 @@
   "specifiers": {
     "jsr:@std/assert@*": "1.0.19",
     "jsr:@std/internal@^1.0.12": "1.0.14",
-    "npm:linkedom@0.18.4": "0.18.4"
+    "npm:@xstate/graph@3.0.4": "3.0.4_xstate@5.32.6",
+    "npm:linkedom@0.18.4": "0.18.4",
+    "npm:xstate@5.32.6": "5.32.6"
   },
   "jsr": {
     "@std/assert@1.0.19": {
@@ -17,6 +19,12 @@
     }
   },
   "npm": {
+    "@xstate/graph@3.0.4_xstate@5.32.6": {
+      "integrity": "sha512-b12RA7E//+7FJVrD09Td+BhHRJbeKZnK+98xXBd+JmccG360xVP1lyzVhUZPgBgwPdmIGBJqhKzmWYJQ9c8ojQ==",
+      "dependencies": [
+        "xstate"
+      ]
+    },
     "boolbase@1.0.0": {
       "integrity": "sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww=="
     },
@@ -94,6 +102,9 @@
     },
     "uhyphen@0.2.0": {
       "integrity": "sha512-qz3o9CHXmJJPGBdqzab7qAYuW8kQGKNEuoHFYrBwV6hWIMcpAmxDLXojcHfFr9US1Pe6zUswEIJIbLI610fuqA=="
+    },
+    "xstate@5.32.6": {
+      "integrity": "sha512-WfA8WNrh6r9osuGwVm+aIPM4jmMW2LKHV1Yv9thYpOtL4HVF/kobh95K/O8v2jDCpDmP2EoY+6uvuqHXCZ6ZLw=="
     }
   },
   "remote": {

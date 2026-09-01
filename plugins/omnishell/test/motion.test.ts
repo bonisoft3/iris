@@ -114,7 +114,7 @@ describe("motion slots", () => {
     const app = await boot([row("a", "Alpha")])
     await app.render([])
     await app.tick()
-    expect(app.document.querySelector("p.empty")?.textContent).toBe("Nothing here")
+    expect(app.document.querySelector("li.empty")?.textContent).toBe("Nothing here")
   })
 
   it("clears the empty message when a row returns", async () => {

@@ -14,7 +14,7 @@
 // entirely — the fixture/PGlite tiers run without the cluster, so no auth
 // service exists to sign against.
 
-import { load } from "https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/+esm";
+import { load } from "./vendor/js-yaml.js";
 import { interpretScreen } from "./screen.js";
 
 /** Whether the account a stored token names still exists.

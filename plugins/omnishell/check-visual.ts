@@ -357,6 +357,23 @@ async function main(appDir: string): Promise<number> {
     let console_: ReturnType<typeof captureConsole>
     try {
       page = await context.newPage()
+      // Armed before navigation: the leak this hunts is transient by nature —
+      // a binding's brace text painted during the hydration window — so the
+      // sampler must be watching from the first frame. innerText is the
+      // rendered projection: it never sees a <template>'s content, script or
+      // style text (an inline script templating {dx} is not a leak), or the
+      // data-* attributes the binder consumes — so anything matched was
+      // really painted. The runtime twin of the typechecker's R5.
+      await (page as { addInitScript?: (fn: () => void) => Promise<void> }).addInitScript?.(() => {
+        const leaks = new Set<string>()
+        ;(window as unknown as { __placeholderLeaks: Set<string> }).__placeholderLeaks = leaks
+        const tick = () => {
+          const t = document.body?.innerText
+          if (t) for (const m of t.match(/\{[\w.]+\}/g) ?? []) leaks.add(m)
+          if (leaks.size < 20) requestAnimationFrame(tick)
+        }
+        requestAnimationFrame(tick)
+      })
       console_ = captureConsole(page as never)
     } catch (err) {
       out.push({
@@ -402,6 +419,19 @@ async function main(appDir: string): Promise<number> {
         ])
       ).flat()
       bugs.push(...analyzeConsole(console_, { ignore: IGNORE }))
+      const leaked = (await page.evaluate(() => {
+        const w = window as unknown as { __placeholderLeaks?: Set<string> }
+        const now = document.body?.innerText?.match(/\{[\w.]+\}/g) ?? []
+        return [...new Set([...(w.__placeholderLeaks ?? []), ...now])]
+      })) as string[]
+      if (leaked.length > 0) {
+        bugs.push({
+          severity: "critical",
+          rule: "placeholder-leak",
+          description: `rendered binding text reached the screen: ${leaked.slice(0, 5).join(", ")}` +
+            (leaked.length > 5 ? ` (+${leaked.length - 5} more)` : ""),
+        })
+      }
       for (const b of bugs) {
         out.push({
           severity: b.severity,

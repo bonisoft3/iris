@@ -12,12 +12,14 @@
     "npm:@tanstack/react-router@1.121.0": "1.121.0_react@19.0.0_react-dom@19.2.8__react@19.0.0",
     "npm:@types/node@*": "22.15.15",
     "npm:@types/react@19.0.0": "19.0.0",
+    "npm:@xstate/graph@3.0.4": "3.0.4_xstate@5.32.6",
     "npm:eslint@9.25.0": "9.25.0",
     "npm:firebase-admin@13.0.0": "13.0.0",
     "npm:jose@6.0.11": "6.0.11",
     "npm:linkedom@0.18.4": "0.18.4",
     "npm:react@19": "19.2.8",
-    "npm:react@19.0.0": "19.0.0"
+    "npm:react@19.0.0": "19.0.0",
+    "npm:xstate@5.32.6": "5.32.6"
   },
   "jsr": {
     "@std/assert@1.0.19": {
@@ -466,6 +468,12 @@
     },
     "@types/tough-cookie@4.0.5": {
       "integrity": "sha512-/Ad8+nIOV7Rl++6f1BdKxFSMgmoqEoYbHRpPcx3JEfv8VRsQe9Z4mCXeJBzxs7mbHY/XOZZuXlRNfhpVPbs6ZA=="
+    },
+    "@xstate/graph@3.0.4_xstate@5.32.6": {
+      "integrity": "sha512-b12RA7E//+7FJVrD09Td+BhHRJbeKZnK+98xXBd+JmccG360xVP1lyzVhUZPgBgwPdmIGBJqhKzmWYJQ9c8ojQ==",
+      "dependencies": [
+        "xstate"
+      ]
     },
     "abort-controller@3.0.0": {
       "integrity": "sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==",
@@ -1600,6 +1608,9 @@
     },
     "xml-naming@0.3.0": {
       "integrity": "sha512-ghig2TBE/H11aOVgmahA3MhimvkBr6JIYknH/Dhdk10nXwdbIqBJsbfMxpvFPG8bAw77gN29aQWvKpmVoPlvPQ=="
+    },
+    "xstate@5.32.6": {
+      "integrity": "sha512-WfA8WNrh6r9osuGwVm+aIPM4jmMW2LKHV1Yv9thYpOtL4HVF/kobh95K/O8v2jDCpDmP2EoY+6uvuqHXCZ6ZLw=="
     },
     "y18n@5.0.8": {
       "integrity": "sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA=="

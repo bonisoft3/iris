@@ -77,6 +77,15 @@ const row = (id: string, title: string, extra: any = {}) => ({
 })
 
 describe("region reconciliation", () => {
+  it("stamps the empty note as a list item inside a list region", async () => {
+    // ul admits only li children (axe: list), so the note must match the
+    // rows it stands in for.
+    const t = await boot([])
+    const note = t.document.querySelector(".cards > .empty")
+    expect(note?.tagName).toBe("LI")
+    expect(note?.textContent).toBe("Nothing here")
+  })
+
   it("reuses the same node for a row that survives a refresh", async () => {
     const app = await boot([row("a", "Alpha"), row("b", "Beta")])
     const before = app.items()

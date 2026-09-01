@@ -3,6 +3,7 @@
 // effect and the whole state machine — screens only style states.
 import { renderInto } from "./render.js";
 import { mountHatch } from "./hatch.js";
+import { machineCandidates, machineShape, parseFilter, parseFilterSpec, parseReadSpec } from "./fragment.js";
 // Statically, not on demand: a dynamic import issued after the handler
 // compartment has locked down never settles (vendor/entry-zag/index.ts).
 import { hydrateFieldWidget } from "./widget.js";
@@ -13,6 +14,14 @@ async function fetchText(url) {
   if (!res.ok) throw new Error(`${res.status} fetching ${url}`);
   return res.text();
 }
+
+// A slot read that matched more than one row. Its own type so the outage
+// guard can tell a broken cardinality invariant from a dead gateway.
+export class SlotCardinalityError extends Error {}
+export class KindAdmissionError extends Error {}
+// A row hydrating inside its own shape. Its own type so the outage guard can
+// tell cyclic data from a dead gateway.
+export class TemplateCycleError extends Error {}
 
 // The terminal's own generator, seeded from the URL when one asks. Every draw
 // an app makes comes through here, so a replay is a property of the terminal
@@ -106,13 +115,39 @@ async function loadHandlers(screen, appBase, route) {
       }
     }
   }
+  // A machine's leaves, reached by the third spelling: value positions in
+  // data-machine JSON. Guards and reference delays MUST resolve; an assign
+  // string is a reference exactly when it names a declared module (lint
+  // refuses the shadowing literal, so resolution is never a guess).
+  for (const scope of withTemplates(screen)) {
+    for (const el of scope.querySelectorAll("[data-machine]")) {
+      const shape = machineShape(JSON.parse(el.getAttribute("data-machine")));
+      for (const name of shape.refs) {
+        if (loaded.has(name)) continue;
+        const path = route.files.handlers.find((f) => f.split("/").pop() === `${name}.js`);
+        if (!path) throw new Error(`no Jessie module for machine reference "${name}"`);
+        loaded.set(name, await evaluateRole(await fetchText(new URL(path, appBase)), "handler"));
+      }
+      for (const name of shape.assignStrings) {
+        if (loaded.has(name)) continue;
+        const path = route.files.handlers.find((f) => f.split("/").pop() === `${name}.js`);
+        if (path) loaded.set(name, await evaluateRole(await fetchText(new URL(path, appBase)), "handler"));
+      }
+    }
+  }
   return loaded;
 }
 
-// An item template's markup never appears in the screen's own tree, so
-// anything resolved before hydration has to look inside it too.
-const withTemplates = (screen) =>
-  [screen, ...[...screen.querySelectorAll("template[data-item]")].map((t) => t.content)];
+// An item template's markup never appears in the screen's own tree, and a
+// template's own content hides any template nested inside it, so anything
+// resolved before hydration has to walk every content fragment, depth-first.
+const withTemplates = (screen) => {
+  const scopes = [screen];
+  for (const scope of scopes) {
+    for (const t of scope.querySelectorAll("template[data-item]")) scopes.push(t.content);
+  }
+  return scopes;
+};
 
 // data-text-format names one of two things. plain and datetime are value
 // formatting — text in, text out, no DOM. Any other name is a renderer: a
@@ -146,7 +181,14 @@ async function loadRenderers(screen, appBase, route) {
 // Attributes the hydrator itself consumes; never interpolated in place, so
 // their placeholders survive until each region resolves them in its own
 // context.
-const REGION_ATTRS = new Set(["data-text", "data-filter", "data-select", "data-empty", "data-empty-row"]);
+const REGION_ATTRS = new Set([
+  "data-text", "data-filter", "data-select", "data-empty", "data-empty-row", "data-when",
+]);
+// data-read-* is a prefix family, so membership is a function rather than the
+// Set alone: wireEvents resolves a named read's placeholders per step against
+// the region's current row, which only works while the attribute still
+// carries them.
+const regionAttr = (name) => REGION_ATTRS.has(name) || name.startsWith("data-read-");
 // Attributes the browser resolves as URLs, where the empty string is not
 // "unset" but a reference to the current document.
 const URL_ATTRS = new Set(["src", "href", "srcset", "poster", "action", "formaction", "data"]);
@@ -297,6 +339,13 @@ const formsIn = (scope) => [
   ...scope.querySelectorAll("form[data-action]"),
 ];
 
+/** Hatches under a node, the node included when it is itself one — bindHatches
+ * mounts on the scope root too, so every release sweep must reach it. */
+const hatchesIn = (node) => [
+  ...(node.matches?.("[data-hatch]") ? [node] : []),
+  ...node.querySelectorAll("[data-hatch]"),
+];
+
 function ownedBy(el, scope) {
   for (let n = el; n && n !== scope; n = n.parentElement) {
     if (n.matches?.("[data-live]")) return false;
@@ -372,7 +421,7 @@ function bindAttributes(scope, ctx) {
     const names = new Set([...(el.attributes ?? [])].map((a) => a.name));
     for (const name of Object.keys(stash)) names.add(name);
     for (const name of names) {
-      if (REGION_ATTRS.has(name)) continue;
+      if (regionAttr(name)) continue;
       const template = stash[name] ?? el.getAttribute(name);
       if (template === null || !HAS_PLACEHOLDER.test(template)) continue;
       stash[name] = template;
@@ -475,6 +524,8 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
   for (const stop of mount._prontoStops ?? []) stop();
   const cleanups = [];
   mount._prontoStops = cleanups;
+  // One seat per data-on-mutation handler, screen-wide (see wireEvents).
+  const folds = new Map();
 
   const holder = document.createElement("template");
   holder.innerHTML = html;
@@ -487,7 +538,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       el.textContent = interpolate(el.dataset.text, { params });
     }
     for (const attr of [...(el.attributes ?? [])]) {
-      if (REGION_ATTRS.has(attr.name) || attr.name === "data-value") continue;
+      if (regionAttr(attr.name) || attr.name === "data-value") continue;
       if (paramOnly(attr.value)) el.setAttribute(attr.name, interpolate(attr.value, { params }));
     }
   }
@@ -539,6 +590,29 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
   // report a network error and retry a wiring mistake every two seconds.
   for (const scope of withTemplates(screen)) {
     for (const el of scope.querySelectorAll("[data-hatch]")) resolveUnit(el.dataset.hatch);
+  }
+
+  // Named templates are screen-scoped, collected once here. A region inside a
+  // named template may reference the very template it sits in — recursion,
+  // terminating through data when a leaf's child read returns no rows.
+  const namedTemplates = new Map();
+  for (const scope of withTemplates(screen)) {
+    for (const t of scope.querySelectorAll("template[data-item][data-name]")) {
+      const name = t.getAttribute("data-name");
+      if (namedTemplates.has(name)) throw new Error(`two templates declare data-name="${name}"`);
+      namedTemplates.set(name, t);
+    }
+  }
+  const resolveTemplate = (name) => {
+    const t = namedTemplates.get(name);
+    if (t === undefined) throw new Error(`no template declares data-name="${name}"`);
+    return t;
+  };
+  // Every data-template resolves before a region hydrates, for the same
+  // reason every hatch name does: inside a refresh the dead-gateway path
+  // would dress the wiring mistake as a network error and retry it forever.
+  for (const scope of withTemplates(screen)) {
+    for (const el of scope.querySelectorAll("[data-template]")) resolveTemplate(el.getAttribute("data-template"));
   }
 
   // data-hatch="<unit>" mounts a vendored unit here; data-prop-* carry its
@@ -765,7 +839,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
   // handler never receives a node or an Event — it is evaluated in a
   // compartment with nothing endowed, so it could not use one, and it stays
   // testable with no DOM. A region-level event (a tick) carries no id.
-  function wireEvents(region, items, getRows, handlers) {
+  function wireEvents(region, items, getRows, handlers, ctx) {
     // {updates, then}. The command goes in the return, which is the whole of
     // how a reduce continues: evaluated in a compartment with nothing endowed
     // it can neither write nor wait, so it names the next event and the
@@ -785,13 +859,33 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     // rather than a second filter language — a reduce is code and can narrow
     // what it was given.
     const reads = (region.dataset.reads ?? "").split(",").map((t) => t.trim()).filter(Boolean);
+    // data-read-<name>="table?fragment": an auxiliary read in the one grammar
+    // — filter parts and order= — landing in state.rows under <name>. It goes
+    // to query in the same (order, {filter, order}) shape a region's own read
+    // carries, so a read some region already subscribes is served by that
+    // region's maintained view. Placeholders resolve against the region's own
+    // context — the rule data-filter follows — at each step, so a surviving
+    // node's read tracks its current row. Bare data-reads names stay
+    // whole-table reads keyed by table name.
+    const named = [...region.attributes]
+      .filter((a) => a.name.startsWith("data-read-"))
+      .map((a) => ({ name: a.name.slice("data-read-".length), ...parseReadSpec(a.value) }));
     const worldOf = async () => {
       const rows = {};
       for (const table of reads) rows[table] = await store.query(table, null, {});
+      for (const r of named) {
+        const opts = {};
+        if (r.filter !== undefined) opts.filter = interpolateFilter(r.filter, ctx);
+        if (r.order !== undefined) opts.order = r.order;
+        rows[r.name] = await store.query(r.table, r.order ?? null, opts);
+      }
       return rows;
     };
 
     const rowsReduce = region.dataset.onMutation && handlers.get(region.dataset.onMutation);
+    // Assigned by the machine block below when the machine declares "refused";
+    // a refusal is then the machine's onError before it is anything else.
+    let machineRefused;
 
     // A refusal is an event, not a callback. A write settles twice — accepted
     // optimistically, then confirmed or withdrawn — so the withdrawal cannot
@@ -804,7 +898,17 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     // ("failed").
     const deliver = (entity, id, err) => {
       console.error(err);
+      // The store withdrew the write, so the chain-local machine view holding
+      // it is withdrawn with it — the refusal transition concludes from what
+      // the store still holds, not from the state that was just rolled back.
+      region._prontoMachineRow = undefined;
       const kind = err?.name === "NonRetriableError" ? "refused" : "failed";
+      if (machineRefused !== undefined) {
+        const fired = { type: "refused", entity, kind };
+        if (id !== undefined) fired.id = id;
+        machineRefused(fired);
+        return;
+      }
       if (rowsReduce) {
         const fired = { type: "refused", entity, kind };
         if (id !== undefined) fired.id = id;
@@ -890,7 +994,8 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
             // clock — the terminal's own item arrivals among them — and they
             // all bubble to a region that declared this event, so a reduce
             // that means one of them has to be able to say which.
-            if (typeof e?.animationName === "string") fired.animation = e.animationName;
+            // The field wears AnimationEvent's own property name.
+            if (typeof e?.animationName === "string") fired.animationName = e.animationName;
             await step(reduce, fired, 0);
           } catch (err) {
             console.error(err);
@@ -914,6 +1019,189 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     bindTree(region, undefined, items);
     for (const item of items) bindTree(item, item.dataset.id);
 
+    // data-machine: the #Machine subset — machine.cue holds the vocabulary
+    // and its doctrine — executed here without a compartment, because a
+    // machine is data. Every transition lands as one stated row through the
+    // same step() path as a reduce; leaves are called over the row-closed
+    // world {items: [row]} (no rows key, so a reaching leaf fails on
+    // undefined). `<type>@<dom-id>` narrows a transition to one affordance
+    // with the bare type as its fallback, a state's transitions hide
+    // root-level `on:` per exact key, and no transition for the current
+    // (state, event) is a no-op, not an error.
+    const machine = region.dataset.machine === undefined ? undefined : JSON.parse(region.dataset.machine);
+    if (machine !== undefined) {
+      const leafVal = (v, world, event) => {
+        if (typeof v === "string" && handlers.has(v)) return handlers.get(v)(world, event);
+        // The {type, params} object form (#Ref) is always a reference;
+        // loading already threw at hydration for a name no module carries.
+        if (v !== null && typeof v === "object") return handlers.get(v.type)(world, event, v.params);
+        return v;
+      };
+
+      const candidatesFor = (stateName, event) => {
+        const stateOn = machine.states[stateName]?.on ?? {};
+        const rootOn = machine.on ?? {};
+        const out = [];
+        const keys = event.from !== undefined ? [`${event.type}@${event.from}`, event.type] : [event.type];
+        for (const key of keys) {
+          const own = stateOn[key];
+          const v = own ?? rootOn[key];
+          if (v === undefined) continue;
+          const origin = own !== undefined ? stateName : "*";
+          machineCandidates(v).forEach((c, index) => out.push({ c, key, index, origin }));
+        }
+        return out;
+      };
+
+      // Ordered candidates, first guard-pass wins. All assigns read the
+      // pre-transition snapshot and merge with the field write into ONE
+      // stated row — the swap needs no temporary. A first write concluding
+      // from the fallback states the whole fallback row, or the created row
+      // falls outside the slot's filter and the machine visibly resets.
+      const apply = (row, event, list, expectState) => {
+        if (row === undefined) return { updates: [] };
+        if (expectState !== undefined && row[machine.field] !== expectState) return { updates: [] };
+        const world = { items: [row] };
+        let chosen;
+        for (const entry of list) {
+          if (entry.c.guard === undefined) {
+            chosen = entry;
+            break;
+          }
+          const named = typeof entry.c.guard === "string" ? entry.c.guard : entry.c.guard.type;
+          const g = handlers.get(named);
+          if (g === undefined) throw new Error(`machine guard "${named}" names no module`);
+          if (g(world, event, typeof entry.c.guard === "object" ? entry.c.guard.params : undefined)) {
+            chosen = entry;
+            break;
+          }
+        }
+        if (chosen === undefined) return { updates: [] };
+        const patch = {};
+        for (const [col, v] of Object.entries(chosen.c.assign ?? {})) patch[col] = leafVal(v, world, event);
+        // Debug seam, like __prontoViews: which arrow fired and the field it
+        // landed on, for the path walker. Nothing is pushed unless something
+        // armed the array.
+        globalThis.__prontoMachineTrace?.push({
+          state: chosen.origin,
+          key: chosen.key,
+          index: chosen.index,
+          to: chosen.c.target ??
+            (Object.hasOwn(patch, machine.field) ? patch[machine.field] : row[machine.field]),
+        });
+        const out = { updates: [] };
+        if (chosen.c.target !== undefined || Object.keys(patch).length > 0) {
+          const stated = { ...(row === region._prontoFallbackRow ? row : { id: row.id, [machine.field]: row[machine.field] }), ...patch };
+          if (chosen.c.target !== undefined) stated[machine.field] = chosen.c.target;
+          out.updates = [{ row: stated }];
+          // The chain's own view of the row: a raise delivered after this
+          // write must conclude from it, not from the slot's last refresh —
+          // the store's wake is asynchronous and the chain is not.
+          region._prontoMachineRow = { ...row, ...stated };
+        }
+        // Entered even on a self-target: re-entry is what re-arms `after`.
+        if (chosen.c.target !== undefined) region._prontoMachineEntered = chosen.c.target;
+        // raise is the reduce's then: under XState's name — delivered after
+        // the writes, depth-bounded by the terminal.
+        if (chosen.c.raise !== undefined) out.then = { type: chosen.c.raise };
+        return out;
+      };
+
+      const machineRow = (state) => region._prontoMachineRow ?? state.items[0];
+
+      const machineReduce = (state, event) => {
+        const row = machineRow(state);
+        if (row === undefined) return { updates: [] };
+        return apply(row, event, candidatesFor(row[machine.field], event));
+      };
+
+      // Every invocation arms the state its chain ended in; the entered flag
+      // is set even on a self-target, which is what re-arms the timer.
+      const runMachine = async (reduce, event) => {
+        await step(reduce, event, 0);
+        const entered = region._prontoMachineEntered;
+        if (entered !== undefined) {
+          region._prontoMachineEntered = undefined;
+          armAfter(entered);
+        }
+      };
+
+      // `after` is the relocated invoke: armed on state entry, canceled on
+      // exit, re-armed by a self-target, performed by the terminal's clock.
+      // The generation mark IS the cancellation — any arm bumps it, an
+      // expired wait with a stale generation dies silently, and so the
+      // duplicate-chain hazard is inexpressible here.
+      const armAfter = (stateName) => {
+        region._prontoAfterGen = (region._prontoAfterGen ?? 0) + 1;
+        const gen = region._prontoAfterGen;
+        region._prontoMachineArmed = stateName;
+        const spec = machine.states[stateName]?.after;
+        if (spec === undefined) return;
+        for (const [key, t] of Object.entries(spec)) {
+          const row = region._prontoMachineRow ?? getRows()[0];
+          const world = { items: row === undefined ? [] : [row] };
+          const ms = /^\d+$/.test(key) ? Number(key) : handlers.get(key)?.(world, { type: "after" });
+          if (typeof ms !== "number") {
+            throw new Error(`machine after "${key}" is neither milliseconds nor a module returning them`);
+          }
+          const list = machineCandidates(t).map((c, index) => ({ c, key: `after:${key}`, index, origin: stateName }));
+          // A raise from an after transition routes through the full lookup;
+          // only the timer's own event applies the armed transition, and only
+          // while the machine still stands in the state that armed it.
+          const timerReduce = (state, event) =>
+            event.type === `after:${key}`
+              ? apply(machineRow(state), event, list, stateName)
+              : machineReduce(state, event);
+          (async () => {
+            await rest(ms / TEMPO);
+            if (region._prontoAfterGen !== gen) return;
+            await runMachine(timerReduce, { type: `after:${key}` });
+          })().catch((err) => {
+            console.error(err);
+            setState("network-error");
+          });
+        }
+      };
+
+      const shape = machineShape(machine);
+      for (const type of shape.handled) {
+        // Synthesized by the terminal, never dispatched by the DOM.
+        if (type === "refused") continue;
+        const once = `_prontoMachine_${type}`;
+        if (region[once]) continue;
+        region[once] = true;
+        region.addEventListener(type, async (e) => {
+          try {
+            const fired = { type };
+            const src = e.target?.closest?.("[id]");
+            if (src && src.id !== "" && region.contains(src)) fired.from = src.id;
+            await runMachine(machineReduce, fired);
+          } catch (err) {
+            console.error(err);
+            setState("network-error");
+          }
+        });
+      }
+      if (shape.handled.includes("refused")) {
+        machineRefused = (fired) => {
+          runMachine(machineReduce, fired).catch((err) => {
+            console.error(err);
+            setState("network-error");
+          });
+        };
+        // A machine that draws the refused arrow is a mounted consumer of the
+        // event whether or not a mutation reduce shares the region, so a
+        // form's refusal must route here rather than to the .store-error
+        // default.
+        region._prontoRefusal = deliver;
+      }
+      // A state change the machine did not make — a refusal's rollback among
+      // them — re-arms on the refresh it causes; the entered flag covers the
+      // machine's own moves.
+      const current = (region._prontoMachineRow ?? getRows()[0])?.[machine.field];
+      if (current !== undefined && region._prontoMachineArmed !== current) armAfter(current);
+    }
+
     // A mutation landed on this region's collection, and the terminal knows it
     // because it is the one that rendered it — so it says so, rather than
     // leaving an app to recover the fact by watching the DOM and reading rows
@@ -921,10 +1209,10 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     // word, which is mecha's word throughout, and never MutationObserver's: no
     // DOM change fires this.
     //
-    // The flag lives on the region because this runs once per refresh: a
-    // reduce that writes its own collection wakes itself, and the flag makes
-    // that a fixpoint rather than a spiral. A reduce that never settles is
-    // caught by the chain bound in step().
+    // The seat makes self-waking a fixpoint rather than a spiral: a reduce
+    // that writes its own collection wakes itself, finds itself running, and
+    // is re-run once. A reduce that never settles is caught by the chain
+    // bound in step().
     //
     // A mutation arriving while the reduce runs is remembered, not dropped.
     // Dropping it is only harmless for a reduce whose writes land somewhere
@@ -934,19 +1222,35 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     // again terminates for the reason the flag does: a reduce that writes
     // nothing produces no mutation, so a settled one is not re-entered.
     if (rowsReduce) {
-      if (region._prontoInMutation) region._prontoMutationAgain = true;
+      // Keyed by the handler AND its declared world: regions sharing both are
+      // one seat — two concurrent runs would each conclude from a world
+      // missing the other's writes — while a region declaring different reads
+      // concludes from a different world, and a coalesced re-run replaying
+      // another region's closures would hand it rows it never declared.
+      // NUL-joined because no authored attribute value can carry one.
+      const seatKey = [
+        region.dataset.onMutation,
+        ...reads,
+        ...[...region.attributes]
+          .filter((a) => a.name.startsWith("data-read-"))
+          .map((a) => `${a.name}=${a.value}`)
+          .sort(),
+      ].join("\u0000");
+      const seat = folds.get(seatKey) ?? { running: false, again: false };
+      folds.set(seatKey, seat);
+      if (seat.running) seat.again = true;
       else {
         const wake = () => {
-          region._prontoInMutation = true;
+          seat.running = true;
           step(rowsReduce, { type: "mutation" }, 0)
             .catch((err) => {
               console.error(err);
               setState("network-error");
             })
             .finally(() => {
-              region._prontoInMutation = false;
-              if (!region._prontoMutationAgain) return;
-              region._prontoMutationAgain = false;
+              seat.running = false;
+              if (!seat.again) return;
+              seat.again = false;
               wake();
             });
         };
@@ -987,15 +1291,51 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
   // (inside a parent's template item) bind silently.
   function hydrateRegion(region, ctx, top) {
     const table = region.dataset.live;
-    const template = region.querySelector("template[data-item]");
-    // An item is the template's first element child, and only that: a second
-    // one is not rendered, not bound and not reported, so the region quietly
-    // draws half of what the markup says it draws.
-    if (template && template.content.children.length !== 1) {
-      throw new Error(
-        `region "${table}" has a template with ${template.content.children.length} elements; an item is exactly one`,
-      );
+    // data-template references a named template instead of containing one; a
+    // region carrying both would leave its own templates silently unused.
+    const ref = region.dataset.template;
+    if (ref !== undefined && region.querySelector("template[data-item]") !== null) {
+      throw new Error(`region "${table}" has both data-template and its own item templates`);
     }
+    // A region holds any number of item templates, each optionally narrowed by
+    // a data-when fragment (the one filter grammar, matched against the row
+    // itself); one with no data-when admits every row.
+    const templates = (ref !== undefined
+      ? [resolveTemplate(ref)]
+      : [...region.querySelectorAll("template[data-item]")]).map((el) => {
+      // An item is the template's first element child, and only that: a second
+      // one is not rendered, not bound and not reported, so the region quietly
+      // draws half of what the markup says it draws.
+      if (el.content.children.length !== 1) {
+        throw new Error(
+          `region "${table}" has a template with ${el.content.children.length} elements; an item is exactly one`,
+        );
+      }
+      const when = el.getAttribute("data-when");
+      if (when === null) return { el, admits: null };
+      // A data-when is matched against the row itself, so its values are
+      // literals — the closed grammar exhaustiveness lint can enumerate. A
+      // placeholder here would compare rows against the brace text and admit
+      // nothing, silently.
+      if (HAS_PLACEHOLDER.test(when)) {
+        throw new Error(`region "${table}": data-when="${when}" carries a placeholder; data-when values are literals`);
+      }
+      const admits = parseFilter(when);
+      if (admits === null) {
+        throw new Error(`region "${table}": data-when="${when}" is outside the translatable fragment subset`);
+      }
+      return { el, admits };
+    });
+    // First match in document order wins. A row no template admits is a broken
+    // invariant — exhaustiveness is lint's job, and the runtime holds no
+    // fallback shape.
+    const templateFor = (row) => {
+      const t = templates.find(({ admits }) => admits === null || admits.every((p) => p(row)));
+      if (t === undefined) {
+        throw new KindAdmissionError(`region "${table}": no template admits row ${JSON.stringify(row.id)}`);
+      }
+      return t.el;
+    };
     const opts = {};
     if (region.dataset.filter) opts.filter = interpolateFilter(region.dataset.filter, ctx);
     if (region.dataset.select) opts.select = region.dataset.select;
@@ -1003,8 +1343,52 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     // maintained view on the whole read — order included — and subscribe is
     // handed nothing but opts.
     if (region.dataset.order) opts.order = region.dataset.order;
-    if (!template) opts.singleton = true;
+    if (templates.length === 0) opts.singleton = true;
+    // The machine is the writer of the initial fact: without data-empty-row a
+    // singleton machine region binds a row synthesized from the filter's
+    // equalities — facts about any row this region can ever show — plus
+    // {field: initial}. The pk must be pinned or the first transition's put
+    // has no key to write: a precondition, not a fallback.
+    const machine = region.dataset.machine === undefined ? undefined : JSON.parse(region.dataset.machine);
+    let fallbackRow;
+    if (region.dataset.emptyRow) fallbackRow = JSON.parse(region.dataset.emptyRow);
+    else if (machine !== undefined && templates.length === 0) {
+      const spec = parseFilterSpec(opts.filter ?? "") ?? [];
+      const eqs = Object.fromEntries(spec.filter((s) => s.op === "eq").map((s) => [s.col, s.value]));
+      if (eqs.id === undefined) {
+        throw new Error(
+          `machine region "${table}" has no data-empty-row and its filter pins no id=eq.; the machine's first write would have no key`,
+        );
+      }
+      // {...context, ...eqs, field: initial}: the machine states the initial
+      // world, the filter's equalities add the facts any visible row carries,
+      // and the field is the machine's own — a filter pinning the machine's
+      // field would herd rows out of its own read and earns no override.
+      fallbackRow = { ...(machine.context ?? {}), ...eqs, [machine.field]: machine.initial };
+    }
+    // Read back by the machine reduce (wired per refresh, outside this scope):
+    // a write concluding from the fallback must state the whole fallback row.
+    region._prontoFallbackRow = fallbackRow;
     let currentRow;
+    // The slot's one ctx, mutated in place across refreshes. bind() wires each
+    // listener once, and the step/worldOf closures it captures read this
+    // object — a fresh ctx per refresh would pin every named read and hidden
+    // value to the first row the slot ever bound.
+    const slotCtx = { params: ctx.params, inert: ctx.inert, row: undefined };
+    // A named template may reference itself, so nesting depth is data-driven
+    // and its floor is a leaf whose child read returns no rows. Cyclic data
+    // removes the floor: the same (template, row) pair hydrating inside itself
+    // re-derives an identical subtree forever. The repeat is caught as the
+    // cycle closes, before the descent floods the store.
+    const chainInto = (tmpl, row) => {
+      const link = `${table}:${String(row.id)}`;
+      if ((ctx.chain ?? []).some((c) => c.tmpl === tmpl && c.link === link)) {
+        throw new TemplateCycleError(
+          `region "${table}": row ${JSON.stringify(row.id)} recurses into its own shape — the data cycles`,
+        );
+      }
+      return [...(ctx.chain ?? []), { tmpl, link }];
+    };
     // Item nodes persist across refreshes, keyed by row id. A surviving node
     // keeps its listeners, its focus, its scroll position and any transition
     // it is mid-way through, and only its bindings are patched — rebuilding
@@ -1036,6 +1420,23 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         entry.nested.set(el, { h, filter: want });
         ready.push(h.ready);
       }
+    };
+
+    // Stamps entry.node from tmpl and wires the forms the clone carries. The
+    // wired closures read entry.ctx, which is mutated in place across
+    // refreshes: a form on a surviving node must see the current row, not the
+    // one its node was born with. The node itself counts: an item whose whole
+    // markup is one form — a row of per-label file buttons, a per-row action —
+    // is not inside itself, and querySelectorAll alone would leave it unwired,
+    // clicking into silence.
+    const stamp = (entry, tmpl) => {
+      const node = tmpl.content.firstElementChild.cloneNode(true);
+      node.dataset.id = entry.ctx.row.id;
+      for (const form of formsIn(node)) {
+        if (ownedBy(form, node)) wireForm(form, () => node.dataset.id, () => entry.ctx, region);
+      }
+      entry.node = node;
+      entry.tmpl = tmpl;
     };
 
     const eachNested = (fn) => {
@@ -1072,7 +1473,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
           dirty.add(String(id));
         }
       }
-      if (template) {
+      if (templates.length > 0) {
         {
           const ready = [];
           const order = [];
@@ -1083,23 +1484,16 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
             let entry = live.get(key);
             const arrived = entry === undefined;
             if (arrived) {
-              const node = template.content.firstElementChild.cloneNode(true);
-              node.dataset.id = row.id;
-              entry = { node, ctx: {params: ctx.params, inert: ctx.inert, row}, nested: new Map() };
+              const tmpl = templateFor(row);
+              entry = {
+                ctx: { params: ctx.params, inert: ctx.inert, row, chain: chainInto(tmpl, row) },
+                nested: new Map(),
+              };
+              stamp(entry, tmpl);
               live.set(key, entry);
-              // The wired closures read entry.ctx, which is mutated in place
-              // below: a form on a surviving node must see the current row,
-              // not the one its node was born with.
-              // The node itself counts: an item whose whole markup is one form
-              // — a row of per-label file buttons, a per-row action — is not
-              // inside itself, and querySelectorAll alone would leave it
-              // unwired, clicking into silence.
-              for (const form of formsIn(node)) {
-                if (ownedBy(form, node)) wireForm(form, () => node.dataset.id, () => entry.ctx, region);
-              }
               // Stamped before the node is in the document, so its arriving
               // style is the first one the browser ever computes for it.
-              if (!first) playEnter(node);
+              if (!first) playEnter(entry.node);
             } else {
               entry.ctx.row = row;
             }
@@ -1109,6 +1503,23 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
             // mid-selection in, and re-hydrate nested regions whose filters
             // cannot have moved.
             if (arrived || dirty === null || dirty.has(key)) {
+              // A surviving row whose matched template changed re-stamps from
+              // the new one: the old node's nested regions and hatches are
+              // released exactly as the departed-row sweep releases them, and
+              // DOM-private state (focus, selection, unsent text) goes with
+              // the node — a kind flip is a shape change, not a patch.
+              if (!arrived) {
+                const tmpl = templateFor(row);
+                if (tmpl !== entry.tmpl) {
+                  entry.ctx.chain = chainInto(tmpl, row);
+                  for (const n of entry.nested.values()) n.h.stop();
+                  entry.nested.clear();
+                  for (const el of hatchesIn(entry.node)) el._prontoHatch?.destroy();
+                  const old = entry.node;
+                  stamp(entry, tmpl);
+                  if (old.isConnected) old.replaceWith(entry.node);
+                }
+              }
               // decision-offline-note-path: rows whose write is still
               // unconfirmed wear the pending badge. Deleted rather than set to
               // undefined — the DOMStringMap setter stringifies, so the badge
@@ -1129,7 +1540,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
             playExit(node, () => {
               // A hatch holds a page-level message listener; the node going
               // away is what releases it.
-              for (const el of node.querySelectorAll("[data-hatch]")) el._prontoHatch?.destroy();
+              for (const el of hatchesIn(node)) el._prontoHatch?.destroy();
               node.remove();
             });
             live.delete(key);
@@ -1165,14 +1576,16 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
             else region.insertBefore(node, cursor);
           }
           if (order.length === 0 && region.dataset.empty) {
-            const p = document.createElement("p");
+            // A list element admits only li children, so the note matches the
+            // rows it stands in for.
+            const p = document.createElement(/^(UL|OL)$/.test(region.tagName) ? "li" : "p");
             p.className = "empty";
             p.textContent = region.dataset.empty;
             region.append(p);
           }
-          const { deliver } = wireEvents(region, order, () => currentRows, handlers);
+          const { deliver } = wireEvents(region, order, () => currentRows, handlers, ctx);
           const reduce = handlers.get(region.dataset.handler);
-          if (reduce && template.content.querySelector("[data-drag-handle]")) {
+          if (reduce && templates.some((t) => t.el.content.querySelector("[data-drag-handle]"))) {
             wireDrag(region, order, () => currentRows, reduce, deliver);
           }
           first = false;
@@ -1185,9 +1598,17 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         // Singleton region: the row must exist (seed doctrine), except where
         // data-empty-row supplies the fallback for pipeline sinks whose row
         // only appears after the first source event.
+        if (rows.length > 1) {
+          throw new SlotCardinalityError(
+            `slot region "${table}" (filter ${JSON.stringify(opts.filter ?? "")}) matched ${rows.length} rows; a slot binds at most one`,
+          );
+        }
         let row = rows[0];
-        if (row === undefined && region.dataset.emptyRow) row = JSON.parse(region.dataset.emptyRow);
+        if (row === undefined && fallbackRow !== undefined) row = fallbackRow;
         currentRow = row;
+        // The store's answer now includes every machine write that preceded
+        // this wake, so the chain-local view has nothing newer to add.
+        region._prontoMachineRow = undefined;
         if (row === undefined) {
           // Vanished singleton (row deleted or its visibility revoked
           // mid-visit): the screen's "gone" state owns the frame. The output
@@ -1199,13 +1620,13 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
           return;
         }
         if (top && screen.dataset.state === "gone") setState(base);
-        const rowCtx = { params: ctx.params, inert: ctx.inert, row };
+        slotCtx.row = row;
         // A singleton has affordances too, and its one row is what they act
         // on: the reduce is handed it the way a list's is handed its rows.
-        wireEvents(region, [], () => (currentRow === undefined ? [] : [currentRow]), handlers);
-        bindAttributes(region, rowCtx);
-        bindTexts(region, rowCtx, renderers);
-        bindHatches(region, rowCtx);
+        wireEvents(region, [], () => (currentRow === undefined ? [] : [currentRow]), handlers, slotCtx);
+        bindAttributes(region, slotCtx);
+        bindTexts(region, slotCtx, renderers);
+        bindHatches(region, slotCtx);
       }
     };
     let retryTimer;
@@ -1249,6 +1670,16 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         retryMs = 2000;
         if (top && screen.dataset.state === "network-error") setState(base);
       } catch (err) {
+        // A slot that matched two rows, or a row no template admits, is a
+        // broken invariant, not an outage: no retry can repair it, and the
+        // network-error dressing would say the store is down when the data is
+        // wrong. The rejection propagates — hydration fails on a first paint,
+        // a later wake rejects loudly — and the next real change re-checks
+        // without a timer.
+        if (
+          err instanceof SlotCardinalityError || err instanceof KindAdmissionError ||
+          err instanceof TemplateCycleError
+        ) throw err;
         console.error(err);
         if (top) setState("network-error");
         retryTimer = setTimeout(guarded, retryMs);
@@ -1258,11 +1689,16 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     let unsub = store.subscribe(table, guarded, opts);
     const detach = () => {
       clearTimeout(retryTimer);
+      // An armed machine timer dies with the subscriptions — a wait expiring
+      // on a torn-down region must not write into the live store — and the
+      // cleared mark is what lets resume's refresh re-arm the standing state.
+      region._prontoAfterGen = (region._prontoAfterGen ?? 0) + 1;
+      region._prontoMachineArmed = undefined;
       unsub?.();
       unsub = null;
     };
     cleanups.push(detach);
-    if (!template) {
+    if (templates.length === 0) {
       for (const form of region.querySelectorAll("form[data-action]")) {
         if (!ownedBy(form, region)) continue;
         wireForm(form, () => currentRow.id, () => ({ params: ctx.params, row: currentRow }), region);

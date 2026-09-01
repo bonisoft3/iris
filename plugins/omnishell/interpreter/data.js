@@ -5,6 +5,7 @@
 
 import { PGlite } from "https://cdn.jsdelivr.net/npm/@electric-sql/pglite@0.5.4/dist/index.js";
 import { evaluateFold } from "./jessie.js";
+import { deleteSpec } from "./fragment.js";
 
 const IDENT = /^[a-z_][a-z0-9_]*$/;
 
@@ -146,22 +147,18 @@ export async function createStore(appBase, config) {
     await cascade(table);
   }
 
-  // PostgREST-subset filter: &-joined col=eq.v / col=is.true|false|null pairs
-  // (the fragment arrives URI-encoded per value from the interpreter).
+  // Delete by fragment; deleteSpec holds the grammar's delete subset, and this
+  // only renders its descriptors as SQL.
   async function removeWhere(table, filter) {
     const clauses = [];
     const args = [];
-    for (const part of filter.split("&")) {
-      const [col, expr] = part.split("=");
-      const [op, ...rest] = expr.split(".");
-      const val = decodeURIComponent(rest.join("."));
-      if (op === "eq") {
-        args.push(val);
-        clauses.push(`${ident(col)} = $${args.length}`);
-      } else if (op === "is") {
-        if (!["true", "false", "null"].includes(val)) throw new Error(`bad is filter: ${part}`);
-        clauses.push(`${ident(col)} IS ${val.toUpperCase()}`);
-      } else throw new Error(`unsupported delete filter op: ${part}`);
+    for (const p of deleteSpec(filter)) {
+      if (p.op === "eq") {
+        args.push(p.value);
+        clauses.push(`${ident(p.col)} = $${args.length}`);
+      } else if (p.op === "true" || p.op === "false") {
+        clauses.push(`${ident(p.col)} IS ${p.op.toUpperCase()}`);
+      } else clauses.push(`${ident(p.col)} IS NULL`);
     }
     await db.query(`DELETE FROM ${ident(table)} WHERE ${clauses.join(" AND ")}`, args);
     await cascade(table);

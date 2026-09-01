@@ -7,7 +7,8 @@
     "jsr:@std/internal@^1.0.14": "1.0.14",
     "jsr:@std/path@^1.1.6": "1.1.6",
     "jsr:@std/testing@1": "1.0.20",
-    "jsr:@std/yaml@1.0.5": "1.0.5"
+    "jsr:@std/yaml@1.0.5": "1.0.5",
+    "npm:js-yaml@4.1.0": "4.1.0"
   },
   "jsr": {
     "@std/assert@1.0.19": {
@@ -44,7 +45,29 @@
       "integrity": "71ba3d334305ee2149391931508b2c293a8490f94a337eef3a09cade1a2a2742"
     }
   },
+  "npm": {
+    "argparse@2.0.1": {
+      "integrity": "sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q=="
+    },
+    "js-yaml@4.1.0": {
+      "integrity": "sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==",
+      "dependencies": [
+        "argparse"
+      ],
+      "bin": true
+    }
+  },
   "remote": {
+    "https://cdn.jsdelivr.net/npm/@electric-sql/pglite@0.5.4/dist/chunk-2B24BK54.js": "e6040890e4158d177d25ca905d215e2b2193ab458b67096dee99acd57a423934",
+    "https://cdn.jsdelivr.net/npm/@electric-sql/pglite@0.5.4/dist/chunk-F4GETNPB.js": "5ab11fd9fd74b259484f42a7855cd9569a5fe6ee1cf3c032238ac43a59511d97",
+    "https://cdn.jsdelivr.net/npm/@electric-sql/pglite@0.5.4/dist/chunk-QY3QWFKW.js": "bff6d3144dd6ea2689b00d9d0eea1ea2267b9cc14505fb9107b6194c1832bdea",
+    "https://cdn.jsdelivr.net/npm/@electric-sql/pglite@0.5.4/dist/chunk-QY575LMP.js": "f002819b920d481bbd7efe3302a097571fcabc039749684cde67809ec8839a18",
+    "https://cdn.jsdelivr.net/npm/@electric-sql/pglite@0.5.4/dist/chunk-SRXPYZFS.js": "c4dc6f9b4fbaf55dc7b2fdb565043fe2d5b47adadc202959d31c79a92156d74c",
+    "https://cdn.jsdelivr.net/npm/@electric-sql/pglite@0.5.4/dist/chunk-TDKVRJ2S.js": "1ddfecb4c863a68d927c4326d690f28c2ae42f536a22446b253b8d2a5d21449f",
+    "https://cdn.jsdelivr.net/npm/@electric-sql/pglite@0.5.4/dist/chunk-VVBUWNGP.js": "0a0b3f6c553cddcbf7a7e4e9916c0ed85a270f4b94764beadc6b68664cf10e60",
+    "https://cdn.jsdelivr.net/npm/@electric-sql/pglite@0.5.4/dist/fs/nodefs.js": "3235f8fbde07181185cb7464f996f85f7b0a6f24c85a767bd392c81872cc3edb",
+    "https://cdn.jsdelivr.net/npm/@electric-sql/pglite@0.5.4/dist/fs/opfs-ahp.js": "6da662b62036606ebacb0ace8b90ceb66566186079e55b89a0372d3ede87fd36",
+    "https://cdn.jsdelivr.net/npm/@electric-sql/pglite@0.5.4/dist/index.js": "d346708dbb8a67e6b1e27ae7187b3172c3c51c23fdfe820c9a1e3f5c6f8e170f",
     "https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js": "d6a22c7c6dea2a8e9b1ea8613e649c8ae58aec86ad677a7118fdf0e19678a468"
   },
   "workspace": {

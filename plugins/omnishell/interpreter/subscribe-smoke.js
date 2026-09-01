@@ -9,6 +9,7 @@
 // decide must wake it too, because being unsure costs a re-read while being
 // wrong costs a stale screen.
 import {
+  createStore,
   embedTables,
   isMaintainable,
   parseFilter,
@@ -17,10 +18,22 @@ import {
   parseSelect,
   touches,
 } from "./data-crud.js";
+import * as fragment from "./fragment.js";
+
+const { parseReadSpec } = fragment;
 
 const assert = (cond, msg) => {
   if (!cond) throw new Error(`smoke failed: ${msg}`);
 };
+
+// The grammar has one reader: the store adapter re-exports fragment.js's
+// parsers unchanged, so both import paths hold the same function objects.
+Deno.test("the fragment parsers have one definition", () => {
+  assert(fragment.parseFilter === parseFilter, "parseFilter");
+  assert(fragment.parseFilterSpec === parseFilterSpec, "parseFilterSpec");
+  assert(fragment.parseLimit === parseLimit, "parseLimit");
+  assert(fragment.parseSelect === parseSelect, "parseSelect");
+});
 
 const insert = (value) => ({ type: "insert", key: String(value.id), value });
 const remove = (previousValue) => ({ type: "delete", key: String(previousValue.id), previousValue });
@@ -223,4 +236,88 @@ Deno.test("an ordered cursor is translatable", () => {
   // Still not maintained: the engine has its own comparison semantics and a
   // string against a numeric column is not the same question.
   assert(!can("created_at=lt.2026-08-02", undefined, undefined), "reads client-side, not as a view");
+});
+
+// A named read's value — `table?fragment` — splits into exactly the shape a
+// region's own read hands the store, or the two could never share a view key.
+Deno.test("a read spec splits into the query's own shape", () => {
+  const eqr = (got, want, what) => {
+    if (JSON.stringify(got) !== JSON.stringify(want)) {
+      throw new Error(`smoke failed: ${what}: got ${JSON.stringify(got)}, want ${JSON.stringify(want)}`);
+    }
+  };
+  eqr(
+    parseReadSpec("round?current=eq.yes&order=created_at.desc"),
+    { table: "round", filter: "current=eq.yes", order: "created_at.desc" },
+    "filter and order ride apart",
+  );
+  eqr(
+    parseReadSpec("play?round_id=eq.{id}&order=seq.asc"),
+    { table: "play", filter: "round_id=eq.{id}", order: "seq.asc" },
+    "a placeholder is the filter's business, not this split's",
+  );
+  eqr(
+    parseReadSpec("play?a=eq.1&order=seq.asc&b=eq.2"),
+    { table: "play", filter: "a=eq.1&b=eq.2", order: "seq.asc" },
+    "filter parts recombine in authored order around the order key",
+  );
+  eqr(parseReadSpec("round"), { table: "round" }, "a bare table reads whole");
+  eqr(parseReadSpec("round?"), { table: "round" }, "an empty fragment is a whole read too");
+  let threw = false;
+  try {
+    parseReadSpec("?current=eq.yes");
+  } catch {
+    threw = true;
+  }
+  assert(threw, "a spec naming no table is a program error");
+});
+
+// The reuse the named-read grammar exists for: a read some region already
+// subscribes is served by that region's maintained view, not re-derived. The
+// store's debug seam (__prontoViews) is the witness — the query neither opens
+// a second view nor takes the snapshot path past the held one.
+Deno.test({
+  name: "a read a region already subscribes is served by its maintained view",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    const store = createStore("", { local: { round: "tab" } });
+    await store.put("round", { id: "r1", current: "yes", created_at: 2 });
+    await store.put("round", { id: "r2", current: "no", created_at: 1 });
+    await store.put("round", { id: "r3", current: "yes", created_at: 5 });
+
+    // A query alone never opens a view; only a subscription does.
+    const spec = parseReadSpec("round?current=eq.yes&order=created_at.desc");
+    const opts = { filter: spec.filter, order: spec.order };
+    await store.query(spec.table, spec.order, opts);
+    assert(globalThis.__prontoViews.size === 0, "a read alone opened no view");
+
+    const stop = store.subscribe(spec.table, () => {}, opts);
+    assert(globalThis.__prontoViews.size === 1, "the subscription opened the view");
+    const entry = [...globalThis.__prontoViews.values()][0];
+
+    // Spy through the seam: the same read must come back out of this view.
+    const real = entry.view;
+    let served = 0;
+    entry.view = {
+      isReady: () => real.isReady?.() ?? true,
+      toArrayWhenReady: () => real.toArrayWhenReady?.(),
+      get toArray() {
+        served++;
+        return real.toArray;
+      },
+    };
+    const rows = await store.query(spec.table, spec.order, opts);
+    entry.view = real;
+    assert(served === 1, `the held view served the read, served ${served}`);
+    assert(
+      JSON.stringify(rows.map((r) => r.id)) === JSON.stringify(["r3", "r1"]),
+      `filtered and ordered by the engine, got ${JSON.stringify(rows.map((r) => r.id))}`,
+    );
+    assert(globalThis.__prontoViews.size === 1, "the read joined the view rather than opening one");
+    assert(entry.refs === 1, "and holds no reference of its own");
+
+    stop();
+    assert(globalThis.__prontoViews.size === 0, "the subscription's release closed the view");
+  },
 });

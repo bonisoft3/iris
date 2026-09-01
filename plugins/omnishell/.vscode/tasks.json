@@ -51,12 +51,20 @@
         "interpreter/handler-smoke.js",
         "interpreter/hatch-smoke.js",
         "interpreter/incremental-smoke.js",
+        "interpreter/kind-smoke.js",
         "interpreter/login-smoke.js",
+        "interpreter/machine-smoke.js",
+        "interpreter/machine-v2-smoke.js",
+        "interpreter/machine-walk-smoke.js",
         "interpreter/nav-smoke.js",
+        "interpreter/nested-smoke.js",
         "interpreter/pending-smoke.js",
+        "interpreter/reconcile-smoke.js",
         "interpreter/renderer-smoke.js",
         "interpreter/signout-smoke.js",
-        "interpreter/subscribe-smoke.js"
+        "interpreter/slot-smoke.js",
+        "interpreter/subscribe-smoke.js",
+        "interpreter/template-smoke.js"
       ],
       "problemMatcher": [],
       "group": { "kind": "test" }
@@ -81,12 +89,20 @@
         "interpreter/handler-smoke.js",
         "interpreter/hatch-smoke.js",
         "interpreter/incremental-smoke.js",
+        "interpreter/kind-smoke.js",
         "interpreter/login-smoke.js",
+        "interpreter/machine-smoke.js",
+        "interpreter/machine-v2-smoke.js",
+        "interpreter/machine-walk-smoke.js",
         "interpreter/nav-smoke.js",
+        "interpreter/nested-smoke.js",
         "interpreter/pending-smoke.js",
+        "interpreter/reconcile-smoke.js",
         "interpreter/renderer-smoke.js",
         "interpreter/signout-smoke.js",
-        "interpreter/subscribe-smoke.js"
+        "interpreter/slot-smoke.js",
+        "interpreter/subscribe-smoke.js",
+        "interpreter/template-smoke.js"
       ],
       "problemMatcher": [],
       "group": { "kind": "test" }

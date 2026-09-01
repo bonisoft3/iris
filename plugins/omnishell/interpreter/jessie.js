@@ -3,11 +3,11 @@
 // cannot be argued with, which is the only reason app source is safe to run
 // unread.
 
-// ses pin: umd dist chosen over +esm so the <script> tag can carry the
-// integrity hash (dynamic import has no SRI). One load + one lockdown per
-// page; hosts that pre-install Compartment (the deno smoke) skip injection.
-const SES_URL = "https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js";
-const SES_SRI = "sha384-ENn5RvADmXXAkQE68rmuwSv7MiAk081oTWxzmlm5gz1LA2vEk20IBp5FYUZknoIq";
+// ses pin: the vendored umd dist (bundle:ses), loaded beside this module —
+// same-origin, so the platform's own image is the integrity boundary. One
+// load + one lockdown per page; hosts that pre-install Compartment (the deno
+// smoke) skip injection.
+const SES_URL = new URL("./vendor/ses.umd.min.js", import.meta.url).href;
 
 let sesReady;
 export function ensureSes() {
@@ -16,8 +16,6 @@ export function ensureSes() {
       await new Promise((resolve, reject) => {
         const script = document.createElement("script");
         script.src = SES_URL;
-        script.integrity = SES_SRI;
-        script.crossOrigin = "anonymous";
         script.onload = resolve;
         script.onerror = () => reject(new Error(`failed loading ${SES_URL}`));
         document.head.append(script);

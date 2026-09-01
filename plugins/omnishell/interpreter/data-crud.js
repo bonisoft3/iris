@@ -23,6 +23,9 @@ import {
   isNull,
   not,
 } from "./vendor/mecha-client.js";
+import { embedTables, parseFilter, parseFilterSpec, parseLimit, parseSelect } from "./fragment.js";
+
+export { embedTables, parseFilter, parseFilterSpec, parseLimit, parseSelect };
 
 const HEADERS = { "Content-Type": "application/json" };
 
@@ -50,99 +53,6 @@ async function http(url, init) {
   }
   if (!res.ok) throw new Error(`${res.status} ${init?.method ?? "GET"} ${url}`);
   return res;
-}
-
-/**
- * The row cap a filter carries, as a number; undefined when it carries none.
- *
- * Slicing locally is equivalent to letting PostgREST do it because the shape
- * is the whole table — mecha subscribes `params: {table}` with no `where` — so
- * the collection holds every row the reader may see, in the same order, and
- * the cap falls in the same place. `offset` is not read here: paging by
- * offset over a set that is arriving asynchronously is not the same question,
- * and stays the server's.
- */
-export function parseLimit(filter) {
-  const m = /(?:^|&)limit=(\d+)(?:&|$)/.exec(filter ?? "");
-  return m === null ? undefined : Number(m[1]);
-}
-
-/**
- * A filter as descriptors rather than closures, so one parse serves both
- * readings of it: the predicates a snapshot read filters with, and the where
- * clauses a live query is built from. null means untranslatable — the region
- * reads through PostgREST.
- *
- * Only the PostgREST filter subset the SPEC's binding grammar emits is
- * translated; anything beyond it (fts, embed-path filters) is server-computed.
- */
-export function parseFilterSpec(filter) {
-  if (!filter) return [];
-  const spec = [];
-  for (const part of filter.split("&")) {
-    const eq = part.indexOf("=");
-    const col = part.slice(0, eq);
-    const expr = part.slice(eq + 1);
-    // A cap is not a predicate: parseLimit reads it, and both read paths
-    // apply it after ordering.
-    if (col === "limit" && /^\d+$/.test(expr)) continue;
-    if (col.includes(".")) return null; // embed-path filter — server-computed
-    if (expr.startsWith("eq.")) spec.push({ col, op: "eq", value: decodeURIComponent(expr.slice(3)) });
-    else if (expr.startsWith("neq.")) spec.push({ col, op: "neq", value: decodeURIComponent(expr.slice(4)) });
-    // Pattern match, PostgREST's spelling: `*` is the wildcard (`%` is
-    // accepted too, since the wire form allows either) and `_` matches one
-    // character. `ilike` folds case; `like` does not.
-    else if (/^i?like\./.test(expr)) {
-      const at = expr.indexOf(".");
-      spec.push({ col, op: expr.slice(0, at), value: decodeURIComponent(expr.slice(at + 1)) });
-    }
-    // Cursor comparisons. The value arrives as a string and the column's type
-    // is not knowable here, which JS's relational operators handle the way
-    // this needs: two timestamps compare lexically in the one format the
-    // cursor ever carries (a row's own value, round-tripped through the URL),
-    // and a numeric string coerces against a number.
-    else if (/^(lt|lte|gt|gte)\./.test(expr)) {
-      const at = expr.indexOf(".");
-      spec.push({ col, op: expr.slice(0, at), value: decodeURIComponent(expr.slice(at + 1)) });
-    }
-    else if (expr === "is.true") spec.push({ col, op: "true" });
-    else if (expr === "is.false") spec.push({ col, op: "false" });
-    else if (expr === "is.null") spec.push({ col, op: "null" });
-    else if (expr === "not.is.null") spec.push({ col, op: "notnull" });
-    else return null; // untranslatable — the region reads via PostgREST
-  }
-  return spec;
-}
-
-/** A LIKE pattern as regex source: metacharacters escaped, wildcards restored. */
-const likeSource = (pattern) =>
-  pattern.replace(/[.*+?^${}()|[\]\\%_]/g, (c) =>
-    c === "*" || c === "%" ? "\u0000*" : c === "_" ? "\u0000?" : `\\${c}`,
-  ).replace(/\u0000\*/g, ".*").replace(/\u0000\?/g, ".");
-
-export function parseFilter(filter) {
-  const spec = parseFilterSpec(filter);
-  if (spec === null) return null;
-  return spec.map(({ col, op, value }) => {
-    if (op === "eq") return (row) => String(row[col]) === value;
-    if (op === "neq") return (row) => String(row[col]) !== value;
-    if (op === "like" || op === "ilike") {
-      const re = new RegExp(`^${likeSource(value)}$`, op === "ilike" ? "is" : "s");
-      return (row) => row[col] != null && re.test(String(row[col]));
-    }
-    if (op === "true") return (row) => row[col] === true;
-    // An optimistic insert omits DB-defaulted columns; every boolean the
-    // schema defaults defaults to false, so a missing column on an
-    // unconfirmed row must not hide it (the offline-captured note has to
-    // render on the wall). Synced rows always carry every column.
-    if (op === "false") return (row) => row[col] === false || (row.$synced === false && row[col] === undefined);
-    if (op === "null") return (row) => row[col] == null;
-    if (op === "notnull") return (row) => row[col] != null;
-    if (op === "lt") return (row) => row[col] < value;
-    if (op === "lte") return (row) => row[col] <= value;
-    if (op === "gt") return (row) => row[col] > value;
-    return (row) => row[col] >= value;
-  });
 }
 
 /**
@@ -216,45 +126,6 @@ function compareBy(order) {
     }
     return 0;
   };
-}
-
-// Embed tables named in a select fragment ("*,task_list(name,color)",
-// "*,note_label!inner(label!inner(name))") join the region's dependency
-// set — its result can only change when one of its tables does. A hint must
-// not swallow the table name: capturing "inner" instead would leave a hinted
-// region deaf to the very tables it joins. Hints stack — two tables joined by
-// more than one foreign key need a relationship hint *and* !inner
-// ("follow!followed_id!inner(…)"), so the run of hints repeats.
-export function embedTables(select) {
-  return [...(select ?? "").matchAll(/([a-z_][a-z0-9_]*)(?:![a-z_][a-z0-9_]*)*\(/g)].map((m) => m[1]);
-}
-
-/**
- * The locally joinable select subset: "*" plus flat unhinted embeds, each
- * resolvable through the base row's `<alias>_id` column against the embedded
- * table's synced collection (pronto's FK naming convention). Anything else —
- * !hints, nested embeds, column lists on the base — is server-computed.
- *
- * A flat FK embed comes back as {alias, table, cols}.
- *
- * PostgREST spells one of these two ways: `label(name)`, where the relation is
- * named for its table, and `author:app_user(handle)`, where it is named for
- * the foreign key. Both are the same join — the alias is what the row binds
- * under and what `<alias>_id` is derived from, the table is which collection
- * to look in — and only the second can express two embeds of one table.
- *
- * null means server-computed: a hint (`!inner`), a nested embed, or anything
- * else this cannot state as a flat lookup.
- */
-export function parseSelect(select) {
-  if (select === undefined) return [];
-  const rel = "(?:[a-z_][a-z0-9_]*:)?[a-z_][a-z0-9_]*";
-  if (!new RegExp(`^\\*(,${rel}\\([a-z0-9_,]*\\))*$`).test(select)) return null;
-  return [...select.matchAll(/(?:([a-z_][a-z0-9_]*):)?([a-z_][a-z0-9_]*)\(([a-z0-9_,]*)\)/g)].map((m) => ({
-    alias: m[1] ?? m[2],
-    table: m[2],
-    cols: m[3].split(",").filter(Boolean),
-  }));
 }
 
 // Mutations resolve on confirmation OR on durable queueing: the client's
@@ -332,6 +203,65 @@ export function createStore(base = "", cfg = {}) {
   // here. PostgREST reads (embeds, fts) are already RLS-scoped server-side.
   const access = cfg.access ?? {};
   const keyOf = (t) => cfg.keys?.[t] ?? "id";
+
+  // Browser-tier rows outlive the invariants declared over them: a device
+  // collection may hold rows written before a unique existed, and a slot
+  // meeting them would die on data no one can repair from the screen. So a
+  // local collection's declared uniques — cfg.uniques and the partial ones
+  // shell.yaml carries as cfg.partialUniques {table: [{cols, where}]} — are
+  // reconciled once per boot, before the first read: within each unique's
+  // domain the newest row per key wins (created_at when the rows carry it,
+  // else load order) and the rest are dropped with one warning. Dropped, not
+  // repaired: the terminal cannot mint domain values to move a loser out of
+  // the where-domain. Server tiers are untouched — Postgres owns its own
+  // uniques. The slot cardinality error guards what appears after boot.
+  const reconciledAt = new Map();
+  const ensureReconciled = (table) => {
+    if (local[table] === undefined) return Promise.resolve();
+    let p = reconciledAt.get(table);
+    if (p === undefined) {
+      p = reconcile(table);
+      reconciledAt.set(table, p);
+    }
+    return p;
+  };
+  async function reconcile(table) {
+    const c = client.collections[table];
+    if (c === undefined) return;
+    if (!c.isReady()) await c.toArrayWhenReady();
+    const declared = [
+      ...(cfg.uniques?.[table] ?? []).map((cols) => ({ cols })),
+      ...(cfg.partialUniques?.[table] ?? []),
+    ];
+    for (const u of declared) {
+      // A where outside the translatable subset never ships: derive vets it.
+      const preds = u.where === undefined ? [] : (parseFilter(u.where) ?? []);
+      const groups = new Map();
+      for (const r of c.toArray) {
+        if (!preds.every((p) => p(r))) continue;
+        const g = u.cols.map((col) => String(r[col] ?? "")).join("\u0000");
+        if (!groups.has(g)) groups.set(g, []);
+        groups.get(g).push(r);
+      }
+      let dropped = 0;
+      for (const rows of groups.values()) {
+        if (rows.length < 2) continue;
+        const newestLast = [...rows].sort((a, b) =>
+          String(a.created_at ?? "") < String(b.created_at ?? "") ? -1 : String(a.created_at ?? "") > String(b.created_at ?? "") ? 1 : 0
+        );
+        for (const loser of newestLast.slice(0, -1)) {
+          await client.remove(table, loser[keyOf(table)]);
+          dropped++;
+        }
+      }
+      if (dropped > 0) {
+        console.warn(
+          `mecha: ${table}: ${dropped} surviving row(s) violated unique (${u.cols.join(", ")})` +
+            (u.where === undefined ? "" : ` where ${u.where}`) + "; kept the newest, dropped the rest",
+        );
+      }
+    }
+  }
   function visible(table, row) {
     const a = access[table];
     if (!a) return true;
@@ -580,6 +510,7 @@ export function createStore(base = "", cfg = {}) {
     project(table, await read(table, order, opts));
 
   async function read(table, order, opts = {}) {
+    await ensureReconciled(table);
     // A read the engine already maintains needs no re-derivation: the view is
     // the filter and the order, kept current by the deltas that woke us.
     const held = maintainedView(table, opts);
@@ -799,6 +730,7 @@ export function createStore(base = "", cfg = {}) {
   // DEFAULT auth_uid() and materialises server-side, so the reader's own rows
   // carry it while the row they are about to write does not.
   async function upsert(table, values, onRefused) {
+    await ensureReconciled(table);
     const owner = access[table]?.owner;
     const keys = upsertKey(cfg.uniques?.[table], keyOf(table), owner, values);
     if (keys === null) {
@@ -821,6 +753,7 @@ export function createStore(base = "", cfg = {}) {
   // row written twice is the same row. Fields it does not name are left alone —
   // it states a row, it does not replace one.
   async function put(table, row, onRefused) {
+    await ensureReconciled(table);
     const key = keyOf(table);
     if (row?.[key] === undefined) throw new Error(`put ${table}: the row carries no ${key}`);
     const collection = client.collections[table];
@@ -849,6 +782,11 @@ export function createStore(base = "", cfg = {}) {
   // holds every row this reader may see (the shape is the whole table), so it
   // is the same set, read from the tier that owns the optimistic state.
   async function removeWhere(table, filter, onRefused) {
+    // A limit is a cap the parser reads apart from the predicates, and a
+    // DELETE has no ordering to cap against — honoring the rest of the filter
+    // would silently widen the deletion's scope.
+    if (parseLimit(filter) !== undefined) throw new Error(`delete filter carries a limit: ${filter}`);
+    await ensureReconciled(table);
     const preds = parseFilter(filter);
     const collection = client.collections[table];
     // A precondition, not a branch: resolving these keys anywhere but the
