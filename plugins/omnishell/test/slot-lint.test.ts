@@ -71,9 +71,9 @@ describe("unwitnessedSlot", () => {
     table: "round",
     path: "tab",
     fields: [
-      { name: "id", pk: true },
-      { name: "current", pk: false },
-      { name: "created_at", pk: false },
+      { name: "id", type: "text", pk: true },
+      { name: "current", type: "text", pk: false },
+      { name: "created_at", type: "timestamptz", pk: false },
     ],
     uniques: [],
     ...extra,
@@ -84,7 +84,7 @@ describe("unwitnessedSlot", () => {
   })
 
   it("an eq on a unique field is a witness", () => {
-    const e = entity({ fields: [{ name: "id", pk: true }, { name: "slug", unique: true }] })
+    const e = entity({ fields: [{ name: "id", type: "text", pk: true }, { name: "slug", type: "text", unique: true }] })
     expect(unwitnessedSlot("slug=eq.{param.slug}", e)).toBe(null)
   })
 
@@ -105,7 +105,7 @@ describe("unwitnessedSlot", () => {
 
   it("a total composite unique needs every column pinned", () => {
     const e = entity({
-      fields: [{ name: "id", pk: true }, { name: "user_id" }, { name: "article_id" }],
+      fields: [{ name: "id", type: "text", pk: true }, { name: "user_id", type: "uuid" }, { name: "article_id", type: "uuid" }],
       uniques: [{ name: "uq_pair", cols: ["user_id", "article_id"] }],
     })
     expect(unwitnessedSlot("user_id=eq.{me}&article_id=eq.{id}", e)).toBe(null)

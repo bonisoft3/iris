@@ -1,0 +1,787 @@
+// A whole emitted screen, mounted the way the terminal mounts it: the app's
+// own markup and Jessie read off disk, a store that answers the fragment
+// grammar the shipped one answers, and a clock the test steps.
+//
+// screen.js reads its clock and its seed from location.search once, at module
+// evaluation, so this module owns that import: it sets location and only then
+// loads the interpreter. A test file that also imports screen.js statically
+// has already frozen those knobs, and mountScreen says so rather than racing
+// real beats.
+//
+// Nothing here knows an app. The app dir is an argument, and what a screen
+// means is the caller's.
+
+import { parseHTML } from "npm:linkedom@0.18.4";
+import { load as parseYaml } from "../interpreter/vendor/js-yaml.js";
+import { embedTables, parseFilter, parseLimit, parseSelect } from "../interpreter/fragment.js";
+import { upsertKey as resolveKey } from "../interpreter/data-crud.js";
+
+/** data-crud.js is the shipped store, not a typed module: the natural key an
+ * upsert resolves against comes from there so there is one resolution and not
+ * a second. */
+const upsertKey = resolveKey as (
+  uniques: string[][] | undefined,
+  pk: string,
+  owner: string | undefined,
+  values: Row,
+) => string[] | null;
+
+/** SES hardens `console` at lockdown, so the seam has to be taken before the
+ * first mount boots it — after that the property is read-only. Nothing is
+ * collected until a mount asks, which keeps lockdown's own chatter out. */
+const loggedError = console.error;
+let collect: ((err: unknown) => void) | null = null;
+console.error = (...args: unknown[]) => {
+  // lockdown reports every intrinsic it removes through this same channel, in
+  // a group whose continuation lines carry no prefix — so the report is told
+  // apart by where it comes from, not by how it reads. That is the platform
+  // booting, not a screen failing.
+  const ses = new Error().stack?.includes("ses.umd.min.js") === true;
+  if (collect === null || ses) return loggedError(...args);
+  collect(args[0] instanceof Error ? args[0] : new Error(args.map(String).join(" ")));
+};
+
+export type Row = Record<string, unknown>;
+
+/** One element's text, trimmed. */
+export const textOf = (el: { textContent: string | null }) => (el.textContent ?? "").trim();
+
+/** Throw the message the test wrote, so a failure reads as a sentence about
+ * the screen rather than as a diff of two values. */
+export const assert = (ok: unknown, msg: string) => {
+  if (!ok) throw new Error(msg);
+};
+
+/** The one row a claim is about; any other count is the claim being wrong
+ * about the world rather than about the row. */
+export const only = (rows: Row[], what: string): Row => {
+  if (rows.length !== 1) throw new Error(`${what}: ${rows.length} rows, not one — ${JSON.stringify(rows)}`);
+  return rows[0];
+};
+type Change = { value?: Row; previousValue?: Row };
+
+export type Route = {
+  screen: string;
+  files: { html: string; css: string; handlers: string[]; renderers?: string[]; shared?: string[] };
+  states?: string[];
+};
+
+/** One store call, in the order it was made, so a test can count writes. */
+export type Call = { op: string; table: string; id?: string };
+
+export type MemoryStore = {
+  query(table: string, order?: string | null, opts?: Record<string, unknown>): Promise<Row[]>;
+  subscribe(table: string, fn: (changes?: Change[]) => void, opts?: Record<string, unknown>): () => void;
+  create(table: string, values: Row): Promise<void>;
+  upsert(table: string, values: Row): Promise<void>;
+  update(table: string, id: unknown, patch: Row): Promise<void>;
+  put(table: string, row: Row): Promise<void>;
+  remove(table: string, id: unknown): Promise<void>;
+  removeWhere(table: string, filter: string): Promise<void>;
+  /** The rows a table holds, as the store holds them. */
+  rows(table: string): Row[];
+  calls: Call[];
+  /** Bumped by every write; the harness's quiet signal. */
+  version: number;
+  /** Wakes scheduled and not yet delivered. */
+  pendingWakes: number;
+};
+
+/**
+ * The store's ordering, which is not part of the fragment grammar: a
+ * comma-separated `col.dir` list, nulls last on asc and first on desc, JS
+ * relational comparison. It mirrors data-crud.js's compareBy, so a column of
+ * strings compares lexically here exactly as it does in the browser.
+ */
+function compareBy(order?: string | null) {
+  const keys = (order ?? "").split(",").filter(Boolean).map((k) => {
+    const [col, dir] = k.split(".");
+    return { col, sign: dir === "desc" ? -1 : 1 };
+  });
+  return (a: Row, b: Row) => {
+    for (const { col, sign } of keys) {
+      const x = a[col] as never;
+      const y = b[col] as never;
+      if (x == null && y == null) continue;
+      if (x == null) return sign;
+      if (y == null) return -sign;
+      if (x < y) return -sign;
+      if (x > y) return sign;
+    }
+    return 0;
+  };
+}
+
+/** What the cluster fills in that the browser never computes. A mount that
+ * omits all of it can still read and create; only upsert needs a key to
+ * resolve against. */
+export type Cluster = {
+  uniques?: Record<string, string[][]>;
+  owners?: Record<string, string>;
+  /** The pk of every table whose pk is not `id` (shell.yaml `keys:`), which is
+   * how a pipeline sink keys on its subject. */
+  keys?: Record<string, string>;
+  /** Each entity's access mode (shell.yaml `access:`), which decides which
+   * rows a reader can see at all. Answered only for a mount that names its
+   * reader: with nobody reading there is no visibility question to settle. */
+  access?: Record<
+    string,
+    { mode: string; owner?: string; parent?: string; on?: string; shared?: { via: string; on: string; user: string } }
+  >;
+  me?: string;
+  /** Column DEFAULTs the database fills and the browser never computes, per
+   * table. The shipped store has the same hole transiently — it writes the
+   * submitted values optimistically and learns the rest when the server row
+   * arrives — so a mount that declares none is faithful to that instant and
+   * one that declares them is faithful to the settled row. A binding over a
+   * column no default supplies renders nothing, which is a guarded refresh
+   * error the rejection trap cannot see. */
+  defaults?: Record<string, Row>;
+};
+
+/**
+ * An in-memory store over whole tables. Reads go through the fragment
+ * grammar's own parsers, so there is one dialect of filters, caps and selects
+ * and this is not a second one; a fragment the grammar cannot state throws
+ * rather than widening the read.
+ *
+ * Wakes carry the change set, coalesced on a macrotask, per subscription —
+ * which is what the interpreter's delta path reads to decide which rows a
+ * refresh has to reconsider.
+ */
+export function memoryStore(tables: Record<string, Row[]>, cluster: Cluster = {}): MemoryStore {
+  const data = new Map<string, Row[]>(
+    Object.entries(tables).map(([t, rows]) => [t, rows.map((r) => ({ ...r }))]),
+  );
+  type Sub = { fn: (changes?: Change[]) => void; batch: Change[]; scheduled: boolean };
+  const subs = new Map<string, Set<Sub>>();
+  const minted = new Map<string, number>();
+  const mintId = (table: string) => {
+    const n = (minted.get(table) ?? 0) + 1;
+    minted.set(table, n);
+    return `${table}-${n}`;
+  };
+  const store = {
+    calls: [] as Call[],
+    version: 0,
+    pendingWakes: 0,
+  } as MemoryStore;
+
+  const of = (table: string) => {
+    const rows = data.get(table);
+    if (rows === undefined) throw new Error(`no table "${table}" in this store`);
+    return rows;
+  };
+  const keyOf = (table: string) => cluster.keys?.[table] ?? "id";
+  // The policies the cluster enforces, so a fixture seeded with rows the
+  // reader could not fetch does not render here and vanish in a browser.
+  const visible = (table: string, row: Row): boolean => {
+    const a = cluster.access?.[table];
+    if (a === undefined || cluster.me === undefined) return true;
+    if (a.mode === "public-read") return true;
+    if (a.mode === "service-only") return false;
+    if (a.mode === "owned") {
+      if (row[a.owner as string] === cluster.me) return true;
+      if (a.shared === undefined) return false;
+      const pk = row[keyOf(table)];
+      return (data.get(a.shared.via) ?? []).some(
+        (sh) => sh[a.shared!.on] === pk && sh[a.shared!.user] === cluster.me,
+      );
+    }
+    const parent = a.parent as string;
+    const p = (data.get(parent) ?? []).find((r) => r[keyOf(parent)] === row[a.on as string]);
+    return p !== undefined && visible(parent, p);
+  };
+  // Comparing the key's string form matches a row whose key is absent to a
+  // lookup for nothing, so a keyless row would answer for every id.
+  const indexOf = (table: string, rows: Row[], id: unknown) => {
+    const key = keyOf(table);
+    if (id === undefined) throw new Error(`${table}: a row is addressed by its ${key}, and none was given`);
+    return rows.findIndex((r) => {
+      if (r[key] === undefined) throw new Error(`${table}: a row carries no ${key}`);
+      return String(r[key]) === String(id);
+    });
+  };
+
+  // PostgREST names an embed by its relation OR by the foreign key column that
+  // reaches it, and the grammar reports whichever the markup wrote. Only the
+  // table set can tell them apart, so resolution happens here, against the
+  // tables this store actually holds.
+  const relationOf = (named: string) => {
+    if (data.has(named)) return named;
+    const stripped = named.replace(/_id$/, "");
+    if (data.has(stripped)) return stripped;
+    throw new Error(
+      `embed "${named}" names neither a table nor a foreign key into one; the store holds ${
+        [...data.keys()].join(", ")
+      }`,
+    );
+  };
+
+  const note = (table: string, change: Change) => {
+    store.version++;
+    for (const sub of subs.get(table) ?? []) {
+      sub.batch.push(change);
+      if (sub.scheduled) continue;
+      sub.scheduled = true;
+      store.pendingWakes++;
+      setTimeout(() => {
+        sub.scheduled = false;
+        store.pendingWakes--;
+        const changes = sub.batch;
+        sub.batch = [];
+        sub.fn(changes);
+      }, 0);
+    }
+  };
+
+  store.rows = (table) => of(table);
+
+  store.query = async (table, order, opts = {}) => {
+    store.calls.push({ op: "query", table });
+    const preds = parseFilter(opts.filter);
+    if (preds === null) throw new Error(`filter outside the grammar for ${table}: ${opts.filter}`);
+    const embeds = parseSelect(opts.select);
+    if (embeds === null) throw new Error(`select outside the grammar for ${table}: ${opts.select}`);
+    const sorted = of(table)
+      .filter((r: Row) => visible(table, r) && preds.every((p: (row: Row) => boolean) => p(r)))
+      .sort(compareBy(order ?? (opts.order as string | undefined)));
+    const limit = parseLimit(opts.filter);
+    const capped = limit === undefined ? sorted : sorted.slice(0, limit);
+    return capped.map((row: Row) => {
+      if (embeds.length === 0) return row;
+      const out = { ...row };
+      for (const { alias, table: rel, cols } of embeds) {
+        const t = relationOf(rel);
+        const target = of(t).find((r) => String(r[keyOf(t)]) === String(row[`${alias}_id`]));
+        // A joined row that does not resolve binds null, never omitted:
+        // PostgREST under RLS answers the same way.
+        out[alias] = target === undefined
+          ? null
+          : Object.fromEntries(cols.map((c: string) => [c, target[c]]));
+      }
+      return out;
+    });
+  };
+
+  // Per table, not per read: the shipped store maintains a view over the
+  // region's own filter and wakes only when that view moves. Waking on the
+  // whole table is a superset — the extra pass costs a re-read and the delta
+  // set still names the rows that moved — so a region here never misses a
+  // wake it would get in the browser.
+  store.subscribe = (table, fn, opts = {}) => {
+    of(table);
+    const sub: Sub = { fn, batch: [], scheduled: false };
+    // The shipped store watches the region's embedded tables beside its own,
+    // so an edit to a joined row reaches the region that renders it. Row
+    // visibility is the part not modelled: every seeded row is readable here.
+    const watched = [table, ...embedTables(opts.select as string | undefined)]
+      .filter((t) => data.has(t));
+    for (const t of watched) {
+      const set = subs.get(t) ?? new Set<Sub>();
+      subs.set(t, set);
+      set.add(sub);
+    }
+    return () => {
+      for (const t of watched) subs.get(t)?.delete(sub);
+    };
+  };
+
+  store.create = async (table, values) => {
+    // The shipped store mints the key when the form does not carry one
+    // (data-crud.js: retries are idempotent only because the id travels with
+    // every attempt), so a fake that refused would fail writes the browser
+    // accepts. Minted from the mount's seeded entropy, not crypto, so a
+    // created row's id is the same on every run.
+    const given = owned(table, values);
+    const row = given?.id === undefined ? { id: mintId(table), ...given } : given;
+    store.calls.push({ op: "create", table, id: String(row.id) });
+    const rows = of(table);
+    if (rows.some((r) => String(r[keyOf(table)]) === String(row[keyOf(table)]))) {
+      throw new Error(`create ${table}: ${row[keyOf(table)]} is already there`);
+    }
+    const value = { ...row };
+    rows.push(value);
+    note(table, { value });
+  };
+
+  // The owner column is DEFAULT auth_uid() and materialises server-side, so a
+  // row the reader writes carries it while the values the form submitted do
+  // not. A mount that names no reader leaves it to the app's own fixtures.
+  const owned = (table: string, values: Row): Row => {
+    const filled = { ...cluster.defaults?.[table], ...values };
+    const owner = cluster.owners?.[table];
+    if (owner === undefined || cluster.me === undefined || filled[owner] !== undefined) return filled;
+    return { ...filled, [owner]: cluster.me };
+  };
+
+  store.upsert = async (table, values) => {
+    const keys = upsertKey(cluster.uniques?.[table], keyOf(table), cluster.owners?.[table], values);
+    if (keys === null) {
+      throw new Error(`upsert ${table}: no natural key covers ${Object.keys(values).join(",")}`);
+    }
+    const row = owned(table, values);
+    const at = (r: Row, c: string) => String(r[c] ?? "");
+    const wanted = keys.map((c) => at(row, c));
+    const existing = of(table).find((r) => keys.every((c, i) => at(r, c) === wanted[i]));
+    if (existing === undefined) return store.create(table, row);
+    return store.update(table, existing[keyOf(table)], row);
+  };
+
+  store.update = async (table, id, patch) => {
+    store.calls.push({ op: "update", table, id: String(id) });
+    const rows = of(table);
+    const i = indexOf(table, rows, id);
+    if (i < 0) throw new Error(`update ${table}: no row ${id}`);
+    const previousValue = rows[i];
+    const value = { ...previousValue, ...patch };
+    rows[i] = value;
+    note(table, { value, previousValue });
+  };
+
+  store.put = async (table, row) => {
+    const key = keyOf(table);
+    if (row?.[key] === undefined) throw new Error(`put ${table}: the row carries no ${key}`);
+    store.calls.push({ op: "put", table, id: String(row[key]) });
+    const rows = of(table);
+    const i = rows.findIndex((r) => String(r[keyOf(table)]) === String(row[keyOf(table)]));
+    if (i < 0) {
+      const value = { ...row };
+      rows.push(value);
+      note(table, { value });
+      return;
+    }
+    // A row states its fields and leaves the rest alone; the key is the
+    // caller's own, so the same conclusion reached twice is the same row.
+    const previousValue = rows[i];
+    const value = { ...previousValue, ...row };
+    rows[i] = value;
+    note(table, { value, previousValue });
+  };
+
+  store.remove = async (table, id) => {
+    store.calls.push({ op: "remove", table, id: String(id) });
+    const rows = of(table);
+    const i = indexOf(table, rows, id);
+    if (i < 0) throw new Error(`remove ${table}: no row ${id}`);
+    const [previousValue] = rows.splice(i, 1);
+    note(table, { previousValue });
+  };
+
+  store.removeWhere = async (table, filter) => {
+    store.calls.push({ op: "removeWhere", table });
+    // A cap on a delete states a row count the server cannot honour, so the
+    // shipped store refuses the filter rather than deleting what it matches.
+    if (parseLimit(filter) !== undefined) throw new Error(`delete filter carries a limit: ${filter}`);
+    const preds = parseFilter(filter);
+    if (preds === null) throw new Error(`filter outside the grammar for ${table}: ${filter}`);
+    const doomed = of(table).filter((r: Row) => preds.every((p: (row: Row) => boolean) => p(r)));
+    for (const row of doomed) await store.remove(table, row[keyOf(table)]);
+  };
+
+  return store;
+}
+
+/** The route a screen ships under, read from the emitted shell.yaml so a test
+ * cannot drift from what the app actually mounts. */
+export async function appRoute(appDir: URL, screen: string): Promise<Route> {
+  const shell = parseYaml(await Deno.readTextFile(new URL("shell/shell.yaml", appDir))) as {
+    routes?: Route[];
+  };
+  const route = (shell.routes ?? []).find((r) => r.screen === screen);
+  if (route === undefined) throw new Error(`shell.yaml declares no screen "${screen}"`);
+  return route;
+}
+
+/** A route's own files, keyed by the paths the route names them by. */
+export async function appFiles(appDir: URL, route: Route): Promise<Record<string, string>> {
+  const paths = [
+    ...(route.files.shared ?? []),
+    route.files.html,
+    route.files.css,
+    ...route.files.handlers,
+    ...(route.files.renderers ?? []),
+  ];
+  const files: Record<string, string> = {};
+  for (const path of paths) files[path] = await Deno.readTextFile(new URL(path, appDir));
+  return files;
+}
+
+// The DOM this needs, structurally: test/deno.json carries no dom lib, and a
+// linkedom node is not the platform's Element anyway.
+export type El = {
+  getAttribute(name: string): string | null;
+  setAttribute(name: string, value: string): void;
+  removeAttribute(name: string): void;
+  hasAttribute(name: string): boolean;
+  querySelectorAll(selector: string): ArrayLike<El> & Iterable<El>;
+  dispatchEvent(event: unknown): boolean;
+  readonly firstElementChild: El | null;
+  readonly textContent: string | null;
+};
+
+type Interpreter = {
+  interpretScreen(
+    mount: El,
+    base: string,
+    route: Route,
+    store: MemoryStore,
+    params: Record<string, string>,
+  ): Promise<{ pause(): void; resume(): Promise<unknown>; stop(): void }>;
+};
+
+const global = globalThis as unknown as Record<string, unknown>;
+
+// The interpreter, imported once per test file with the knobs it reads at
+// evaluation already standing. Deno gives each test module its own realm, so
+// "once per file" is also once per clock queue and once per draw sequence.
+let engine: Promise<Interpreter> | undefined;
+let knobs: string | undefined;
+
+async function interpreter(search: string): Promise<Interpreter> {
+  if (engine !== undefined) {
+    if (knobs !== search) {
+      throw new Error(
+        `the clock and the seed belong to the test file, not the case: "${knobs}" stands, "${search}" was asked for`,
+      );
+    }
+    return engine;
+  }
+  knobs = search;
+  global.location = new URL(`http://screen.test/${search}`);
+  engine = import("../interpreter/screen.js") as unknown as Promise<Interpreter>;
+  await engine;
+  if (global.__prontoClock === undefined) {
+    throw new Error(
+      "screen.js evaluated without the manual clock: this file imports it outside the harness, and its waits are real",
+    );
+  }
+  return engine;
+}
+
+// The Jessie tier's ses pin, pre-imported so ensureSes skips script injection:
+// linkedom executes no scripts. The vendored bundle rather than the CDN's, so
+// a whole-screen mount needs no network reach of any kind.
+let ses: Promise<unknown> | undefined;
+const ensureSes = () => (ses ??= import("../interpreter/vendor/ses.umd.min.js"));
+
+const macrotask = () => new Promise((r) => setTimeout(r, 0));
+
+export type Mounted = {
+  mount: El;
+  screen: El;
+  store: MemoryStore;
+  rows(table: string): Row[];
+  /** The one element the selector names; absent or ambiguous is an error. */
+  one(selector: string): El;
+  all(selector: string): El[];
+  /** Dispatch a bubbling DOM event, the way a reader's finger would. */
+  fire(target: string | El, type?: string): void;
+  /** Every match's text, trimmed — a region's rendered rows in order. */
+  texts(selector: string): string[];
+  /** Set a DOM property linkedom does not model as an attribute. */
+  set(target: string | El, prop: string, value: unknown): void;
+  /** Pick an option in a native select and report it, the way a reader does.
+   * linkedom's select reads its value off the selected ATTRIBUTE, so the
+   * attribute is what moves. */
+  choose(target: string | El, value: string): void;
+  /** Move the table's clock on; returns the waits still queued. */
+  advance(ms: number): number;
+  /** Let every promise the last stimulus started run out. */
+  quiet(): Promise<void>;
+  /** Drive the clock until the screen has stopped: nothing waiting, nothing
+   * writing. */
+  settle(): Promise<void>;
+  stop(): Promise<void>;
+};
+
+export type MountSpec = {
+  route: Route;
+  files: Record<string, string>;
+  tables: Record<string, Row[]>;
+  seed: number;
+  params?: Record<string, string>;
+  /** Table milliseconds per clock step. A hundred at a time, not a beat at a
+   * time: a screen wears states between its beats. */
+  step?: number;
+  /** Table milliseconds one settle may spend before the screen is declared
+   * unable to stop. */
+  cap?: number;
+  /** What the cluster fills in that the browser never computes. mountApp reads
+   * it from the app's own shell.yaml; `me` is the only part a test supplies. */
+  cluster?: Cluster;
+  /** Where the held clock starts, as an ISO instant, so a row stamped {now}
+   * lands somewhere a test can name. Unset starts at zero. */
+  epoch?: string;
+  /** Let the screen answer a refusal without failing the test: the interpreter
+   * reports one through the same console.error every silent failure takes. */
+  expectRefusal?: boolean;
+};
+
+/** linkedom's HTMLFormElement carries no constraint API, and the interpreter
+ * gates every submit on checkValidity — so without this a form's submit
+ * listener throws out of dispatchEvent and takes the whole test file with it.
+ * The check is the real one, not a blanket true: a test that cannot see its
+ * own `required` cannot claim the form validates anything. */
+function formValidation(document: unknown, submitEvent: new (t: string, i: object) => unknown) {
+  const proto = Object.getPrototypeOf(
+    (document as { createElement(tag: string): object }).createElement("form"),
+  ) as { checkValidity?: () => boolean; reset?: () => void; requestSubmit?: () => void };
+  if (proto.checkValidity !== undefined) return;
+
+  type Field = {
+    name?: string;
+    type?: string;
+    value: string;
+    disabled?: boolean;
+    hasAttribute(name: string): boolean;
+    getAttribute(name: string): string | null;
+    setAttribute(name: string, value: string): void;
+    removeAttribute(name: string): void;
+  };
+  const fieldsOf = (form: { querySelectorAll(sel: string): Field[] }) =>
+    [...form.querySelectorAll("input, select, textarea")].filter((f) => f.disabled !== true);
+
+  proto.checkValidity = function (this: { querySelectorAll(sel: string): Field[] }) {
+    for (const field of fieldsOf(this)) {
+      const value = field.value ?? "";
+      if (field.hasAttribute("required") && value === "") return false;
+      const pattern = field.getAttribute("pattern");
+      if (pattern !== null && value !== "" && !new RegExp(`^(?:${pattern})$`, "u").test(value)) return false;
+      if (field.getAttribute("type") === "number" && value !== "") {
+        const n = Number(value);
+        if (Number.isNaN(n)) return false;
+        const min = field.getAttribute("min");
+        const max = field.getAttribute("max");
+        if (min !== null && n < Number(min)) return false;
+        if (max !== null && n > Number(max)) return false;
+      }
+    }
+    return true;
+  };
+  // The interpreter resets a form inside its submit try, so a throw here is
+  // caught by the form's own refused() and lands a settled write on
+  // network-error: a harness fault wearing the app's face. Nothing is assigned
+  // that linkedom refuses.
+  //
+  // What it therefore cannot do: clear a field. linkedom stores an input's
+  // value IN its value attribute, so the live value and the default are one
+  // storage and a reset has nothing to restore from. "The form clears after a
+  // successful write" is not assertable at this tier — assert the row instead.
+  proto.reset = function () {};
+  // A buttonless form is submitted by its own change listener calling
+  // requestSubmit, so without this the reader's actual gesture is undrivable
+  // and a test has to dispatch submit behind the control's back.
+  proto.requestSubmit = function (this: { dispatchEvent(e: unknown): boolean }) {
+    this.dispatchEvent(new submitEvent("submit", { bubbles: true, cancelable: true }));
+  };
+}
+
+/** linkedom's input element declares no `checked`, so screen.js's values()
+ * reads undefined for every radio and checkbox: a radio group is dropped from
+ * the write and a checkbox writes undefined. The attribute is the state here,
+ * as it is for value, and a radio's group clears when one of its own is set. */
+function checkedState(document: unknown) {
+  type Input = {
+    type?: string;
+    name?: string;
+    getAttribute(name: string): string | null;
+    setAttribute(name: string, value: string): void;
+    removeAttribute(name: string): void;
+    closest(selector: string): { querySelectorAll(sel: string): Input[] } | null;
+  };
+  const proto = Object.getPrototypeOf(
+    (document as { createElement(tag: string): object }).createElement("input"),
+  ) as object;
+  if (Object.getOwnPropertyDescriptor(proto, "checked") !== undefined) return;
+
+  Object.defineProperty(proto, "checked", {
+    configurable: true,
+    get(this: Input) {
+      return this.getAttribute("checked") !== null;
+    },
+    set(this: Input, on: boolean) {
+      if (!on) {
+        this.removeAttribute("checked");
+        return;
+      }
+      if (this.type === "radio" && this.name !== undefined) {
+        const scope = this.closest("form");
+        for (const peer of scope?.querySelectorAll(`input[type=radio][name="${this.name}"]`) ?? []) {
+          peer.removeAttribute("checked");
+        }
+      }
+      this.setAttribute("checked", "");
+    },
+  });
+}
+
+/** Every store call a mount made that was not a read. */
+export const writes = (m: Mounted): Call[] => m.store.calls.filter((c) => c.op !== "query");
+
+export async function mountScreen(spec: MountSpec): Promise<Mounted> {
+  await ensureSes();
+  const { interpretScreen } = await interpreter(
+    `?clock=manual&seed=${spec.seed}${spec.epoch === undefined ? "" : `&epoch=${spec.epoch}`}`,
+  );
+  const clock = global.__prontoClock as { advance(ms: number): number };
+
+  // The Event class has to be linkedom's own: the platform's seals fields
+  // linkedom's dispatchEvent assigns.
+  const { document, Event } = parseHTML(
+    "<!doctype html><html><head></head><body><div id=shell></div></body></html>",
+  ) as unknown as {
+    document: { getElementById(id: string): El | null };
+    Event: new (type: string, init: { bubbles: boolean }) => unknown;
+  };
+  global.document = document;
+  formValidation(document, Event as new (t: string, i: object) => unknown);
+  checkedState(document);
+
+  // The interpreter answers every one of its own seams — a handler, a machine
+  // event, an after timer, a refusal, a form submit, a region refresh — with
+  // console.error and data-state="network-error". Nothing reaches the runtime
+  // as an unhandled rejection, so a stimulus returns normally, no write
+  // happens, and a test asserting only on rows passes while the screen sits
+  // dead. That one console.error is the seam they all pass through, so it is
+  // what quiet() and settle() re-raise. A test that means to drive a refusal
+  // says so with expectRefusal.
+  const escaped: unknown[] = [];
+  const onEscape = (e: { preventDefault(): void; reason?: unknown }) => {
+    e.preventDefault();
+    escaped.push(e.reason);
+  };
+  (globalThis as unknown as EventTarget).addEventListener("unhandledrejection", onEscape as EventListener);
+
+  const base = "http://app.test/";
+  global.fetch = (url: unknown) => {
+    const path = new URL(String(url), base).pathname.replace(/^\//, "");
+    const source = spec.files[path];
+    if (source === undefined) {
+      return Promise.reject(new Error(`the screen fetched ${path}, which the route does not name`));
+    }
+    return Promise.resolve(new Response(source));
+  };
+
+  if (spec.expectRefusal !== true) collect = (err) => escaped.push(err);
+
+  const store = memoryStore(spec.tables, spec.cluster ?? {});
+  const mount = document.getElementById("shell");
+  if (mount === null) throw new Error("the harness document has no mount");
+  const handle = await interpretScreen(mount, base, spec.route, store, spec.params ?? {});
+
+  const step = spec.step ?? 100;
+  const cap = spec.cap ?? 60_000;
+
+  const raiseEscaped = () => {
+    if (escaped.length === 0) return;
+    const first = escaped[0];
+    escaped.length = 0;
+    throw first instanceof Error
+      ? first
+      : new Error(`a listener rejected and the DOM swallowed it: ${String(first)}`);
+  };
+
+  // Yields macrotasks until two in a row pass with no write and no wake
+  // outstanding. Not a sleep: a promise chain the interpreter started only
+  // runs between turns, and there is nothing else to wait on.
+  const quiet = async () => {
+    raiseEscaped();
+    for (let turns = 0, calm = 0; calm < 2; turns++) {
+      if (turns > 500) throw new Error("the store never went quiet: something writes on every turn");
+      const before = store.version;
+      await macrotask();
+      calm = store.pendingWakes === 0 && store.version === before ? calm + 1 : 0;
+    }
+  };
+
+  const settle = async () => {
+    for (let spent = 0;;) {
+      await quiet();
+      raiseEscaped();
+      if (clock.advance(0) === 0) return;
+      if (spent >= cap) {
+        throw new Error(`the screen never stopped: waits still queued after ${spent}ms of table time`);
+      }
+      clock.advance(step);
+      spent += step;
+    }
+  };
+
+  const one = (selector: string): El => {
+    const found = mount.querySelectorAll(selector);
+    if (found.length !== 1) throw new Error(`"${selector}" names ${found.length} elements, not one`);
+    return found[0];
+  };
+
+  return {
+    mount,
+    screen: mount.firstElementChild as El,
+    store,
+    rows: (table) => store.rows(table),
+    one,
+    all: (selector) => [...mount.querySelectorAll(selector)],
+    fire(target, type = "click") {
+      const el = typeof target === "string" ? one(target) : target;
+      el.dispatchEvent(new Event(type, { bubbles: true }));
+    },
+    texts: (selector) => [...mount.querySelectorAll(selector)].map(textOf),
+    set(target, prop, value) {
+      const el = typeof target === "string" ? one(target) : target;
+      (el as unknown as Record<string, unknown>)[prop] = value;
+    },
+    choose(target, value) {
+      const select = typeof target === "string" ? one(target) : target;
+      const options = [...select.querySelectorAll("option")] as El[];
+      const wanted = options.find((o) => (o.getAttribute("value") ?? o.textContent) === value);
+      if (wanted === undefined) {
+        throw new Error(`choose: no option ${JSON.stringify(value)} among ${options.length}`);
+      }
+      for (const o of options) o.removeAttribute("selected");
+      wanted.setAttribute("selected", "");
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    },
+    advance: (ms) => clock.advance(ms),
+    quiet,
+    settle,
+    async stop() {
+      handle.stop();
+      // The clock queue outlives the screen and is the file's, not this
+      // mount's: a wait left behind would come due inside the next case — and
+      // a wait is the work most likely to throw, so the traps outlive it.
+      await settle();
+      collect = null;
+      (globalThis as unknown as EventTarget).removeEventListener("unhandledrejection", onEscape as EventListener);
+    },
+  };
+}
+
+/** mountScreen against an app's emitted tree: its shell.yaml names the route,
+ * and the route names its own files. */
+export async function mountApp(
+  spec: Omit<MountSpec, "route" | "files"> & { appDir: URL; screen: string },
+): Promise<Mounted> {
+  const route = await appRoute(spec.appDir, spec.screen);
+  const declared = await appCluster(spec.appDir);
+  return mountScreen({
+    ...spec,
+    route,
+    files: await appFiles(spec.appDir, route),
+    cluster: { ...declared, ...spec.cluster },
+  });
+}
+
+/** The cluster facts an app declares about itself: the natural keys of
+ * `uniques:` and the owner column of each owned entity in `access:`. */
+export async function appCluster(appDir: URL): Promise<Cluster> {
+  const shell = parseYaml(await Deno.readTextFile(new URL("shell/shell.yaml", appDir))) as {
+    uniques?: Record<string, string[][]>;
+    access?: Cluster["access"];
+    keys?: Record<string, string>;
+  };
+  const owners: Record<string, string> = {};
+  for (const [table, a] of Object.entries(shell.access ?? {})) {
+    if (a.owner !== undefined) owners[table] = a.owner;
+  }
+  return { uniques: shell.uniques, owners, keys: shell.keys, access: shell.access };
+}

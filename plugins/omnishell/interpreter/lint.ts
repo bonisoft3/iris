@@ -10,19 +10,29 @@ type Unique = { name: string; cols: string[]; where?: string };
 export type Entity = {
   table: string;
   path: string;
-  fields: { name: string; pk?: boolean; unique?: boolean; cel?: string; default?: string }[];
+  fields: {
+    name: string;
+    type: string;
+    pk?: boolean;
+    unique?: boolean;
+    cel?: string;
+    default?: string;
+  }[];
   uniques?: Unique[];
   access?: { mode: string; owner?: string; shared?: unknown };
 };
 type Spec = { col: string; op: string; value?: string }[] | null;
 
 const STYLE = /<style\b[^>]*>[\s\S]*?<\/style>/gi;
+const SCRIPT = /<script\b[^>]*>[\s\S]*?<\/script>/gi;
 const COMMENT = /<!--[\s\S]*?-->/g;
 // One preprocessing for every reader: commented-out markup renders nothing,
-// so a scanner that still saw it would derive reads, vet machines, or claim
-// slots for regions the DOM never mounts — and the four readers would
-// disagree with each other about what the screen says.
-const strip = (html: string) => html.replace(STYLE, "").replace(COMMENT, "");
+// and a script body is program text the HTML parser never turns into
+// elements, so a scanner that still saw either would derive reads, vet
+// machines, count items, or claim slots for tags the DOM never mounts — and
+// the readers would disagree with each other about what the screen says. An
+// app-owned script holding a markup-shaped string is ordinary.
+const strip = (html: string) => html.replace(SCRIPT, "").replace(STYLE, "").replace(COMMENT, "");
 // Both authored quoting styles, matching what the DOM parser hands the
 // interpreter — a single-quoted attribute must not be visible to one checker
 // and invisible to another.
@@ -83,22 +93,35 @@ export function unknownColumns(filter: string, fields: string[]): string[] {
 
 const QATTR = (name: string) => new RegExp(`\\s${name}=(?:"([^"]*)"|'([^']*)')`);
 
-export type MachineRegion = { machine: string; emptyRow?: string; filter?: string };
+/** One tag's attributes as the DOM parser hands them to the interpreter:
+ * either quoting style, entities decoded, and `has` for the valueless
+ * spelling (`data-item`), whose `(?:[\s=]|$)` tail is what stops it matching
+ * a longer name that starts the same way. */
+const attrsOf = (attrText: string) => ({
+  attr: (name: string): string | undefined => {
+    const a = QATTR(name).exec(` ${attrText}`);
+    return a ? decode(a[1] ?? a[2]) : undefined;
+  },
+  has: (name: string): boolean => new RegExp(`\\s${name}(?:[\\s=]|$)`).test(` ${attrText}`),
+});
 
-/** Every data-machine region in one screen's markup, with the two attributes
- * its validity depends on. Single-quoted values are the norm here — a machine
- * is JSON, whose own quotes are double. */
+export type MachineRegion = { table: string; machine: string; emptyRow?: string; filter?: string };
+
+/** Every data-machine region in one screen's markup, with the attributes its
+ * validity depends on. Single-quoted values are the norm here — a machine is
+ * JSON, whose own quotes are double. A machine is read from `region.dataset`
+ * and from nowhere else, so a data-machine off a region binds nothing: a
+ * precondition, not a shape this rule may guess at. */
 export function machineRegions(html: string): MachineRegion[] {
   const out: MachineRegion[] = [];
   for (const [, closing, , attrText] of strip(html).matchAll(ANY_TAG)) {
     if (closing === "/") continue;
-    const attr = (name: string) => {
-      const a = QATTR(name).exec(` ${attrText}`);
-      return a ? decode(a[1] ?? a[2]) : undefined;
-    };
+    const { attr } = attrsOf(attrText);
     const machine = attr("data-machine");
     if (machine === undefined) continue;
-    out.push({ machine, emptyRow: attr("data-empty-row"), filter: attr("data-filter") });
+    const table = attr("data-live");
+    if (table === undefined) throw new Error(`data-machine on a tag with no data-live`);
+    out.push({ table, machine, emptyRow: attr("data-empty-row"), filter: attr("data-filter") });
   }
   return out;
 }
@@ -108,6 +131,31 @@ const VOID = new Set([
   "area", "base", "br", "col", "embed", "hr", "img", "input",
   "link", "meta", "source", "track", "wbr",
 ]);
+// The end tags HTML lets a following sibling stand in for. Every stack walker
+// below models them, because a stack that did not would put `<li>a<li>b` in
+// one frame while the DOM the interpreter queries and stamps from has two.
+const CLOSED_BY: Record<string, string[]> = {
+  li: ["li"],
+  p: ["p"],
+  tr: ["tr", "td", "th"],
+  td: ["td", "th"],
+  th: ["td", "th"],
+  dt: ["dt", "dd"],
+  dd: ["dt", "dd"],
+  option: ["option"],
+  thead: ["thead", "tbody", "tfoot"],
+  tbody: ["thead", "tbody", "tfoot"],
+  tfoot: ["thead", "tbody", "tfoot"],
+};
+
+/** The open frames a start tag closes on its own, innermost first. */
+function implied<T extends { tag: string }>(stack: T[], tag: string): T[] {
+  const closes = CLOSED_BY[tag];
+  if (closes === undefined) return [];
+  const out: T[] = [];
+  while (stack.length > 0 && closes.includes(stack[stack.length - 1].tag)) out.push(stack.pop() as T);
+  return out;
+}
 
 export type Slot = { table: string; filter?: string };
 
@@ -135,11 +183,10 @@ export function slotRegions(html: string): Slot[] {
       }
       continue;
     }
-    const attr = (name: string) => {
-      const a = QATTR(name).exec(` ${attrText}`);
-      return a ? decode(a[1] ?? a[2]) : undefined;
-    };
-    const has = (name: string) => new RegExp(`\\s${name}(?:[\\s=]|$)`).test(` ${attrText}`);
+    const { attr, has } = attrsOf(attrText);
+    for (const { slot } of implied(stack, tag)) {
+      if (slot !== undefined && !slot.list) out.push({ table: slot.table, filter: slot.filter });
+    }
     if (tag === "template" && has("data-item")) {
       for (let i = stack.length - 1; i >= 0 && stack[i].tag !== "template"; i--) {
         const slot = stack[i].slot;
@@ -193,11 +240,8 @@ export function kindedRegions(html: string): KindedRegion[] {
       }
       continue;
     }
-    const attr = (name: string) => {
-      const a = QATTR(name).exec(` ${attrText}`);
-      return a ? decode(a[1] ?? a[2]) : undefined;
-    };
-    const has = (name: string) => new RegExp(`\\s${name}(?:[\\s=]|$)`).test(` ${attrText}`);
+    const { attr, has } = attrsOf(attrText);
+    for (const { region } of implied(stack, tag)) emit(region);
     if (tag === "template" && has("data-item")) {
       const when = attr("data-when");
       const name = attr("data-name");
@@ -222,6 +266,218 @@ export function kindedRegions(html: string): KindedRegion[] {
   for (const { region } of stack) emit(region);
   for (const { table, ref } of refs) {
     if (named.has(ref)) out.push({ table, whens: [named.get(ref)] });
+  }
+  return out;
+}
+
+/** The reasons a screen's item templates are unstampable: an item is exactly
+ * one element, because stamping clones `content.firstElementChild` and the
+ * interpreter refuses any other arity at hydrate. Only `template[data-item]`
+ * is ever stamped — a template without it is invisible end to end — and a
+ * named template goes through the same clone, so one predicate covers both.
+ * Element children only: the emitter's indentation is text, and text is not
+ * an item. */
+export function templateArity(html: string): string[] {
+  const out: string[] = [];
+  type Item = { name?: string; when?: string; live?: string; children: string[] };
+  type Open = { tag: string; live?: string; item?: Item };
+  const stack: Open[] = [];
+  const emit = (item?: Item) => {
+    if (item === undefined || item.children.length === 1) return;
+    // Every discriminator the screen offers, so three bad templates on one
+    // screen are three distinguishable findings: a screen may hold many, and
+    // an anonymous one has no other name.
+    const which = `template[data-item]` +
+      (item.name === undefined ? "" : `[data-name="${item.name}"]`) +
+      (item.when === undefined ? "" : `[data-when="${item.when}"]`) +
+      (item.live === undefined ? "" : ` in [data-live="${item.live}"]`);
+    out.push(
+      item.children.length === 0
+        ? `${which} holds no element; an item is exactly one — give the template a single root element`
+        : `${which} holds ${item.children.length} elements (${item.children.join(", ")}); ` +
+          `an item is exactly one — wrap them in a single element`,
+    );
+  };
+  for (const m of strip(html).matchAll(ANY_TAG)) {
+    const [, closing, rawTag, attrText] = m;
+    const tag = rawTag.toLowerCase();
+    if (closing === "/") {
+      for (let i = stack.length - 1; i >= 0; i--) {
+        if (stack[i].tag !== tag) continue;
+        for (const frame of stack.splice(i)) emit(frame.item);
+        break;
+      }
+      continue;
+    }
+    const { attr, has } = attrsOf(attrText);
+    for (const frame of implied(stack, tag)) emit(frame.item);
+    stack[stack.length - 1]?.item?.children.push(tag);
+    const open: Open = { tag, live: attr("data-live") ?? stack[stack.length - 1]?.live };
+    if (tag === "template" && has("data-item")) {
+      open.item = { name: attr("data-name"), when: attr("data-when"), live: open.live, children: [] };
+    }
+    if (VOID.has(tag) || /\/\s*$/.test(attrText)) {
+      emit(open.item);
+      continue;
+    }
+    stack.push(open);
+  }
+  for (const frame of stack) emit(frame.item);
+  return out;
+}
+
+// A gesture reaches the interpreter through exactly four seams, and every one
+// of them is a property of the control's ancestor-or-self chain: the form it
+// submits, the region whose bindTree walks it, the region whose machine
+// listens for the event, or the widget whose vendored kind spreads props onto
+// its parts. Nothing else in a screen is a control's contract, so a control
+// covered by none of the four is theatre.
+const CONTROL_INPUT = new Set(["submit", "button", "reset", "image"]);
+const SUBMIT_INPUT = new Set(["submit", "image"]);
+const ON_ATTR = /\sdata-on-[a-z][a-z-]*=/;
+
+/** The dom ids a region's machine keys its clicks by, or null when some click
+ * key carries none — an unkeyed `click` answers every control under the
+ * region. The interpreter tries `click@<id>` before `click`, where the id is
+ * the pressed element's nearest ancestor-or-self carrying one, so a machine
+ * keyed only by ids drops a click sent from anywhere else. An empty set is a
+ * machine that answers no click at all.
+ *
+ * Whether the attribute is a well-formed machine is machineLint's finding, and
+ * a caller must take that finding before asking this rule anything. */
+const clickIds = (machine: string | undefined): Set<string> | null => {
+  if (machine === undefined) return new Set();
+  const m = JSON.parse(machine) as {
+    on?: Record<string, unknown>;
+    states?: Record<string, { on?: Record<string, unknown> }>;
+  };
+  const ids = new Set<string>();
+  let unkeyed = false;
+  for (const on of [m.on ?? {}, ...Object.values(m.states ?? {}).map((s) => s.on ?? {})]) {
+    for (const key of Object.keys(on)) {
+      const [type, id] = key.split("@");
+      if (type !== "click") continue;
+      if (id === undefined) unkeyed = true;
+      else ids.add(id);
+    }
+  }
+  return unkeyed ? null : ids;
+};
+
+const label = (tag: string, attr: (name: string) => string | undefined) => {
+  const id = attr("id");
+  const cls = attr("class");
+  if (id !== undefined) return `<${tag} id="${id}">`;
+  if (cls !== undefined) return `<${tag} class="${cls}">`;
+  return `<${tag}>`;
+};
+
+/** The reasons a screen's controls are theatre: a button (or a button-shaped
+ * input) that no seam reaches. Cover is ancestor-or-self — a region, a form,
+ * and a machine host can all be the control itself. A `<summary>`, a
+ * `<select>`, a bare checkbox and a native invoker (`popovertarget`,
+ * `commandfor`) are the platform's own affordances and reach the interpreter
+ * through nothing, so none of them is a control this rule judges. */
+export function unwitnessedControls(html: string): string[] {
+  const out: string[] = [];
+  type Cover = {
+    live: boolean;
+    on: boolean;
+    click: boolean;
+    ids: Set<string>;
+    form: boolean;
+    widget: boolean;
+    id?: string;
+  };
+  type Own = { part: boolean; submits: boolean };
+  const NONE: Cover = { live: false, on: false, click: false, ids: new Set(), form: false, widget: false };
+  const merge = (a: Cover, b: Cover): Cover => ({
+    live: a.live || b.live,
+    on: a.on || b.on,
+    click: a.click || b.click,
+    ids: new Set([...a.ids, ...b.ids]),
+    form: a.form || b.form,
+    widget: a.widget || b.widget,
+    id: a.id ?? b.id,
+  });
+  const reached = (c: Cover, own: Own) =>
+    (c.widget && own.part) || (c.form && own.submits) || (c.live && c.on) || c.click ||
+    (c.id !== undefined && c.ids.has(c.id));
+  // A named item template is stamped into whichever regions reference it by
+  // data-template, and those may come later in the screen — so a control
+  // inside one waits for the whole pass and is then judged against the cover
+  // its stampers hand it.
+  const stampers = new Map<string, Cover>();
+  // HTML lets a submit control name its form by id from anywhere on the page,
+  // and the submit still fires on that form — the dialog and sticky-footer
+  // shape. The named form may come later in the screen, so the judgement waits.
+  const actionForms = new Set<string>();
+  const deferred: { names: string[]; cover: Cover; own: Own; why: string; attached?: string }[] = [];
+  const stack: { tag: string; cover: Cover; names: string[] }[] = [];
+  for (const m of strip(html).matchAll(ANY_TAG)) {
+    const [, closing, rawTag, attrText] = m;
+    const tag = rawTag.toLowerCase();
+    if (closing === "/") {
+      for (let i = stack.length - 1; i >= 0; i--) {
+        if (stack[i].tag !== tag) continue;
+        stack.splice(i);
+        break;
+      }
+      continue;
+    }
+    const { attr, has } = attrsOf(attrText);
+    implied(stack, tag);
+    const top = stack[stack.length - 1];
+    const outer = top === undefined ? NONE : top.cover;
+    const live = attr("data-live") !== undefined;
+    const keyed = live ? clickIds(attr("data-machine")) : new Set<string>();
+    const cover: Cover = {
+      live: outer.live || live,
+      // bindTree starts AT the region and walks down, so a data-on-* binds a
+      // control only from the region itself or from something inside it. One
+      // above the region binds nothing, and loadHandlers still resolves the
+      // module, so the screen is silent at hydrate and dead under the finger —
+      // the shipped truco bug's exact shape.
+      on: (outer.live ? outer.on : false) || ON_ATTR.test(` ${attrText}`),
+      click: outer.click || keyed === null,
+      ids: keyed === null || keyed.size === 0 ? outer.ids : new Set([...outer.ids, ...keyed]),
+      form: outer.form || (tag === "form" && attr("data-action") !== undefined),
+      widget: outer.widget || attr("data-widget") !== undefined,
+      id: attr("id") ?? outer.id,
+    };
+    if (tag === "form" && attr("data-action") !== undefined && attr("id") !== undefined) {
+      actionForms.add(attr("id") as string);
+    }
+    const names = tag === "template" && has("data-item") && attr("data-name") !== undefined
+      ? [...(top?.names ?? []), attr("data-name") as string]
+      : top?.names ?? [];
+    if (live && attr("data-template") !== undefined) {
+      const ref = attr("data-template") as string;
+      stampers.set(ref, merge(stampers.get(ref) ?? NONE, cover));
+    }
+    const type = attr("type")?.toLowerCase();
+    const invoker = has("popovertarget") || attr("commandfor") !== undefined;
+    if (!invoker && (tag === "button" || (tag === "input" && type !== undefined && CONTROL_INPUT.has(type)))) {
+      // A button's default type is submit; type="button" and type="reset"
+      // reach no submit listener however deep in a form they sit.
+      const own: Own = {
+        part: has("data-part"),
+        submits: tag === "button" ? type === undefined || type === "submit" : SUBMIT_INPUT.has(type as string),
+      };
+      const why = `${label(tag, attr)} is wired to nothing: no data-on-* inside a [data-live] region, ` +
+        `no form[data-action] it can submit, no enclosing region whose machine answers its click, ` +
+        `and no [data-widget] part`;
+      const attached = attr("form");
+      if (names.length > 0 || attached !== undefined) {
+        deferred.push({ names, cover, own, why, attached });
+      } else if (!reached(cover, own)) out.push(why);
+    }
+    if (VOID.has(tag) || /\/\s*$/.test(attrText)) continue;
+    stack.push({ tag, cover, names });
+  }
+  for (const { names, cover, own, why, attached } of deferred) {
+    if (attached !== undefined && own.submits && actionForms.has(attached)) continue;
+    if (!reached(names.reduce((c, n) => merge(c, stampers.get(n) ?? NONE), cover), own)) out.push(why);
   }
   return out;
 }
@@ -387,6 +643,90 @@ export function machineLint(machine: Machine, available: Set<string>): string | 
   }
   if (machine.context !== undefined && machine.field in machine.context) {
     return `context carries the machine's own field "${machine.field}" — one fact, one writer (initial: is the declaration)`;
+  }
+  return null;
+}
+
+export type Write = { col: string; value: string | number | boolean };
+
+/** Every literal a machine region persists into a column: the machine's
+ * context, its assign literals, and the data-empty-row — a transition
+ * concluding from the synthesized fallback row restates that row verbatim, so
+ * its values are written, not merely bound. A `{type, params}` assign is a
+ * module's return, which nothing declares a type for; it carries no literal
+ * and this rule may not judge it. */
+export function machineWrites(machine: Machine, emptyRow?: string): Write[] {
+  const out: Write[] = [];
+  const push = (col: string, value: unknown) => {
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+      out.push({ col, value });
+    }
+  };
+  if (emptyRow !== undefined) {
+    for (const [k, v] of Object.entries(JSON.parse(emptyRow) as Record<string, unknown>)) push(k, v);
+  }
+  for (const [k, v] of Object.entries(machine.context ?? {})) push(k, v);
+  const values: unknown[] = [
+    ...Object.values(machine.on ?? {}),
+    ...Object.values(machine.states).flatMap((s) => [
+      ...Object.values(s.on ?? {}),
+      ...Object.values(s.after ?? {}),
+    ]),
+  ];
+  // The state IS a column: initial: seeds it and every target restates it, so
+  // a machine whose arrows spell it one way and whose assigns spell it another
+  // writes the column the rule exists to watch — and expectState compares it
+  // strictly on every step.
+  push(machine.field, machine.initial);
+  for (const v of values) {
+    for (const c of machineCandidates(v)) {
+      const assign = (c as { assign?: Record<string, unknown> }).assign ?? {};
+      for (const [k, av] of Object.entries(assign)) push(k, av);
+      const target = (c as { target?: unknown }).target;
+      if (target !== undefined) push(machine.field, target);
+    }
+  }
+  return out;
+}
+
+// A tab or device row is built by a local factory and read back from it, so
+// the JS value a writer spelled is the value every later reader compares
+// against. The rule is scoped to those two tiers; what a crud, live or offline
+// row settles to is the server's answer and not a fact about the markup.
+const BROWSER_TIERS = new Set(["tab", "device"]);
+// The types whose one value has two JS spellings — a number and its decimal
+// string, a boolean and "true"/"false". Every other type has exactly one, so
+// a non-string written into it is not a second spelling but a second type.
+const TWO_SPELLINGS = new Set(["int", "bigint", "bool"]);
+
+/** Column-spelling consistency over the writes a screen's markup declares:
+ * the reason a browser-tier entity's regions write one column in more than one
+ * JS spelling, or write a non-string into a column whose type has only the
+ * string spelling, or null. This rule judges spelling and nothing else — it
+ * never asks whether a value is in the column's range.
+ *
+ * Comparisons downstream are strict — a machine's expectState, a maintained
+ * view's `is.` predicate, an app fold's guard — so a column spelled two ways
+ * disowns half its own rows with no error anywhere. */
+export function writeLint(writes: Write[], e: Entity): string | null {
+  if (!BROWSER_TIERS.has(e.path)) return null;
+  for (const col of new Set(writes.map((w) => w.col))) {
+    const field = e.fields.find((f) => f.name === col);
+    if (field === undefined) return `a machine region writes "${col}" — not a field of "${e.table}"`;
+    const values = writes.filter((w) => w.col === col).map((w) => w.value);
+    const tier = `"${e.path}" entity`;
+    const spellings = new Set(values.map((v) => typeof v));
+    if (spellings.size > 1) {
+      const shown = [...new Set(values.map((v) => JSON.stringify(v)))].join(", ");
+      return `"${col}" is written in ${spellings.size} spellings (${shown}), and a ${tier} passes through ` +
+        `no Postgres to reconcile them — a strict compare against any one of them disowns the rows ` +
+        `carrying the others; spell every write of a column the same way`;
+    }
+    if (TWO_SPELLINGS.has(field.type)) continue;
+    const bad = values.find((v) => typeof v !== "string");
+    if (bad === undefined) continue;
+    return `"${col}" is ${field.type}, and a machine region writes ${JSON.stringify(bad)} — ` +
+      `a ${tier} passes through no Postgres to coerce it; write it as a string`;
   }
   return null;
 }

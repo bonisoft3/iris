@@ -65,9 +65,9 @@ const entity = (extra: Partial<Entity> = {}): Entity => ({
   table: "entry",
   path: "tab",
   fields: [
-    { name: "id", pk: true },
-    { name: "kind", cel: "this in ['note', 'link', 'poll']" },
-    { name: "body" },
+    { name: "id", type: "uuid", pk: true },
+    { name: "kind", type: "text", cel: "this in ['note', 'link', 'poll']" },
+    { name: "body", type: "text" },
   ],
   uniques: [],
   ...extra,
@@ -105,7 +105,7 @@ describe("kindLint", () => {
   })
 
   it("a column with no cel enum has no exhaustiveness to answer for", () => {
-    const e = entity({ fields: [{ name: "id", pk: true }, { name: "kind" }] })
+    const e = entity({ fields: [{ name: "id", type: "uuid", pk: true }, { name: "kind", type: "text" }] })
     expect(kindLint(["kind=eq.anything"], e)).toBe(null)
   })
 
@@ -122,8 +122,8 @@ describe("kindLint", () => {
   it("a DB-defaulted discriminant demands a default template", () => {
     const e = entity({
       fields: [
-        { name: "id", pk: true },
-        { name: "kind", cel: "this in ['note', 'link']", default: "'note'" },
+        { name: "id", type: "uuid", pk: true },
+        { name: "kind", type: "text", cel: "this in ['note', 'link']", default: "'note'" },
       ],
     })
     const why = kindLint(["kind=eq.note", "kind=eq.link"], e)
@@ -132,7 +132,7 @@ describe("kindLint", () => {
   })
 
   it("an int enum's members compare as the strings a data-when carries", () => {
-    const e = entity({ fields: [{ name: "id", pk: true }, { name: "stake", cel: "this in [1, 2, 3]" }] })
+    const e = entity({ fields: [{ name: "id", type: "uuid", pk: true }, { name: "stake", type: "int", cel: "this in [1, 2, 3]" }] })
     expect(kindLint(["stake=eq.1", "stake=eq.2"], e)).toContain('"3"')
     expect(kindLint(["stake=eq.1", "stake=eq.2", "stake=eq.3"], e)).toBe(null)
   })

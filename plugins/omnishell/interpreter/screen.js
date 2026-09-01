@@ -62,6 +62,17 @@ const rest = (ms) =>
   MANUAL
     ? new Promise((fire) => pending.add({ at: held + ms, fire }))
     : new Promise((resolve) => setTimeout(resolve, ms));
+// The clock the screen reads, not the one the host runs: a held clock answers
+// from where the caller advanced it, so a row stamped {now} lands on the same
+// instant in every run. `?epoch` names that start; unset it starts at zero.
+const epoch = params.get("epoch");
+const now = () => {
+  if (!MANUAL) return new Date(Date.now()).toISOString();
+  // A held clock with no start would stamp 1970, which reads as a fixture
+  // mistake rather than a missing knob — so the screen says which it is.
+  if (epoch === null) throw new Error("a held clock stamps {now} only from an ?epoch");
+  return new Date(Date.parse(epoch) + held).toISOString();
+};
 const seeded = params.get("seed");
 let entropy = seeded === null ? 0 : Number(seeded) >>> 0;
 const draw = () => {
@@ -266,13 +277,13 @@ function interpolateFilter(template, ctx) {
   return template.replace(PLACEHOLDER, (_, expr) => encodeURIComponent(String(lookup(expr, ctx) ?? "")));
 }
 
-// Hidden data-value grammar: literal "null" → JSON null; {now} → submit-time
-// ISO clock (the shell owns the clock); anything else resolves from the
-// form's row/param context.
+// Hidden data-value grammar: literal "null" → JSON null; {now} → the terminal
+// clock at submit time; anything else resolves from the form's row/param
+// context.
 function resolveHidden(template, ctx) {
   if (template === "null") return null;
   return template.replace(PLACEHOLDER, (_, expr) =>
-    expr === "now" ? new Date().toISOString() : String(lookup(expr, ctx) ?? ""),
+    expr === "now" ? now() : String(lookup(expr, ctx) ?? ""),
   );
 }
 
@@ -766,9 +777,9 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         setState("success");
         // A late refusal can land inside the flash window; only an
         // undisturbed success may hand back to the base state.
-        setTimeout(() => {
+        rest(600).then(() => {
           if (screen.dataset.state === "success") setState(base);
-        }, 600);
+        });
       } catch (err) {
         refused(err);
       } finally {
