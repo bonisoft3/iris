@@ -204,27 +204,58 @@ export function createStore(base = "", cfg = {}) {
   const access = cfg.access ?? {};
   const keyOf = (t) => cfg.keys?.[t] ?? "id";
 
+  // A local collection is made ready for use once per boot, before the first
+  // read or write touches it: its bootstrap rows are written, then its
+  // declared uniques are reconciled over everything the collection holds —
+  // seeded rows included, so a seed that collides with a natural key is
+  // caught by the same pass that catches any other collision rather than
+  // being trusted because the program wrote it.
+  //
+  // Server tiers never arrive here: Postgres owns their uniques, and their
+  // bootstrap rows are 900_seed.sql.
+  const preparedAt = new Map();
+  const ensurePrepared = (table) => {
+    if (local[table] === undefined) return Promise.resolve();
+    let p = preparedAt.get(table);
+    if (p === undefined) {
+      p = prepare(table);
+      preparedAt.set(table, p);
+    }
+    return p;
+  };
+  async function prepare(table) {
+    await seed(table);
+    await reconcile(table);
+  }
+
+  // Written straight through the client, not through create(): a seed is the
+  // program stating the collection's initial world, not a reader's gesture, so
+  // there is no refusal to settle and no key to mint — the program names each
+  // row's own. Called only where the store is built, which is what makes the
+  // empty collection the whole ledger #Entity.seed relies on.
+  async function seed(table) {
+    const rows = cfg.seed?.[table];
+    if (rows === undefined) return;
+    const c = client.collections[table];
+    if (c === undefined) throw new Error(`seed on unknown table: ${table}`);
+    if (!c.isReady()) await c.toArrayWhenReady();
+    const key = keyOf(table);
+    for (const row of rows) {
+      if (row[key] === undefined) throw new Error(`seed ${table}: a row carries no ${key}`);
+      await client.insert(table, row);
+    }
+  }
+
   // Browser-tier rows outlive the invariants declared over them: a device
   // collection may hold rows written before a unique existed, and a slot
   // meeting them would die on data no one can repair from the screen. So a
   // local collection's declared uniques — cfg.uniques and the partial ones
   // shell.yaml carries as cfg.partialUniques {table: [{cols, where}]} — are
-  // reconciled once per boot, before the first read: within each unique's
-  // domain the newest row per key wins (created_at when the rows carry it,
-  // else load order) and the rest are dropped with one warning. Dropped, not
-  // repaired: the terminal cannot mint domain values to move a loser out of
-  // the where-domain. Server tiers are untouched — Postgres owns its own
-  // uniques. The slot cardinality error guards what appears after boot.
-  const reconciledAt = new Map();
-  const ensureReconciled = (table) => {
-    if (local[table] === undefined) return Promise.resolve();
-    let p = reconciledAt.get(table);
-    if (p === undefined) {
-      p = reconcile(table);
-      reconciledAt.set(table, p);
-    }
-    return p;
-  };
+  // reconciled: within each unique's domain the newest row per key wins
+  // (created_at when the rows carry it, else load order) and the rest are
+  // dropped with one warning. Dropped, not repaired: the terminal cannot mint
+  // domain values to move a loser out of the where-domain. The slot
+  // cardinality error guards what appears after boot.
   async function reconcile(table) {
     const c = client.collections[table];
     if (c === undefined) return;
@@ -510,7 +541,7 @@ export function createStore(base = "", cfg = {}) {
     project(table, await read(table, order, opts));
 
   async function read(table, order, opts = {}) {
-    await ensureReconciled(table);
+    await ensurePrepared(table);
     // A read the engine already maintains needs no re-derivation: the view is
     // the filter and the order, kept current by the deltas that woke us.
     const held = maintainedView(table, opts);
@@ -730,7 +761,7 @@ export function createStore(base = "", cfg = {}) {
   // DEFAULT auth_uid() and materialises server-side, so the reader's own rows
   // carry it while the row they are about to write does not.
   async function upsert(table, values, onRefused) {
-    await ensureReconciled(table);
+    await ensurePrepared(table);
     const owner = access[table]?.owner;
     const keys = upsertKey(cfg.uniques?.[table], keyOf(table), owner, values);
     if (keys === null) {
@@ -753,7 +784,7 @@ export function createStore(base = "", cfg = {}) {
   // row written twice is the same row. Fields it does not name are left alone —
   // it states a row, it does not replace one.
   async function put(table, row, onRefused) {
-    await ensureReconciled(table);
+    await ensurePrepared(table);
     const key = keyOf(table);
     if (row?.[key] === undefined) throw new Error(`put ${table}: the row carries no ${key}`);
     const collection = client.collections[table];
@@ -786,7 +817,7 @@ export function createStore(base = "", cfg = {}) {
     // DELETE has no ordering to cap against — honoring the rest of the filter
     // would silently widen the deletion's scope.
     if (parseLimit(filter) !== undefined) throw new Error(`delete filter carries a limit: ${filter}`);
-    await ensureReconciled(table);
+    await ensurePrepared(table);
     const preds = parseFilter(filter);
     const collection = client.collections[table];
     // A precondition, not a branch: resolving these keys anywhere but the

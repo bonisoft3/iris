@@ -43,6 +43,29 @@ console.error = (...args: unknown[]) => {
 
 export type Row = Record<string, unknown>;
 
+/** The elements of a role under `root`, optionally the one whose accessible
+ * name matches — the query a screen reader makes, and the one a class rename
+ * cannot break. Implicit roles are not inferred: a control that wants to be
+ * found this way says what it is. A suite that boots its own store reaches
+ * this directly; a mounted screen has it as `m.byRole`. */
+export function byRole(root: El, role: string, name?: string | RegExp): El[] {
+  const found = [...root.querySelectorAll(`[role="${role}"]`)] as El[];
+  if (name === undefined) return found;
+  // aria-label first, then the element's own text: the accessible name in the
+  // order the platform computes it, minus the parts this tier cannot see (a
+  // label element's for=, aria-labelledby's referent).
+  const named = (el: El) => el.getAttribute("aria-label") ?? textOf(el);
+  return found.filter((el) => typeof name === "string" ? named(el) === name : name.test(named(el)));
+}
+
+/** The one element of a role and name; none or several is the screen
+ * disagreeing with the reader, which is a finding rather than a filter. */
+export function oneByRole(root: El, role: string, name: string): El {
+  const found = byRole(root, role, name);
+  if (found.length !== 1) throw new Error(`"${name}" names ${found.length} elements of role ${role}, not one`);
+  return found[0];
+}
+
 /** One element's text, trimmed. */
 export const textOf = (el: { textContent: string | null }) => (el.textContent ?? "").trim();
 
@@ -479,6 +502,11 @@ export type Mounted = {
   fire(target: string | El, type?: string): void;
   /** Every match's text, trimmed — a region's rendered rows in order. */
   texts(selector: string): string[];
+  /** The elements of a role, optionally the one whose accessible name matches
+   * — the query a screen reader makes, and the one a class rename cannot
+   * break. Implicit roles are not inferred: a control that wants to be found
+   * this way says what it is. */
+  byRole(role: string, name?: string | RegExp): El[];
   /** Set a DOM property linkedom does not model as an attribute. */
   set(target: string | El, prop: string, value: unknown): void;
   /** Pick an option in a native select and report it, the way a reader does.
@@ -740,6 +768,7 @@ export async function mountScreen(spec: MountSpec): Promise<Mounted> {
       el.dispatchEvent(new Event(type, { bubbles: true }));
     },
     texts: (selector) => [...mount.querySelectorAll(selector)].map(textOf),
+    byRole: (role, name) => byRole(mount, role, name),
     set(target, prop, value) {
       const el = typeof target === "string" ? one(target) : target;
       (el as unknown as Record<string, unknown>)[prop] = value;
@@ -784,8 +813,20 @@ export async function mountApp(
     ...spec,
     route,
     files: await appFiles(spec.appDir, route),
+    tables: { ...(await appSeed(spec.appDir)), ...spec.tables },
     cluster: { ...declared, ...spec.cluster },
   });
+}
+
+/** The rows a browser tier holds before anyone writes one (shell.yaml
+ * `seed:`), which the terminal writes into the collection it has just built.
+ * A test that states the table itself is stating a later world than the seed's
+ * and keeps it whole. */
+export async function appSeed(appDir: URL): Promise<Record<string, Row[]>> {
+  const shell = parseYaml(await Deno.readTextFile(new URL("shell/shell.yaml", appDir))) as {
+    seed?: Record<string, Row[]>;
+  };
+  return shell.seed ?? {};
 }
 
 /** The cluster facts an app declares about itself: the natural keys of

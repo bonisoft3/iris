@@ -472,6 +472,14 @@ function bindAttributes(scope, ctx) {
           el.checked = Boolean(lookup(template.slice(1, -1), ctx));
           continue;
         }
+        // The inverse of what values() reads back: a group's members share one
+        // name and the checked one carries the column, so binding checks the
+        // member whose value the column already holds and a round trip is a
+        // fixed point.
+        if (el.type === "radio") {
+          el.checked = String(lookup(template.slice(1, -1), ctx) ?? "") === el.value;
+          continue;
+        }
         if (el.type === "datetime-local") {
           // The control accepts only YYYY-MM-DDTHH:MM; rows carry full ISO.
           el.value = interpolate(template, ctx).slice(0, 16);

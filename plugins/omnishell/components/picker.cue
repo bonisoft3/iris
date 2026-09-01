@@ -91,7 +91,7 @@ import (
 		}
 		states: {for s in P.options {
 			(s.name): on: {for o in P.options if o.name != s.name {
-				("click@trigger-\(o.name)"): [
+				("click@\(P.key)-trigger-\(o.name)"): [
 					if P.guard != _|_ {
 						[{
 							guard:  P.guard
@@ -116,7 +116,7 @@ import (
 	if P.readout == "columns" {
 		_options: strings.Join([for o in P.options {
 			"""
-				      <li><button type="button" role="option" id="trigger-\(o.name)" class="picker-option"
+				      <li><button type="button" role="option" id="\(P.key)-trigger-\(o.name)" class="picker-option"
 				              aria-selected="{sel_\(o.name)}"
 				              commandfor="\(P._pop)" command="hide-popover">\(o.item)</button></li>
 				"""
@@ -143,7 +143,7 @@ import (
 	if P.readout == "text" {
 		_options: strings.Join([for o in P.options {
 			"""
-				      <li><button type="button" role="option" id="trigger-\(o.name)" data-opt="\(o.name)"
+				      <li><button type="button" role="option" id="\(P.key)-trigger-\(o.name)" data-opt="\(o.name)"
 				              commandfor="\(P._pop)" command="hide-popover">\(o.item)</button></li>
 				"""
 		}], "\n")
