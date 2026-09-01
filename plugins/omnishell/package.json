@@ -23,10 +23,6 @@
     "@anthropic-ai/sdk": "^0.89.0",
     "@simplewebauthn/browser": "^13.1.0",
     "@simplewebauthn/server": "^13.1.1",
-    "@zag-js/collection": "^1.43.0",
-    "@zag-js/combobox": "^1.43.0",
-    "@zag-js/listbox": "1.43.0",
-    "@zag-js/select": "1.43.0",
     "@zag-js/vanilla": "^1.43.0",
     "jose": "^6.0.11"
   },

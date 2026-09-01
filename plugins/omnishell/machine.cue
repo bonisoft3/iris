@@ -13,6 +13,11 @@
 // the same step() machinery reduces use — replay, tempo and the refusal
 // event apply with the machine knowing nothing.
 //
+// A machine writes the row a browser owns; a form writes the row a server
+// keeps. That is the whole choice between them — an assign states screen state
+// as it changes, a submit commits data on a gesture — and it is why every
+// table a machine writes is a tab or device one.
+//
 // The machine is the writer of the initial fact: a region without
 // data-empty-row binds a row synthesized from {...context, field: initial}
 // plus its filter equalities; where data-empty-row is present it must agree
@@ -57,9 +62,20 @@ package terminal
 	// called (state, event, params), params are literals only — thresholds
 	// live in the chart as data, so one module serves every instance a
 	// component generates.
+	// `event` is the terminal's own leaf, never a module — excluded here so the
+	// disjunction cannot fall through to this and leave #EventRef's field enum
+	// deciding nothing.
 	#Ref: close({
-		type: string
+		type: string & !="event"
 		params?: [string]: string | number | bool
+	})
+	// The one leaf a machine states instead of importing: the value the control
+	// was showing when it fired. It reads the EVENT, never another row, so the
+	// closure above holds — a transition is still decidable from the row and
+	// the event, and the chart is still a whole inventory of what can happen.
+	#EventRef: close({
+		type:   "event"
+		params: close({field: "value" | "checked" | "valueAsNumber" | "key"})
 	})
 	#Transition: close({
 		guard?:  string | M.#Ref // Jessie module; (state, event, params?) => boolean
@@ -68,7 +84,7 @@ package terminal
 		// module name computing one, or a parameterized #Ref. All assigns read
 		// the pre-transition snapshot and merge with the field write into ONE
 		// stated row.
-		assign?: [string]: string | number | bool | M.#Ref
+		assign?: [string]: string | number | bool | M.#EventRef | M.#Ref
 		// A self-addressed event, XState's raise ≡ the reduce's then: literal
 		// type, delivered by the terminal after the writes.
 		raise?: string

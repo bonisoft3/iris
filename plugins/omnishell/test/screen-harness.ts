@@ -577,11 +577,10 @@ function formValidation(document: unknown, submitEvent: new (t: string, i: objec
   };
 }
 
-/** linkedom's input element declares no `checked`, so screen.js's values()
- * reads undefined for every radio and checkbox: a radio group is dropped from
- * the write and a checkbox writes undefined. The attribute is the state here,
- * as it is for value, and a radio's group clears when one of its own is set. */
-function checkedState(document: unknown) {
+/** The control properties linkedom declares nowhere. `checked` is the state a
+ * radio or checkbox submits — the attribute is that state here, as it is for
+ * value, and a radio's group clears when one of its own is set. */
+function controlProperties(document: unknown) {
   type Input = {
     type?: string;
     name?: string;
@@ -594,6 +593,21 @@ function checkedState(document: unknown) {
     (document as { createElement(tag: string): object }).createElement("input"),
   ) as object;
   if (Object.getOwnPropertyDescriptor(proto, "checked") !== undefined) return;
+
+
+  // A number input's parsed value, which linkedom models nowhere: without it
+  // the allowlist would advertise a field this tier can never deliver, and a
+  // machine reading it would work in a browser and refuse under test.
+  Object.defineProperty(proto, "valueAsNumber", {
+    configurable: true,
+    get(this: Input & { value?: string }) {
+      if (this.type !== "number" && this.type !== "range") return Number.NaN;
+      // An empty number field is NaN, not zero: a test asserting a cleared
+      // field writes 0 would pass while the browser wrote NaN.
+      const raw = (this.value ?? "").trim();
+      return raw === "" ? Number.NaN : Number(raw);
+    },
+  });
 
   Object.defineProperty(proto, "checked", {
     configurable: true,
@@ -636,7 +650,7 @@ export async function mountScreen(spec: MountSpec): Promise<Mounted> {
   };
   global.document = document;
   formValidation(document, Event as new (t: string, i: object) => unknown);
-  checkedState(document);
+  controlProperties(document);
 
   // The interpreter answers every one of its own seams — a handler, a machine
   // event, an after timer, a refusal, a form submit, a region refresh — with
@@ -733,7 +747,10 @@ export async function mountScreen(spec: MountSpec): Promise<Mounted> {
     choose(target, value) {
       const select = typeof target === "string" ? one(target) : target;
       const options = [...select.querySelectorAll("option")] as El[];
-      const wanted = options.find((o) => (o.getAttribute("value") ?? o.textContent) === value);
+      // Either the key or the words: a reader picks what the option shows,
+      // and a test that can only name the key cannot say the two differ.
+      const wanted = options.find((o) => o.getAttribute("value") === value) ??
+        options.find((o) => textOf(o) === value);
       if (wanted === undefined) {
         throw new Error(`choose: no option ${JSON.stringify(value)} among ${options.length}`);
       }

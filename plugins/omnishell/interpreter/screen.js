@@ -195,6 +195,9 @@ async function loadRenderers(screen, appBase, route) {
 const REGION_ATTRS = new Set([
   "data-text", "data-filter", "data-select", "data-empty", "data-empty-row", "data-when",
 ]);
+
+// What a machine may read off the event that fired it (machine.cue #EventRef).
+const EVENT_FIELDS = new Set(["value", "checked", "valueAsNumber", "key"]);
 // data-read-* is a prefix family, so membership is a function rather than the
 // Set alone: wireEvents resolves a named read's placeholders per step against
 // the region's current row, which only works while the attribute still
@@ -1041,11 +1044,27 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     // (state, event) is a no-op, not an error.
     const machine = region.dataset.machine === undefined ? undefined : JSON.parse(region.dataset.machine);
     if (machine !== undefined) {
+      // Naming a field outside the allowlist is an authoring error and throws.
+      // An event that simply does not carry one is this transition declining —
+      // a select firing an arrow written for a checkbox must not take the
+      // screen down, and writing undefined would be a hole no later reader can
+      // tell from a value the app meant.
+      const NO_FIELD = Symbol("no field");
+      const eventField = (event, field) => {
+        if (!EVENT_FIELDS.has(field)) {
+          throw new Error(`assign reads event.${field}, and an event carries ${[...EVENT_FIELDS].join(", ")}`);
+        }
+        return field in event ? event[field] : NO_FIELD;
+      };
+
       const leafVal = (v, world, event) => {
         if (typeof v === "string" && handlers.has(v)) return handlers.get(v)(world, event);
         // The {type, params} object form (#Ref) is always a reference;
         // loading already threw at hydration for a name no module carries.
-        if (v !== null && typeof v === "object") return handlers.get(v.type)(world, event, v.params);
+        if (v !== null && typeof v === "object") {
+          if (v.type === "event") return eventField(event, v.params?.field);
+          return handlers.get(v.type)(world, event, v.params);
+        }
         return v;
       };
 
@@ -1089,7 +1108,11 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         }
         if (chosen === undefined) return { updates: [] };
         const patch = {};
-        for (const [col, v] of Object.entries(chosen.c.assign ?? {})) patch[col] = leafVal(v, world, event);
+        for (const [col, v] of Object.entries(chosen.c.assign ?? {})) {
+          const value = leafVal(v, world, event);
+          if (value === NO_FIELD) return { updates: [] };
+          patch[col] = value;
+        }
         // Debug seam, like __prontoViews: which arrow fired and the field it
         // landed on, for the path walker. Nothing is pushed unless something
         // armed the array.
@@ -1186,6 +1209,18 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
             const fired = { type };
             const src = e.target?.closest?.("[id]");
             if (src && src.id !== "" && region.contains(src)) fired.from = src.id;
+            // The affordance, not whatever child the pointer landed on: a
+            // <button><span>Go</span></button> delivers the span, and every
+            // input declares `checked` and `valueAsNumber` whatever its type —
+            // so admitting a field by presence would write false or NaN into
+            // the row and call it the reader's answer.
+            const ctl = e.target?.closest?.("input, select, textarea, button") ?? e.target;
+            if (typeof ctl?.value === "string") fired.value = ctl.value;
+            if (ctl?.type === "checkbox" || ctl?.type === "radio") fired.checked = ctl.checked === true;
+            if (typeof ctl?.valueAsNumber === "number" && !Number.isNaN(ctl.valueAsNumber)) {
+              fired.valueAsNumber = ctl.valueAsNumber;
+            }
+            if (typeof e.key === "string") fired.key = e.key;
             await runMachine(machineReduce, fired);
           } catch (err) {
             console.error(err);
@@ -1271,11 +1306,9 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     return { deliver };
   }
 
-  // Field-backed widgets. A [data-widget] wrapping a region is that region's —
-  // its rows are the items, and hydrateRegion mounts it below. One wrapping no
-  // region dresses the form control inside it instead: the machine owns the
-  // affordance, the input stays the value the form submits, so values() and
-  // validity never learn a widget was here.
+  // Field-backed widgets. A [data-widget] dresses the form control inside it:
+  // the machine owns the affordance, the input stays the value the form
+  // submits, so values() and validity never learn a widget was here.
   //
   // The machine reads its initial value from the control, so a widget sitting
   // inside a region has to wait for that region to bind or it seeds itself
@@ -1286,7 +1319,11 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     if (opts.handlers === false) return;
     await Promise.all([...scope.querySelectorAll("[data-widget]")].map(async (root) => {
       if (root._prontoWidget !== undefined) return;
-      if (root.querySelector("[data-live]") !== null) return;
+      // Every kind dresses a form control, so a [data-widget] wrapping a
+      // region names a kind this terminal does not have.
+      if (root.querySelector("[data-live]") !== null) {
+        throw new Error(`[data-widget="${root.dataset.widget}"] holds a region: a kind dresses a control, it does not own rows`);
+      }
       const input = root.querySelector("input, select, textarea");
       if (input === null) return;
       await readyOf.get(root.closest("[data-live]"));
@@ -1414,8 +1451,11 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
 
     // Regions nested inside an item, excluding any that sit under a deeper
     // one — those belong to that region's own pass.
+    // Scoped to the item: closest() would walk past it to the enclosing
+    // region, and an attached node always has one — so every nested region
+    // looked like someone else's and syncNested below re-hydrated nothing.
     const nestedOf = (node) =>
-      [...node.querySelectorAll("[data-live]")].filter((el) => !el.parentElement.closest("[data-live]"));
+      [...node.querySelectorAll("[data-live]")].filter((el) => ownedBy(el.parentElement, node));
 
     // A nested region's filter interpolates its parent's row, and is resolved
     // once at hydration. The node survives a refresh, so a filter that no

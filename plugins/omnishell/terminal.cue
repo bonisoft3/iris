@@ -116,35 +116,14 @@ _zagBundle: _ @embed(glob="interpreter/vendor/zag/*.js", type=text)
 			note: "a structural violation — unknown tag, malformed node, refused attribute — throws, because that is a bug in the renderer and not in anyone's data"
 		}
 
-		// What data-widget may name. Each kind is its own module, fetched the
-		// first time a screen mounts one, so an app's widget cost is the kinds
-		// it uses and not the vocabulary's size. The dispatcher is generic
-		// (interpreter/widget.js): the app supplies a Jessie adapter turning its
-		// rows into {value, label} items and a selection back into mutation
-		// values, and each kind's own anatomy — not this list — is the authority
-		// on its part names.
+		// What data-widget may name. Each kind's own anatomy — not this list —
+		// is the authority on its part names.
 		//
-		// A kind can only appear here if that generic path drives it. A
-		// row-backed kind builds its collection from a flat item list and
-		// accepts COLLECTION.SET; a field-backed one dresses a form control and
-		// describes the parts the machine computes. Both report through
-		// onValueChange, which is the seam every kind shares.
+		// Every kind here dresses a form control: the widget keeps the name,
+		// validity and value the form submits, so nothing downstream learns a
+		// widget was there. A choice over a table's rows is a region and a
+		// machine, not a kind — the components tier states those.
 		widgets: [Name=string]: {selects: string, parts: [...string], note: string}
-		widgets: combobox: {
-			selects: "one row, by typing"
-			parts: ["clearTrigger", "content", "control", "input", "item", "itemGroup", "itemGroupLabel", "itemIndicator", "itemText", "label", "list", "positioner", "root", "trigger"]
-			note: "type-ahead over a live region's rows; the list is a popover Zag positions, so positioner is required and the input is the part a reader types into"
-		}
-		widgets: select: {
-			selects: "one row, from a popover"
-			parts: ["clearTrigger", "content", "control", "indicator", "item", "itemGroup", "itemGroupLabel", "itemIndicator", "itemText", "label", "list", "positioner", "root", "trigger", "valueText"]
-			note: "combobox's collection without the text filter; valueText renders the current selection where combobox puts its input"
-		}
-		widgets: listbox: {
-			selects: "one or more rows, always visible"
-			parts: ["content", "input", "item", "itemGroup", "itemGroupLabel", "itemIndicator", "itemText", "label", "root", "valueText"]
-			note: "no popover, so the only kind that needs no positioner — the inline choice a form shows without a click"
-		}
 		widgets: "date-picker": {
 			selects: "one date, from a calendar"
 			parts: ["clearTrigger", "content", "control", "input", "nextTrigger", "positioner", "prevTrigger", "root", "table", "tableBody", "tableCell", "tableHead", "tableRow", "trigger", "view", "viewControl", "viewTrigger"]

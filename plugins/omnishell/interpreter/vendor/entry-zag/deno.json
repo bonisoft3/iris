@@ -1,11 +1,7 @@
 {
   "imports": {
-    "@zag-js/collection": "npm:@zag-js/collection@1.43.0",
     "@zag-js/date-picker": "npm:@zag-js/date-picker@1.43.0",
     "@zag-js/file-upload": "npm:@zag-js/file-upload@1.43.0",
-    "@zag-js/combobox": "npm:@zag-js/combobox@1.43.0",
-    "@zag-js/listbox": "npm:@zag-js/listbox@1.43.0",
-    "@zag-js/select": "npm:@zag-js/select@1.43.0",
     "@zag-js/vanilla": "npm:@zag-js/vanilla@1.43.0"
   }
 }

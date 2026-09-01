@@ -111,8 +111,8 @@ describe("unwitnessedControls stays silent on wired controls", () => {
     expect(unwitnessedControls('<form data-action="create"><input type="submit" value="Post"></form>')).toEqual([])
   })
 
-  // apps/thenote/shell/screens/note.html:136 — type="button" submits
-  // nothing, and the combobox machine is what reaches it.
+  // A type="button" submits nothing however deep in a form it sits, so a
+  // machine's click is the only seam that can reach it.
   it("a type=button part inside a widget inside a form", () => {
     expect(
       unwitnessedControls(

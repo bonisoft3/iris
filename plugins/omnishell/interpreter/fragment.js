@@ -192,11 +192,16 @@ export function machineCandidates(value) {
  * must be handled), and the path walker (which arrows exist).
  *
  * `refs` are positions that are ALWAYS references (guards, non-numeric after
- * keys, and the `{type, params}` object form wherever it appears);
+ * keys, and the `{type, params}` object form except where it names a leaf the
+ * terminal answers itself);
  * `assignStrings` are dual positions — a string here is a reference exactly
  * when it names a declared module, which is why a literal shadowing one is
  * refused at lint rather than resolved by guess.
  */
+/** Leaf types the terminal answers itself in the assign position, so no module
+ * is looked up and no checker demands one for them there. */
+export const RESERVED_LEAVES = new Set(["event"]);
+
 export function machineShape(machine) {
   const refs = new Set();
   const assignStrings = new Set();
@@ -210,7 +215,7 @@ export function machineShape(machine) {
       if (c.raise !== undefined) raises.add(c.raise);
       for (const v of Object.values(c.assign ?? {})) {
         if (typeof v === "string") assignStrings.add(v);
-        else if (v !== null && typeof v === "object") refs.add(v.type);
+        else if (v !== null && typeof v === "object" && !RESERVED_LEAVES.has(v.type)) refs.add(v.type);
       }
     });
   };

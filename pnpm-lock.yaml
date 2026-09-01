@@ -309,7 +309,7 @@ importers:
         version: 4.3.0(@electric-sql/pglite@0.4.4)(@parcel/watcher@2.5.6)(@types/node@20.19.30)(@vue/compiler-sfc@3.5.27)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.4.4)(mysql2@3.15.3))(encoding@0.1.13)(eslint@9.39.2(jiti@2.6.1))(ioredis@5.9.2)(lightningcss@1.32.0)(magicast@0.5.1)(mysql2@3.15.3)(optionator@0.9.4)(rollup@4.57.1)(terser@5.46.0)(tsx@4.21.0)(typescript@5.5.4)(vite@7.3.6(@types/node@20.19.30)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue-tsc@3.2.4(typescript@5.5.4))(yaml@2.8.2)
       nuxt-vuefire:
         specifier: 1.0.3
-        version: 1.0.3(@firebase/app-types@0.9.2)(firebase-admin@13.6.0(encoding@0.1.13))(firebase-functions@5.0.1(firebase-admin@13.6.0(encoding@0.1.13)))(firebase@10.12.3)(magicast@0.5.1)(vuefire@3.2.2(consola@3.4.2)(firebase@10.12.3)(vue@3.5.27(typescript@5.5.4)))
+        version: 1.0.3(@firebase/app-types@0.9.3)(firebase-admin@13.6.0(encoding@0.1.13))(firebase-functions@5.0.1(firebase-admin@13.6.0(encoding@0.1.13)))(firebase@10.12.3)(magicast@0.5.1)(vuefire@3.2.2(consola@3.4.2)(firebase@10.12.3)(vue@3.5.27(typescript@5.5.4)))
       simple-vue-camera:
         specifier: ^1.1.3
         version: 1.1.3
@@ -1011,18 +1011,6 @@ importers:
       '@simplewebauthn/server':
         specifier: ^13.1.1
         version: 13.3.0
-      '@zag-js/collection':
-        specifier: ^1.43.0
-        version: 1.43.0
-      '@zag-js/combobox':
-        specifier: ^1.43.0
-        version: 1.43.0
-      '@zag-js/listbox':
-        specifier: 1.43.0
-        version: 1.43.0
-      '@zag-js/select':
-        specifier: 1.43.0
-        version: 1.43.0
       '@zag-js/vanilla':
         specifier: ^1.43.0
         version: 1.43.0
@@ -8731,41 +8719,11 @@ packages:
   '@xtuc/long@4.2.2':
     resolution: {integrity: sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==}
 
-  '@zag-js/anatomy@1.43.0':
-    resolution: {integrity: sha512-hcARaNvhU+jXukKCU4Gz4eXU2oUSlppi15L/MoxcckMum+Pu1HFqjWpllDgjb7RyByHYX6XfFk6ijPRV8EzPpg==}
-
-  '@zag-js/collection@1.43.0':
-    resolution: {integrity: sha512-5B/K12/z146o2tMY26HKFwG+faEAhp8+lMX2XnyOEh8y4LRUBNBt6znwxNU+YrLHrhb6i3lIEaHRcfSvkglEJQ==}
-
-  '@zag-js/combobox@1.43.0':
-    resolution: {integrity: sha512-fpK19QSZtxlZQp5Zwql3mXFzXoJMVAy/3FJ7p1VQex3ZyezpZK4X3ThRdfxupOEmFst1HmtRtlGLqJXNVFEIsg==}
-
   '@zag-js/core@1.43.0':
     resolution: {integrity: sha512-iIpTu/U1OHKXGjXq/bn/ek32nIKE0lmS2gLdihYmv1jtPXH8hVHaIOXR5KYGfOjMVb4+FiMMCZHlH9MWbLk2iA==}
 
-  '@zag-js/dismissable@1.43.0':
-    resolution: {integrity: sha512-bf19aG9iLxwivpC+lntS2Lzkr4OB73zzPJWI21eIeyMDOX5+QDAZEX9gwNZRKYh1AkEq/oVHYWu71aZKNmdR8w==}
-
   '@zag-js/dom-query@1.43.0':
     resolution: {integrity: sha512-yQDR00jJj0tgrRH43QJx7NtQH+EBxQtEdFKMzG7c88xL1ZRtqXYpqNNSmCuGj5RTsEceQjEhAxeTJikUYp9M0g==}
-
-  '@zag-js/focus-visible@1.43.0':
-    resolution: {integrity: sha512-1CDA2BZ9k6E6DozNjpTmt+i68HuDAvME2pbqtC+aM7woJK9SuHAXA82qyz//NnaOQnXKQMAOigumfS3fguNswQ==}
-
-  '@zag-js/interact-outside@1.43.0':
-    resolution: {integrity: sha512-mQ/6HT6Tn99H4l7u7FaxvXirE4wYenlZFuFkR0qXGRaR7bDRUeWm3dJKcV0Ex3gwcs+G5Z0ZdvA++VBfVh+WUg==}
-
-  '@zag-js/listbox@1.43.0':
-    resolution: {integrity: sha512-gNO10K9yffPjkXILP91R8uU/o8Tgw0CzpbBPiVp6IF0dA/3A0Nb7fijJBlYL/s11F/5CDjnuiAWHpENv41+AUw==}
-
-  '@zag-js/live-region@1.43.0':
-    resolution: {integrity: sha512-8lUL9+Z34416bXyS/1sorU1sbICcgktp653PVXZ43kmzbUefl6WMTwTYuxULGklRrFX7vOLQebJ8qw9Bdf2xFw==}
-
-  '@zag-js/popper@1.43.0':
-    resolution: {integrity: sha512-mN69qeFpsbrnwijwbRZlgFWiBT7Aes+VMT9sLOZ5nMHQDDupbWQDqh3DCWz8Ojqp6LbDUq6uOFdA5zrLxE5rmQ==}
-
-  '@zag-js/select@1.43.0':
-    resolution: {integrity: sha512-3fP52objnr7WhATOw4QukZS5Dd3ktaCfA8381lIp1MWYyW5G+skskFz7bLx4g9R8XW3gpF4As5jCDV3Y30A3zA==}
 
   '@zag-js/store@1.43.0':
     resolution: {integrity: sha512-Q6b6vbAbIGDkXO1sGoM+hjOP2BL6uHIMX3MUhpjFpIZ6qhkxU+iRa8bCGU7xYT2vRyEMlN5NUU77PjoITpSwRg==}
@@ -27857,78 +27815,14 @@ snapshots:
 
   '@xtuc/long@4.2.2': {}
 
-  '@zag-js/anatomy@1.43.0': {}
-
-  '@zag-js/collection@1.43.0':
-    dependencies:
-      '@zag-js/utils': 1.43.0
-
-  '@zag-js/combobox@1.43.0':
-    dependencies:
-      '@zag-js/anatomy': 1.43.0
-      '@zag-js/collection': 1.43.0
-      '@zag-js/core': 1.43.0
-      '@zag-js/dismissable': 1.43.0
-      '@zag-js/dom-query': 1.43.0
-      '@zag-js/focus-visible': 1.43.0
-      '@zag-js/live-region': 1.43.0
-      '@zag-js/popper': 1.43.0
-      '@zag-js/types': 1.43.0
-      '@zag-js/utils': 1.43.0
-
   '@zag-js/core@1.43.0':
     dependencies:
       '@zag-js/dom-query': 1.43.0
       '@zag-js/utils': 1.43.0
 
-  '@zag-js/dismissable@1.43.0':
-    dependencies:
-      '@zag-js/dom-query': 1.43.0
-      '@zag-js/interact-outside': 1.43.0
-      '@zag-js/utils': 1.43.0
-
   '@zag-js/dom-query@1.43.0':
     dependencies:
       '@zag-js/types': 1.43.0
-
-  '@zag-js/focus-visible@1.43.0':
-    dependencies:
-      '@zag-js/dom-query': 1.43.0
-
-  '@zag-js/interact-outside@1.43.0':
-    dependencies:
-      '@zag-js/dom-query': 1.43.0
-      '@zag-js/utils': 1.43.0
-
-  '@zag-js/listbox@1.43.0':
-    dependencies:
-      '@zag-js/anatomy': 1.43.0
-      '@zag-js/collection': 1.43.0
-      '@zag-js/core': 1.43.0
-      '@zag-js/dom-query': 1.43.0
-      '@zag-js/focus-visible': 1.43.0
-      '@zag-js/types': 1.43.0
-      '@zag-js/utils': 1.43.0
-
-  '@zag-js/live-region@1.43.0': {}
-
-  '@zag-js/popper@1.43.0':
-    dependencies:
-      '@floating-ui/dom': 1.7.6
-      '@zag-js/dom-query': 1.43.0
-      '@zag-js/utils': 1.43.0
-
-  '@zag-js/select@1.43.0':
-    dependencies:
-      '@zag-js/anatomy': 1.43.0
-      '@zag-js/collection': 1.43.0
-      '@zag-js/core': 1.43.0
-      '@zag-js/dismissable': 1.43.0
-      '@zag-js/dom-query': 1.43.0
-      '@zag-js/focus-visible': 1.43.0
-      '@zag-js/popper': 1.43.0
-      '@zag-js/types': 1.43.0
-      '@zag-js/utils': 1.43.0
 
   '@zag-js/store@1.43.0':
     dependencies:
@@ -34669,7 +34563,7 @@ snapshots:
     transitivePeerDependencies:
       - magicast
 
-  nuxt-vuefire@1.0.3(@firebase/app-types@0.9.2)(firebase-admin@13.6.0(encoding@0.1.13))(firebase-functions@5.0.1(firebase-admin@13.6.0(encoding@0.1.13)))(firebase@10.12.3)(magicast@0.5.1)(vuefire@3.2.2(consola@3.4.2)(firebase@10.12.3)(vue@3.5.27(typescript@5.5.4))):
+  nuxt-vuefire@1.0.3(@firebase/app-types@0.9.3)(firebase-admin@13.6.0(encoding@0.1.13))(firebase-functions@5.0.1(firebase-admin@13.6.0(encoding@0.1.13)))(firebase@10.12.3)(magicast@0.5.1)(vuefire@3.2.2(consola@3.4.2)(firebase@10.12.3)(vue@3.5.27(typescript@5.5.4))):
     dependencies:
       '@nuxt/kit': 4.3.0(magicast@0.5.1)
       '@posva/lru-cache': 10.0.1
@@ -34678,7 +34572,7 @@ snapshots:
       strip-json-comments: 5.0.3
       vuefire: 3.2.2(consola@3.4.2)(firebase@10.12.3)(vue@3.5.27(typescript@5.5.4))
     optionalDependencies:
-      '@firebase/app-types': 0.9.2
+      '@firebase/app-types': 0.9.3
       firebase-admin: 13.6.0(encoding@0.1.13)
       firebase-functions: 5.0.1(firebase-admin@13.6.0(encoding@0.1.13))
     transitivePeerDependencies:

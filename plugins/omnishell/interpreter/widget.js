@@ -39,23 +39,16 @@ let seq = 0;
  * pass, and the teardown. What differs is only what seeds the context and what
  * a value change means — the two arguments below.
  */
-async function mount(root, kind, {context = {}, onValueChange, itemsRef} = {}) {
+async function mount(root, kind, {context = {}, onValueChange} = {}) {
   const machine = new VanillaMachine(kind.machine, {
     id: root.id || `w${++seq}`,
     ...context,
     onValueChange,
   });
   machine.start();
-  const items = () => itemsRef?.() ?? [];
 
-  // An item part addresses one row and needs it; the rest address the widget.
-  // Which is which is not a list this file keeps — the item is whichever
-  // ancestor carries data-value, so the text and indicator inside an item are
-  // item-scoped without being named here.
-  //
-  // A kind whose parts are not row-backed says so itself: partArg answers what
-  // that part's props want, because only the kind knows a day cell is asked
-  // for by date rather than by item.
+  // What a part's props want is the kind's to say: only it knows a day cell is
+  // asked for by date. A kind that answers nothing gets the bare call.
   const propsFor = (api, part, el) => {
     const get = api[`get${pascal(part)}Props`];
     if (typeof get !== "function") return null;
@@ -63,10 +56,7 @@ async function mount(root, kind, {context = {}, onValueChange, itemsRef} = {}) {
       const arg = kind.partArg(api, el);
       return arg === undefined ? get.call(api) : get.call(api, arg);
     }
-    const owner = el.closest("[data-value]");
-    if (owner === null) return get.call(api);
-    const item = items().find((i) => String(i.value) === owner.dataset.value);
-    return item === undefined ? null : get.call(api, {item});
+    return get.call(api);
   };
 
   const hostFor = (part) => {
@@ -143,7 +133,7 @@ export async function hydrateFieldWidget(root, {input} = {}) {
   }
   const kind = loadKind(root.dataset.widget);
   if (typeof kind.fromInput !== "function") {
-    throw new Error(`widget kind "${root.dataset.widget}" is row-backed — it cannot dress a form control`);
+    throw new Error(`widget kind "${root.dataset.widget}" states no fromInput, so it dresses no control`);
   }
   return mount(root, kind, {
     context: kind.fromInput(input),
