@@ -104,7 +104,10 @@ export async function bootPlatform(config: BrowserConfig): Promise<PlatformConte
     })
   })
 
-  const worker = setupWorker(crudHandler)
+  const extraHandlers = (config.routes ?? []).map((r) =>
+    http.all(r.path, ({ request }) => r.resolver(request)),
+  )
+  const worker = setupWorker(crudHandler, ...extraHandlers)
   await worker.start({ onUnhandledRequest: 'bypass' })
 
   // 6. Load seed data if configured

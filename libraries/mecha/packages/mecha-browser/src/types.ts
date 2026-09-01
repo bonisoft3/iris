@@ -23,6 +23,12 @@ export interface BrowserConfig {
   env?: Record<string, string>
   /** Optional seed data loader (called after schema init). */
   seedData?: (pglite: PGlite) => Promise<void>
+  /**
+   * App-provided service substitutes, registered on the MSW worker beside
+   * /crud. Path is an MSW pattern ("/img/*"); the resolver sees the raw
+   * Request so apps never import msw themselves.
+   */
+  routes?: Array<{ path: string; resolver: (request: Request) => Response | Promise<Response> }>
 }
 
 export type { BloblangPipelineConfig as PipelineConfig, JqPipelineConfig }

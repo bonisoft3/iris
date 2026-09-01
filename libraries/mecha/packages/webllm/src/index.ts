@@ -2,6 +2,8 @@ import { pipeline, type TextGenerationPipeline } from "@huggingface/transformers
 import type { TextModel } from "@mecha/browser"
 import { extractParams, templateResponse } from "./shim.js"
 
+export { generateCardSvg } from "./shim.js"
+
 /**
  * In-browser text model with a shim layer for structured output.
  *
