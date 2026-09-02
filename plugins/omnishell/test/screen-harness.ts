@@ -741,12 +741,22 @@ export async function mountScreen(spec: MountSpec): Promise<Mounted> {
     for (let spent = 0;;) {
       await quiet();
       raiseEscaped();
-      if (clock.advance(0) === 0) return;
-      if (spent >= cap) {
-        throw new Error(`the screen never stopped: waits still queued after ${spent}ms of table time`);
+      if (clock.advance(0) > 0) {
+        if (spent >= cap) {
+          throw new Error(`the screen never stopped: waits still queued after ${spent}ms of table time`);
+        }
+        clock.advance(step);
+        spent += step;
+        continue;
       }
-      clock.advance(step);
-      spent += step;
+      // An empty queue is not a stopped screen. A machine arms its `after`
+      // from the refresh that entered the state, so a screen whose opening act
+      // is a beat has nothing queued for the turn between the two; and the
+      // advance above fires what was due, whose writes are not drained yet.
+      // Both show up as a change across one more turn.
+      const before = store.version;
+      await macrotask();
+      if (clock.advance(0) === 0 && store.version === before) return;
     }
   };
 

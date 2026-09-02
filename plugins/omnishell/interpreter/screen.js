@@ -142,7 +142,10 @@ async function loadHandlers(screen, appBase, route) {
   // refuses the shadowing literal, so resolution is never a guess).
   for (const scope of withTemplates(screen)) {
     for (const el of scope.querySelectorAll("[data-machine]")) {
-      const shape = machineShape(JSON.parse(el.getAttribute("data-machine")));
+      // This scan reaches every machine on the screen, and one may sit on an
+      // element that is not a region — the message is the guard's whole value.
+      const where = el.dataset.live ?? el.id ?? el.localName;
+      const shape = machineShape(declared(el.getAttribute("data-machine"), where, "data-machine"));
       for (const name of shape.refs) {
         if (loaded.has(name)) continue;
         const path = route.files.handlers.find((f) => f.split("/").pop() === `${name}.js`);
@@ -298,6 +301,14 @@ export function parseProjection(spec, table) {
   } catch {
     throw new ProjectionError(`region "${table}": data-project is not JSON`);
   }
+  // Valid JSON that is not a map of clauses, which the parse guard above lets
+  // through: `null` reaches Object.entries and throws, and a bare `true` or `42`
+  // answers no entries at all — a projection that states nothing.
+  if (declared === null || typeof declared !== "object" || Array.isArray(declared)) {
+    throw new ProjectionError(
+      `region "${table}": data-project is ${JSON.stringify(declared)}, not an object of clauses`,
+    );
+  }
   return Object.entries(declared).map(([name, clause]) => {
     if (clause === "index" || clause === "count") return { name, kind: clause };
     if (clause === "next" || clause === "prev") return { name, kind: clause };
@@ -344,6 +355,36 @@ function eqAnswer(row, p, table) {
  * The filter is compared separately: a moved filter is a moved read, and has to
  * re-hydrate rather than re-render.
  */
+/**
+ * A declaration resolved against the row a region hangs under. For a NESTED
+ * region every one of these runs inside the parent's refresh, where the outage
+ * guard is standing, so lookup's plain "not in row" would be dressed as a dead
+ * gateway and retried on a backoff while the markup is what is wrong.
+ */
+function fromEnclosing(resolve, table, what) {
+  try {
+    return resolve();
+  } catch (err) {
+    throw new ProgramError(`region "${table}": ${what} — ${err.message}`);
+  }
+}
+
+/** A JSON declaration off the markup. Malformed is a SyntaxError and `null`
+ * parses, so neither reaches a reader without this. */
+function declared(spec, table, what) {
+  let value;
+  try {
+    value = JSON.parse(spec);
+  } catch {
+    throw new ProgramError(`region "${table}": ${what} is not JSON: ${spec}`);
+  }
+  // Arrays are objects; parseProjection's sibling guard says so too.
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    throw new ProgramError(`region "${table}": ${what} is ${spec}, not an object`);
+  }
+  return value;
+}
+
 function nestedBindings(el, ctx) {
   const stash = el._prontoAttrs ?? {};
   const names = new Set([...(el.attributes ?? [])].map((a) => a.name));
@@ -353,7 +394,7 @@ function nestedBindings(el, ctx) {
     if (name !== "data-project" && regionAttr(name)) continue;
     const template = stash[name] ?? el.getAttribute(name);
     if (template === null || !HAS_PLACEHOLDER.test(template)) continue;
-    out.push(`${name}=${interpolate(template, ctx)}`);
+    out.push(`${name}=${fromEnclosing(() => interpolate(template, ctx), el.dataset.live, name)}`);
   }
   return out.join("\u0000");
 }
@@ -791,6 +832,9 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     } catch {
       throw new KeyBindingError(`data-key is not JSON: ${el.dataset.key}`);
     }
+    if (keys === null || typeof keys !== "object" || Array.isArray(keys)) {
+      throw new KeyBindingError(`data-key is ${el.dataset.key}, not an object of key to form id`);
+    }
     for (const key of Object.keys(keys)) {
       if (!ROVING_KEYS.has(key)) {
         throw new KeyBindingError(`data-key names "${key}", which is not one of ${[...ROVING_KEYS].join(", ")}`);
@@ -1197,7 +1241,9 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     // with the bare type as its fallback, a state's transitions hide
     // root-level `on:` per exact key, and no transition for the current
     // (state, event) is a no-op, not an error.
-    const machine = region.dataset.machine === undefined ? undefined : JSON.parse(region.dataset.machine);
+    const machine = region.dataset.machine === undefined
+      ? undefined
+      : declared(region.dataset.machine, region.dataset.live, "data-machine");
     if (machine !== undefined) {
       // Naming a field outside the allowlist is an authoring error and throws.
       // An event that simply does not carry one is this transition declining —
@@ -1477,7 +1523,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       // Every kind dresses a form control, so a [data-widget] wrapping a
       // region names a kind this terminal does not have.
       if (root.querySelector("[data-live]") !== null) {
-        throw new Error(`[data-widget="${root.dataset.widget}"] holds a region: a kind dresses a control, it does not own rows`);
+        throw new ProgramError(`[data-widget="${root.dataset.widget}"] holds a region: a kind dresses a control, it does not own rows`);
       }
       const input = root.querySelector("input, select, textarea");
       if (input === null) return;
@@ -1498,7 +1544,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     // region carrying both would leave its own templates silently unused.
     const ref = region.dataset.template;
     if (ref !== undefined && region.querySelector("template[data-item]") !== null) {
-      throw new Error(`region "${table}" has both data-template and its own item templates`);
+      throw new ProgramError(`region "${table}" has both data-template and its own item templates`);
     }
     // A region holds any number of item templates, each optionally narrowed by
     // a data-when fragment (the one filter grammar, matched against the row
@@ -1510,7 +1556,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       // one is not rendered, not bound and not reported, so the region quietly
       // draws half of what the markup says it draws.
       if (el.content.children.length !== 1) {
-        throw new Error(
+        throw new ProgramError(
           `region "${table}" has a template with ${el.content.children.length} elements; an item is exactly one`,
         );
       }
@@ -1521,11 +1567,11 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       // placeholder here would compare rows against the brace text and admit
       // nothing, silently.
       if (HAS_PLACEHOLDER.test(when)) {
-        throw new Error(`region "${table}": data-when="${when}" carries a placeholder; data-when values are literals`);
+        throw new ProgramError(`region "${table}": data-when="${when}" carries a placeholder; data-when values are literals`);
       }
       const admits = parseFilter(when);
       if (admits === null) {
-        throw new Error(`region "${table}": data-when="${when}" is outside the translatable fragment subset`);
+        throw new ProgramError(`region "${table}": data-when="${when}" is outside the translatable fragment subset`);
       }
       return { el, admits };
     });
@@ -1548,7 +1594,9 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       );
     }
     const opts = {};
-    if (region.dataset.filter) opts.filter = interpolateFilter(region.dataset.filter, ctx);
+    if (region.dataset.filter) {
+      opts.filter = fromEnclosing(() => interpolateFilter(region.dataset.filter, ctx), table, "data-filter");
+    }
     if (region.dataset.select) opts.select = region.dataset.select;
     // Carried in opts as well as passed to query, because the store keys a
     // maintained view on the whole read — order included — and subscribe is
@@ -1560,14 +1608,18 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     // equalities — facts about any row this region can ever show — plus
     // {field: initial}. The pk must be pinned or the first transition's put
     // has no key to write: a precondition, not a fallback.
-    const machine = region.dataset.machine === undefined ? undefined : JSON.parse(region.dataset.machine);
+    const machine = region.dataset.machine === undefined
+      ? undefined
+      : declared(region.dataset.machine, table, "data-machine");
     let fallbackRow;
-    if (region.dataset.emptyRow) fallbackRow = JSON.parse(region.dataset.emptyRow);
+    if (region.dataset.emptyRow) {
+      fallbackRow = declared(region.dataset.emptyRow, table, "data-empty-row");
+    }
     else if (machine !== undefined && templates.length === 0) {
       const spec = parseFilterSpec(opts.filter ?? "") ?? [];
       const eqs = Object.fromEntries(spec.filter((s) => s.op === "eq").map((s) => [s.col, s.value]));
       if (eqs.id === undefined) {
-        throw new Error(
+        throw new ProgramError(
           `machine region "${table}" has no data-empty-row and its filter pins no id=eq.; the machine's first write would have no key`,
         );
       }
@@ -1671,7 +1723,9 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     // nested region silently keeps querying the value its node was born with.
     const syncNested = (entry, ready) => {
       for (const el of nestedOf(entry.node)) {
-        const want = el.dataset.filter ? interpolateFilter(el.dataset.filter, entry.ctx) : undefined;
+        const want = el.dataset.filter
+          ? fromEnclosing(() => interpolateFilter(el.dataset.filter, entry.ctx), el.dataset.live, "data-filter")
+          : undefined;
         // What this row says to the nested region other than its read: a
         // projection's parameter, an aria-activedescendant, a data-key naming
         // the form of whichever row is active. All of it moves without the
@@ -1868,7 +1922,10 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
           // slot has always bound its own element; the branch that renders
           // rows did not, so the one element between a container and the list
           // inside it was the only one nobody bound.
-          bindElementAttributes(region, ctx);
+          // Bound from a row that is not this region's, so a placeholder naming
+          // a column that row lacks is the same program error its
+          // change-signature raises.
+          fromEnclosing(() => bindElementAttributes(region, ctx), table, "own element");
           wireKeysIn(region);
           for (const node of order) wireKeysIn(node);
           const { deliver } = wireEvents(region, order, () => currentRows, handlers, ctx);

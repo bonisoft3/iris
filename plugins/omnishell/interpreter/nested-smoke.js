@@ -103,18 +103,18 @@ Deno.test({
         : inner(url))(globalThis.fetch);
     const { interpretScreen } = await import("./screen.js");
     const mount = document.getElementById("shell");
-    const errs = [];
-    const hold = console.error;
-    console.error = (...a) => errs.push(a.map(String).join(" "));
+    // Template arity is a ProgramError, so it is rethrown past the outage guard
+    // rather than dressed as one — the mount is what fails.
+    let thrown;
     try {
       await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
       await tick();
-    } finally {
-      console.error = hold;
+    } catch (err) {
+      thrown = err;
     }
     assert(
-      errs.some((e) => e.includes("an item is exactly one")),
-      `the two-element template was named, got ${errs.join(" | ").slice(0, 200)}`,
+      thrown !== undefined && String(thrown.message).includes("an item is exactly one"),
+      `the two-element template was named, got ${thrown === undefined ? "no throw" : thrown.message}`,
     );
   },
 });

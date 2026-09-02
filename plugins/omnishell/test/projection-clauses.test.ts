@@ -36,6 +36,16 @@ describe("the clause parser, read directly", () => {
     expect((thrown as Error).message).toMatch(/is not JSON/)
   })
 
+  it("refuses a spec that is not an object of clauses", () => {
+    // Valid JSON that is not a map, so the parse guard above never fires.
+    // `null` is the sharp one — Object.entries throws, and a TypeError is not
+    // a ProgramError. `true` and `42` are the quiet ones — Object.entries
+    // answers [], so a projection that states nothing is accepted.
+    for (const bad of ["null", "true", "42", '"index"', "[1,2]"]) {
+      expect(() => parseProjection(bad, "t")).toThrow(/an object of clauses/)
+    }
+  })
+
   it("refuses an eq clause that is not a [column, value] pair", () => {
     for (const bad of ['{"a":{"eq":["id"]}}', '{"a":{"eq":"id"}}', '{"a":{"eq":["id",3]}}', '{"a":null}']) {
       expect(() => parseProjection(bad, "t")).toThrow(/a clause is/)

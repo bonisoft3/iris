@@ -108,4 +108,98 @@ describe("virtual focus is a binding on the container", () => {
     expect((m.one("#top") as El).getAttribute("aria-label")).toBe("Plan for Ada")
     await m.stop()
   })
+
+  it("refuses an own-element binding naming a column the enclosing row lacks", async () => {
+    // nestedBindings runs inside the PARENT's refresh, which is the one place
+    // a plain binding error is dressed as a dead gateway and retried forever.
+    const files = {
+      ...FILES,
+      "lb.html": FILES["lb.html"].replace('aria-activedescendant="opt-{value}"', 'aria-activedescendant="opt-{valu}"'),
+    }
+    await expect(
+      mountScreen({
+        route: ROUTE,
+        files,
+        tables: { choice: [{ id: "the", value: "b" }], option: [{ id: "a", label: "A", pos: 1 }] },
+        seed: 1,
+      }),
+    ).rejects.toThrow(/binding \{valu\} not in row/)
+  })
+
+  it("refuses a nested read whose filter names a column the enclosing row lacks", async () => {
+    // The read's own placeholder, resolved in the parent's refresh like the
+    // attributes beside it. Unguarded this resolved the mount: the screen came
+    // up looking healthy and re-probed the store forever.
+    const files = {
+      ...FILES,
+      "lb.html": FILES["lb.html"].replace('data-live="option" data-order="pos.asc"', 'data-live="option" data-filter="kind=eq.{valu}"'),
+    }
+    await expect(
+      mountScreen({
+        route: ROUTE,
+        files,
+        tables: { choice: [{ id: "the", value: "b" }], option: [] },
+        seed: 1,
+      }),
+    ).rejects.toThrow(/data-filter — binding \{valu\} not in row/)
+  })
+
+  it("refuses a declaration that is not JSON, or is null", async () => {
+    const cases = [
+      ["data-machine", "{bad", /data-machine is not JSON/],
+      ["data-machine", "null", /data-machine is null, not an object/],
+      ["data-empty-row", "{bad", /data-empty-row is not JSON/],
+      ["data-empty-row", "42", /data-empty-row is 42, not an object/],
+      ["data-machine", "[1,2]", /data-machine is \[1,2\], not an object/],
+    ] as const
+    for (const [attr, spec, why] of cases) {
+      const files = {
+        ...FILES,
+        "lb.html": FILES["lb.html"].replace('data-live="option" data-order="pos.asc"', `data-live="option" ${attr}='${spec}'`),
+      }
+      await expect(
+        mountScreen({ route: ROUTE, files, tables: { choice: [{ id: "the", value: "b" }], option: [] }, seed: 1 }),
+      ).rejects.toThrow(why)
+    }
+  })
+
+  it("names the attribute when a top-level region's own read cannot resolve", async () => {
+    // The other route into a filter's placeholders. A nested region never
+    // reaches it — syncNested resolves the same template against the same row
+    // first — so what this pins is the top-level message, where a bare
+    // "not in row" would not say which attribute was wrong.
+    const files = {
+      ...FILES,
+      "lb.html": `<section class="screen" data-screen="lb">
+        <ul data-live="option" data-filter="kind=eq.{param.missing}">
+          <template data-item><li data-text="{id}"></li></template>
+        </ul>
+      </section>`,
+    }
+    await expect(
+      mountScreen({ route: ROUTE, files, tables: { choice: [], option: [] }, seed: 1 }),
+    ).rejects.toThrow(/data-filter — unknown route param/)
+  })
+
+  it("refuses a declaration fault from a nested region instead of retrying it", async () => {
+    // These faults were bare Errors, so a nested region — hydrating inside the
+    // parent's refresh where the outage guard stands — swallowed them and
+    // re-probed the store forever, while a top-level one escaped only because
+    // it hydrates outside the guard.
+    const files = {
+      ...FILES,
+      // The LISTBOX's template, not the choice region's: the outer one is
+      // top-level and hydrates outside the guard, so patching it would prove
+      // the throw that was already there.
+      "lb.html": FILES["lb.html"].replace(
+        `<template data-item>
+              <div role="option"`,
+        `<template data-item data-when="selected=eq.{value}">
+              <div role="option"`,
+      ),
+    }
+    await expect(
+      mountScreen({ route: ROUTE, files, tables: { choice: [{ id: "the", value: "b" }], option: [] }, seed: 1 }),
+    ).rejects.toThrow(/carries a placeholder/)
+  })
 })

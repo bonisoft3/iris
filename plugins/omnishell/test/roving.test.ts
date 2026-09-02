@@ -181,6 +181,14 @@ describe("a key binding refuses rather than going quiet", () => {
     await expect(mountWith(withKey("{not json"))).rejects.toThrow(/data-key is not JSON/)
   })
 
+  it("refuses valid JSON that is not a map", async () => {
+    // `null` is the sharp one: the parse guard never fires and Object.keys
+    // throws, which is a TypeError and so not a ProgramError.
+    for (const bad of ["null", "true", '"ArrowDown"', "[1]"]) {
+      await expect(mountWith(withKey(bad))).rejects.toThrow(/not an object of key to form id/)
+    }
+  })
+
   it("stays refusable on the pass after the first", async () => {
     // The flag that keeps a listener from stacking must not also keep a bad
     // declaration from being reported: set before validation, the first pass
