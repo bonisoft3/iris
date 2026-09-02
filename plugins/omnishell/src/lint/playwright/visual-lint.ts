@@ -14,7 +14,7 @@ import type { ConsoleCapture } from "./checks/console-messages"
 import { analyzeConsole } from "./checks/console-messages"
 
 export type { VisualBug, VisualLintResult } from "./types"
-export { checkCLS } from "./checks/cls"
+export { armCLS, checkCLS } from "./checks/cls"
 export {
   captureConsole,
   analyzeConsole,
@@ -34,8 +34,9 @@ export async function visualLint(
     checkTouchTargets(page),
     checkFocusOrder(page),
     checkThemeStability(page),
-    // CLS is not in this battery — see check-visual.ts. A test that wants it
-    // calls checkCLS(page) directly.
+    // CLS is not in this battery: it is the one check that has to be armed
+    // before its own navigation, which this entry point does not own. A caller
+    // that wants it runs armCLS(page) before goto and checkCLS(page) after.
   ])
   const bugs = results.flat()
   if (consoleCapture) {

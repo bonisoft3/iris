@@ -24,6 +24,7 @@ import { checkViewportBounds } from "./src/lint/playwright/checks/viewport-bound
 import { checkTouchTargets } from "./src/lint/playwright/checks/touch-targets.ts"
 import { checkWidgetsMounted } from "./src/lint/playwright/checks/widgets-mounted.ts"
 import { checkFocusOrder } from "./src/lint/playwright/checks/focus-order.ts"
+import { armCLS, checkCLS } from "./src/lint/playwright/checks/cls.ts"
 import { captureConsole, analyzeConsole } from "./src/lint/playwright/checks/console-messages.ts"
 import type { VisualBug } from "./src/lint/playwright/types.ts"
 
@@ -37,8 +38,7 @@ type PageLike = {
 }
 /** Likewise: the one method a lane calls on a viewport's context. */
 type ContextLike = { newPage(): Promise<PageLike> }
-type Read = { entity?: string; filter?: string }
-type Route = { path: string; reads?: Read[] }
+type Route = { path: string; files?: { html?: string } }
 
 type Viewport = { name: string; width: number; height: number }
 const VIEWPORTS: Viewport[] = [
@@ -76,46 +76,66 @@ const IGNORE = [
   /^Removing intrinsics\./,
 ]
 
-/** Entity names are PascalCase in the program and snake_case in Postgres. */
-export function tableFor(entity: string): string {
-  return entity.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toLowerCase()
-}
-
 export function routesFrom(yamlText: string): Route[] {
   const doc = parseYaml(yamlText) as { routes?: Route[] }
   if (!doc?.routes?.length) throw new Error("no routes: block in shell.yaml")
   return doc.routes
 }
 
-export type ParamPlan = { param: string; entity: string; column: string; op: string }
+export type ParamPlan = { param: string; table: string; column: string; op: string }
+
+const TAG = /<[a-z][a-z0-9]*\s[^>]*>/gi
+const attr = (tag: string, name: string) =>
+  new RegExp(`\\s${name}="([^"]*)"`).exec(tag)?.[1]?.replaceAll("&amp;", "&")
 
 /**
- * Where each `:param` gets a real value. A route declares its own reads, and
- * exactly one of them filters on the param — so the fixture is derivable from
- * the program rather than hardcoded per app. A placeholder segment renders the
- * `gone` state, and linting an empty screen measures nothing.
+ * Where each `:param` gets a real value, read off the SCREEN MARKUP.
+ *
+ * The markup is the only statement of it: a region names its table in
+ * `data-live` and its predicate in `data-filter`, and pronto's derive pass
+ * carries neither into the program on purpose ("no filter/order/select —
+ * those live in the markup alone"), so shell.yaml has no `reads:` to consult.
+ * Reading it here keeps that rule rather than restating a filter in two files.
+ *
+ * A param with no plan is a coverage hole exactly like one whose plan fails
+ * to resolve — every route wearing it goes unlinted — so it comes back as
+ * `unplanned` rather than being dropped.
+ *
+ * Only tags declaring BOTH attributes count: `data-text="{param.month}"`
+ * states where a param is printed, which no fixture can be resolved from.
  */
-export function paramPlans(routes: Route[]): ParamPlan[] {
+export function paramPlans(
+  routes: Route[],
+  markup: Record<string, string>,
+): { plans: ParamPlan[]; unplanned: string[] } {
   const plans = new Map<string, ParamPlan>()
+  const wanted = new Set<string>()
   for (const route of routes) {
     for (const seg of route.path.split("/")) {
       if (!seg.startsWith(":")) continue
       const param = seg.slice(1)
+      wanted.add(param)
       if (plans.has(param)) continue
-      for (const read of route.reads ?? []) {
-        if (!read.filter || !read.entity) continue
+      for (const tag of (markup[route.path] ?? "").matchAll(TAG)) {
+        const table = attr(tag[0], "data-live")
+        const filter = attr(tag[0], "data-filter")
+        if (table === undefined || filter === undefined) continue
         // e.g. `slug=eq.{param.slug}`, `created_at=lt.{param.when}`,
         // `article_tag.tag=eq.{param.name}`, `search=plfts(simple).{param.q}`
-        const m = read.filter.match(
-          new RegExp(`([\\w.]+)=([a-z]+(?:\\([^)]*\\))?)\\.\\{param\\.${param}\\}`),
+        // The placeholder must BE the value, not part of one: a composite
+        // like `bucket=eq.{param.month}:{id}` names the param without
+        // yielding anything a route can be filled with, and without the
+        // terminator the winner is whichever region is declared first.
+        const m = filter.match(
+          new RegExp(`([\\w.]+)=([a-z]+(?:\\([^)]*\\))?)\\.\\{param\\.${param}\\}(?=&|$)`),
         )
         if (!m) continue
-        plans.set(param, { param, entity: read.entity, column: m[1], op: m[2] })
+        plans.set(param, { param, table, column: m[1], op: m[2] })
         break
       }
     }
   }
-  return [...plans.values()]
+  return { plans: [...plans.values()], unplanned: [...wanted].filter((p) => !plans.has(p)).sort() }
 }
 
 /** Substitute resolved values for `:param` segments. */
@@ -137,6 +157,24 @@ async function crud<T>(base: string, q: string, token: string): Promise<T> {
   return r.json() as Promise<T>
 }
 
+/** PostgREST nests a select the way the filter nests the path, at any depth:
+ * `article_tag.tag` selects `article_tag(tag)`, `a.b.name` selects `a(b(name))`. */
+export function embedSelect(column: string): string {
+  const path = column.split(".")
+  return path.slice(0, -1).reduceRight((inner, rel) => `${rel}(${inner})`, path[path.length - 1])
+}
+
+/** The same path walked back out. Which hops answer with an array is the
+ * relation's business and unreadable off the filter, so take the first either way. */
+export function embedValue(row: Record<string, unknown>, column: string): unknown {
+  let cursor: unknown = row
+  for (const step of column.split(".")) {
+    if (Array.isArray(cursor)) cursor = cursor[0]
+    cursor = (cursor as Record<string, unknown> | undefined)?.[step]
+  }
+  return Array.isArray(cursor) ? cursor[0] : cursor
+}
+
 /**
  * Ask the running cluster for a value that makes each parametrized route
  * paint. `lt`/`gt` cursors take the extreme so the rest of the set remains;
@@ -150,10 +188,8 @@ async function resolveParams(
   const params: Record<string, string> = {}
   const unresolved: string[] = []
   for (const plan of plans) {
-    const table = tableFor(plan.entity)
-    // An embedded column (`article_tag.tag`) is selected through its relation.
-    const [rel, embedded] = plan.column.includes(".") ? plan.column.split(".") : [null, null]
-    const select = rel ? `${rel}(${embedded})` : plan.column
+    const table = plan.table
+    const select = embedSelect(plan.column)
     try {
       if (plan.op.startsWith("plfts")) {
         const rows = await crud<Record<string, unknown>[]>(
@@ -183,7 +219,7 @@ async function resolveParams(
       )
       const row = rows[0]
       if (!row) { unresolved.push(plan.param); continue }
-      const raw = rel ? (Array.isArray(row[rel]) ? (row[rel] as Record<string, unknown>[])[0]?.[embedded!] : (row[rel] as Record<string, unknown>)?.[embedded!]) : row[plan.column]
+      const raw = embedValue(row, plan.column)
       if (raw === undefined || raw === null) unresolved.push(plan.param)
       else params[plan.param] = String(raw)
     } catch {
@@ -329,10 +365,27 @@ async function main(appDir: string): Promise<number> {
     body: "{}",
   }).then((r) => (r.ok ? (r.json() as Promise<{ token: string }>) : { token: "" })).catch(() => ({ token: "" }))
 
-  const { params, unresolved } = await resolveParams(base, session.token, paramPlans(routes))
+  // Keyed by route path, because that is what paramPlans walks. A route whose
+  // html is missing reads as empty markup and its params come back unplanned,
+  // which is the finding either way.
+  const markup: Record<string, string> = {}
+  for (const route of routes) {
+    if (!route.path.includes("/:") || !route.files?.html) continue
+    markup[route.path] = await Deno.readTextFile(`${appDir}/${route.files.html}`).catch(() => "")
+  }
+  const { plans, unplanned } = paramPlans(routes, markup)
+  const { params, unresolved } = await resolveParams(base, session.token, plans)
   const findings: Finding[] = []
 
-  // A route whose param never resolved is a coverage hole, not a pass.
+  // A route whose param never resolved is a coverage hole, not a pass, and a
+  // param nothing plans for is that hole one step earlier.
+  for (const p of unplanned) {
+    findings.push({
+      severity: "major",
+      path: "shell/shell.yaml",
+      message: `no read filters on :${p}, so no fixture can be resolved and every route using it went unlinted. Give the screen a region whose data-filter pins the param.`,
+    })
+  }
   for (const p of unresolved) {
     findings.push({
       severity: "major",
@@ -374,6 +427,9 @@ async function main(appDir: string): Promise<number> {
         }
         requestAnimationFrame(tick)
       })
+      // Before navigation for the same reason as the sampler above; armCLS
+      // states why it cannot be anywhere else.
+      await armCLS(page as never)
       console_ = captureConsole(page as never)
     } catch (err) {
       out.push({
@@ -381,6 +437,10 @@ async function main(appDir: string): Promise<number> {
         path: url,
         message: `${where}: no page to lint in — ${err instanceof Error ? err.message : String(err)}`,
       })
+      // The page is open whenever newPage was what succeeded, and the lanes
+      // reach browser.close() only after every route: leaving it would hold
+      // one per failure for the rest of the run.
+      await page!?.close().catch(() => {})
       return
     }
     try {
@@ -404,9 +464,7 @@ async function main(appDir: string): Promise<number> {
       // theme-stability is absent by design: it toggles a `.dark` class,
       // and pronto themes through prefers-color-scheme plus a `-dark`
       // state suffix, so the toggle changes no computed colour and the
-      // check passes without measuring. cls is absent because its 3s
-      // settle makes it a property of the harness's pacing here rather
-      // than of the screen.
+      // check passes without measuring.
       const bugs: VisualBug[] = (
         await Promise.all([
           checkInteractiveOverlap(p),
@@ -416,6 +474,7 @@ async function main(appDir: string): Promise<number> {
           checkTouchTargets(p, { minSize: TOUCH_MIN }),
           checkWidgetsMounted(p),
           checkFocusOrder(p),
+          checkCLS(p),
         ])
       ).flat()
       bugs.push(...analyzeConsole(console_, { ignore: IGNORE }))
@@ -515,44 +574,68 @@ async function main(appDir: string): Promise<number> {
 }
 
 function selfTest() {
+  // Shaped like a real emitted shell.yaml: routes carry `files`, never
+  // `reads`. A fixture shaped the other way lets paramPlans pass here while
+  // planning nothing for any app, which is a green self-test over a battery
+  // that opens no parametrized route.
   const yaml = [
     "routes:",
     "  - path: /",
-    "    reads:",
-    "      - entity: Article",
-    "        filter: limit=20",
-    "  - path: /article/:slug",
-    "    reads:",
-    "      - entity: Article",
-    "        filter: 'slug=eq.{param.slug}'",
-    "  - path: /tag/:name",
-    "    reads:",
-    "      - entity: Article",
-    "        filter: 'article_tag.tag=eq.{param.name}&limit=20'",
-    "  - path: /older/:when",
-    "    reads:",
-    "      - entity: ArticleStats",
-    "        filter: 'created_at=lt.{param.when}&limit=20'",
-    "  - path: /search/:q",
-    "    reads:",
-    "      - entity: Article",
-    "        filter: 'search=plfts(simple).{param.q}&limit=20'",
+    "    files:",
+    "      html: shell/screens/home.html",
+    "  - path: '/article/:slug'",
+    "    files:",
+    "      html: shell/screens/article.html",
+    "  - path: '/tag/:name'",
+    "    files:",
+    "      html: shell/screens/tag.html",
+    "  - path: '/older/:when'",
+    "    files:",
+    "      html: shell/screens/older.html",
+    "  - path: '/search/:q'",
+    "    files:",
+    "      html: shell/screens/search.html",
+    "  - path: '/profile/:handle'",
+    "    files:",
+    "      html: shell/screens/profile.html",
   ].join("\n")
+  const markup: Record<string, string> = {
+    "/article/:slug": `<div data-live="article" data-filter="slug=eq.{param.slug}"></div>`,
+    "/tag/:name": `<div data-live="article" data-filter="article_tag.tag=eq.{param.name}&amp;limit=20"></div>`,
+    "/older/:when": `<div data-live="article_stats" data-filter="created_at=lt.{param.when}&amp;limit=20"></div>`,
+    "/search/:q": `<div data-live="article" data-filter="search=plfts(simple).{param.q}&amp;limit=20"></div>`,
+    // Printed, never filtered on — the shape no fixture can come from.
+    "/profile/:handle": `<h1 data-text="{param.handle}"></h1><div data-live="article"></div>`,
+  }
   const routes = routesFrom(yaml)
-  const plans = paramPlans(routes)
+  const { plans, unplanned } = paramPlans(routes, markup)
   const by = Object.fromEntries(plans.map((p) => [p.param, p]))
   const eq = (got: unknown, want: unknown, what: string) => {
     const g = JSON.stringify(got), w = JSON.stringify(want)
     if (g !== w) throw new Error(`${what}: got ${g}, want ${w}`)
   }
-  eq(routes.length, 5, "route count")
-  eq(by.slug, { param: "slug", entity: "Article", column: "slug", op: "eq" }, "slug plan")
-  eq(by.name, { param: "name", entity: "Article", column: "article_tag.tag", op: "eq" }, "embedded column plan")
-  eq(by.when, { param: "when", entity: "ArticleStats", column: "created_at", op: "lt" }, "cursor plan")
-  eq(by.q, { param: "q", entity: "Article", column: "search", op: "plfts(simple)" }, "full-text plan")
-  eq(tableFor("ArticleStats"), "article_stats", "tableFor")
-  eq(tableFor("Article"), "article", "tableFor single word")
+  eq(routes.length, 6, "route count")
+  eq(by.slug, { param: "slug", table: "article", column: "slug", op: "eq" }, "slug plan")
+  eq(by.name, { param: "name", table: "article", column: "article_tag.tag", op: "eq" }, "embedded column plan")
+  eq(by.when, { param: "when", table: "article_stats", column: "created_at", op: "lt" }, "cursor plan")
+  eq(by.q, { param: "q", table: "article", column: "search", op: "plfts(simple)" }, "full-text plan")
+  // The regression: a param only ever printed plans nothing, and saying so is
+  // the difference between a reported hole and a silent pass.
+  eq(unplanned, ["handle"], "a param nothing filters on is reported, not dropped")
   eq(fillRoute("/article/:slug", { slug: "a b" }), "/article/a%20b", "fillRoute encodes")
+  eq(embedSelect("slug"), "slug", "plain column selects itself")
+  eq(embedSelect("article_tag.tag"), "article_tag(tag)", "one hop")
+  // Truncating this to two segments selects a relation instead of a column and
+  // resolves the fixture to "[object Object]", which fills a route that then
+  // lints an empty screen — clean, and measuring nothing.
+  eq(embedSelect("note_label.label.name"), "note_label(label(name))", "two hops")
+  eq(embedValue({ slug: "s" }, "slug"), "s", "plain value")
+  eq(embedValue({ article_tag: [{ tag: "t" }] }, "article_tag.tag"), "t", "through a to-many hop")
+  eq(
+    embedValue({ note_label: [{ label: { name: "n" } }] }, "note_label.label.name"),
+    "n",
+    "through two hops, the second to-one",
+  )
   console.log("check-visual: self-test ok")
 }
 

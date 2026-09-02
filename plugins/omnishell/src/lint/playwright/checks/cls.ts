@@ -3,38 +3,50 @@
 import type { Page } from "@playwright/test"
 import type { VisualBug } from "../types"
 
+/** Where the accumulating total lives on the page under test. */
+const TOTAL = "__prontoCLS"
+
 /**
- * Measure CLS (Cumulative Layout Shift) on a page.
- * Observes layout shifts for 3 seconds after page load.
- * Threshold: 0.1 (Google's "good" CLS target).
+ * Arm the layout-shift observer. MUST be called before the navigation whose
+ * shifts are measured — `addInitScript` is not retroactive, so armed after a
+ * `goto` it installs nothing into the document already loaded and every read
+ * is a clean zero off a screen that reflowed.
+ *
+ * Observing after load with `buffered: true` does recover the shifts, but only
+ * by holding a window open for the first callback — wall clock spent on every
+ * page of every viewport. Arming first is what makes the read free.
+ *
+ * `hadRecentInput` drops shifts within 500ms of a gesture, which is the
+ * reader's own doing rather than the screen's.
+ */
+export async function armCLS(page: Page): Promise<void> {
+  await page.addInitScript((key: string) => {
+    const win = window as unknown as Record<string, number>
+    win[key] = 0
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        const shift = entry as PerformanceEntry & { hadRecentInput: boolean; value: number }
+        if (!shift.hadRecentInput) win[key] = (win[key] ?? 0) + shift.value
+      }
+    }).observe({ type: "layout-shift", buffered: true })
+  }, TOTAL)
+}
+
+/**
+ * Read what shifted. No wait: the driver settles the screen before calling
+ * this, so one here would measure the harness's pacing instead. 0.1 is Core
+ * Web Vitals' "good" boundary.
  */
 export async function checkCLS(page: Page): Promise<VisualBug[]> {
-  const cls = await page.evaluate(() => {
-    return new Promise<number>((resolve) => {
-      let clsValue = 0
-      const observer = new PerformanceObserver((list) => {
-        for (const entry of list.getEntries()) {
-          const shift = entry as PerformanceEntry & { hadRecentInput: boolean; value: number }
-          if (!shift.hadRecentInput) {
-            clsValue += shift.value
-          }
-        }
-      })
-      observer.observe({ type: "layout-shift", buffered: true })
-      setTimeout(() => {
-        observer.disconnect()
-        resolve(clsValue)
-      }, 3000)
-    })
-  })
-
-  const bugs: VisualBug[] = []
-  if (cls > 0.1) {
-    bugs.push({
+  const cls = await page.evaluate(
+    (key: string) => (window as unknown as Record<string, number>)[key] ?? 0,
+    TOTAL,
+  )
+  return cls > 0.1
+    ? [{
       rule: "cls-threshold",
-      description: `Cumulative Layout Shift is ${cls.toFixed(3)}, exceeds threshold of 0.1`,
+      description: `layout shifted ${cls.toFixed(3)} after first paint, over the 0.1 "good" boundary`,
       severity: "major",
-    })
-  }
-  return bugs
+    }]
+    : []
 }
