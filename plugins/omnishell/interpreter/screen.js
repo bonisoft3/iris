@@ -17,11 +17,21 @@ async function fetchText(url) {
 
 // A slot read that matched more than one row. Its own type so the outage
 // guard can tell a broken cardinality invariant from a dead gateway.
-export class SlotCardinalityError extends Error {}
-export class KindAdmissionError extends Error {}
+/** A broken invariant rather than an outage: no retry repairs it, and the
+ * network-error dressing would say the store is down when the program is
+ * wrong. Everything under this is rethrown past the outage guard. */
+export class ProgramError extends Error {}
+export class SlotCardinalityError extends ProgramError {}
+export class KindAdmissionError extends ProgramError {}
 // A row hydrating inside its own shape. Its own type so the outage guard can
 // tell cyclic data from a dead gateway.
-export class TemplateCycleError extends Error {}
+export class TemplateCycleError extends ProgramError {}
+// A malformed data-project. Its own type for the same reason: a nested region
+// hydrates inside its parent's refresh, so the outage guard would otherwise
+// dress a wrong program as a dead gateway and retry it on a backoff forever.
+export class ProjectionError extends ProgramError {}
+// A data-key naming a key outside APG's set, or a form that is not one.
+export class KeyBindingError extends ProgramError {}
 
 // The terminal's own generator, seeded from the URL when one asks. Every draw
 // an app makes comes through here, so a replay is a property of the terminal
@@ -194,6 +204,7 @@ async function loadRenderers(screen, appBase, route) {
 // context.
 const REGION_ATTRS = new Set([
   "data-text", "data-filter", "data-select", "data-empty", "data-empty-row", "data-when",
+  "data-project",
 ]);
 
 // What a machine may read off the event that fired it (machine.cue #EventRef).
@@ -269,6 +280,82 @@ export function formatDatetime(value) {
   const d = new Date(iso);
   if (isNaN(d.getTime())) return String(value);
   return `${DATE.format(d)}, ${TIME.format(d)}`;
+}
+
+/**
+ * A region's derived columns. The clause set is closed and the refusals behind
+ * it are the design; both are stated in
+ * plugins/pronto/docs/2026-09-01-aria-is-columns.md.
+ *
+ * Those refusals are why no incremental-view engine appears here: every answer
+ * is a function of rows the region already holds at refresh, so the pass it
+ * runs anyway computes them exactly.
+ */
+export function parseProjection(spec, table) {
+  let declared;
+  try {
+    declared = JSON.parse(spec);
+  } catch {
+    throw new ProjectionError(`region "${table}": data-project is not JSON`);
+  }
+  return Object.entries(declared).map(([name, clause]) => {
+    if (clause === "index" || clause === "count") return { name, kind: clause };
+    if (clause === "next" || clause === "prev") return { name, kind: clause };
+    const eq = clause === null || typeof clause !== "object" ? undefined : clause.eq;
+    if (
+      !Array.isArray(eq) || eq.length !== 2 ||
+      typeof eq[0] !== "string" || typeof eq[1] !== "string"
+    ) {
+      throw new ProjectionError(
+        `region "${table}": data-project "${name}" is ${JSON.stringify(clause)}; a clause is "index", "count", "next", "prev" or {"eq": [column, value]}`,
+      );
+    }
+    return { name, kind: "eq", column: eq[0], value: eq[1] };
+  });
+}
+
+/**
+ * An `eq` clause's answer. A column the row lacks is a program error, the same
+ * rule a binding holds to and for the same reason — answering "false" for a
+ * column nobody wrote is a tablist where nothing is ever selected, which is
+ * plausible and unreported. The one exception is a binding's too: a row whose
+ * write is still in flight carries only the submitted fields.
+ */
+function eqAnswer(row, p, table) {
+  if (!(p.column in row)) {
+    if (row.$synced !== false) {
+      throw new ProjectionError(
+        `region "${table}": data-project "${p.name}" reads {${p.column}}, not in row [${Object.keys(row)}]`,
+      );
+    }
+    return "false";
+  }
+  return String(row[p.column]) === p.want ? "true" : "false";
+}
+
+/**
+ * Everything a nested region's own element interpolates from the row it hangs
+ * under. That is a LIST region's own attributes and its `data-project`: a list
+ * has many rows, so the only row its own element can be about is the enclosing
+ * one. A SLOT has one, binds its element from that, and takes nothing from
+ * here — which is why `data-total="{total_count}"` on a singleton resolves
+ * against the row the singleton found and not against its parent's.
+ *
+ * The filter is compared separately: a moved filter is a moved read, and has to
+ * re-hydrate rather than re-render.
+ */
+function nestedBindings(el, ctx) {
+  const stash = el._prontoAttrs ?? {};
+  const names = new Set([...(el.attributes ?? [])].map((a) => a.name));
+  for (const name of Object.keys(stash)) names.add(name);
+  const out = [];
+  for (const name of [...names].sort()) {
+    if (name !== "data-project" && regionAttr(name)) continue;
+    const template = stash[name] ?? el.getAttribute(name);
+    if (template === null || !HAS_PLACEHOLDER.test(template)) continue;
+    out.push(`${name}=${interpolate(template, ctx)}`);
+  }
+  return out.join("\u0000");
 }
 
 function interpolate(template, ctx) {
@@ -420,102 +507,114 @@ function bindTexts(scope, ctx, renderers = {}) {
 function bindAttributes(scope, ctx) {
   for (const el of [scope, ...scope.querySelectorAll("*")]) {
     if (!ownedBy(el, scope)) continue;
-    // Nodes a renderer produced are the row's own content, not authored
-    // markup: nothing in them is a binding, and the braces an author wrote
-    // name no column.
-    if (el.parentElement?.closest("[data-text-format]")) continue;
-    // setAttribute would consume the placeholder template; persistent regions
-    // (singletons) re-bind on every refresh, so originals are stashed.
-    const stash = (el._prontoAttrs ??= {});
-    // The names to consider are the element's attributes AND every name already
-    // stashed. A binding that resolved to nothing had its attribute removed —
-    // an empty boolean is absent, an empty href is not a URL — and iterating
-    // only what is present would never visit it again, leaving it dead at the
-    // first empty value it ever took.
-    const names = new Set([...(el.attributes ?? [])].map((a) => a.name));
-    for (const name of Object.keys(stash)) names.add(name);
-    for (const name of names) {
-      if (regionAttr(name)) continue;
-      const template = stash[name] ?? el.getAttribute(name);
-      if (template === null || !HAS_PLACEHOLDER.test(template)) continue;
-      stash[name] = template;
-      const attr = { name, value: template };
-      // Fixture tier: an interpolated img src would fire a real request the
-      // moment it is set; a transparent pixel keeps the layout box instead.
-      if (ctx.inert && el.localName === "img" && attr.name === "src") {
-        el.setAttribute("src", BLANK_PIXEL);
-        continue;
-      }
-      if (attr.name === "data-value") {
-        if (el.type === "hidden") continue; // resolved at submit (resolveHidden)
-        // Unsent edits are not the store's to overwrite. Regions re-bind on
-        // any change to their table, so pinning a note elsewhere on the
-        // screen would otherwise wipe an unsaved body — and waiting for focus
-        // is not enough, because the wipe lands just as happily on text the
-        // user typed and then clicked away from. The control stays untouched
-        // until its form submits or resets, which is what clears the mark.
-        // Checkboxes are exempt: their value IS the state, and a refused
-        // toggle has to roll back where the user can see it.
-        if (el.type !== "checkbox") {
-          if (el._prontoDirty || el === document.activeElement) continue;
-          if (!el._prontoDirtyWired) {
-            el._prontoDirtyWired = true;
-            el.addEventListener("input", () => {
-              el._prontoDirty = true;
-            });
-            el.closest("form")?.addEventListener("reset", () => {
-              el._prontoDirty = false;
-            });
-          }
-        }
-        if (el.type === "checkbox") {
-          el.checked = Boolean(lookup(template.slice(1, -1), ctx));
-          continue;
-        }
-        // The inverse of what values() reads back: a group's members share one
-        // name and the checked one carries the column, so binding checks the
-        // member whose value the column already holds and a round trip is a
-        // fixed point.
-        if (el.type === "radio") {
-          el.checked = String(lookup(template.slice(1, -1), ctx) ?? "") === el.value;
-          continue;
-        }
-        if (el.type === "datetime-local") {
-          // The control accepts only YYYY-MM-DDTHH:MM; rows carry full ISO.
-          el.value = interpolate(template, ctx).slice(0, 16);
-          continue;
-        }
-        if (el.type === "date") {
-          // Day precision: the control accepts only YYYY-MM-DD.
-          el.value = interpolate(template, ctx).slice(0, 10);
-          continue;
-        }
-        if (el.localName === "textarea" || el.localName === "select") {
-          el.value = interpolate(template, ctx);
-          continue;
-        }
-      }
-      const value = interpolate(template, ctx);
-      // A URL attribute that resolves to nothing must not stay empty: the
-      // empty string is a valid relative URL meaning "this document", so
-      // `src=""` fetches the page and paints it as a broken image.
-      if (value === "" && BOOL_ATTRS.has(attr.name)) {
-        el.removeAttribute(attr.name);
-        continue;
-      }
-      if (value === "" && URL_ATTRS.has(attr.name)) {
-        // An <img> is sized by CSS whether or not it has a source, and a
-        // sized <img> with no src at all still gets the engine's missing-image
-        // glyph — so the screen's own treatment for the unset case (a filled
-        // circle, a hairline) is drawn over rather than revealed. The
-        // transparent pixel is how markup says "this image is deliberately
-        // blank": no request, no glyph, the element's own background shows.
-        if (el.localName === "img" && attr.name === "src") el.setAttribute("src", BLANK_PIXEL);
-        else el.removeAttribute(attr.name);
-        continue;
-      }
-      el.setAttribute(attr.name, value);
+    bindElementAttributes(el, ctx);
+  }
+}
+
+/**
+ * One element's bound attributes. Split out because a LIST region's own
+ * element belongs to nobody else's pass: its parent's stops at it (ownedBy
+ * refuses any [data-live] between the element and the scope) and its own pass
+ * binds the items. A slot has always bound its own element; this is the same
+ * thing for the branch that renders rows, and it is what lets a container hold
+ * aria-activedescendant naming a row of the list inside it.
+ */
+function bindElementAttributes(el, ctx) {
+  // Nodes a renderer produced are the row's own content, not authored
+  // markup: nothing in them is a binding, and the braces an author wrote
+  // name no column.
+  if (el.parentElement?.closest("[data-text-format]")) return;
+  // setAttribute would consume the placeholder template; persistent regions
+  // (singletons) re-bind on every refresh, so originals are stashed.
+  const stash = (el._prontoAttrs ??= {});
+  // The names to consider are the element's attributes AND every name already
+  // stashed. A binding that resolved to nothing had its attribute removed —
+  // an empty boolean is absent, an empty href is not a URL — and iterating
+  // only what is present would never visit it again, leaving it dead at the
+  // first empty value it ever took.
+  const names = new Set([...(el.attributes ?? [])].map((a) => a.name));
+  for (const name of Object.keys(stash)) names.add(name);
+  for (const name of names) {
+    if (regionAttr(name)) continue;
+    const template = stash[name] ?? el.getAttribute(name);
+    if (template === null || !HAS_PLACEHOLDER.test(template)) continue;
+    stash[name] = template;
+    const attr = { name, value: template };
+    // Fixture tier: an interpolated img src would fire a real request the
+    // moment it is set; a transparent pixel keeps the layout box instead.
+    if (ctx.inert && el.localName === "img" && attr.name === "src") {
+      el.setAttribute("src", BLANK_PIXEL);
+      continue;
     }
+    if (attr.name === "data-value") {
+      if (el.type === "hidden") continue; // resolved at submit (resolveHidden)
+      // Unsent edits are not the store's to overwrite. Regions re-bind on
+      // any change to their table, so pinning a note elsewhere on the
+      // screen would otherwise wipe an unsaved body — and waiting for focus
+      // is not enough, because the wipe lands just as happily on text the
+      // user typed and then clicked away from. The control stays untouched
+      // until its form submits or resets, which is what clears the mark.
+      // Checkboxes are exempt: their value IS the state, and a refused
+      // toggle has to roll back where the user can see it.
+      if (el.type !== "checkbox") {
+        if (el._prontoDirty || el === document.activeElement) continue;
+        if (!el._prontoDirtyWired) {
+          el._prontoDirtyWired = true;
+          el.addEventListener("input", () => {
+            el._prontoDirty = true;
+          });
+          el.closest("form")?.addEventListener("reset", () => {
+            el._prontoDirty = false;
+          });
+        }
+      }
+      if (el.type === "checkbox") {
+        el.checked = Boolean(lookup(template.slice(1, -1), ctx));
+        continue;
+      }
+      // The inverse of what values() reads back: a group's members share one
+      // name and the checked one carries the column, so binding checks the
+      // member whose value the column already holds and a round trip is a
+      // fixed point.
+      if (el.type === "radio") {
+        el.checked = String(lookup(template.slice(1, -1), ctx) ?? "") === el.value;
+        continue;
+      }
+      if (el.type === "datetime-local") {
+        // The control accepts only YYYY-MM-DDTHH:MM; rows carry full ISO.
+        el.value = interpolate(template, ctx).slice(0, 16);
+        continue;
+      }
+      if (el.type === "date") {
+        // Day precision: the control accepts only YYYY-MM-DD.
+        el.value = interpolate(template, ctx).slice(0, 10);
+        continue;
+      }
+      if (el.localName === "textarea" || el.localName === "select") {
+        el.value = interpolate(template, ctx);
+        continue;
+      }
+    }
+    const value = interpolate(template, ctx);
+    // A URL attribute that resolves to nothing must not stay empty: the
+    // empty string is a valid relative URL meaning "this document", so
+    // `src=""` fetches the page and paints it as a broken image.
+    if (value === "" && BOOL_ATTRS.has(attr.name)) {
+      el.removeAttribute(attr.name);
+      continue;
+    }
+    if (value === "" && URL_ATTRS.has(attr.name)) {
+      // An <img> is sized by CSS whether or not it has a source, and a
+      // sized <img> with no src at all still gets the engine's missing-image
+      // glyph — so the screen's own treatment for the unset case (a filled
+      // circle, a hairline) is drawn over rather than revealed. The
+      // transparent pixel is how markup says "this image is deliberately
+      // blank": no request, no glyph, the element's own background shows.
+      if (el.localName === "img" && attr.name === "src") el.setAttribute("src", BLANK_PIXEL);
+      else el.removeAttribute(attr.name);
+      continue;
+    }
+    el.setAttribute(attr.name, value);
   }
 }
 
@@ -669,6 +768,54 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       }
       el._prontoHatch.update(props);
     }
+  }
+
+  // APG's own set for moving through a list, and nothing else: a binding that
+  // could name any key would be a handler with a keyboard attached.
+  const ROVING_KEYS = new Set(["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight", "Home", "End"]);
+
+  // data-key='{"<key>": "<form id>"}' submits a form on a key, the way a form
+  // with no submit button submits on change. The id interpolates, so the map is
+  // read at event time; the keys are literals, so they are checked once.
+  /** Every key binding at or under `scope` that no deeper region owns. */
+  function wireKeysIn(scope) {
+    if (scope.dataset?.key !== undefined) wireKeys(scope);
+    for (const el of scope.querySelectorAll("[data-key]")) if (ownedBy(el, scope)) wireKeys(el);
+  }
+
+  function wireKeys(el) {
+    if (el._prontoKeys) return;
+    let keys;
+    try {
+      keys = JSON.parse(el.dataset.key);
+    } catch {
+      throw new KeyBindingError(`data-key is not JSON: ${el.dataset.key}`);
+    }
+    for (const key of Object.keys(keys)) {
+      if (!ROVING_KEYS.has(key)) {
+        throw new KeyBindingError(`data-key names "${key}", which is not one of ${[...ROVING_KEYS].join(", ")}`);
+      }
+    }
+    // Only after the declaration is known good: a listener attached to a
+    // refused binding would swallow the key, and the flag would keep the
+    // second pass from ever reporting it.
+    el._prontoKeys = true;
+    el.addEventListener("keydown", (e) => {
+      const name = JSON.parse(el.dataset.key)[e.key];
+      if (name === undefined) return;
+      const form = document.getElementById(name);
+      // The id comes off this element's own bound row, so a miss is the markup
+      // naming a form that is not there. Cancelling first would eat the key and
+      // leave a reader with an arrow that neither moves the list nor scrolls.
+      if (form === null) throw new KeyBindingError(`data-key names "${name}", which is no element on the screen`);
+      // The tag, not a duck-type: the declaration names a form, and every
+      // element answers requestSubmit in one runtime or another.
+      if (form.localName !== "form") {
+        throw new KeyBindingError(`data-key names "${name}", which is a <${form.localName}> and not a form`);
+      }
+      e.preventDefault();
+      form.requestSubmit();
+    });
   }
 
   function wireForm(form, rowId, getCtx = () => ({ params, row: {} }), region) {
@@ -1392,6 +1539,14 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       }
       return t.el;
     };
+    const projection = region.dataset.project === undefined
+      ? []
+      : parseProjection(region.dataset.project, table);
+    if (projection.length > 0 && templates.length === 0) {
+      throw new ProjectionError(
+        `region "${table}" is a slot and declares data-project; a projection states facts about a set of rows`,
+      );
+    }
     const opts = {};
     if (region.dataset.filter) opts.filter = interpolateFilter(region.dataset.filter, ctx);
     if (region.dataset.select) opts.select = region.dataset.select;
@@ -1445,6 +1600,51 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       }
       return [...(ctx.chain ?? []), { tmpl, link }];
     };
+    /**
+     * The rows as they are bound. `currentRows` keeps the stored ones: a
+     * machine reads its row off those, and a derived column reaching a
+     * transition would widen what a chart is decidable from.
+     *
+     * `eq`'s value resolves against this region's own ctx, which is the
+     * enclosing row mutated in place — so the answer follows the parameter
+     * without the node being rebuilt.
+     */
+    const projected = (rows) => {
+      if (projection.length === 0) return rows;
+      const answers = projection.map((p) => {
+        if (p.kind !== "eq") return p;
+        try {
+          return { ...p, want: interpolate(p.value, ctx) };
+        } catch (err) {
+          // lookup's own error, which is a plain one: a clause naming a column
+          // the enclosing row lacks is the same program error as one naming a
+          // column its own rows lack, and has to reach a reader the same way.
+          throw new ProjectionError(`region "${table}": data-project "${p.name}" — ${err.message}`);
+        }
+      });
+      return rows.map((row, i) => {
+        const derived = {};
+        for (const p of answers) {
+          if (p.name in row) {
+            throw new ProjectionError(
+              `region "${table}": data-project "${p.name}" is already a column of row ${JSON.stringify(row.id)}`,
+            );
+          }
+          if (p.kind === "index") derived[p.name] = i + 1;
+          else if (p.kind === "count") derived[p.name] = rows.length;
+          // An end names itself: wrapping is the pattern's decision and APG
+          // makes it differently per pattern, so the read tier declines it.
+          else if (p.kind === "next") derived[p.name] = rows[Math.min(i + 1, rows.length - 1)].id;
+          else if (p.kind === "prev") derived[p.name] = rows[Math.max(i - 1, 0)].id;
+          else if (p.kind === "eq") derived[p.name] = eqAnswer(row, p, table);
+          // A kind parseProjection admits and this does not answer would
+          // otherwise take whichever arm sits last, silently.
+          else throw new ProjectionError(`region "${table}": no answer for clause kind "${p.kind}"`);
+        }
+        return { ...row, ...derived };
+      });
+    };
+
     // Item nodes persist across refreshes, keyed by row id. A surviving node
     // keeps its listeners, its focus, its scroll position and any transition
     // it is mid-way through, and only its bindings are patched — rebuilding
@@ -1472,11 +1672,24 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     const syncNested = (entry, ready) => {
       for (const el of nestedOf(entry.node)) {
         const want = el.dataset.filter ? interpolateFilter(el.dataset.filter, entry.ctx) : undefined;
+        // What this row says to the nested region other than its read: a
+        // projection's parameter, an aria-activedescendant, a data-key naming
+        // the form of whichever row is active. All of it moves without the
+        // read moving, and nothing else re-binds it — the child subscribes to
+        // its own table, which a write to THIS row never wakes. Re-rendering
+        // keeps the nodes, and with them the reader's focus and selection.
         const held = entry.nested.get(el);
-        if (held !== undefined && held.filter === want) continue;
+        if (held !== undefined && held.filter === want) {
+          const bound = held.h.binds ? nestedBindings(el, entry.ctx) : "";
+          if (held.bound !== bound) {
+            held.bound = bound;
+            ready.push(held.h.restate());
+          }
+          continue;
+        }
         held?.h.stop();
         const h = hydrateRegion(el, entry.ctx, false);
-        entry.nested.set(el, { h, filter: want });
+        entry.nested.set(el, { h, filter: want, bound: h.binds ? nestedBindings(el, entry.ctx) : "" });
         ready.push(h.ready);
       }
     };
@@ -1508,8 +1721,9 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     };
 
     const refresh = async (changes) => {
-      const rows = await store.query(table, region.dataset.order, opts);
-      currentRows = rows;
+      const stored = await store.query(table, region.dataset.order, opts);
+      currentRows = stored;
+      const rows = projected(stored);
       // Which rows this pass has to reconsider. null means all of them: a
       // first paint, a retry after an outage, a settled own write, or any
       // wake the store could not attribute to a delta.
@@ -1532,6 +1746,11 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
           dirty.add(String(id));
         }
       }
+      // A derived column is a function of the whole set (index, count) or of a
+      // value from outside the row (eq), so a row the delta never named can
+      // still be showing a stale answer. Delta reconsideration is what that
+      // costs, and on a long collection it is every row per pass.
+      if (projection.length > 0) dirty = null;
       if (templates.length > 0) {
         {
           const ready = [];
@@ -1642,6 +1861,16 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
             p.textContent = region.dataset.empty;
             region.append(p);
           }
+          // The region's own element, from the ENCLOSING row rather than any
+          // of its rows: a container naming one of them — a listbox's
+          // aria-activedescendant — states a fact about the choice, not about
+          // an option, and the choice is the row this region hangs under. A
+          // slot has always bound its own element; the branch that renders
+          // rows did not, so the one element between a container and the list
+          // inside it was the only one nobody bound.
+          bindElementAttributes(region, ctx);
+          wireKeysIn(region);
+          for (const node of order) wireKeysIn(node);
           const { deliver } = wireEvents(region, order, () => currentRows, handlers, ctx);
           const reduce = handlers.get(region.dataset.handler);
           if (reduce && templates.some((t) => t.el.content.querySelector("[data-drag-handle]"))) {
@@ -1684,6 +1913,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         // on: the reduce is handed it the way a list's is handed its rows.
         wireEvents(region, [], () => (currentRow === undefined ? [] : [currentRow]), handlers, slotCtx);
         bindAttributes(region, slotCtx);
+        wireKeysIn(region);
         bindTexts(region, slotCtx, renderers);
         bindHatches(region, slotCtx);
       }
@@ -1735,10 +1965,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         // wrong. The rejection propagates — hydration fails on a first paint,
         // a later wake rejects loudly — and the next real change re-checks
         // without a timer.
-        if (
-          err instanceof SlotCardinalityError || err instanceof KindAdmissionError ||
-          err instanceof TemplateCycleError
-        ) throw err;
+        if (err instanceof ProgramError) throw err;
         console.error(err);
         if (top) setState("network-error");
         retryTimer = setTimeout(guarded, retryMs);
@@ -1764,7 +1991,14 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       }
     }
     return {
+      // Whether this region binds its own element from the row it hangs under
+      // — the same condition that guards the call, and not re-derivable from
+      // the DOM afterwards, since a first render sweeps the template away.
+      binds: templates.length > 0,
       ready: guarded(),
+      // A re-render on the same rows, for a parent whose projection parameter
+      // moved. Not resume(): the subscription is already standing.
+      restate: () => guarded(),
       // The region's half of the leave/return contract in shell.js.
       pause: () => {
         detach();
@@ -1792,6 +2026,10 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     pending.push(h.ready);
     readyOf.set(region, h.ready);
   }
+  // Screen chrome outside every region — a combobox's input sits beside the
+  // listbox it drives, not inside it. Regions wire their own as they render.
+  wireKeysIn(screen);
+
   // Not behind the barrier below: a field widget waits for its own region.
   const fieldWidgets = mountFieldWidgets(screen, readyOf);
 
