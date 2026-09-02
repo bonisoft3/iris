@@ -89,8 +89,14 @@ export type Route = {
   states?: string[];
 };
 
-/** One store call, in the order it was made, so a test can count writes. */
-export type Call = { op: string; table: string; id?: string };
+/** One store contact, in the order it was made. `op` is what the store RESOLVED
+ * to and not what the markup declared: an upsert lands here as the create or the
+ * update it became, which is the fact about the data rather than about the
+ * gesture — a test claiming the gesture asserts on the markup. `row` is the
+ * values the caller handed over, the patch for an update and the whole row
+ * otherwise, so a write can be asked what it CARRIED and not only that it
+ * happened. */
+export type Call = { op: string; table: string; id?: string; row?: Row };
 
 export type MemoryStore = {
   query(table: string, order?: string | null, opts?: Record<string, unknown>): Promise<Row[]>;
@@ -318,7 +324,7 @@ export function memoryStore(tables: Record<string, Row[]>, cluster: Cluster = {}
     // created row's id is the same on every run.
     const given = owned(table, values);
     const row = given?.id === undefined ? { id: mintId(table), ...given } : given;
-    store.calls.push({ op: "create", table, id: String(row.id) });
+    store.calls.push({ op: "create", table, id: String(row.id), row: { ...row } });
     const rows = of(table);
     if (rows.some((r) => String(r[keyOf(table)]) === String(row[keyOf(table)]))) {
       throw new Error(`create ${table}: ${row[keyOf(table)]} is already there`);
@@ -352,7 +358,7 @@ export function memoryStore(tables: Record<string, Row[]>, cluster: Cluster = {}
   };
 
   store.update = async (table, id, patch) => {
-    store.calls.push({ op: "update", table, id: String(id) });
+    store.calls.push({ op: "update", table, id: String(id), row: { ...patch } });
     const rows = of(table);
     const i = indexOf(table, rows, id);
     if (i < 0) throw new Error(`update ${table}: no row ${id}`);
@@ -365,7 +371,7 @@ export function memoryStore(tables: Record<string, Row[]>, cluster: Cluster = {}
   store.put = async (table, row) => {
     const key = keyOf(table);
     if (row?.[key] === undefined) throw new Error(`put ${table}: the row carries no ${key}`);
-    store.calls.push({ op: "put", table, id: String(row[key]) });
+    store.calls.push({ op: "put", table, id: String(row[key]), row: { ...row } });
     const rows = of(table);
     const i = rows.findIndex((r) => String(r[keyOf(table)]) === String(row[keyOf(table)]));
     if (i < 0) {
@@ -498,8 +504,10 @@ export type Mounted = {
   /** The one element the selector names; absent or ambiguous is an error. */
   one(selector: string): El;
   all(selector: string): El[];
-  /** Dispatch a bubbling DOM event, the way a reader's finger would. */
-  fire(target: string | El, type?: string): void;
+  /** Dispatch a bubbling DOM event, the way a reader's finger would. `init`
+   * carries the fields the binding reads — `key` for a data-key gesture — and
+   * `bubbles`/`cancelable` reach the constructor. */
+  fire(target: string | El, type?: string, init?: Record<string, unknown>): void;
   /** Every match's text, trimmed — a region's rendered rows in order. */
   texts(selector: string): string[];
   /** The elements of a role, optionally the one whose accessible name matches
@@ -674,7 +682,7 @@ export async function mountScreen(spec: MountSpec): Promise<Mounted> {
     "<!doctype html><html><head></head><body><div id=shell></div></body></html>",
   ) as unknown as {
     document: { getElementById(id: string): El | null };
-    Event: new (type: string, init: { bubbles: boolean }) => unknown;
+    Event: new (type: string, init: { bubbles: boolean; cancelable?: boolean }) => object;
   };
   global.document = document;
   formValidation(document, Event as new (t: string, i: object) => unknown);
@@ -773,9 +781,17 @@ export async function mountScreen(spec: MountSpec): Promise<Mounted> {
     rows: (table) => store.rows(table),
     one,
     all: (selector) => [...mount.querySelectorAll(selector)],
-    fire(target, type = "click") {
+    fire(target, type = "click", init) {
       const el = typeof target === "string" ? one(target) : target;
-      el.dispatchEvent(new Event(type, { bubbles: true }));
+      const { bubbles = true, cancelable = false, ...rest } = (init ?? {}) as {
+        bubbles?: boolean;
+        cancelable?: boolean;
+        [field: string]: unknown;
+      };
+      // `key` and its neighbours belong to KeyboardEvent, which linkedom does
+      // not construct, and an Event ignores an init field it does not declare —
+      // so a binding reading event.key would see undefined without this.
+      el.dispatchEvent(Object.assign(new Event(type, { bubbles, cancelable }), rest));
     },
     texts: (selector) => [...mount.querySelectorAll(selector)].map(textOf),
     byRole: (role, name) => byRole(mount, role, name),
