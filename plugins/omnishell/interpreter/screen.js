@@ -56,6 +56,28 @@ const TEMPO = Math.min(50, Math.max(1, Number(params.get("tempo")) || 1));
 const MANUAL = params.get("clock") === "manual";
 const pending = new Set();
 let held = 0;
+
+// How much the terminal still has in flight, for a driver outside the page.
+//
+// Without it the only question a driver can ask is "has the DOM stopped
+// changing", which is a guess in both directions: it cannot tell a screen that
+// has finished from one between two refreshes, and it sees nothing at all of a
+// repaint or a wait that has not come due. The terminal knows both exactly —
+// `regions` is refreshes running now, `waits` the delays it is holding — so it
+// says so rather than leaving a caller to sleep for a number.
+//
+// Reported always, not only under a held clock: a driver on the real clock
+// still wants to know when a refresh has landed. Under `?clock=manual` the two
+// numbers together are the whole answer, because nothing becomes due that a
+// caller did not advance to.
+//
+// `waits` counts TIMERS THE CLOCK HOLDS and not arrows still to fire: a state
+// re-entered by its own refresh arms a second one, and the generation mark
+// kills the first when it comes due. So the number a driver can act on is
+// zero-or-not, and reading it as "transitions pending" would count a wait that
+// exists only to be discarded.
+let busy = 0;
+globalThis.__prontoBusy = () => ({ regions: busy, waits: pending.size });
 if (MANUAL) {
   globalThis.__prontoClock = {
     // Returns how many waits are still outstanding, so a caller can tell a
@@ -2317,6 +2339,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         return;
       }
       running = true;
+      busy += 1;
       try {
         do {
           queued = false;
@@ -2324,6 +2347,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         } while (queued);
       } finally {
         running = false;
+        busy -= 1;
       }
     };
     // A dead gateway must degrade, never crash: a failed read leaves the

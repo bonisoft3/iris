@@ -8,6 +8,32 @@ import type { VisualBug } from "../types"
  * change position or size. Theme switching should only change colors,
  * not layout.
  */
+/** Waits for the transitions the toggle started, and nothing longer.
+ *
+ * A theme change is a repaint, not a mutation, so a MutationObserver sees
+ * nothing to settle on and a constant is the only alternative — sized for the
+ * slowest screen and paid by every one. `getAnimations()` is the exact answer:
+ * the transitions the class change started are objects with a `finished`
+ * promise on them.
+ *
+ * The infinite ones are dropped rather than awaited. A skeleton's pulse never
+ * finishes, and a battery that waited for it would hang on every screen that
+ * has one. The cap is the backstop for a transition that outlives its own
+ * point.
+ */
+async function settled(page: Page, capMs = 500): Promise<void> {
+  await page.evaluate(async (cap: number) => {
+    const running = document.getAnimations().filter((a) => {
+      const t = a.effect?.getTiming()
+      return t !== undefined && t.iterations !== Infinity
+    })
+    await Promise.race([
+      Promise.all(running.map((a) => a.finished.catch(() => {}))),
+      new Promise((r) => setTimeout(r, cap)),
+    ])
+  }, capMs)
+}
+
 export async function checkThemeStability(page: Page): Promise<VisualBug[]> {
   const bugs: VisualBug[] = []
 
@@ -18,7 +44,7 @@ export async function checkThemeStability(page: Page): Promise<VisualBug[]> {
   await page.evaluate(() => {
     document.documentElement.classList.toggle("dark")
   })
-  await page.waitForTimeout(500)
+  await settled(page)
 
   // Capture positions after toggle
   const after = await captureElementPositions(page)
