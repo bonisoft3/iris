@@ -15,7 +15,6 @@ export type Entity = {
     type: string;
     pk?: boolean;
     unique?: boolean;
-    cel?: string;
     default?: string;
   }[];
   uniques?: Unique[];
@@ -538,16 +537,12 @@ export function unwitnessedControls(html: string): string[] {
   return out;
 }
 
-const CEL_ENUM = /^this in \[(.*)\]$/;
-
-/** The value set a field's cel enum declares; null when the field carries no
- * `this in [...]` constraint. Values compare as the strings a data-when
+/** The value set a column admits, or null where it admits an open set. The
+ * constraint language it is read out of is the program's, not the markup's,
+ * so the reader is handed in: pronto derives it from the parsed cel, the
+ * tests here state it outright. Values compare as the strings a data-when
  * carries — an int enum's members stringify. */
-const enumOf = (cel: string | undefined): string[] | null => {
-  const m = cel === undefined ? null : CEL_ENUM.exec(cel.trim());
-  if (m === null) return null;
-  return m[1].split(",").map((v) => v.trim().replace(/^['"]|['"]$/g, ""));
-};
+export type EnumOf = (col: string) => string[] | null;
 
 /** Per-kind template lint: the reason a region's data-when set is unsound, or
  * null. Every data-when must be in the translatable fragment subset and name
@@ -555,7 +550,7 @@ const enumOf = (cel: string | undefined): string[] | null => {
  * declarable value; and for each such discriminant field, every enum value
  * must be admitted by some template unless a default (no data-when) template
  * exists — the interpreter errors on a row no template admits. */
-export function kindLint(whens: (string | undefined)[], e: Entity): string | null {
+export function kindLint(whens: (string | undefined)[], e: Entity, enumOf: EnumOf): string | null {
   const eqs: { col: string; value: string }[] = [];
   for (const w of whens) {
     if (w === undefined) continue;
@@ -570,7 +565,7 @@ export function kindLint(whens: (string | undefined)[], e: Entity): string | nul
       const f = e.fields.find((f) => f.name === p.col);
       if (f === undefined) return `data-when="${w}" names "${p.col}" — not a field of "${e.table}"`;
       if (p.op !== "eq") continue;
-      const kinds = enumOf(f.cel);
+      const kinds = enumOf(p.col);
       if (kinds !== null && !kinds.includes(p.value as string)) {
         return `data-when="${w}": "${p.value}" is not a declarable ${p.col} (${kinds.join(", ")})`;
       }
@@ -588,7 +583,7 @@ export function kindLint(whens: (string | undefined)[], e: Entity): string | nul
       return `"${col}" is DB-defaulted, so a pending row may lack it and no template would admit it; ` +
         `declare a default template`;
     }
-    const kinds = enumOf(field?.cel);
+    const kinds = enumOf(col);
     if (kinds === null) continue;
     const admitted = new Set(eqs.filter((q) => q.col === col).map((q) => q.value));
     const missing = kinds.filter((k) => !admitted.has(k));

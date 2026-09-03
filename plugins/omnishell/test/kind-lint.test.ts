@@ -5,7 +5,9 @@ import { type Entity, kindedRegions, kindLint } from "../interpreter/lint.ts"
 // data-when list the way the interpreter's querySelectorAll would (a template
 // belongs to every region up to its nearest enclosing template), and judging
 // the list against the entity — declarable values, and exhaustiveness over a
-// cel-enum discriminant unless a default template exists.
+// discriminant whose value set is closed, unless a default template exists.
+// Which columns have a closed set is the program's statement, not the
+// markup's, so it is handed in; pronto derives it from the field's parsed cel.
 describe("kindedRegions", () => {
   it("collects data-when per template, undefined for a default", () => {
     expect(
@@ -66,54 +68,57 @@ const entity = (extra: Partial<Entity> = {}): Entity => ({
   path: "tab",
   fields: [
     { name: "id", type: "uuid", pk: true },
-    { name: "kind", type: "text", cel: "this in ['note', 'link', 'poll']" },
+    { name: "kind", type: "text" },
     { name: "body", type: "text" },
   ],
   uniques: [],
   ...extra,
 })
 
+const admits = (m: Record<string, string[]>) => (col: string): string[] | null => m[col] ?? null
+const KINDS = admits({ kind: ["note", "link", "poll"] })
+const OPEN = admits({})
+
 describe("kindLint", () => {
   it("a lone default template is trivially sound", () => {
-    expect(kindLint([undefined], entity())).toBe(null)
+    expect(kindLint([undefined], entity(), KINDS)).toBe(null)
   })
 
   it("a seeded missing kind is caught", () => {
-    const why = kindLint(["kind=eq.note", "kind=eq.link"], entity())
+    const why = kindLint(["kind=eq.note", "kind=eq.link"], entity(), KINDS)
     expect(why).toContain('"poll"')
     expect(why).toContain("no default template")
   })
 
   it("every enum value admitted is exhaustive", () => {
-    expect(kindLint(["kind=eq.note", "kind=eq.link", "kind=eq.poll"], entity())).toBe(null)
+    expect(kindLint(["kind=eq.note", "kind=eq.link", "kind=eq.poll"], entity(), KINDS)).toBe(null)
   })
 
   it("a default template closes any gap", () => {
-    expect(kindLint(["kind=eq.note", undefined], entity())).toBe(null)
+    expect(kindLint(["kind=eq.note", undefined], entity(), KINDS)).toBe(null)
   })
 
   it("an equality value outside the enum is not a declarable kind", () => {
-    expect(kindLint(["kind=eq.essay", undefined], entity())).toContain('"essay"')
+    expect(kindLint(["kind=eq.essay", undefined], entity(), KINDS)).toContain('"essay"')
   })
 
   it("a data-when naming no field of the entity is refused", () => {
-    expect(kindLint(["flavor=eq.note", undefined], entity())).toContain('"flavor"')
+    expect(kindLint(["flavor=eq.note", undefined], entity(), KINDS)).toContain('"flavor"')
   })
 
   it("an untranslatable data-when is refused", () => {
-    expect(kindLint(["reply.kind=eq.note", undefined], entity())).toContain("translatable")
+    expect(kindLint(["reply.kind=eq.note", undefined], entity(), KINDS)).toContain("translatable")
   })
 
-  it("a column with no cel enum has no exhaustiveness to answer for", () => {
-    const e = entity({ fields: [{ name: "id", type: "uuid", pk: true }, { name: "kind", type: "text" }] })
-    expect(kindLint(["kind=eq.anything"], e)).toBe(null)
+  it("a column whose value set is open has no exhaustiveness to answer for", () => {
+    expect(kindLint(["kind=eq.anything"], entity(), OPEN)).toBe(null)
   })
 
   // The interpreter matches a data-when against the row itself, never
   // interpolated: a placeholder would compare rows against the brace text and
   // admit nothing.
   it("a data-when carrying a placeholder is refused", () => {
-    expect(kindLint(["kind=eq.{param.kind}", undefined], entity())).toContain("placeholder")
+    expect(kindLint(["kind=eq.{param.kind}", undefined], entity(), KINDS)).toContain("placeholder")
   })
 
   // An optimistic insert omits DB-defaulted columns until the synced row
@@ -123,17 +128,18 @@ describe("kindLint", () => {
     const e = entity({
       fields: [
         { name: "id", type: "uuid", pk: true },
-        { name: "kind", type: "text", cel: "this in ['note', 'link']", default: "'note'" },
+        { name: "kind", type: "text", default: "'note'" },
       ],
     })
-    const why = kindLint(["kind=eq.note", "kind=eq.link"], e)
+    const why = kindLint(["kind=eq.note", "kind=eq.link"], e, admits({ kind: ["note", "link"] }))
     expect(why).toContain("DB-defaulted")
-    expect(kindLint(["kind=eq.note", "kind=eq.link", undefined], e)).toBe(null)
+    expect(kindLint(["kind=eq.note", "kind=eq.link", undefined], e, admits({ kind: ["note", "link"] }))).toBe(null)
   })
 
   it("an int enum's members compare as the strings a data-when carries", () => {
-    const e = entity({ fields: [{ name: "id", type: "uuid", pk: true }, { name: "stake", type: "int", cel: "this in [1, 2, 3]" }] })
-    expect(kindLint(["stake=eq.1", "stake=eq.2"], e)).toContain('"3"')
-    expect(kindLint(["stake=eq.1", "stake=eq.2", "stake=eq.3"], e)).toBe(null)
+    const e = entity({ fields: [{ name: "id", type: "uuid", pk: true }, { name: "stake", type: "int" }] })
+    const stakes = admits({ stake: ["1", "2", "3"] })
+    expect(kindLint(["stake=eq.1", "stake=eq.2"], e, stakes)).toContain('"3"')
+    expect(kindLint(["stake=eq.1", "stake=eq.2", "stake=eq.3"], e, stakes)).toBe(null)
   })
 })
