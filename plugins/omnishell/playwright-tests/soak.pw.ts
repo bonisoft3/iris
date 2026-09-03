@@ -124,9 +124,11 @@ describe("soak", () => {
       await page.evaluate(() => (globalThis as Any).__cycle(1))
       const before = await counts(page)
 
-      for (let gen = 2; gen <= 101; gen++) {
-        await page.evaluate((g) => (globalThis as Any).__cycle(g), gen)
-      }
+      // The loop runs IN the page: one round trip per render would measure the
+      // protocol rather than the reconciler.
+      await page.evaluate(async () => {
+        for (let gen = 2; gen <= 101; gen++) await (globalThis as Any).__cycle(gen)
+      })
       const after = await counts(page)
 
       // The rows are the same twenty throughout, so the reconciler reuses
@@ -149,10 +151,12 @@ describe("soak", () => {
       // Rows arrive and depart fifty times over. Nodes are genuinely created
       // and dropped here, so what is asserted is that they are RELEASED —
       // a detached row still held by a closure is the leak this catches.
-      for (let gen = 2; gen <= 51; gen++) {
-        await page.evaluate((g) => (globalThis as Any).__churn(g, 40), gen)
-        await page.evaluate((g) => (globalThis as Any).__churn(g + 1000, 20), gen)
-      }
+      await page.evaluate(async () => {
+        for (let gen = 2; gen <= 51; gen++) {
+          await (globalThis as Any).__churn(gen, 40)
+          await (globalThis as Any).__churn(gen + 1000, 20)
+        }
+      })
       const after = await counts(page)
 
       expect(after.nodes).toBe(before.nodes)

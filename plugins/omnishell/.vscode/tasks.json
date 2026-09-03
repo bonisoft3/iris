@@ -144,6 +144,7 @@
         "--",
         "deno",
         "test",
+        "--parallel",
         "--config",
         "playwright-tests/deno.json",
         "--no-check",
@@ -154,8 +155,12 @@
         "--allow-run",
         "--allow-sys",
         "--allow-import",
+        "playwright-tests/cls.pw.ts",
+        "playwright-tests/settle.pw.ts",
         "playwright-tests/visual-lint.pw.ts",
-        "playwright-tests/settle.pw.ts"
+        "playwright-tests/soak.pw.ts",
+        "playwright-tests/driven.pw.ts",
+        "playwright-tests/harness-teardown.pw.ts"
       ],
       "problemMatcher": [],
       "group": {

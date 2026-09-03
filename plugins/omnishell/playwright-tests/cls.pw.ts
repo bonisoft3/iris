@@ -13,7 +13,7 @@ const PAGES: Record<string, string> = {
   "/shifting": `<style>body{margin:0}p{margin:0;padding:8px}</style>
     <div id="late" style="height:0"></div>
     <p>one</p><p>two</p><p>three</p><p>four</p><p>five</p><p>six</p><p>seven</p><p>eight</p>
-    <script>setTimeout(() => { document.getElementById("late").style.height = "500px" }, 200)<\/script>`,
+    <script>setTimeout(() => { document.getElementById("late").style.height = "500px" }, 60)<\/script>`,
   "/stable": `<style>body{margin:0}p{margin:0;padding:8px}</style>
     <div style="height:500px"></div><p>nothing moves</p>`,
 }
@@ -33,8 +33,10 @@ function serve() {
   }
 }
 
-/** Long enough for the page's own 200ms shift to land and be observed. */
-const AFTER_SHIFT_MS = 700
+/** Long enough for the page's own shift to land and be observed. This and the
+ * fixture's delay are one pair, and neither is the check's: what CLS measures
+ * is the shift, not how long anything waited for it. */
+const AFTER_SHIFT_MS = 250
 
 describe("cls", () => {
   it("reports a screen that reflows after first paint", async () => {

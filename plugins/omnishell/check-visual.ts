@@ -218,7 +218,13 @@ async function openRoute(
  * `page.evaluate` takes no timeout, so a promise that never settles in here
  * would hang the run with no output at all.
  */
-export async function settle(page: PageLike): Promise<boolean> {
+export async function settle(
+  page: PageLike,
+  // Overridable for the one kind of caller that exists to REACH the cap rather
+  // than to stay under it. No production caller passes either.
+  opts: { capMs?: number; stableMs?: number } = {},
+): Promise<boolean> {
+  const { capMs = SETTLE_CAP_MS, stableMs = SETTLE_STABLE_MS } = opts
   return await page.evaluate(
     ({ stableMs, capMs }: { stableMs: number; capMs: number }) =>
       new Promise<boolean>((resolve) => {
@@ -274,7 +280,7 @@ export async function settle(page: PageLike): Promise<boolean> {
         }
         setTimeout(sample, 50)
       }),
-    { stableMs: SETTLE_STABLE_MS, capMs: SETTLE_CAP_MS },
+    { stableMs, capMs },
   ) as boolean
 }
 

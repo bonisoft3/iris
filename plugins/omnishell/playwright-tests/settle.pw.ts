@@ -46,12 +46,17 @@ function serve() {
   }
 }
 
+// Two of these cases exist to REACH the cap, so at the battery's own value they
+// would sit out the whole budget twice over. What is under test is the shape —
+// reports rather than hangs — and the shape does not depend on the number.
+const CAP_MS = 250
+
 /** Resolving at all is half the assertion, so a hang fails rather than stalling the suite. */
 async function settleWithin(page: Parameters<typeof settle>[0], ms: number) {
   let guard = 0
   try {
     return await Promise.race([
-      settle(page),
+      settle(page, { capMs: CAP_MS }),
       new Promise<string>((r) => (guard = setTimeout(() => r("hung"), ms))),
     ])
   } finally {
