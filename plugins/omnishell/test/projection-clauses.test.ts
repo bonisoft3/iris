@@ -51,4 +51,24 @@ describe("the clause parser, read directly", () => {
       expect(() => parseProjection(bad, "t")).toThrow(/a clause is/)
     }
   })
+
+  it("reads both ends of the set, and every lane clause partitioned", () => {
+    expect(
+      parseProjection('{"f":"first","l":"last","d":{"next":"col"},"u":{"prev":"col"},"h":{"first":"week"}}', "t"),
+    ).toEqual([
+      { name: "f", kind: "first", by: undefined },
+      { name: "l", kind: "last", by: undefined },
+      { name: "d", kind: "next", by: "col" },
+      { name: "u", kind: "prev", by: "col" },
+      { name: "h", kind: "first", by: "week" },
+    ])
+  })
+
+  it("refuses a partition that is not a single column name", () => {
+    // The one-key check is what keeps {"next":"a","prev":"b"} from being read
+    // as a `next` whose `prev` is silently dropped.
+    for (const bad of ['{"a":{"next":3}}', '{"a":{"next":["col"]}}', '{"a":{"next":"a","prev":"b"}}']) {
+      expect(() => parseProjection(bad, "t")).toThrow(/a partitioned lane clause is/)
+    }
+  })
 })

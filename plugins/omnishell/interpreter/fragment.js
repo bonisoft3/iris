@@ -202,7 +202,14 @@ export function machineCandidates(value) {
  * is looked up and no checker demands one for them there. */
 export const RESERVED_LEAVES = new Set(["event"]);
 
+/** Event leaves whose value the terminal has to MEASURE. Reading one costs a
+ * synchronous layout, so a chart says whether it wants that by reading it: a
+ * click carries clientX in every browser, and measuring on all of them would
+ * put a reflow in front of every gesture in every app. */
+const POINTER_FIELDS = new Set(["pointerX", "pointerY"]);
+
 export function machineShape(machine) {
+  let pointer = false;
   const refs = new Set();
   const assignStrings = new Set();
   const raises = new Set();
@@ -216,6 +223,7 @@ export function machineShape(machine) {
       for (const v of Object.values(c.assign ?? {})) {
         if (typeof v === "string") assignStrings.add(v);
         else if (v !== null && typeof v === "object" && !RESERVED_LEAVES.has(v.type)) refs.add(v.type);
+        else if (v !== null && typeof v === "object" && POINTER_FIELDS.has(v.params?.field)) pointer = true;
       }
     });
   };
@@ -239,5 +247,6 @@ export function machineShape(machine) {
     raises: [...raises],
     handled: [...handled],
     arrows,
+    pointer,
   };
 }

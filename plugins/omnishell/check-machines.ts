@@ -39,6 +39,7 @@ import {
   appFiles,
   appRoutes,
   appSeed,
+  boxOf,
   type Cluster,
   type El,
   type Mounted,
@@ -130,6 +131,11 @@ const filled = (filter: string | undefined, params: Record<string, string>) =>
   });
 const PARAM = /\{param\.([\w-]+)\}/g;
 
+/** The box every walked affordance is given. Square and even, so the midpoint
+ * is exactly half of each side and a pointer-reading assign writes a value a
+ * finding can quote. */
+const WALK_BOX = { left: 0, top: 0, width: 100, height: 100 };
+
 /** The walker's harness over one mounted region. The field is read off the
  * store rather than the DOM: the row IS the state, and a binding that had not
  * landed yet would read as an arrow that never fired. */
@@ -138,7 +144,15 @@ function harnessFor(m: Mounted, region: El, machine: Machine, params: Record<str
   const filter = filled(readsOf(region).filter, params);
   return {
     fire: async (type, from) => {
-      m.fire(from === undefined ? region : m.one(`[id="${from}"]`), type);
+      const el = from === undefined ? region : m.one(`[id="${from}"]`);
+      // The synthetic event carries every leaf a real one could. An assign
+      // reading a field the event does not have declines the whole transition —
+      // deliberately, so a select firing an arrow written for a checkbox writes
+      // nothing — and a declined arrow is indistinguishable here from one that
+      // cannot fire at all. A control's own leaves come off the element; the
+      // pointer's need a box, which this tier has no layout to measure.
+      boxOf(el, WALK_BOX);
+      m.fire(el, type, { clientX: WALK_BOX.width / 2, clientY: WALK_BOX.height / 2 });
     },
     wait: async (ms) => {
       m.advance(ms);

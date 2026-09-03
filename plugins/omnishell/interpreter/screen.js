@@ -32,6 +32,9 @@ export class TemplateCycleError extends ProgramError {}
 export class ProjectionError extends ProgramError {}
 // A data-key naming a key outside APG's set, or a form that is not one.
 export class KeyBindingError extends ProgramError {}
+// A data-order whose closed map is malformed, or whose column named an order
+// the map does not carry.
+export class OrderError extends ProgramError {}
 
 // The terminal's own generator, seeded from the URL when one asks. Every draw
 // an app makes comes through here, so a replay is a property of the terminal
@@ -205,13 +208,49 @@ async function loadRenderers(screen, appBase, route) {
 // Attributes the hydrator itself consumes; never interpolated in place, so
 // their placeholders survive until each region resolves them in its own
 // context.
+// Declarations the binder must leave standing: each is read with its
+// placeholders intact, against a row the binder is not the one holding. Setting
+// one would consume the template — an order map bound once would answer its
+// first key forever, which is a sort that never sorts again.
 const REGION_ATTRS = new Set([
   "data-text", "data-filter", "data-select", "data-empty", "data-empty-row", "data-when",
-  "data-project",
+  "data-project", "data-order",
 ]);
 
 // What a machine may read off the event that fired it (machine.cue #EventRef).
-const EVENT_FIELDS = new Set(["value", "checked", "valueAsNumber", "key"]);
+const EVENT_FIELDS = new Set([
+  "value", "checked", "valueAsNumber", "key", "pointerX", "pointerY",
+]);
+// Types whose default action and an app's answer cannot both stand. Closed, and
+// the cancel is the arrow's: answering one IS the markup declaring the gesture.
+const DISPLACING_EVENTS = new Set(["contextmenu"]);
+// Parts per thousand of the box, as an integer: no rounding to decide and no
+// float to compare, so a replay reproduces the column exactly rather than
+// nearly. The stylesheet divides it back out, which is where pixels belong.
+const POINTER_SCALE = 1000;
+
+/**
+ * Where in the affordance's own box the pointer was.
+ *
+ * The frame is the ELEMENT and never the viewport. Viewport pixels would have
+ * to be pinned for a replay to mean anything, and a window resized mid-session
+ * makes any one pin a lie; an element the replay also renders is a frame it
+ * already has. The app sees the quotient and never the divisor, so no chart can
+ * depend on the geometry it was measured against — idempotence under a resize
+ * is structural rather than a contract someone keeps.
+ */
+function pointerIn(e, el) {
+  if (typeof e?.clientX !== "number" || typeof e?.clientY !== "number") return {};
+  const box = el?.getBoundingClientRect?.();
+  // A zero-width box has no interior to be a fraction of, and dividing by it
+  // would write Infinity into the row and call it a position.
+  if (!box || !(box.width > 0) || !(box.height > 0)) return {};
+  const at = (n) => Math.min(POINTER_SCALE, Math.max(0, Math.round(n * POINTER_SCALE)));
+  return {
+    pointerX: at((e.clientX - box.left) / box.width),
+    pointerY: at((e.clientY - box.top) / box.height),
+  };
+}
 // data-read-* is a prefix family, so membership is a function rather than the
 // Set alone: wireEvents resolves a named read's placeholders per step against
 // the region's current row, which only works while the attribute still
@@ -294,6 +333,10 @@ export function formatDatetime(value) {
  * is a function of rows the region already holds at refresh, so the pass it
  * runs anyway computes them exactly.
  */
+// The clauses that name a row of the region rather than answering about one:
+// each is a key for a gesture to write, and each admits a partition column.
+const LANE_KINDS = new Set(["next", "prev", "first", "last"]);
+
 export function parseProjection(spec, table) {
   let declared;
   try {
@@ -311,18 +354,89 @@ export function parseProjection(spec, table) {
   }
   return Object.entries(declared).map(([name, clause]) => {
     if (clause === "index" || clause === "count") return { name, kind: clause };
-    if (clause === "next" || clause === "prev") return { name, kind: clause };
-    const eq = clause === null || typeof clause !== "object" ? undefined : clause.eq;
+    if (LANE_KINDS.has(clause)) return { name, kind: clause, by: undefined };
+    const obj = clause === null || typeof clause !== "object" || Array.isArray(clause) ? undefined : clause;
+    // A lane clause's partition, in the same key-is-the-kind shape `eq` uses:
+    // {"next": "col"} is the neighbour among the rows sharing this row's `col`.
+    // A minor axis walked without one runs off the end of its lane into the
+    // head of the next, which is a wrong answer rather than a missing one.
+    const by = obj === undefined ? undefined : [...LANE_KINDS].find((k) => k in obj);
+    if (by !== undefined) {
+      if (typeof obj[by] !== "string" || Object.keys(obj).length !== 1) {
+        throw new ProjectionError(
+          `region "${table}": data-project "${name}" is ${JSON.stringify(clause)}; a partitioned lane clause is {"${by}": column}`,
+        );
+      }
+      return { name, kind: by, by: obj[by] };
+    }
+    const eq = obj?.eq;
     if (
       !Array.isArray(eq) || eq.length !== 2 ||
       typeof eq[0] !== "string" || typeof eq[1] !== "string"
     ) {
       throw new ProjectionError(
-        `region "${table}": data-project "${name}" is ${JSON.stringify(clause)}; a clause is "index", "count", "next", "prev" or {"eq": [column, value]}`,
+        `region "${table}": data-project "${name}" is ${JSON.stringify(clause)}; a clause is "index", "count", ${
+          [...LANE_KINDS].map((k) => `"${k}"`).join(", ")
+        }, {"<lane>": column} or {"eq": [column, value]}`,
       );
     }
     return { name, kind: "eq", column: eq[0], value: eq[1] };
   });
+}
+
+/**
+ * A region's order: either the literal one, or a closed map of them chosen by a
+ * column.
+ *
+ * `data-order="pos.asc"` is the order. `{"by":"{sort}","of":{...}}` states EVERY
+ * order the region can be read in, in the file, and lets a column pick among
+ * them — so a sortable header is a form writing a key, and the reader can still
+ * finish reading what the screen can do. The order itself never interpolates:
+ * a column naming a column is reflection, and the set of reads a screen has
+ * would stop being enumerable.
+ */
+export function parseOrder(spec, table) {
+  // Structural, not a probe: a value that opens a map and fails to parse is a
+  // broken declaration, never quietly the literal order "{...".
+  if (!spec.trimStart().startsWith("{")) return { literal: spec };
+  let declared;
+  try {
+    declared = JSON.parse(spec);
+  } catch {
+    throw new OrderError(`region "${table}": data-order opens a map and is not JSON`);
+  }
+  const { by, of: of_, ...rest } = declared ?? {};
+  if (
+    typeof by !== "string" || of_ === null || typeof of_ !== "object" || Array.isArray(of_) ||
+    Object.keys(rest).length > 0 || Object.keys(of_).length === 0 ||
+    Object.values(of_).some((o) => typeof o !== "string")
+  ) {
+    throw new OrderError(
+      `region "${table}": data-order is ${spec}; a closed order map is {"by": "{column}", "of": {"<key>": "<order>"}}`,
+    );
+  }
+  return { by, of: of_ };
+}
+
+function orderOf(parsed, ctx, table) {
+  if (parsed === undefined) return undefined;
+  if (parsed.literal !== undefined) return parsed.literal;
+  let key;
+  try {
+    key = interpolate(parsed.by, ctx);
+  } catch (err) {
+    // lookup's own error is a plain one, and this resolves inside the parent's
+    // refresh where the dead-gateway guard is standing.
+    throw new OrderError(`region "${table}": data-order "${parsed.by}" — ${err.message}`);
+  }
+  // A key the map does not carry is the program wrong, not a reader's mistake:
+  // the column is written by a form the same declaration generated.
+  if (!(key in parsed.of)) {
+    throw new OrderError(
+      `region "${table}": data-order "${parsed.by}" is "${key}", which is not one of ${Object.keys(parsed.of).join(", ")}`,
+    );
+  }
+  return parsed.of[key];
 }
 
 /**
@@ -656,6 +770,129 @@ function bindElementAttributes(el, ctx) {
       continue;
     }
     el.setAttribute(attr.name, value);
+    if (attr.name === "data-open") openPopover(el, value);
+  }
+}
+
+/**
+ * A surface's place in the top layer, decided by a row.
+ *
+ * The one thing on this list CSS cannot do: `popover` openness is not a style,
+ * the element is MOVED, and the browser offers only an imperative call and an
+ * invoker that answers a click. A right-click has no invoker, so a menu the
+ * platform dismisses — light dismiss and Escape, both the UA's — is reachable
+ * no other way.
+ *
+ * It stays a consequence rather than an effect anyone schedules: the value is a
+ * column, it is re-derived on every bind, and it is idempotent, so a replay
+ * puts the surface exactly where the session had it. One column drives one
+ * surface; two columns claiming one is the one-writer rule, and a binding
+ * cannot express it.
+ */
+function openPopover(el, value) {
+  if (el.getAttribute("popover") === null) {
+    throw new ProgramError(`data-open on a <${el.localName}> that declares no popover`);
+  }
+  setPopover(el, value === "true");
+}
+
+/**
+ * Moves a surface into or out of the top layer, once.
+ *
+ * showPopover throws on an already-open popover and hidePopover on a closed
+ * one, so the guard is the contract rather than caution — and the flag is the
+ * terminal's own record because `:popover-open` is a selector, which every DOM
+ * this runs against does not answer. A surface nobody has opened IS closed:
+ * that is the element's state, not a value assumed for it, which is why the
+ * first bind of a closed row must reach neither call.
+ */
+function setPopover(el, want) {
+  // An `auto` popover has a second writer — light dismiss and Escape are the
+  // UA's, and it closes the surface without telling the row. A flag that only
+  // this function wrote would then say open over a closed surface and skip the
+  // call that reopens it: a menu dead after its first dismissal. `toggle` is
+  // where the element states what it did.
+  if (el._prontoToggle === undefined) {
+    el._prontoToggle = (e) => {
+      el._prontoOpen = e.newState === "open";
+    };
+    el.addEventListener("toggle", el._prontoToggle);
+  }
+  if ((el._prontoOpen ?? false) === want) return;
+  el._prontoOpen = want;
+  if (want) el.showPopover();
+  else el.hidePopover();
+}
+
+// A data-interest naming no element, or one that is not a popover.
+export class InterestError extends ProgramError {}
+
+// How long a pointer rests on a trigger before its surface opens, and how long
+// the surface survives the pointer leaving. The grace is what makes the surface
+// HOVERABLE — WCAG 1.4.13's second clause — since a reader moving onto it
+// crosses the gap between the two.
+const INTEREST_IN = 300;
+const INTEREST_OUT = 200;
+
+/**
+ * A surface a trigger opens on hover or focus. The terminal performs the open,
+ * the grace that makes it hoverable, and nothing else.
+ *
+ * Three constraints hold it up, and the argument for each is
+ * plugins/pronto/docs/2026-09-03-what-a-gesture-costs.md. It stores nothing, so
+ * no row can disagree with it. Its waits are the terminal's clock and never
+ * setTimeout, or `?clock=manual` could not hold them still. And the surface must
+ * be `popover="auto"`, so WCAG 1.4.13's DISMISSIBLE clause is the element's and
+ * nothing here listens for a key.
+ *
+ * Not spelled `interestfor`: that name belongs to a spec no engine ships, and
+ * this deletes when one does.
+ */
+function wireInterest(el) {
+  if (el._prontoInterest) return;
+  const id = el.dataset.interest;
+  const surface = document.getElementById(id);
+  if (surface === null) throw new InterestError(`data-interest names "${id}", which is no element on the screen`);
+  if (surface.getAttribute("popover") !== "auto") {
+    throw new InterestError(
+      `data-interest names "${id}", which is not popover="auto" — light dismiss and Escape are the element's half of WCAG 1.4.13`,
+    );
+  }
+  // One owner per surface. A row deciding openness and a pointer deciding it
+  // are two writers of one fact, and they disagree the moment either moves:
+  // the row would restate its answer on the next bind and shut a surface the
+  // reader is still under.
+  if (surface.dataset.open !== undefined) {
+    throw new InterestError(
+      `data-interest names "${id}", whose openness is already a column — a surface has one owner`,
+    );
+  }
+  el._prontoInterest = true;
+
+  let generation = 0;
+  // The generation mark IS the cancellation, as it is for a machine's `after`:
+  // a wait that comes due after interest moved on finds a stale mark and dies.
+  const settle = (want, delay) => {
+    const mine = ++generation;
+    rest(delay / TEMPO).then(() => {
+      if (mine !== generation) return;
+      setPopover(surface, want);
+    });
+  };
+
+  // Focus opens with no delay: 1.4.13 is "hover OR focus", and a keyboard
+  // reader who has arrived has already waited.
+  for (const [node, type, want, delay] of [
+    [el, "pointerenter", true, INTEREST_IN],
+    [el, "pointerleave", false, INTEREST_OUT],
+    [el, "focusin", true, 0],
+    [el, "focusout", false, INTEREST_OUT],
+    // The surface's own: a reader moving onto it is still interested, which is
+    // the clause a CSS-only tooltip cannot meet without the two boxes touching.
+    [surface, "pointerenter", true, 0],
+    [surface, "pointerleave", false, INTEREST_OUT],
+  ]) {
+    node.addEventListener(type, () => settle(want, delay));
   }
 }
 
@@ -815,13 +1052,27 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
   // could name any key would be a handler with a keyboard attached.
   const ROVING_KEYS = new Set(["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight", "Home", "End"]);
 
+  /** Whether one key of a bound map named a target that varies with the row.
+   * The binder consumed the placeholders, so the question is asked of the
+   * template it stashed rather than of the value now standing. */
+  const interpolates = (el, attr, key) => {
+    const template = el._prontoAttrs?.[attr];
+    if (template === undefined) return false;
+    const declared = JSON.parse(template)[key];
+    return typeof declared === "string" && HAS_PLACEHOLDER.test(declared);
+  };
+
   // data-key='{"<key>": "<form id>"}' submits a form on a key, the way a form
   // with no submit button submits on change. The id interpolates, so the map is
   // read at event time; the keys are literals, so they are checked once.
-  /** Every key binding at or under `scope` that no deeper region owns. */
+  /** Every key binding at or under `scope` that no deeper region owns, and
+   * every interest binding likewise: both name a target by id and both are
+   * wired once per element, so one pass carries them. */
   function wireKeysIn(scope) {
     if (scope.dataset?.key !== undefined) wireKeys(scope);
     for (const el of scope.querySelectorAll("[data-key]")) if (ownedBy(el, scope)) wireKeys(el);
+    if (scope.dataset?.interest !== undefined) wireInterest(scope);
+    for (const el of scope.querySelectorAll("[data-interest]")) if (ownedBy(el, scope)) wireInterest(el);
   }
 
   function wireKeys(el) {
@@ -848,10 +1099,17 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       const name = JSON.parse(el.dataset.key)[e.key];
       if (name === undefined) return;
       const form = document.getElementById(name);
-      // The id comes off this element's own bound row, so a miss is the markup
-      // naming a form that is not there. Cancelling first would eat the key and
-      // leave a reader with an arrow that neither moves the list nor scrolls.
-      if (form === null) throw new KeyBindingError(`data-key names "${name}", which is no element on the screen`);
+      // A miss means two different things, and only the declaration tells them
+      // apart. A LITERAL id naming nothing is the markup naming a form that is
+      // not there. An INTERPOLATED one is a set that is empty right now — a
+      // filter matching no rows renders no forms — which is an ordinary state a
+      // reader reaches by typing, not a broken program. The empty set keeps the
+      // key uncancelled, so the arrow does what an arrow does when there is no
+      // list to walk.
+      if (form === null) {
+        if (interpolates(el, "data-key", e.key)) return;
+        throw new KeyBindingError(`data-key names "${name}", which is no element on the screen`);
+      }
       // The tag, not a duck-type: the declaration names a form, and every
       // element answers requestSubmit in one runtime or another.
       if (form.localName !== "form") {
@@ -1423,6 +1681,19 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
               fired.valueAsNumber = ctl.valueAsNumber;
             }
             if (typeof e.key === "string") fired.key = e.key;
+            // Only where the chart reads it (fragment.js POINTER_FIELDS).
+            if (shape.pointer) Object.assign(fired, pointerIn(e, src ?? ctl));
+            // The ARROW declares the gesture, not the type: one narrowed to an
+            // affordance declares it there, and cancelling elsewhere in the
+            // region would take the UA's menu from a reader this app has
+            // nothing to offer. Resolved synchronously — preventDefault cannot
+            // survive an await.
+            if (DISPLACING_EVENTS.has(type)) {
+              const row = region._prontoMachineRow ?? getRows()[0];
+              if (row !== undefined && candidatesFor(row[machine.field], fired).length > 0) {
+                e.preventDefault();
+              }
+            }
             await runMachine(machineReduce, fired);
           } catch (err) {
             console.error(err);
@@ -1550,9 +1821,11 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     // A region holds any number of item templates, each optionally narrowed by
     // a data-when fragment (the one filter grammar, matched against the row
     // itself); one with no data-when admits every row.
-    const templates = (ref !== undefined
-      ? [resolveTemplate(ref)]
-      : [...region.querySelectorAll("template[data-item]")]).map((el) => {
+    // The templates are the markup's, not the render's, and a render replaces
+    // this element's children — so they are read once and kept. An empty set
+    // read back off the DOM is how a SLOT is spelled.
+    const own = (region._prontoItemTemplates ??= [...region.querySelectorAll("template[data-item]")]);
+    const templates = (ref !== undefined ? [resolveTemplate(ref)] : own).map((el) => {
       // An item is the template's first element child, and only that: a second
       // one is not rendered, not bound and not reported, so the region quietly
       // draws half of what the markup says it draws.
@@ -1602,7 +1875,8 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     // Carried in opts as well as passed to query, because the store keys a
     // maintained view on the whole read — order included — and subscribe is
     // handed nothing but opts.
-    if (region.dataset.order) opts.order = region.dataset.order;
+    const order = region.dataset.order === undefined ? undefined : parseOrder(region.dataset.order, table);
+    if (region.dataset.order) opts.order = orderOf(order, ctx, table);
     if (templates.length === 0) opts.singleton = true;
     // The machine is the writer of the initial fact: without data-empty-row a
     // singleton machine region binds a row synthesized from the filter's
@@ -1675,6 +1949,46 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
           throw new ProjectionError(`region "${table}": data-project "${p.name}" — ${err.message}`);
         }
       });
+      // A lane is the run of rows a neighbour clause walks, in the filter and
+      // order the region already declares: the whole set unpartitioned, or the
+      // rows sharing this row's own value in the partition column. Built once
+      // per column named, so a partitioned projection stays one pass.
+      const lanes = new Map();
+      const laneOf = (col) => {
+        let built = lanes.get(col);
+        if (built !== undefined) return built;
+        const runs = new Map();
+        const at = new Array(rows.length);
+        rows.forEach((row, i) => {
+          // Unlike `eq`, a row that cannot be placed makes every OTHER row's
+          // answer wrong too — the lane it belongs to is short by one — so
+          // there is no pending carve-out to make here.
+          if (col !== undefined && !(col in row)) {
+            throw new ProjectionError(
+              `region "${table}": data-project partitions by {${col}}, not in row [${Object.keys(row)}]`,
+            );
+          }
+          const key = col === undefined ? "" : String(row[col]);
+          let run = runs.get(key);
+          if (run === undefined) runs.set(key, run = []);
+          at[i] = run.length;
+          run.push(i);
+        });
+        built = { runs, at };
+        lanes.set(col, built);
+        return built;
+      };
+      const lane = (p, row, i) => {
+        const { runs, at } = laneOf(p.by);
+        const run = runs.get(p.by === undefined ? "" : String(row[p.by]));
+        const j = at[i];
+        // An end names itself: wrapping is the pattern's decision and APG
+        // makes it differently per pattern, so the read tier declines it.
+        if (p.kind === "next") return rows[run[Math.min(j + 1, run.length - 1)]].id;
+        if (p.kind === "prev") return rows[run[Math.max(j - 1, 0)]].id;
+        if (p.kind === "first") return rows[run[0]].id;
+        return rows[run[run.length - 1]].id;
+      };
       return rows.map((row, i) => {
         const derived = {};
         for (const p of answers) {
@@ -1685,10 +1999,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
           }
           if (p.kind === "index") derived[p.name] = i + 1;
           else if (p.kind === "count") derived[p.name] = rows.length;
-          // An end names itself: wrapping is the pattern's decision and APG
-          // makes it differently per pattern, so the read tier declines it.
-          else if (p.kind === "next") derived[p.name] = rows[Math.min(i + 1, rows.length - 1)].id;
-          else if (p.kind === "prev") derived[p.name] = rows[Math.max(i - 1, 0)].id;
+          else if (LANE_KINDS.has(p.kind)) derived[p.name] = lane(p, row, i);
           else if (p.kind === "eq") derived[p.name] = eqAnswer(row, p, table);
           // A kind parseProjection admits and this does not answer would
           // otherwise take whichever arm sits last, silently.
@@ -1718,15 +2029,23 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     const nestedOf = (node) =>
       [...node.querySelectorAll("[data-live]")].filter((el) => ownedBy(el.parentElement, node));
 
-    // A nested region's filter interpolates its parent's row, and is resolved
-    // once at hydration. The node survives a refresh, so a filter that no
-    // longer matches the row it renders has to force a re-hydration, or the
-    // nested region silently keeps querying the value its node was born with.
+    // A nested region's READ interpolates its parent's row, and is resolved
+    // once at hydration. The node survives a refresh, so a read that no longer
+    // matches the row it renders has to force a re-hydration, or the nested
+    // region silently keeps querying the value its node was born with.
+    //
+    // Both halves of the read count. A closed order map moves with its key
+    // exactly as a filter moves with its value, and the store keys a maintained
+    // view on the whole read — so an order left out of this comparison is a
+    // sortable header that writes its column and never re-reads.
     const syncNested = (entry, ready) => {
       for (const el of nestedOf(entry.node)) {
         const want = el.dataset.filter
           ? fromEnclosing(() => interpolateFilter(el.dataset.filter, entry.ctx), el.dataset.live, "data-filter")
           : undefined;
+        const wantOrder = el.dataset.order === undefined
+          ? undefined
+          : orderOf(parseOrder(el.dataset.order, el.dataset.live), entry.ctx, el.dataset.live);
         // What this row says to the nested region other than its read: a
         // projection's parameter, an aria-activedescendant, a data-key naming
         // the form of whichever row is active. All of it moves without the
@@ -1734,7 +2053,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         // its own table, which a write to THIS row never wakes. Re-rendering
         // keeps the nodes, and with them the reader's focus and selection.
         const held = entry.nested.get(el);
-        if (held !== undefined && held.filter === want) {
+        if (held !== undefined && held.filter === want && held.order === wantOrder) {
           const bound = held.h.binds ? nestedBindings(el, entry.ctx) : "";
           if (held.bound !== bound) {
             held.bound = bound;
@@ -1744,7 +2063,12 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         }
         held?.h.stop();
         const h = hydrateRegion(el, entry.ctx, false);
-        entry.nested.set(el, { h, filter: want, bound: h.binds ? nestedBindings(el, entry.ctx) : "" });
+        entry.nested.set(el, {
+          h,
+          filter: want,
+          order: wantOrder,
+          bound: h.binds ? nestedBindings(el, entry.ctx) : "",
+        });
         ready.push(h.ready);
       }
     };
@@ -1776,7 +2100,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     };
 
     const refresh = async (changes) => {
-      const stored = await store.query(table, region.dataset.order, opts);
+      const stored = await store.query(table, opts.order, opts);
       currentRows = stored;
       const rows = projected(stored);
       // Which rows this pass has to reconsider. null means all of them: a

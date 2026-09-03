@@ -106,3 +106,30 @@ describe("machineLint params", () => {
     expect(machineLint(m, new Set())).toContain('"bump" name no module')
   })
 })
+
+describe("a chart says whether it wants the pointer measured", () => {
+  const chart = (assign: Record<string, unknown>) => ({
+    field: "open",
+    initial: "false",
+    states: {
+      "false": { on: { "contextmenu@t": [{ target: "true", assign }] } },
+      "true": {},
+    },
+  })
+
+  it("reports no pointer for a chart that reads none", () => {
+    // The invariant this guards is a cost, not a result: reading the pointer
+    // measures the affordance's box, which is a synchronous layout, and a click
+    // carries clientX in EVERY browser. Measuring unconditionally would put a
+    // reflow in front of every gesture in every app for the sake of the one
+    // screen that wants a point.
+    expect(machineShape(chart({})).pointer).toBe(false)
+    expect(machineShape(chart({ v: { type: "event", params: { field: "value" } } })).pointer).toBe(false)
+  })
+
+  it("reports one for either axis", () => {
+    for (const field of ["pointerX", "pointerY"]) {
+      expect(machineShape(chart({ v: { type: "event", params: { field } } })).pointer).toBe(true)
+    }
+  })
+})

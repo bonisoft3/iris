@@ -6,7 +6,7 @@
 // interpolating its OWN row, so the gesture always reaches the active option's
 // item without anything reading the DOM.
 import { describe, expect, it } from "@test/harness"
-import { type El, mountScreen, type Mounted } from "./screen-harness.ts"
+import { type El, mountScreen, type Mounted, writes } from "./screen-harness.ts"
 
 const ROUTE = { screen: "lb", files: { html: "lb.html", css: "lb.css", handlers: [] } }
 
@@ -211,6 +211,68 @@ describe("a key binding refuses rather than going quiet", () => {
       thrown = e
     }
     expect(String((thrown as { message?: string })?.message)).toMatch(/is a <div> and not a form/)
+    await m.stop()
+  })
+})
+
+describe("a key whose target set is empty", () => {
+  // The two halves of one declaration, told apart by whether the id varies with
+  // a row. `empty` is a literal filter no option answers, so the list renders
+  // nothing and the form the arrow names is not there — the state a reader
+  // reaches by typing into a filter, which used to throw.
+  const withFilter = (filter: string) => ({
+    ...FILES,
+    "lb.html": FILES["lb.html"]
+      .replace(
+        `data-key='{"ArrowDown":"nx-{value}","ArrowUp":"pv-{value}"}'`,
+        `data-key='{"ArrowDown":"nx-{value}","Home":"never-here"}'`,
+      )
+      .replace(`<div hidden data-live="option" data-order="pos.asc"`, `<div hidden data-live="option"${filter} data-order="pos.asc"`),
+  })
+
+  const mountWithFilter = (filter: string) =>
+    mountScreen({
+      route: ROUTE,
+      files: withFilter(filter),
+      tables: { choice: [{ id: "the", value: "a" }], option: options() },
+      seed: 1,
+    })
+
+  it("does nothing, and does not cancel, when the read answers no rows", async () => {
+    const m = await mountWithFilter(' data-filter="pos=gt.99"')
+    await m.settle()
+    expect(m.all('[role="none"]').length).toBe(0)
+    const ev = m.fire("#lb", "keydown", { key: "ArrowDown", cancelable: true })
+    await m.settle()
+    // Uncancelled, so the arrow does what an arrow does with no list to walk.
+    expect(ev.defaultPrevented).toBe(false)
+    expect(writes(m).length).toBe(0)
+    await m.stop()
+  })
+
+  it("still walks when the read answers rows", async () => {
+    const m = await mountWithFilter("")
+    await m.settle()
+    const ev = m.fire("#lb", "keydown", { key: "ArrowDown", cancelable: true })
+    await m.settle()
+    expect(ev.defaultPrevented).toBe(true)
+    expect(active(m)).toBe("opt-b")
+    await m.stop()
+  })
+
+  it("still refuses a literal naming a form that is not there", async () => {
+    // The other half, and why the rule reads the DECLARATION rather than the
+    // resolved value: an id that never varied cannot have been emptied by a
+    // read, so a miss there is the typo it looks like.
+    const m = await mountWithFilter("")
+    await m.settle()
+    let thrown: unknown
+    try {
+      m.fire("#lb", "keydown", { key: "Home" })
+    } catch (e) {
+      thrown = e
+    }
+    expect(String((thrown as { message?: string })?.message)).toMatch(/"never-here", which is no element/)
     await m.stop()
   })
 })

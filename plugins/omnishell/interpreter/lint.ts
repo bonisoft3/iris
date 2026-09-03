@@ -511,7 +511,12 @@ export function unwitnessedControls(html: string): string[] {
       stampers.set(ref, merge(stampers.get(ref) ?? NONE, cover));
     }
     const type = attr("type")?.toLowerCase();
-    const invoker = has("popovertarget") || attr("commandfor") !== undefined;
+    // A control that opens a surface is wired by naming it, whichever gesture
+    // does the opening: `commandfor` on activation, `data-interest` on hover or
+    // focus. Neither writes anything, which is exactly why neither is a handler
+    // this rule could otherwise find.
+    const invoker = has("popovertarget") || attr("commandfor") !== undefined ||
+      attr("data-interest") !== undefined;
     if (!invoker && (tag === "button" || (tag === "input" && type !== undefined && CONTROL_INPUT.has(type)))) {
       // A button's default type is submit; type="button" and type="reset"
       // reach no submit listener however deep in a form they sit.

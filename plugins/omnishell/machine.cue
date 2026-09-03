@@ -33,6 +33,12 @@
 // keys are the terminal's own event types plus the synthesized `refused`;
 // `<type>@<dom-id>` narrows a transition to one affordance, a spelling
 // components generate and no author writes.
+//
+// A DISPLACING type — `contextmenu`, and it is the whole set — has its default
+// canceled wherever an arrow answers it, because the app's answer and the UA's
+// cannot both stand. The cancel is the arrow's rather than a second attribute's:
+// answering the type is the markup declaring the gesture, which is what every
+// cancel the terminal makes already belongs to.
 package terminal
 
 #Machine: M={
@@ -73,9 +79,16 @@ package terminal
 	// was showing when it fired. It reads the EVENT, never another row, so the
 	// closure above holds — a transition is still decidable from the row and
 	// the event, and the chart is still a whole inventory of what can happen.
+	//
+	// pointerX/pointerY are where in the AFFORDANCE's own box the pointer was,
+	// in parts per thousand of it — never viewport pixels. The frame of
+	// reference is an element a replay also renders, so no viewport is pinned
+	// and no chart can reach the geometry the value was measured against. An
+	// integer because a column a replay must reproduce exactly should not be a
+	// float, and because the stylesheet is where the pixels come back.
 	#EventRef: close({
-		type:   "event"
-		params: close({field: "value" | "checked" | "valueAsNumber" | "key"})
+		type: "event"
+		params: close({field: "value" | "checked" | "valueAsNumber" | "key" | "pointerX" | "pointerY"})
 	})
 	#Transition: close({
 		guard?:  string | M.#Ref // Jessie module; (state, event, params?) => boolean

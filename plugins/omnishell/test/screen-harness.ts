@@ -528,7 +528,9 @@ export type Mounted = {
   /** Dispatch a bubbling DOM event, the way a reader's finger would. `init`
    * carries the fields the binding reads — `key` for a data-key gesture — and
    * `bubbles`/`cancelable` reach the constructor. */
-  fire(target: string | El, type?: string, init?: Record<string, unknown>): void;
+  /** Dispatches the event and hands it back, so a test can assert whether the
+   * terminal cancelled it. */
+  fire(target: string | El, type?: string, init?: Record<string, unknown>): { defaultPrevented: boolean };
   /** Every match's text, trimmed — a region's rendered rows in order. */
   texts(selector: string): string[];
   /** The elements of a role, optionally the one whose accessible name matches
@@ -664,6 +666,115 @@ function valueAsNumber(document: unknown): void {
   });
 }
 
+/** An element's box, which this tier has no layout to measure.
+ *
+ * A normalized pointer is a fraction of the affordance it landed on, so without
+ * a box the allowlist advertises two fields that work in every browser and are
+ * silently absent under test. A test states the box it means with
+ * `boxOf(el, {...})`; anything unstated is zero-sized, which is what the
+ * interpreter already refuses to divide by. */
+function layoutBoxes(document: unknown): void {
+  const proto = Object.getPrototypeOf(
+    (document as { createElement(tag: string): object }).createElement("div"),
+  ) as object;
+  if (Object.getOwnPropertyDescriptor(proto, "getBoundingClientRect") !== undefined) return;
+  Object.defineProperty(proto, "getBoundingClientRect", {
+    configurable: true,
+    value(this: { _prontoBox?: Box }) {
+      return this._prontoBox ?? { left: 0, top: 0, width: 0, height: 0 };
+    },
+  });
+}
+
+/** The top layer, which this tier has no layers to hold.
+ *
+ * Only the state is modelled, because only the state is what a row decides:
+ * `showPopover` on an open popover throws and `hidePopover` on a closed one
+ * throws, and the interpreter leans on exactly that to stay idempotent. A stub
+ * that accepted both would let a double-open through here and fail in a
+ * browser. `:popover-open` is the state a test reads back.
+ *
+ * Both fire `toggle`, because that event is the only way anything learns of a
+ * dismissal the UA performed on its own — light dismiss and Escape. A stub
+ * silent about it would leave the interpreter's one guard against a second
+ * writer untested here and broken there. */
+function topLayer(document: unknown, Event: new (t: string, i: object) => object): void {
+  const proto = Object.getPrototypeOf(
+    (document as { createElement(tag: string): object }).createElement("div"),
+  ) as object;
+  if (Object.getOwnPropertyDescriptor(proto, "showPopover") !== undefined) return;
+  type Surface = {
+    _prontoShown?: boolean;
+    localName: string;
+    getAttribute(name: string): string | null;
+    setAttribute(name: string, value: string): void;
+    removeAttribute(name: string): void;
+    dispatchEvent(e: unknown): void;
+  };
+  const toggled = (el: Surface, newState: string) =>
+    el.dispatchEvent(Object.assign(new Event("toggle", { bubbles: false }), { newState }));
+  Object.defineProperty(proto, "showPopover", {
+    configurable: true,
+    value(this: Surface) {
+      if (this.getAttribute("popover") === null) throw new Error("showPopover on an element with no popover")
+      if (this._prontoShown === true) throw new Error("InvalidStateError: already open")
+      this._prontoShown = true
+      // The attribute stands in for :popover-open, which no selector engine
+      // here answers.
+      this.setAttribute("data-popover-open", "")
+      toggled(this, "open")
+    },
+  });
+  Object.defineProperty(proto, "hidePopover", {
+    configurable: true,
+    value(this: Surface) {
+      if (this._prontoShown !== true) throw new Error("InvalidStateError: already closed")
+      this._prontoShown = false
+      this.removeAttribute("data-popover-open")
+      toggled(this, "closed")
+    },
+  });
+}
+
+/** A <template>'s children are not in the document.
+ *
+ * linkedom's SELECTORS already hold to that — `querySelector("#x")` and
+ * `querySelectorAll("form")` both decline to enter template content — but its
+ * `getElementById` walks an index that includes it. A browser parses those
+ * children into `content`, a fragment of another document, where
+ * `getElementById` cannot reach them at all.
+ *
+ * Without this the tier answers `data-key` and `data-interest` from markup that
+ * was never rendered: a key whose form only exists inside the template it is
+ * stamped from resolves here and throws in a browser, so the one case that
+ * matters — a filtered list with nothing in it — passes under test and fails in
+ * front of a reader.
+ *
+ * `closest` is what tells them apart, and it works for the same reason the bug
+ * does: linkedom keeps template children parented to the template. A node the
+ * interpreter has stamped into the live tree is a clone, and its chain reaches
+ * no template. */
+function templateIsolation(document: unknown): void {
+  const doc = document as {
+    getElementById(id: string): { closest(sel: string): unknown } | null
+    _prontoIsolated?: boolean
+  }
+  if (doc._prontoIsolated === true) return
+  doc._prontoIsolated = true
+  const own = doc.getElementById.bind(doc)
+  doc.getElementById = (id: string) => {
+    const found = own(id)
+    return found !== null && found.closest("template") !== null ? null : found
+  }
+}
+
+export type Box = { left: number; top: number; width: number; height: number }
+
+/** States the box an element occupies, for the tier that cannot measure one. */
+export function boxOf(el: unknown, box: Box): void {
+  ;(el as { _prontoBox?: Box })._prontoBox = box
+}
+
 /** The control properties linkedom declares nowhere. `checked` is the state a
  * radio or checkbox submits — the attribute is that state here, as it is for
  * value, and a radio's group clears when one of its own is set. */
@@ -724,6 +835,9 @@ export async function mountScreen(spec: MountSpec): Promise<Mounted> {
   global.document = document;
   formValidation(document, Event as new (t: string, i: object) => unknown);
   controlProperties(document);
+  templateIsolation(document);
+  layoutBoxes(document);
+  topLayer(document, Event as new (t: string, i: object) => object);
 
   // The interpreter answers every one of its own seams — a handler, a machine
   // event, an after timer, a refusal, a form submit, a region refresh — with
@@ -832,7 +946,11 @@ export async function mountScreen(spec: MountSpec): Promise<Mounted> {
       // `key` and its neighbours belong to KeyboardEvent, which linkedom does
       // not construct, and an Event ignores an init field it does not declare —
       // so a binding reading event.key would see undefined without this.
-      el.dispatchEvent(Object.assign(new Event(type, { bubbles, cancelable }), rest));
+      const ev = Object.assign(new Event(type, { bubbles, cancelable }), rest) as {
+        defaultPrevented: boolean;
+      };
+      el.dispatchEvent(ev);
+      return ev;
     },
     texts: (selector) => [...mount.querySelectorAll(selector)].map(textOf),
     byRole: (role, name) => byRole(mount, role, name),
