@@ -27,6 +27,7 @@ import { checkFocusOrder } from "./src/lint/playwright/checks/focus-order.ts"
 import { armCLS, checkCLS } from "./src/lint/playwright/checks/cls.ts"
 import { captureConsole, analyzeConsole } from "./src/lint/playwright/checks/console-messages.ts"
 import type { VisualBug } from "./src/lint/playwright/types.ts"
+import { type ParamPlan, paramPlans } from "./interpreter/lint.ts"
 
 type Finding = { severity: string; path: string; message: string }
 /** Only what this driver drives; the checks take @playwright/test's Page, which is the same object. */
@@ -80,62 +81,6 @@ export function routesFrom(yamlText: string): Route[] {
   const doc = parseYaml(yamlText) as { routes?: Route[] }
   if (!doc?.routes?.length) throw new Error("no routes: block in shell.yaml")
   return doc.routes
-}
-
-export type ParamPlan = { param: string; table: string; column: string; op: string }
-
-const TAG = /<[a-z][a-z0-9]*\s[^>]*>/gi
-const attr = (tag: string, name: string) =>
-  new RegExp(`\\s${name}="([^"]*)"`).exec(tag)?.[1]?.replaceAll("&amp;", "&")
-
-/**
- * Where each `:param` gets a real value, read off the SCREEN MARKUP.
- *
- * The markup is the only statement of it: a region names its table in
- * `data-live` and its predicate in `data-filter`, and pronto's derive pass
- * carries neither into the program on purpose ("no filter/order/select —
- * those live in the markup alone"), so shell.yaml has no `reads:` to consult.
- * Reading it here keeps that rule rather than restating a filter in two files.
- *
- * A param with no plan is a coverage hole exactly like one whose plan fails
- * to resolve — every route wearing it goes unlinted — so it comes back as
- * `unplanned` rather than being dropped.
- *
- * Only tags declaring BOTH attributes count: `data-text="{param.month}"`
- * states where a param is printed, which no fixture can be resolved from.
- */
-export function paramPlans(
-  routes: Route[],
-  markup: Record<string, string>,
-): { plans: ParamPlan[]; unplanned: string[] } {
-  const plans = new Map<string, ParamPlan>()
-  const wanted = new Set<string>()
-  for (const route of routes) {
-    for (const seg of route.path.split("/")) {
-      if (!seg.startsWith(":")) continue
-      const param = seg.slice(1)
-      wanted.add(param)
-      if (plans.has(param)) continue
-      for (const tag of (markup[route.path] ?? "").matchAll(TAG)) {
-        const table = attr(tag[0], "data-live")
-        const filter = attr(tag[0], "data-filter")
-        if (table === undefined || filter === undefined) continue
-        // e.g. `slug=eq.{param.slug}`, `created_at=lt.{param.when}`,
-        // `article_tag.tag=eq.{param.name}`, `search=plfts(simple).{param.q}`
-        // The placeholder must BE the value, not part of one: a composite
-        // like `bucket=eq.{param.month}:{id}` names the param without
-        // yielding anything a route can be filled with, and without the
-        // terminator the winner is whichever region is declared first.
-        const m = filter.match(
-          new RegExp(`([\\w.]+)=([a-z]+(?:\\([^)]*\\))?)\\.\\{param\\.${param}\\}(?=&|$)`),
-        )
-        if (!m) continue
-        plans.set(param, { param, table, column: m[1], op: m[2] })
-        break
-      }
-    }
-  }
-  return { plans: [...plans.values()], unplanned: [...wanted].filter((p) => !plans.has(p)).sort() }
 }
 
 /** Substitute resolved values for `:param` segments. */

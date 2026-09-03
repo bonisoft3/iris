@@ -1314,10 +1314,11 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
           if (value === NO_FIELD) return { updates: [] };
           patch[col] = value;
         }
-        // Debug seam, like __prontoViews: which arrow fired and the field it
-        // landed on, for the path walker. Nothing is pushed unless something
+        // Debug seam, like __prontoViews: which arrow fired, where it landed,
+        // and the region that fired it. Nothing is pushed unless something
         // armed the array.
         globalThis.__prontoMachineTrace?.push({
+          region,
           state: chosen.origin,
           key: chosen.key,
           index: chosen.index,

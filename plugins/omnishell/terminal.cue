@@ -267,11 +267,12 @@ _zagBundle: _ @embed(glob="interpreter/vendor/zag/*.js", type=text)
 
 		// Invariants of the terminal's own rendering surface, which no app can
 		// re-derive — the same reason auth, text-formats and widgets are
-		// published here. `verb` is the layer the check needs: this battery
-		// measures a laid-out page against real content, so it cannot run
-		// without the cluster up, however cheap `lint` would look.
+		// published here. `verb` is the cheapest layer that can answer the
+		// check.
 		checks: [Name=string]: {verb: "setup" | "lint" | "test" | "integrate", cmds: [...string], note: string}
 		checks: visual: {
+			// A laid-out page over real content, so the cluster has to be up
+			// however cheap `lint` would look.
 			verb: "integrate"
 			cmds: [
 				"docker compose up -d --wait launch",
@@ -289,6 +290,27 @@ _zagBundle: _ @embed(glob="interpreter/vendor/zag/*.js", type=text)
 		}
 		visualCheck: #Path
 		visualCheck: *"../../plugins/omnishell/check-visual.ts" | string
+
+		checks: machines: {
+			verb: "test"
+			cmds: [
+				// The walker's plan and differ come from npm (xstate,
+				// @xstate/graph): --node-modules-dir=none resolves them from
+				// deno's own cache, and the version is pinned in the import
+				// specifier itself (test/walker.ts), not by this config.
+				// Read reaches the app and the interpreter — screen.js and the
+				// ses bundle are dynamic imports, which the app's own scope does
+				// not cover. Env is unscoped because a partial allowlist stalls
+				// the mecha client mid-load rather than refusing.
+				"deno run --no-lock --no-check --node-modules-dir=none --config \(T.surface.machinesDeno) " +
+				"--allow-read=.,\(T.surface.interpreterRoot) --allow-env \(T.surface.machinesCheck) .",
+			]
+			note: "every arrow of every emitted chart fires, and XState agrees where each one lands"
+		}
+		machinesCheck: #Path
+		machinesCheck: *"../../plugins/omnishell/check-machines.ts" | string
+		machinesDeno:  #Path
+		machinesDeno:  *"../../plugins/omnishell/test/deno.json" | string
 
 		statics: [...#Static]
 		statics: list.Concat([

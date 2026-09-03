@@ -105,6 +105,62 @@ const attrsOf = (attrText: string) => ({
   has: (name: string): boolean => new RegExp(`\\s${name}(?:[\\s=]|$)`).test(` ${attrText}`),
 });
 
+export type ParamPlan = { param: string; table: string; column: string; op: string };
+
+/**
+ * Where each `:param` gets a real value, read off the SCREEN MARKUP.
+ *
+ * The markup is the only statement of it: a region names its table in
+ * `data-live` and its predicate in `data-filter`, and pronto's derive pass
+ * carries neither into the program on purpose, so shell.yaml has no `reads:`
+ * to consult.
+ *
+ * A param with no plan is a coverage hole exactly like one whose plan fails to
+ * resolve — every route wearing it goes unchecked — so it comes back as
+ * `unplanned` rather than being dropped.
+ *
+ * Only tags declaring BOTH attributes count: `data-text="{param.month}"`
+ * states where a param is printed, which nothing can be resolved from.
+ */
+export function paramPlans(
+  routes: { path: string }[],
+  markup: Record<string, string>,
+): { plans: ParamPlan[]; unplanned: string[] } {
+  const plans = new Map<string, ParamPlan>();
+  const wanted = new Set<string>();
+  for (const route of routes) {
+    for (const seg of route.path.split("/")) {
+      if (!seg.startsWith(":")) continue;
+      const param = seg.slice(1);
+      wanted.add(param);
+      for (const [, closing, , attrText] of strip(markup[route.path] ?? "").matchAll(ANY_TAG)) {
+        if (closing === "/") continue;
+        const { attr } = attrsOf(attrText);
+        const table = attr("data-live");
+        const filter = attr("data-filter");
+        if (table === undefined || filter === undefined) continue;
+        // e.g. `slug=eq.{param.slug}`, `created_at=lt.{param.when}`,
+        // `article_tag.tag=eq.{param.name}`, `search=plfts(simple).{param.q}`
+        // The placeholder must BE the value, not part of one: a composite like
+        // `bucket=eq.{param.month}:{id}` names the param without yielding
+        // anything a route can be filled with, and without the terminator the
+        // winner is whichever region is declared first.
+        const m = filter.match(
+          new RegExp(`([\\w.]+)=([a-z]+(?:\\([^)]*\\))?)\\.\\{param\\.${param}\\}(?=&|$)`),
+        );
+        if (!m) continue;
+        // An `eq` plan is the only one a reader can answer by echoing a row's
+        // value, so it wins over one the markup happened to declare first.
+        const found = { param, table, column: m[1], op: m[2] };
+        const held = plans.get(param);
+        if (held === undefined || (held.op !== "eq" && found.op === "eq")) plans.set(param, found);
+        if (found.op === "eq") break;
+      }
+    }
+  }
+  return { plans: [...plans.values()], unplanned: [...wanted].filter((p) => !plans.has(p)).sort() };
+}
+
 export type MachineRegion = { table: string; machine: string; emptyRow?: string; filter?: string };
 
 /** Every data-machine region in one screen's markup, with the attributes its

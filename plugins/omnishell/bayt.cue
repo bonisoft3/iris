@@ -93,6 +93,9 @@ _omnishell: bayt.#project & {
 				// interpreter modules, so those are check inputs as well.
 				"test/**/*",
 				"interpreter/**/*",
+				// test/check-machines.test.ts imports the checker beside
+				// them; a checker at the plugin root is in no other glob.
+				"check-machines.ts",
 				"package.json",
 				"bun.lock",
 				"tsconfig.json",
@@ -118,7 +121,7 @@ _omnishell: bayt.#project & {
 		// Stays parallel to integrate, which re-uses the same command —
 		// omnishell has no separate integration suite.
 		"test": sayt.test & mise.exec & {
-			srcs: globs: ["test/**/*", "interpreter/**/*"]
+			srcs: globs: ["test/**/*", "interpreter/**/*", "check-machines.ts"]
 			cmd: _smokeCmd
 		}
 
@@ -127,7 +130,7 @@ _omnishell: bayt.#project & {
 		// (from the build chain) + the same unit tests. No dind.sh wrap
 		// (no docker socket needed).
 		"integrate": sayt.integrate & mise.exec & {
-			srcs: globs: ["test/**/*", "interpreter/**/*"]
+			srcs: globs: ["test/**/*", "interpreter/**/*", "check-machines.ts"]
 			dockerfile: {
 				from: ref: ":build"
 			}

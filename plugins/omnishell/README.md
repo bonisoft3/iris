@@ -132,6 +132,6 @@ The right fix: make omnishell a **workspace package** so bun/pnpm resolve import
 ```bash
 just setup    # install bun via mise
 just build    # typecheck (tsc --noEmit)
-just test     # 146 unit tests
-just integrate # Docker build + test
+just test     # the deno unit suite over test/
+just integrate # Docker build, then that suite plus this target's share of the smokes
 ```

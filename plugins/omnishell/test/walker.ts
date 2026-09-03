@@ -30,6 +30,8 @@ import { canonical, guardNames, type Machine } from "./canonical.ts";
 
 export type Arrow = { state: string; key: string; index: number; to?: string };
 
+type TraceEntry = Arrow & { region?: unknown };
+
 export type WalkHarness = {
   /** Deliver one event: dispatch `type` (bubbling) on the element `from`
    * names, on the machine's region when `from` is absent — or synthesize,
@@ -186,7 +188,7 @@ function routeBetween(
 export async function walkMachine(
   machine: Machine,
   harness: WalkHarness,
-  opts: { rounds?: number; settleMs?: number; afterMs?: number; patience?: number } = {},
+  opts: { rounds?: number; settleMs?: number; afterMs?: number; patience?: number; owner?: unknown } = {},
 ): Promise<Arrow[]> {
   const { rounds = 64, settleMs = 30, patience = 6 } = opts;
   const shape = machineShape(machine);
@@ -213,7 +215,18 @@ export async function walkMachine(
     if ("type" in s) fires.push(s);
   }
 
-  const trace: Arrow[] = [];
+  // One array per screen, not per chart: every region on the mount pushes into
+  // whatever is armed here. `owner` is this walk's region; mine() is its slice.
+  const trace: TraceEntry[] = [];
+  const mine = (): Arrow[] => {
+    if (opts.owner === undefined) return trace;
+    // An unstamped entry belongs to no region, so there is no slice to put it
+    // in: the caller is driving something that is not the interpreter.
+    if (trace.some((t) => t.region === undefined)) {
+      throw new Error("walk: owner was given, but a trace entry carries no region");
+    }
+    return trace.filter((t) => t.region === opts.owner);
+  };
   (globalThis as Record<string, unknown>).__prontoMachineTrace = trace;
   try {
     const deliver = async (s: Stimulus) => {
@@ -228,8 +241,11 @@ export async function walkMachine(
         throw new Error(`walk: the machine's field left its states: ${JSON.stringify(v)}`);
       }
     };
-    const covered = () => new Set(trace.map(arrowId));
-    const done = () => [...wanted.keys()].every((id) => covered().has(id));
+    const covered = () => new Set(mine().map(arrowId));
+    const done = () => {
+      const got = covered();
+      return [...wanted.keys()].every((id) => got.has(id));
+    };
 
     for (const path of planPaths(machine)) {
       for (const s of path) await deliver(s);
@@ -273,7 +289,7 @@ export async function walkMachine(
         }`,
       );
     }
-    differ(machine, trace);
+    differ(machine, mine());
     return [...wanted.values()];
   } finally {
     delete (globalThis as Record<string, unknown>).__prontoMachineTrace;

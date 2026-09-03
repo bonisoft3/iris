@@ -48,7 +48,8 @@
   "srcs": {
     "globs": [
       "test/**/*",
-      "interpreter/**/*"
+      "interpreter/**/*",
+      "check-machines.ts"
     ],
     "exclude": []
   },
@@ -142,6 +143,7 @@
         "globs": [
           "test/**/*",
           "interpreter/**/*",
+          "check-machines.ts",
           "src/**/*",
           "package.json",
           "bun.lock",
@@ -167,6 +169,7 @@
               "src/**/*",
               "test/**/*",
               "interpreter/**/*",
+              "check-machines.ts",
               "package.json",
               "bun.lock",
               "tsconfig.json",
@@ -237,7 +240,8 @@
       "srcs": {
         "globs": [
           "test/**/*",
-          "interpreter/**/*"
+          "interpreter/**/*",
+          "check-machines.ts"
         ],
         "exclude": [],
         "defaultGlobs": null,
@@ -252,7 +256,8 @@
       "srcs": {
         "globs": [
           "test/**/*",
-          "interpreter/**/*"
+          "interpreter/**/*",
+          "check-machines.ts"
         ],
         "exclude": [],
         "defaultGlobs": null,

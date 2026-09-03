@@ -21,7 +21,8 @@
   "srcs": {
     "globs": [
       "test/**/*",
-      "interpreter/**/*"
+      "interpreter/**/*",
+      "check-machines.ts"
     ],
     "exclude": []
   },
@@ -80,7 +81,8 @@
       "srcs": {
         "globs": [
           "test/**/*",
-          "interpreter/**/*"
+          "interpreter/**/*",
+          "check-machines.ts"
         ],
         "exclude": [],
         "defaultGlobs": null,
@@ -95,7 +97,8 @@
       "srcs": {
         "globs": [
           "test/**/*",
-          "interpreter/**/*"
+          "interpreter/**/*",
+          "check-machines.ts"
         ],
         "exclude": [],
         "defaultGlobs": null,

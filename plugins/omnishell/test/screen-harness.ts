@@ -84,6 +84,9 @@ export const only = (rows: Row[], what: string): Row => {
 type Change = { value?: Row; previousValue?: Row };
 
 export type Route = {
+  /** The hash route the screen answers, `:param` segments and all. Absent on
+   * a route a test builds by hand: only shell.yaml states one. */
+  path?: string;
   screen: string;
   files: { html: string; css: string; handlers: string[]; renderers?: string[]; shared?: string[] };
   states?: string[];
@@ -411,15 +414,33 @@ export function memoryStore(tables: Record<string, Row[]>, cluster: Cluster = {}
   return store;
 }
 
-/** The route a screen ships under, read from the emitted shell.yaml so a test
- * cannot drift from what the app actually mounts. */
-export async function appRoute(appDir: URL, screen: string): Promise<Route> {
+/** Every route the app ships, in the order shell.yaml lists them — what a
+ * driver that has no screen in mind walks. */
+export async function appRoutes(appDir: URL): Promise<Route[]> {
   const shell = parseYaml(await Deno.readTextFile(new URL("shell/shell.yaml", appDir))) as {
     routes?: Route[];
   };
-  const route = (shell.routes ?? []).find((r) => r.screen === screen);
+  return shell.routes ?? [];
+}
+
+/** The route a screen ships under, read from the emitted shell.yaml so a test
+ * cannot drift from what the app actually mounts. */
+export async function appRoute(appDir: URL, screen: string): Promise<Route> {
+  const route = (await appRoutes(appDir)).find((r) => r.screen === screen);
   if (route === undefined) throw new Error(`shell.yaml declares no screen "${screen}"`);
   return route;
+}
+
+/** Every collection the app declares: the browser tier's `local:` and the
+ * cluster's `tables:`. memoryStore refuses a read of a table it was not given,
+ * so a driver that does not know which collections a screen touches states
+ * them all — empty, which is where a visit starts. */
+export async function appCollections(appDir: URL): Promise<string[]> {
+  const shell = parseYaml(await Deno.readTextFile(new URL("shell/shell.yaml", appDir))) as {
+    local?: Record<string, unknown>;
+    tables?: string[];
+  };
+  return [...Object.keys(shell.local ?? {}), ...(shell.tables ?? [])];
 }
 
 /** A route's own files, keyed by the paths the route names them by. */
@@ -613,6 +634,28 @@ function formValidation(document: unknown, submitEvent: new (t: string, i: objec
   };
 }
 
+/** A number or range input's parsed value, which linkedom models nowhere:
+ * without it the allowlist advertises a field this tier can never deliver, and
+ * a machine reading it works in every browser and refuses under test. */
+function valueAsNumber(document: unknown): void {
+  type Input = { type?: string; value?: string };
+  const proto = Object.getPrototypeOf(
+    (document as { createElement(tag: string): object }).createElement("input"),
+  ) as object;
+  if (Object.getOwnPropertyDescriptor(proto, "valueAsNumber") !== undefined) return;
+  Object.defineProperty(proto, "valueAsNumber", {
+    configurable: true,
+    get(this: Input) {
+      if (this.type !== "number" && this.type !== "range") return Number.NaN;
+      // An empty number field is NaN, not zero: the interpreter drops the field
+      // when it is NaN, and a test asserting a cleared field writes 0 would
+      // pass while the browser wrote nothing at all.
+      const raw = (this.value ?? "").trim();
+      return raw === "" ? Number.NaN : Number(raw);
+    },
+  });
+}
+
 /** The control properties linkedom declares nowhere. `checked` is the state a
  * radio or checkbox submits — the attribute is that state here, as it is for
  * value, and a radio's group clears when one of its own is set. */
@@ -625,25 +668,11 @@ function controlProperties(document: unknown) {
     removeAttribute(name: string): void;
     closest(selector: string): { querySelectorAll(sel: string): Input[] } | null;
   };
+  valueAsNumber(document);
   const proto = Object.getPrototypeOf(
     (document as { createElement(tag: string): object }).createElement("input"),
   ) as object;
   if (Object.getOwnPropertyDescriptor(proto, "checked") !== undefined) return;
-
-
-  // A number input's parsed value, which linkedom models nowhere: without it
-  // the allowlist would advertise a field this tier can never deliver, and a
-  // machine reading it would work in a browser and refuse under test.
-  Object.defineProperty(proto, "valueAsNumber", {
-    configurable: true,
-    get(this: Input & { value?: string }) {
-      if (this.type !== "number" && this.type !== "range") return Number.NaN;
-      // An empty number field is NaN, not zero: a test asserting a cleared
-      // field writes 0 would pass while the browser wrote NaN.
-      const raw = (this.value ?? "").trim();
-      return raw === "" ? Number.NaN : Number(raw);
-    },
-  });
 
   Object.defineProperty(proto, "checked", {
     configurable: true,
@@ -764,6 +793,10 @@ export async function mountScreen(spec: MountSpec): Promise<Mounted> {
       // Both show up as a change across one more turn.
       const before = store.version;
       await macrotask();
+      // The turn that ends the drain is the one a teardown refusal lands on,
+      // and it writes no row — so the loop would exit past it and `stop` would
+      // then drop the collector with the error still in it.
+      raiseEscaped();
       if (clock.advance(0) === 0 && store.version === before) return;
     }
   };
@@ -817,13 +850,23 @@ export async function mountScreen(spec: MountSpec): Promise<Mounted> {
     quiet,
     settle,
     async stop() {
-      handle.stop();
-      // The clock queue outlives the screen and is the file's, not this
-      // mount's: a wait left behind would come due inside the next case — and
-      // a wait is the work most likely to throw, so the traps outlive it.
-      await settle();
-      collect = null;
-      (globalThis as unknown as EventTarget).removeEventListener("unhandledrejection", onEscape as EventListener);
+      try {
+        // Inside, not before: a region whose teardown throws would otherwise
+        // skip the detach below. It still skips the regions after it —
+        // screen.js's `stop` walks them without a guard — so those keep their
+        // subscriptions and their timers for the life of the process.
+        handle.stop();
+        // The clock queue outlives the screen and is the file's, not this
+        // mount's: a wait left behind would come due inside the next case — and
+        // a wait is the work most likely to throw, so the traps outlive it.
+        await settle();
+      } finally {
+        // Detached even when the drain throws: the console seam is one slot for
+        // the process, and a mount that kept it holds every report until the
+        // next mount takes the slot back.
+        collect = null;
+        (globalThis as unknown as EventTarget).removeEventListener("unhandledrejection", onEscape as EventListener);
+      }
     },
   };
 }
