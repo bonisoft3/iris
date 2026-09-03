@@ -122,24 +122,31 @@ version = "1.35.2"
 backend = "http:kubectl"
 
 [tools."http:kubectl"."platforms.linux-arm64"]
+checksum = "blake3:4d33c5a153851284f9d12723c3a9dcaf72711a8fa17e6c4cd6bdc29acc21cb09"
 url = "https://dl.k8s.io/v1.35.2/bin/linux/arm64/kubectl"
 
 [tools."http:kubectl"."platforms.linux-arm64-musl"]
+checksum = "blake3:4d33c5a153851284f9d12723c3a9dcaf72711a8fa17e6c4cd6bdc29acc21cb09"
 url = "https://dl.k8s.io/v1.35.2/bin/linux/arm64/kubectl"
 
 [tools."http:kubectl"."platforms.linux-x64"]
+checksum = "blake3:213974f18bcb15e5f695bd90917b29b39751f51f0d80dd181cb83403fc7a5d8a"
 url = "https://dl.k8s.io/v1.35.2/bin/linux/amd64/kubectl"
 
 [tools."http:kubectl"."platforms.linux-x64-musl"]
+checksum = "blake3:213974f18bcb15e5f695bd90917b29b39751f51f0d80dd181cb83403fc7a5d8a"
 url = "https://dl.k8s.io/v1.35.2/bin/linux/amd64/kubectl"
 
 [tools."http:kubectl"."platforms.macos-arm64"]
+checksum = "blake3:72eec32a8dd7c686265f20c3b4fd8bfea11642ca76df7dd649b936c3be3affc6"
 url = "https://dl.k8s.io/v1.35.2/bin/darwin/arm64/kubectl"
 
 [tools."http:kubectl"."platforms.macos-x64"]
+checksum = "blake3:1120b9a2052ac1ec1398de69cd04c921dd053853fa1eae8b077fc9e12ccd2591"
 url = "https://dl.k8s.io/v1.35.2/bin/darwin/amd64/kubectl"
 
 [tools."http:kubectl"."platforms.windows-x64"]
+checksum = "blake3:e63e447232493f663f843ed7d8971eaf36900466761fbd042d5871ff6527cdd1"
 url = "https://dl.k8s.io/v1.35.2/bin/windows/amd64/kubectl.exe"
 
 [[tools."http:skaffold"]]
@@ -147,22 +154,29 @@ version = "2.18.1"
 backend = "http:skaffold"
 
 [tools."http:skaffold"."platforms.linux-arm64"]
+checksum = "blake3:562329b7d85a0b908ea038f2ebe04cdbbe2a5495316bd928f6d3ec495b4c7e06"
 url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-linux-arm64"
 
 [tools."http:skaffold"."platforms.linux-arm64-musl"]
+checksum = "blake3:562329b7d85a0b908ea038f2ebe04cdbbe2a5495316bd928f6d3ec495b4c7e06"
 url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-linux-arm64"
 
 [tools."http:skaffold"."platforms.linux-x64"]
+checksum = "blake3:76ce50a4ed44e7e0bb187d77b3220136244bec950ab98f051d293f47dce4799a"
 url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-linux-amd64"
 
 [tools."http:skaffold"."platforms.linux-x64-musl"]
+checksum = "blake3:76ce50a4ed44e7e0bb187d77b3220136244bec950ab98f051d293f47dce4799a"
 url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-linux-amd64"
 
 [tools."http:skaffold"."platforms.macos-arm64"]
+checksum = "blake3:a37ad31bf1045c53fbbf2c074eb965824baaba8f5a30d2e15626f46446773abc"
 url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-darwin-arm64"
 
 [tools."http:skaffold"."platforms.macos-x64"]
+checksum = "blake3:ca957ce86f47a360bd778f66289beedccacd8fdb4e9df69e380db2181d09bab7"
 url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-darwin-amd64"
 
 [tools."http:skaffold"."platforms.windows-x64"]
+checksum = "blake3:d599c31330144f11c3c0c5e56991402ab1e9a6b148d5ddecd1e46a35d4333c23"
 url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-windows-amd64.exe"

@@ -83,24 +83,31 @@ version = "2.18.1"
 backend = "http:skaffold"
 
 [tools."http:skaffold"."platforms.linux-arm64"]
+checksum = "blake3:562329b7d85a0b908ea038f2ebe04cdbbe2a5495316bd928f6d3ec495b4c7e06"
 url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-linux-arm64"
 
 [tools."http:skaffold"."platforms.linux-arm64-musl"]
+checksum = "blake3:562329b7d85a0b908ea038f2ebe04cdbbe2a5495316bd928f6d3ec495b4c7e06"
 url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-linux-arm64"
 
 [tools."http:skaffold"."platforms.linux-x64"]
+checksum = "blake3:76ce50a4ed44e7e0bb187d77b3220136244bec950ab98f051d293f47dce4799a"
 url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-linux-amd64"
 
 [tools."http:skaffold"."platforms.linux-x64-musl"]
+checksum = "blake3:76ce50a4ed44e7e0bb187d77b3220136244bec950ab98f051d293f47dce4799a"
 url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-linux-amd64"
 
 [tools."http:skaffold"."platforms.macos-arm64"]
+checksum = "blake3:a37ad31bf1045c53fbbf2c074eb965824baaba8f5a30d2e15626f46446773abc"
 url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-darwin-arm64"
 
 [tools."http:skaffold"."platforms.macos-x64"]
+checksum = "blake3:ca957ce86f47a360bd778f66289beedccacd8fdb4e9df69e380db2181d09bab7"
 url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-darwin-amd64"
 
 [tools."http:skaffold"."platforms.windows-x64"]
+checksum = "blake3:d599c31330144f11c3c0c5e56991402ab1e9a6b148d5ddecd1e46a35d4333c23"
 url = "https://storage.googleapis.com/skaffold/releases/v2.18.1/skaffold-windows-amd64.exe"
 
 [[tools."http:yq"]]
@@ -108,15 +115,19 @@ version = "4.52.5"
 backend = "http:yq"
 
 [tools."http:yq"."platforms.linux-arm64"]
+checksum = "blake3:d7dae995e8c7371bbc90af540c79b74dd27bed158bec9dc1c8e8a1ce8181af17"
 url = "https://github.com/mikefarah/yq/releases/download/v4.52.5/yq_linux_arm64"
 
 [tools."http:yq"."platforms.linux-arm64-musl"]
+checksum = "blake3:d7dae995e8c7371bbc90af540c79b74dd27bed158bec9dc1c8e8a1ce8181af17"
 url = "https://github.com/mikefarah/yq/releases/download/v4.52.5/yq_linux_arm64"
 
 [tools."http:yq"."platforms.linux-x64"]
+checksum = "blake3:9a30a00f39c857e9862d99df2985bb1900f75153256c7abd3ba371752db9b4e0"
 url = "https://github.com/mikefarah/yq/releases/download/v4.52.5/yq_linux_amd64"
 
 [tools."http:yq"."platforms.linux-x64-musl"]
+checksum = "blake3:9a30a00f39c857e9862d99df2985bb1900f75153256c7abd3ba371752db9b4e0"
 url = "https://github.com/mikefarah/yq/releases/download/v4.52.5/yq_linux_amd64"
 
 [tools."http:yq"."platforms.macos-arm64"]
@@ -124,7 +135,9 @@ checksum = "blake3:3d200a5827df3f701e647bb94b2e586d3f362ba068462fc79120fc60ad8a5
 url = "https://github.com/mikefarah/yq/releases/download/v4.52.5/yq_darwin_arm64"
 
 [tools."http:yq"."platforms.macos-x64"]
+checksum = "blake3:19d181a43eb995d5ffd3dd1171c689737a3248479828ec43e52bf65efa97438b"
 url = "https://github.com/mikefarah/yq/releases/download/v4.52.5/yq_darwin_amd64"
 
 [tools."http:yq"."platforms.windows-x64"]
+checksum = "blake3:a0c6db5f34c43c06b9c08d3f7c7929f6361375f6d3dcc41728e9bbc28c3aba52"
 url = "https://github.com/mikefarah/yq/releases/download/v4.52.5/yq_windows_amd64.exe"
