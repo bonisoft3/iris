@@ -275,22 +275,24 @@ _zagBundle: _ @embed(glob="interpreter/vendor/zag/*.js", type=text)
 			// however cheap `lint` would look.
 			verb: "integrate"
 			cmds: [
-				"docker compose up -d --wait launch",
-				// Broad permissions are playwright's, not the checker's: it reads
-				// the browser bundle, writes a throwaway profile, spawns the
-				// browser and reads the host platform.
-				// The door is TLS on a per-developer mkcert certificate this
-				// runner does not trust. Playwright's own contexts are told to
-				// ignore it in the checker, but the checker ALSO fetches
-				// /auth/guest with Deno's fetch, which that flag does not reach —
-				// hence the runtime flag here as well.
-				"deno run --allow-read --allow-write --allow-net --allow-env --allow-run --allow-sys --unsafely-ignore-certificate-errors \(T.surface.visualCheck) .",
+				// --build, because compose reuses any image it already has: a
+				// battery that photographed the previous build reports green for
+				// markup nobody is serving.
+				"docker compose up -d --wait --build launch",
+				// No --force-recreate: it recreates the DEPENDENCIES too, so a
+				// data-backed app starts every run with an empty database and its
+				// rows-first screens never settle. --build is the part that
+				// matters, and it rebuilds without discarding state.
+				// -p, not --project-directory: the closure's own directory is
+				// where its includes and extends resolve, so only the project
+				// NAME may move. Without it the closure starts a second project
+				// named after .bayt, which brings up a second caddy and collides
+				// with the first on its port — and the runtime the line above
+				// started would not be the one the battery talks to.
+				"docker compose -p \(T.app) --profile '*' -f .bayt/compose.integrate.closure.yaml up bayt --abort-on-container-failure --exit-code-from bayt --build --remove-orphans --attach-dependencies",
 			]
-			note: "DOM checks over every route at two viewports; only critical findings fail"
+			note: "DOM checks over every route at two viewports, run in a container beside the app; only critical findings fail"
 		}
-		visualCheck: #Path
-		visualCheck: *"../../plugins/omnishell/check-visual.ts" | string
-
 		checks: machines: {
 			verb: "test"
 			cmds: [

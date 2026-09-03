@@ -638,7 +638,7 @@ function formValidation(document: unknown, submitEvent: new (t: string, i: objec
  * without it the allowlist advertises a field this tier can never deliver, and
  * a machine reading it works in every browser and refuses under test. */
 function valueAsNumber(document: unknown): void {
-  type Input = { type?: string; value?: string };
+  type Input = { type?: string; value?: string; getAttribute(name: string): string | null };
   const proto = Object.getPrototypeOf(
     (document as { createElement(tag: string): object }).createElement("input"),
   ) as object;
@@ -651,7 +651,15 @@ function valueAsNumber(document: unknown): void {
       // when it is NaN, and a test asserting a cleared field writes 0 would
       // pass while the browser wrote nothing at all.
       const raw = (this.value ?? "").trim();
-      return raw === "" ? Number.NaN : Number(raw);
+      if (raw === "") return Number.NaN;
+      const n = Number(raw);
+      // A range CLAMPS to its own bounds, and a screen may rest a safety
+      // argument on that. Returning the raw number would let a test claim a
+      // clamp the browser performs and this tier does not.
+      if (this.type !== "range" || Number.isNaN(n)) return n;
+      const lo = Number(this.getAttribute("min") ?? "0");
+      const hi = Number(this.getAttribute("max") ?? "100");
+      return Math.min(Math.max(n, Number.isNaN(lo) ? n : lo), Number.isNaN(hi) ? n : hi);
     },
   });
 }
