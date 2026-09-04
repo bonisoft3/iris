@@ -77,8 +77,18 @@ export async function walkFindings(
   opts: { owner?: unknown } = {},
 ): Promise<Finding[]> {
   try {
-    await walkMachine(machine, harness, opts);
-    return [];
+    const walk = await walkMachine(machine, harness, opts);
+    if (walk.shadowed.length === 0) return [];
+    // Advisory, not an error: the arrows are drawn and a reader reaches them by
+    // typing further. What the walk reports is its own reach.
+    return [{
+      severity: "advisory",
+      path,
+      message: `${where}: ${walk.shadowed.length} arrow(s) an earlier sibling admits the event of, ` +
+        `so nothing here selects them: ${
+          walk.shadowed.map((a) => `${a.state} --${a.key}[${a.index}]-->`).join(", ")
+        }`,
+    }];
   } catch (err) {
     return [{ severity: "error", path, message: `${where}: ${said(err)}` }];
   }
@@ -108,11 +118,18 @@ function declaredOn(el: El): string {
   return declared;
 }
 
-/** What pairs a mounted element with the region the markup states: everything
- * a chart reads through, and the chart itself. */
-const keyOf = (el: El) => {
+/** The charts one element runs: a list is several, and each is walked on its
+ * own, because what a walk covers is a chart's arrows and not an element's. */
+function chartsOn(el: El): string[] {
+  const parsed: unknown = JSON.parse(declaredOn(el));
+  return (Array.isArray(parsed) ? parsed : [parsed]).map((c) => JSON.stringify(c));
+}
+
+/** What pairs a mounted chart with the region the markup states: everything it
+ * reads through, and the chart itself. */
+const keyOf = (el: El, chart: string) => {
   const { table, filter } = readsOf(el);
-  return `${table}\u0000${filter ?? ""}\u0000${declaredOn(el)}`;
+  return `${table}\u0000${filter ?? ""}\u0000${chart}`;
 };
 
 /** The route params a filter names, substituted the way the interpreter
@@ -136,6 +153,11 @@ const PARAM = /\{param\.([\w-]+)\}/g;
  * finding can quote. */
 const WALK_BOX = { left: 0, top: 0, width: 100, height: 100 };
 
+// The event leaves the terminal reads off the control rather than off the event
+// (interpreter/screen.js): a walk that put these on the event would fire an
+// arrow the guard then judged against an empty control.
+const CONTROL_FIELDS = new Set(["value", "checked", "valueAsNumber"]);
+
 /** The walker's harness over one mounted region. The field is read off the
  * store rather than the DOM: the row IS the state, and a binding that had not
  * landed yet would read as an arrow that never fired. */
@@ -143,7 +165,7 @@ function harnessFor(m: Mounted, region: El, machine: Machine, params: Record<str
   const { table } = readsOf(region);
   const filter = filled(readsOf(region).filter, params);
   return {
-    fire: async (type, from) => {
+    fire: async (type, from, init) => {
       const el = from === undefined ? region : m.one(`[id="${from}"]`);
       // The synthetic event carries every leaf a real one could. An assign
       // reading a field the event does not have declines the whole transition —
@@ -152,7 +174,15 @@ function harnessFor(m: Mounted, region: El, machine: Machine, params: Record<str
       // cannot fire at all. A control's own leaves come off the element; the
       // pointer's need a box, which this tier has no layout to measure.
       boxOf(el, WALK_BOX);
-      m.fire(el, type, { clientX: WALK_BOX.width / 2, clientY: WALK_BOX.height / 2 });
+      // Which is why the control's leaves are put on the CONTROL: the terminal
+      // reads them off the element it fired from and never off the event, so an
+      // arrow guarded on what has been typed is only drivable by typing it.
+      const carried: Record<string, unknown> = {};
+      for (const [field, leaf] of Object.entries(init ?? {})) {
+        if (CONTROL_FIELDS.has(field)) m.set(el, field, leaf);
+        else carried[field] = leaf;
+      }
+      m.fire(el, type, { clientX: WALK_BOX.width / 2, clientY: WALK_BOX.height / 2, ...carried });
     },
     wait: async (ms) => {
       m.advance(ms);
@@ -180,7 +210,7 @@ function resolveParams(
   if (path === undefined) throw new Error(`shell.yaml route "${route.screen}" states no path`);
   const { plans, unplanned } = paramPlans([{ path }], { [path]: html });
   const params: Record<string, string> = {};
-  for (const p of unplanned) params[p] = UNRESOLVED;
+  for (const hole of unplanned) params[hole.param] = UNRESOLVED;
   for (const plan of plans) {
     // Only `eq` is answerable by echoing a row: `lt`, `gt` and `neq` against a
     // row's own value exclude that very row, so the chart would bind nothing
@@ -242,14 +272,16 @@ async function walkScreen(
       // trace, or a state whose way out is `after: 0` has already taken it and
       // the arrow is missing from a chart that works.
       await m.quiet();
-      const els = m.all("[data-machine]");
+      // One entry per (element, chart): an element running two charts is two
+      // walks, and the floor below counts charts.
+      const els = m.all("[data-machine]").flatMap((el) => chartsOn(el).map((chart) => ({ el, chart })));
       if (i === 0) {
-        mounted.push(...els.map(keyOf));
+        mounted.push(...els.map(({ el, chart }) => keyOf(el, chart)));
         enumerated = true;
       }
       if (i < els.length) {
-        const el = els[i];
-        const machine = JSON.parse(declaredOn(el)) as Machine;
+        const { el, chart } = els[i];
+        const machine = JSON.parse(chart) as Machine;
         const { table, filter } = readsOf(el);
         // A binding is interpolated at read time, so the attribute still holds
         // the placeholder: what this chart reads through is the param it names

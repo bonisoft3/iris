@@ -104,7 +104,7 @@ const attrsOf = (attrText: string) => ({
   has: (name: string): boolean => new RegExp(`\\s${name}(?:[\\s=]|$)`).test(` ${attrText}`),
 });
 
-export type ParamPlan = { param: string; table: string; column: string; op: string };
+export type ParamPlan = { route: string; param: string; table: string; column: string; op: string };
 
 /**
  * Where each `:param` gets a real value, read off the SCREEN MARKUP.
@@ -114,8 +114,13 @@ export type ParamPlan = { param: string; table: string; column: string; op: stri
  * carries neither into the program on purpose, so shell.yaml has no `reads:`
  * to consult.
  *
+ * A param is named by ONE route's markup, so a plan is scoped to that route: an
+ * `:id` is a category on one screen and an expense on another, and a plan keyed
+ * by the name alone fills the second route with the first route's value, which
+ * matches no row.
+ *
  * A param with no plan is a coverage hole exactly like one whose plan fails to
- * resolve — every route wearing it goes unchecked — so it comes back as
+ * resolve — the route wearing it goes unchecked — so it comes back as
  * `unplanned` rather than being dropped.
  *
  * Only tags declaring BOTH attributes count: `data-text="{param.month}"`
@@ -124,14 +129,15 @@ export type ParamPlan = { param: string; table: string; column: string; op: stri
 export function paramPlans(
   routes: { path: string }[],
   markup: Record<string, string>,
-): { plans: ParamPlan[]; unplanned: string[] } {
+): { plans: ParamPlan[]; unplanned: { route: string; param: string }[] } {
   const plans = new Map<string, ParamPlan>();
-  const wanted = new Set<string>();
+  const wanted = new Map<string, { route: string; param: string }>();
   for (const route of routes) {
     for (const seg of route.path.split("/")) {
       if (!seg.startsWith(":")) continue;
       const param = seg.slice(1);
-      wanted.add(param);
+      const key = `${route.path} ${param}`;
+      wanted.set(key, { route: route.path, param });
       for (const [, closing, , attrText] of strip(markup[route.path] ?? "").matchAll(ANY_TAG)) {
         if (closing === "/") continue;
         const { attr } = attrsOf(attrText);
@@ -150,17 +156,29 @@ export function paramPlans(
         if (!m) continue;
         // An `eq` plan is the only one a reader can answer by echoing a row's
         // value, so it wins over one the markup happened to declare first.
-        const found = { param, table, column: m[1], op: m[2] };
-        const held = plans.get(param);
-        if (held === undefined || (held.op !== "eq" && found.op === "eq")) plans.set(param, found);
+        const found = { route: route.path, param, table, column: m[1], op: m[2] };
+        const held = plans.get(key);
+        if (held === undefined || (held.op !== "eq" && found.op === "eq")) plans.set(key, found);
         if (found.op === "eq") break;
       }
     }
   }
-  return { plans: [...plans.values()], unplanned: [...wanted].filter((p) => !plans.has(p)).sort() };
+  return {
+    plans: [...plans.values()],
+    unplanned: [...wanted].filter(([key]) => !plans.has(key)).map(([, hole]) => hole)
+      .sort((a, b) => `${a.route} ${a.param}`.localeCompare(`${b.route} ${b.param}`)),
+  };
 }
 
-export type MachineRegion = { table: string; machine: string; emptyRow?: string; filter?: string };
+export type MachineRegion = {
+  table: string;
+  machine: string;
+  /** Every chart on this region, this one included: the group a row-sharing
+   * rule is about. */
+  parallel: string[];
+  emptyRow?: string;
+  filter?: string;
+};
 
 /** Every data-machine region in one screen's markup, with the attributes its
  * validity depends on. Single-quoted values are the norm here — a machine is
@@ -176,9 +194,42 @@ export function machineRegions(html: string): MachineRegion[] {
     if (machine === undefined) continue;
     const table = attr("data-live");
     if (table === undefined) throw new Error(`data-machine on a tag with no data-live`);
-    out.push({ table, machine, emptyRow: attr("data-empty-row"), filter: attr("data-filter") });
+    // A list is several charts on one region, and every rule below is a
+    // chart's — so the list becomes entries, each carrying the siblings it
+    // shares a row with for the one rule that is the GROUP's.
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(machine);
+    } catch {
+      throw new Error(`data-machine is not JSON`);
+    }
+    const parallel = (Array.isArray(parsed) ? parsed : [parsed]).map((c) => JSON.stringify(c));
+    for (const one of parallel) {
+      out.push({ table, machine: one, parallel, emptyRow: attr("data-empty-row"), filter: attr("data-filter") });
+    }
   }
   return out;
+}
+
+/** The reason parallel charts on one region are not disjoint, or null.
+ *
+ * They share a row, which is the point — one write, several charts' columns —
+ * and it is also the whole hazard: a column two charts write has two writers
+ * and no arbiter, so which value survives is which chart stepped last. The
+ * field counts as a written column, because it is. */
+export function parallelLint(charts: Machine[]): string | null {
+  const owner = new Map<string, string>();
+  for (const chart of charts) {
+    for (const col of [chart.field, ...machineWrites(chart, undefined).map((w) => w.col)]) {
+      const held = owner.get(col);
+      if (held !== undefined && held !== chart.field) {
+        return `the charts over "${held}" and "${chart.field}" both write "${col}" — parallel charts share the ` +
+          `row and hold disjoint columns, or which value survives is which chart stepped last`;
+      }
+      owner.set(col, chart.field);
+    }
+  }
+  return null;
 }
 
 const ANY_TAG = /<(\/?)([a-zA-Z][a-zA-Z0-9-]*)((?:"[^"]*"|'[^']*'|[^>"'])*)>/g;
@@ -402,13 +453,17 @@ const ON_ATTR = /\sdata-on-[a-z][a-z-]*=/;
  * a caller must take that finding before asking this rule anything. */
 const clickIds = (machine: string | undefined): Set<string> | null => {
   if (machine === undefined) return new Set();
-  const m = JSON.parse(machine) as {
+  const parsed: unknown = JSON.parse(machine);
+  // Every chart the region runs: a control is witnessed by any of them, so a
+  // rule reading only the first would call a header wired to nothing while its
+  // sibling chart answers the click.
+  const charts = (Array.isArray(parsed) ? parsed : [parsed]) as {
     on?: Record<string, unknown>;
     states?: Record<string, { on?: Record<string, unknown> }>;
-  };
+  }[];
   const ids = new Set<string>();
   let unkeyed = false;
-  for (const on of [m.on ?? {}, ...Object.values(m.states ?? {}).map((s) => s.on ?? {})]) {
+  for (const on of charts.flatMap((m) => [m.on ?? {}, ...Object.values(m.states ?? {}).map((s) => s.on ?? {})])) {
     for (const key of Object.keys(on)) {
       const [type, id] = key.split("@");
       if (type !== "click") continue;
@@ -755,7 +810,168 @@ const BROWSER_TIERS = new Set(["tab", "device"]);
 // a non-string written into it is not a second spelling but a second type.
 const TWO_SPELLINGS = new Set(["int", "bigint", "bool"]);
 
-/** Column-spelling consistency over the writes a screen's markup declares:
+/** The answers a region's projection supplies, by name. Unparseable is this
+ * pass's finding rather than the runtime's: every other reader of the markup
+ * would go on to judge the region against a projection it could not read. */
+const clausesOf = (project: string | undefined): string[] => {
+  if (project === undefined) return [];
+  try {
+    return Object.keys(JSON.parse(project));
+  } catch {
+    throw new Error(`data-project is not JSON: ${project}`);
+  }
+};
+
+export type StopRegion =
+  { table: string; columns: string[]; machine?: string; projected: string[]; outer?: string };
+
+/** Every region declaring tabstops or focus targets under `attr`, with the
+ * names its members bind, the answers its projection supplies and the chart it
+ * runs. A region owns the members under it, so the scan needs the nesting the
+ * interpreter's `ownedBy` answers at runtime — the innermost open `data-live`
+ * is whose set a member joins, and the elements between are markup.
+ *
+ * A member sits under whatever the skin wraps it in — a cell, a list item, a
+ * group — so the search is for the nearest REGION and never the nearest tag. */
+type OpenStop = {
+  table?: string;
+  machine?: string;
+  columns: string[];
+  projected: string[];
+  outer?: string;
+  template?: string;
+};
+
+// A template the screen keeps by name, for the regions that render through one.
+// Named because their region re-hydrates and a render sweeps every child that
+// is not one of its rows — so the members are declared OUTSIDE the region they
+// belong to, and a scan reading the markup's nesting alone would find none.
+const NAMED_TEMPLATE = /<template\b[^>]*\sdata-name="([^"]*)"[^>]*>([\s\S]*?)<\/template>/g;
+
+export function stopRegions(html: string, attr: "data-rove" | "data-focus"): StopRegion[] {
+  const bare = strip(html);
+  const named = new Map<string, string>();
+  for (const [, name, body] of bare.matchAll(NAMED_TEMPLATE)) named.set(name, body);
+  // Removed before the walk, and reached only through the region that names
+  // one: a named template at the top of a screen belongs to no region where it
+  // is written, and to the region that renders it where it is rendered.
+  return walkStops(bare.replace(NAMED_TEMPLATE, ""), attr, named);
+}
+
+/** `root` is a region already open — the walk of a template body a region
+ * renders, whose top-level members are that region's. The caller owns it and
+ * emits it; this pass only fills it in. */
+function walkStops(
+  html: string,
+  attr: "data-rove" | "data-focus",
+  named: Map<string, string>,
+  root?: OpenStop,
+): StopRegion[] {
+  const out: StopRegion[] = [];
+  const open: OpenStop[] = root === undefined ? [] : [root];
+  const close = (done: OpenStop) => {
+    if (done.template !== undefined) {
+      const body = named.get(done.template);
+      if (body === undefined) {
+        throw new Error(`data-template names "${done.template}", which no <template data-name> declares`);
+      }
+      out.push(...walkStops(body, attr, named, done));
+    }
+    if (done.table !== undefined && done.columns.length > 0) {
+      out.push({
+        table: done.table,
+        columns: done.columns,
+        machine: done.machine,
+        projected: done.projected,
+        outer: done.outer,
+      });
+    }
+  };
+  for (const [, closing, tag, attrText] of html.matchAll(ANY_TAG)) {
+    if (closing === "/") {
+      const done = open.pop();
+      if (done !== undefined && done !== root) close(done);
+      continue;
+    }
+    const { attr: read } = attrsOf(attrText);
+    const table = read("data-live");
+    const member = read(attr);
+    if (member !== undefined) {
+      const col = /^\{([\w.]+)\}$/.exec(member)?.[1];
+      const held = open.findLast((o) => o.table !== undefined);
+      if (col !== undefined && held !== undefined) held.columns.push(col);
+    }
+    if (VOID.has(tag) || /\/\s*$/.test(attrText)) continue;
+    open.push({
+      table,
+      machine: read("data-machine"),
+      columns: [],
+      projected: clausesOf(read("data-project")),
+      outer: open.findLast((o) => o.table !== undefined)?.table,
+      template: read("data-template"),
+    });
+  }
+  return out;
+}
+
+/** The reason a region's caret is one a second reader could move, or null.
+ *
+ * The terminal moves focus when the caret MOVES, and a move carries no account
+ * of who caused it — deliberately, since a cause the rows do not hold is state
+ * no trace records and no snapshot restores. That is exact while the column has
+ * one writer, and the reader IS that writer only where the row is theirs: a
+ * `tab` or `device` row is the browser's own, while a `crud` or `live` row is
+ * one anybody sharing it can write, and their write would land here as this
+ * reader's focus jumping. */
+function caretLint(region: StopRegion, e: Entity, outer: Entity | undefined, what: string): string | null {
+  for (const col of region.columns) {
+    if (region.projected.includes(col) || e.fields.some((f) => f.name === col)) continue;
+    return `${what} binds "${col}" — not a field of "${e.table}", and not an answer its projection supplies`;
+  }
+  // A projected caret is one the region computes over the rows it holds, so
+  // nothing writes it — but the projection compares against the row it is
+  // nested in, and THAT row is what moves the caret. So the tier question is
+  // asked of the enclosing region too, and a member set is only as private as
+  // the least private row deciding which of its members is current.
+  const owns = region.columns.some((c) => region.projected.includes(c)) && outer !== undefined
+    ? [e, outer]
+    : [e];
+  for (const held of owns) {
+    if (BROWSER_TIERS.has(held.path)) continue;
+    return `${what} follows a "${held.path}" table ("${held.table}"), whose rows another reader can write — ` +
+      `their move would take this reader's focus; a caret follows a ` +
+      `"${[...BROWSER_TIERS].join('" or "')}" row, which is the reader's own`;
+  }
+  return null;
+}
+
+export const roveLint = (region: StopRegion, e: Entity, outer?: Entity): string | null =>
+  caretLint(region, e, outer, "data-rove");
+
+/** As above, and one more: a focus target must hear `focusin`.
+ *
+ * `data-rove` owns the tab order, so the terminal can tell a move it made from
+ * a refresh it did not. `data-focus` owns nothing, so its only reading of "the
+ * reader is on the wrong member" is the DOM's own focus — and a reader who
+ * Tabbed there would be dragged back on the next refresh, forever, unless their
+ * move writes the column too. `focusin` is what writes it, and a chart that
+ * does not draw it turns this into a focus-stealing loop. */
+export function focusLint(region: StopRegion, e: Entity, outer?: Entity): string | null {
+  const why = caretLint(region, e, outer, "data-focus");
+  if (why !== null) return why;
+  // Every chart the region runs, since a region may run several and which one
+  // hears the reader is the region's business rather than this rule's.
+  const parsed = region.machine === undefined ? [] : JSON.parse(region.machine);
+  const charts = Array.isArray(parsed) ? parsed : [parsed];
+  if (!charts.some((c) => machineShape(c).handled.includes("focusin"))) {
+    return `data-focus without a chart hearing "focusin": every affordance stays in the Tab sequence, so a ` +
+      `reader can put focus on a member the column does not name, and every refresh would drag them back — ` +
+      `draw the arrow that records where they went`;
+  }
+  return null;
+}
+
+/** Column-spelling consistency over the writes a screen's markup declares:/** Column-spelling consistency over the writes a screen's markup declares:
  * the reason a browser-tier entity's regions write one column in more than one
  * JS spelling, or write a non-string into a column whose type has only the
  * string spelling, or null. This rule judges spelling and nothing else — it

@@ -107,7 +107,7 @@ Deno.test({
     await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
     const region = mount.querySelector("#fib");
 
-    const covered = await walkMachine(MACHINE, {
+    const walk = await walkMachine(MACHINE, {
       // `refused` is not a DOM event: the harness synthesizes it by arming a
       // one-shot store refusal and forcing a write.
       fire: async (type, from) => {
@@ -122,6 +122,12 @@ Deno.test({
       wait: (ms) => new Promise((r) => setTimeout(r, ms)),
       field: () => rows.find((r) => r.id === "the")?.phase,
     });
+    // `arrows` is what the walk drove; `shadowed` is what it could not select,
+    // and a chart with no two candidates on one event has none.
+    const covered = walk.arrows;
     if (covered.length !== 10) throw new Error(`fib declares 10 arrows, walker saw ${covered.length}`);
+    if (walk.shadowed.length !== 0) {
+      throw new Error(`fib has no sibling sharing an event, walker shadowed ${walk.shadowed.length}`);
+    }
   },
 });

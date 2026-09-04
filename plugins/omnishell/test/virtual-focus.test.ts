@@ -147,10 +147,18 @@ describe("virtual focus is a binding on the container", () => {
   it("refuses a declaration that is not JSON, or is null", async () => {
     const cases = [
       ["data-machine", "{bad", /data-machine is not JSON/],
-      ["data-machine", "null", /data-machine is null, not an object/],
+      ["data-machine", "null", /data-machine holds null, which is not a chart/],
       ["data-empty-row", "{bad", /data-empty-row is not JSON/],
       ["data-empty-row", "42", /data-empty-row is 42, not an object/],
-      ["data-machine", "[1,2]", /data-machine is \[1,2\], not an object/],
+      // A list is now several charts, so the message names the member that is
+      // not one rather than refusing the list.
+      ["data-machine", "[1,2]", /data-machine holds 1, which is not a chart/],
+      ["data-machine", "[]", /data-machine states no chart/],
+      [
+        "data-machine",
+        '[{"field":"v","initial":"a","states":{}},{"field":"v","initial":"b","states":{}}]',
+        /two charts run over the field "v"/,
+      ],
     ] as const
     for (const [attr, spec, why] of cases) {
       const files = {

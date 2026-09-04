@@ -170,17 +170,18 @@ async function loadHandlers(screen, appBase, route) {
       // This scan reaches every machine on the screen, and one may sit on an
       // element that is not a region — the message is the guard's whole value.
       const where = el.dataset.live ?? el.id ?? el.localName;
-      const shape = machineShape(declared(el.getAttribute("data-machine"), where, "data-machine"));
-      for (const name of shape.refs) {
-        if (loaded.has(name)) continue;
-        const path = route.files.handlers.find((f) => f.split("/").pop() === `${name}.js`);
-        if (!path) throw new Error(`no Jessie module for machine reference "${name}"`);
-        loaded.set(name, await evaluateRole(await fetchText(new URL(path, appBase)), "handler"));
-      }
-      for (const name of shape.assignStrings) {
-        if (loaded.has(name)) continue;
-        const path = route.files.handlers.find((f) => f.split("/").pop() === `${name}.js`);
-        if (path) loaded.set(name, await evaluateRole(await fetchText(new URL(path, appBase)), "handler"));
+      for (const shape of declaredCharts(el.getAttribute("data-machine"), where).map(machineShape)) {
+        for (const name of shape.refs) {
+          if (loaded.has(name)) continue;
+          const path = route.files.handlers.find((f) => f.split("/").pop() === `${name}.js`);
+          if (!path) throw new Error(`no Jessie module for machine reference "${name}"`);
+          loaded.set(name, await evaluateRole(await fetchText(new URL(path, appBase)), "handler"));
+        }
+        for (const name of shape.assignStrings) {
+          if (loaded.has(name)) continue;
+          const path = route.files.handlers.find((f) => f.split("/").pop() === `${name}.js`);
+          if (path) loaded.set(name, await evaluateRole(await fetchText(new URL(path, appBase)), "handler"));
+        }
       }
     }
   }
@@ -503,6 +504,42 @@ function fromEnclosing(resolve, table, what) {
   } catch (err) {
     throw new ProgramError(`region "${table}": ${what} — ${err.message}`);
   }
+}
+
+/**
+ * The charts a region runs. One `data-machine` is one chart; a LIST is several,
+ * which is how a caret sits beside the pattern's own state without either
+ * chart learning about the other (machine.cue's parallel machines).
+ *
+ * They share the row and must not share a column. Columns are `machineLint`'s
+ * to refuse, because two charts writing one column is decidable off the markup
+ * and a runtime arbitrating it would have to pick a winner. FIELDS are refused
+ * here, because everything below keys its listeners, its timer generation and
+ * its armed state by field — two charts over one field would silently take
+ * each other's.
+ */
+function declaredCharts(spec, table) {
+  let value;
+  try {
+    value = JSON.parse(spec);
+  } catch {
+    throw new ProgramError(`region "${table}": data-machine is not JSON: ${spec}`);
+  }
+  const charts = Array.isArray(value) ? value : [value];
+  if (charts.length === 0) {
+    throw new ProgramError(`region "${table}": data-machine states no chart`);
+  }
+  for (const chart of charts) {
+    if (chart === null || typeof chart !== "object" || Array.isArray(chart)) {
+      throw new ProgramError(`region "${table}": data-machine holds ${JSON.stringify(chart)}, which is not a chart`);
+    }
+  }
+  const fields = charts.map((c) => c.field);
+  const twice = fields.find((f, i) => fields.indexOf(f) !== i);
+  if (twice !== undefined) {
+    throw new ProgramError(`region "${table}": two charts run over the field "${twice}"; parallel charts hold disjoint columns`);
+  }
+  return charts;
 }
 
 /** A JSON declaration off the markup. Malformed is a SyntaxError and `null`
@@ -913,6 +950,13 @@ function wireInterest(el) {
     // the clause a CSS-only tooltip cannot meet without the two boxes touching.
     [surface, "pointerenter", true, 0],
     [surface, "pointerleave", false, INTEREST_OUT],
+    // And the same pair for the keyboard, which is what a surface holding
+    // anything reachable needs: Tab moves focus out of the trigger, and a
+    // surface that only heard the pointer would close under the reader on
+    // their way into it — taking the focus with it, since the element it held
+    // is gone.
+    [surface, "focusin", true, 0],
+    [surface, "focusout", false, INTEREST_OUT],
   ]) {
     node.addEventListener(type, () => settle(want, delay));
   }
@@ -1073,6 +1117,16 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
   // APG's own set for moving through a list, and nothing else: a binding that
   // could name any key would be a handler with a keyboard attached.
   const ROVING_KEYS = new Set(["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight", "Home", "End"]);
+  // The one modifier a walk through a list asks for, and APG asks for it by
+  // name: in a grid, Home and End move within a row and CTRL+Home and Ctrl+End
+  // move to the whole grid's ends. Closed at one, because a binding admitting
+  // any modifier would be the handler with a keyboard the set above refuses —
+  // and Meta is absent deliberately, since a chord a reader presses from
+  // anywhere is not a binding on an element but an event source this terminal
+  // does not have.
+  const KEY_MODIFIER = "Ctrl+";
+  /** A binding's key as the DOM spells it: the modifier, then APG's own name. */
+  const keyOfEvent = (e) => `${e.ctrlKey ? KEY_MODIFIER : ""}${e.key}`;
 
   /** Whether one key of a bound map named a target that varies with the row.
    * The binder consumed the placeholders, so the question is asked of the
@@ -1109,8 +1163,12 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       throw new KeyBindingError(`data-key is ${el.dataset.key}, not an object of key to form id`);
     }
     for (const key of Object.keys(keys)) {
-      if (!ROVING_KEYS.has(key)) {
-        throw new KeyBindingError(`data-key names "${key}", which is not one of ${[...ROVING_KEYS].join(", ")}`);
+      const bare = key.startsWith(KEY_MODIFIER) ? key.slice(KEY_MODIFIER.length) : key;
+      if (!ROVING_KEYS.has(bare)) {
+        throw new KeyBindingError(
+          `data-key names "${key}", which is not one of ${[...ROVING_KEYS].join(", ")}, ` +
+            `nor one of those under "${KEY_MODIFIER}"`,
+        );
       }
     }
     // Only after the declaration is known good: a listener attached to a
@@ -1118,7 +1176,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     // second pass from ever reporting it.
     el._prontoKeys = true;
     el.addEventListener("keydown", (e) => {
-      const name = JSON.parse(el.dataset.key)[e.key];
+      const name = JSON.parse(el.dataset.key)[keyOfEvent(e)];
       if (name === undefined) return;
       const form = document.getElementById(name);
       // A miss means two different things, and only the declaration tells them
@@ -1129,7 +1187,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       // key uncancelled, so the arrow does what an arrow does when there is no
       // list to walk.
       if (form === null) {
-        if (interpolates(el, "data-key", e.key)) return;
+        if (interpolates(el, "data-key", keyOfEvent(e))) return;
         throw new KeyBindingError(`data-key names "${name}", which is no element on the screen`);
       }
       // The tag, not a duck-type: the declaration names a form, and every
@@ -1378,7 +1436,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     const rowsReduce = region.dataset.onMutation && handlers.get(region.dataset.onMutation);
     // Assigned by the machine block below when the machine declares "refused";
     // a refusal is then the machine's onError before it is anything else.
-    let machineRefused;
+    const machineRefused = [];
 
     // A refusal is an event, not a callback. A write settles twice — accepted
     // optimistically, then confirmed or withdrawn — so the withdrawal cannot
@@ -1396,10 +1454,10 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       // the store still holds, not from the state that was just rolled back.
       region._prontoMachineRow = undefined;
       const kind = err?.name === "NonRetriableError" ? "refused" : "failed";
-      if (machineRefused !== undefined) {
+      if (machineRefused.length > 0) {
         const fired = { type: "refused", entity, kind };
         if (id !== undefined) fired.id = id;
-        machineRefused(fired);
+        for (const hear of machineRefused) hear(fired);
         return;
       }
       if (rowsReduce) {
@@ -1521,15 +1579,24 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     // with the bare type as its fallback, a state's transitions hide
     // root-level `on:` per exact key, and no transition for the current
     // (state, event) is a no-op, not an error.
-    const machine = region.dataset.machine === undefined
-      ? undefined
-      : declared(region.dataset.machine, region.dataset.live, "data-machine");
-    if (machine !== undefined) {
+    const charts = region.dataset.machine === undefined
+      ? []
+      : declaredCharts(region.dataset.machine, region.dataset.live);
+    // Each chart is mounted on its own, knowing nothing of its siblings. What
+    // they share is the ROW — `_prontoMachineRow` accumulates every chart's
+    // stated columns within one tick, which is what makes two charts one write
+    // — and everything a chart owns alone is keyed by its field.
+    for (const machine of charts) {
+      const mine = (what) => `_prontoMachine_${machine.field}_${what}`;
       // Naming a field outside the allowlist is an authoring error and throws.
       // An event that simply does not carry one is this transition declining —
       // a select firing an arrow written for a checkbox must not take the
       // screen down, and writing undefined would be a hole no later reader can
       // tell from a value the app meant.
+      // Which state this chart's last transition entered, read by runMachine
+      // to arm the timer. It never outlives one call, so it is not the
+      // region's to hold.
+      let entered;
       const NO_FIELD = Symbol("no field");
       const eventField = (event, field) => {
         if (!EVENT_FIELDS.has(field)) {
@@ -1599,6 +1666,10 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         // armed the array.
         globalThis.__prontoMachineTrace?.push({
           region,
+          // Which chart drew it. Two charts on one region share the element, so
+          // a walk filtering by region alone would read its sibling's arrows as
+          // its own — and the field is what tells them apart everywhere else.
+          field: machine.field,
           state: chosen.origin,
           key: chosen.key,
           index: chosen.index,
@@ -1616,7 +1687,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
           region._prontoMachineRow = { ...row, ...stated };
         }
         // Entered even on a self-target: re-entry is what re-arms `after`.
-        if (chosen.c.target !== undefined) region._prontoMachineEntered = chosen.c.target;
+        if (chosen.c.target !== undefined) entered = chosen.c.target;
         // raise is the reduce's then: under XState's name — delivered after
         // the writes, depth-bounded by the terminal.
         if (chosen.c.raise !== undefined) out.then = { type: chosen.c.raise };
@@ -1634,12 +1705,9 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       // Every invocation arms the state its chain ended in; the entered flag
       // is set even on a self-target, which is what re-arms the timer.
       const runMachine = async (reduce, event) => {
+        entered = undefined;
         await step(reduce, event, 0);
-        const entered = region._prontoMachineEntered;
-        if (entered !== undefined) {
-          region._prontoMachineEntered = undefined;
-          armAfter(entered);
-        }
+        if (entered !== undefined) armAfter(entered);
       };
 
       // `after` is the relocated invoke: armed on state entry, canceled on
@@ -1648,9 +1716,9 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       // expired wait with a stale generation dies silently, and so the
       // duplicate-chain hazard is inexpressible here.
       const armAfter = (stateName) => {
-        region._prontoAfterGen = (region._prontoAfterGen ?? 0) + 1;
-        const gen = region._prontoAfterGen;
-        region._prontoMachineArmed = stateName;
+        region[mine("afterGen")] = (region[mine("afterGen")] ?? 0) + 1;
+        const gen = region[mine("afterGen")];
+        region[mine("armed")] = stateName;
         const spec = machine.states[stateName]?.after;
         if (spec === undefined) return;
         for (const [key, t] of Object.entries(spec)) {
@@ -1670,7 +1738,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
               : machineReduce(state, event);
           (async () => {
             await rest(ms / TEMPO);
-            if (region._prontoAfterGen !== gen) return;
+            if (region[mine("afterGen")] !== gen) return;
             await runMachine(timerReduce, { type: `after:${key}` });
           })().catch((err) => {
             console.error(err);
@@ -1683,7 +1751,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       for (const type of shape.handled) {
         // Synthesized by the terminal, never dispatched by the DOM.
         if (type === "refused") continue;
-        const once = `_prontoMachine_${type}`;
+        const once = mine(`on:${type}`);
         if (region[once]) continue;
         region[once] = true;
         region.addEventListener(type, async (e) => {
@@ -1710,7 +1778,12 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
             // region would take the UA's menu from a reader this app has
             // nothing to offer. Resolved synchronously — preventDefault cannot
             // survive an await.
-            if (DISPLACING_EVENTS.has(type)) {
+            // A keydown joins them by its KEY rather than its type: scrolling
+            // the page while the tabstop moves inside a group is a default
+            // incoherent to keep, where a chart answering a printable key is a
+            // reader typing and the browser's job stands. The set is the one
+            // data-key already admits.
+            if (DISPLACING_EVENTS.has(type) || (type === "keydown" && ROVING_KEYS.has(e.key))) {
               const row = region._prontoMachineRow ?? getRows()[0];
               if (row !== undefined && candidatesFor(row[machine.field], fired).length > 0) {
                 e.preventDefault();
@@ -1724,12 +1797,12 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         });
       }
       if (shape.handled.includes("refused")) {
-        machineRefused = (fired) => {
+        machineRefused.push((fired) => {
           runMachine(machineReduce, fired).catch((err) => {
             console.error(err);
             setState("network-error");
           });
-        };
+        });
         // A machine that draws the refused arrow is a mounted consumer of the
         // event whether or not a mutation reduce shares the region, so a
         // form's refusal must route here rather than to the .store-error
@@ -1740,7 +1813,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       // them — re-arms on the refresh it causes; the entered flag covers the
       // machine's own moves.
       const current = (region._prontoMachineRow ?? getRows()[0])?.[machine.field];
-      if (current !== undefined && region._prontoMachineArmed !== current) armAfter(current);
+      if (current !== undefined && region[mine("armed")] !== current) armAfter(current);
     }
 
     // A mutation landed on this region's collection, and the terminal knows it
@@ -1905,14 +1978,14 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     // equalities — facts about any row this region can ever show — plus
     // {field: initial}. The pk must be pinned or the first transition's put
     // has no key to write: a precondition, not a fallback.
-    const machine = region.dataset.machine === undefined
-      ? undefined
-      : declared(region.dataset.machine, table, "data-machine");
+    const mounted = region.dataset.machine === undefined
+      ? []
+      : declaredCharts(region.dataset.machine, table);
     let fallbackRow;
     if (region.dataset.emptyRow) {
       fallbackRow = declared(region.dataset.emptyRow, table, "data-empty-row");
     }
-    else if (machine !== undefined && templates.length === 0) {
+    else if (mounted.length > 0 && templates.length === 0) {
       const spec = parseFilterSpec(opts.filter ?? "") ?? [];
       const eqs = Object.fromEntries(spec.filter((s) => s.op === "eq").map((s) => [s.col, s.value]));
       if (eqs.id === undefined) {
@@ -1920,11 +1993,16 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
           `machine region "${table}" has no data-empty-row and its filter pins no id=eq.; the machine's first write would have no key`,
         );
       }
-      // {...context, ...eqs, field: initial}: the machine states the initial
+      // {...context, ...eqs, field: initial}: each chart states the initial
       // world, the filter's equalities add the facts any visible row carries,
-      // and the field is the machine's own — a filter pinning the machine's
-      // field would herd rows out of its own read and earns no override.
-      fallbackRow = { ...(machine.context ?? {}), ...eqs, [machine.field]: machine.initial };
+      // and the field is the chart's own — a filter pinning it would herd rows
+      // out of its own read and earns no override. Parallel charts hold
+      // disjoint columns, so the merge cannot lose one of them: the row is the
+      // union of what they each said, which is the row they all then write to.
+      fallbackRow = { ...eqs };
+      for (const chart of mounted) {
+        fallbackRow = { ...(chart.context ?? {}), ...fallbackRow, [chart.field]: chart.initial };
+      }
     }
     // Read back by the machine reduce (wired per refresh, outside this scope):
     // a write concluding from the fallback must state the whole fallback row.
@@ -2029,6 +2107,98 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         }
         return { ...row, ...derived };
       });
+    };
+
+    /**
+     * APG's other focus model: the affordances are focusable, one of them holds
+     * the tabstop, and moving the caret moves DOM focus. Virtual focus needs
+     * neither — `aria-activedescendant` names the active row and focus never
+     * leaves the container — so this is the arm that has to reach the DOM.
+     *
+     * `data-rove` names the column that says which member is current, and the
+     * terminal performs both effects it decides: the tab order, because the DOM
+     * has one and a screen spelling it per member could disagree with itself,
+     * and the focus.
+     *
+     * Focus follows the tabstop MOVING, which is the delta between two
+     * consecutive views and not a fact about who caused it. The reader is the
+     * other writer: Tab moves focus with no column changing, so a terminal
+     * re-asserting focus on every refresh fights them for it — and a column
+     * that did not change is every such refresh. Nothing is recorded to decide
+     * this: a cause the rows do not carry would be state outside the algebra,
+     * invisible to a trace and absent from a snapshot, so a replay would take
+     * one path and a jump to the same state another.
+     *
+     * The column has ONE writer by construction, which is what makes the delta
+     * the reader's own move: `roveLint` refuses a tabstop over an entity the
+     * reader does not own, where a second reader's write would land as a jump
+     * of this one's caret.
+     */
+    const rove = () => {
+      // Almost no region declares one, and this runs on every refresh of every
+      // region: one selector match answers before any per-stop work.
+      if (region.querySelector("[data-rove]") === null) return;
+      // Every stop the region owns, whatever row each came from. A list whose
+      // rows are the members and a compile-time set of N members under one row
+      // are the same set — the region's shape says nothing about the tabstop,
+      // and a one-row list carrying a fixed set of affordances is both at once.
+      const stops = [...region.querySelectorAll("[data-rove]")].filter((el) => ownedBy(el, region));
+      if (stops.length === 0) return;
+      const held = stops.find((el) => el.getAttribute("tabindex") === "0");
+      const reading = stops.filter((el) => el.getAttribute("data-rove") === "true");
+      // The invariant a set has, in either shape: one member is current. Two
+      // would leave which one holds the tabstop to document order, and the
+      // reader would find the caret somewhere the columns did not put it.
+      if (reading.length > 1) {
+        throw new ProgramError(
+          `region "${table}": ${reading.length} members read data-rove="true"; a set has one current member`,
+        );
+      }
+      const current = reading[0];
+      // The attribute, not the property: the tab order is what the markup
+      // states, so it has to be readable off the element the same way every
+      // other stamped fact is.
+      for (const el of stops) el.setAttribute("tabindex", el === current ? "0" : "-1");
+      // A set that carried no tabstop is arriving, not moving: focusing on
+      // first paint would take the page from whatever the reader opened it on.
+      if (held === undefined || current === undefined || held === current) return;
+      current.focus();
+    };
+
+    /**
+     * Move focus to the member a column names, leaving the tab order alone.
+     *
+     * APG gives some patterns one tab stop and others — an accordion's headers
+     * — every affordance in the Tab sequence with the arrows as an addition.
+     * `data-rove` performs the first; this is the second, and the split matters
+     * because stamping a tabstop where the standard keeps them all would take
+     * headers OUT of the Tab sequence, which is a worse contract than the one
+     * it replaces.
+     *
+     * Nothing is remembered and nothing is stamped to stand in for it: the DOM
+     * already holds where focus is, so the rule reads it. Move only when the
+     * reader is INSIDE this widget and on the wrong member — outside it, their
+     * focus is not this region's business, and on the right member there is
+     * nothing to do.
+     *
+     * What keeps the two writers from fighting is `focusin`: the reader's own
+     * moves write the column, so a disagreement is the chart's move and never
+     * theirs. `focusLint` refuses a region that does not hear it.
+     */
+    const moveFocus = () => {
+      if (region.querySelector("[data-focus]") === null) return;
+      const members = [...region.querySelectorAll("[data-focus]")].filter((el) => ownedBy(el, region));
+      const reading = members.filter((el) => el.getAttribute("data-focus") === "true");
+      if (reading.length > 1) {
+        throw new ProgramError(
+          `region "${table}": ${reading.length} members read data-focus="true"; a set has one current member`,
+        );
+      }
+      const current = reading[0];
+      if (current === undefined) return;
+      const active = document.activeElement ?? null;
+      if (active === current || !region.contains(active)) return;
+      current.focus();
     };
 
     // Item nodes persist across refreshes, keyed by row id. A surviving node
@@ -2254,6 +2424,8 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
             if (HAS_MOVE_BEFORE && node.isConnected) region.moveBefore(node, cursor);
             else region.insertBefore(node, cursor);
           }
+          rove();
+          moveFocus();
           if (order.length === 0 && region.dataset.empty) {
             // A list element admits only li children, so the note matches the
             // rows it stands in for.
@@ -2320,6 +2492,8 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         wireKeysIn(region);
         bindTexts(region, slotCtx, renderers);
         bindHatches(region, slotCtx);
+        rove();
+        moveFocus();
       }
     };
     let retryTimer;
@@ -2384,8 +2558,11 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       // An armed machine timer dies with the subscriptions — a wait expiring
       // on a torn-down region must not write into the live store — and the
       // cleared mark is what lets resume's refresh re-arm the standing state.
-      region._prontoAfterGen = (region._prontoAfterGen ?? 0) + 1;
-      region._prontoMachineArmed = undefined;
+      for (const chart of mounted) {
+        const gen = `_prontoMachine_${chart.field}_afterGen`;
+        region[gen] = (region[gen] ?? 0) + 1;
+        region[`_prontoMachine_${chart.field}_armed`] = undefined;
+      }
       unsub?.();
       unsub = null;
     };

@@ -133,7 +133,19 @@ describe("machineRegions anchors a machine to its table", () => {
   it("carries the region's data-live", () => {
     const machine = '{"field":"variant","initial":"mineiro","states":{"mineiro":{}}}'
     expect(machineRegions(`<div data-live="match" data-filter="status=eq.playing" data-machine='${machine}'></div>`))
-      .toEqual([{ table: "match", machine, emptyRow: undefined, filter: "status=eq.playing" }])
+      .toEqual([{ table: "match", machine, parallel: [machine], emptyRow: undefined, filter: "status=eq.playing" }])
+  })
+
+  it("makes a list of charts one entry each, carrying the group they share a row with", () => {
+    // Every rule below is a chart's; only disjointness is the group's, so the
+    // group rides along rather than the list staying whole.
+    const a = '{"field":"open","initial":"none","states":{"none":{}}}'
+    const b = '{"field":"caret","initial":"one","states":{"one":{}}}'
+    const parallel = [a, b]
+    expect(machineRegions(`<div data-live="match" data-machine='[${a},${b}]'></div>`)).toEqual([
+      { table: "match", machine: a, parallel, emptyRow: undefined, filter: undefined },
+      { table: "match", machine: b, parallel, emptyRow: undefined, filter: undefined },
+    ])
   })
 
   // The interpreter reads a machine from region.dataset and from nowhere

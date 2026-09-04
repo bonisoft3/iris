@@ -124,14 +124,23 @@ export function embedValue(row: Record<string, unknown>, column: string): unknow
  * Ask the running cluster for a value that makes each parametrized route
  * paint. `lt`/`gt` cursors take the extreme so the rest of the set remains;
  * full-text search samples a word the index actually matches.
+ *
+ * Answers per route, because a plan is one: two routes spelling `:id` over
+ * different tables want different rows, and a single answer held under the name
+ * fills the second route with the first one's value.
  */
 async function resolveParams(
   base: string,
   token: string,
   plans: ParamPlan[],
-): Promise<{ params: Record<string, string>; unresolved: string[] }> {
-  const params: Record<string, string> = {}
-  const unresolved: string[] = []
+): Promise<{ params: Map<string, Record<string, string>>; unresolved: { route: string; param: string }[] }> {
+  const params = new Map<string, Record<string, string>>()
+  const unresolved: { route: string; param: string }[] = []
+  const keep = (plan: ParamPlan, value: string) => {
+    const held = params.get(plan.route) ?? {}
+    held[plan.param] = value
+    params.set(plan.route, held)
+  }
   for (const plan of plans) {
     const table = plan.table
     const select = embedSelect(plan.column)
@@ -152,8 +161,8 @@ async function resolveParams(
           const got = await crud<unknown[]>(base, `${table}?select=id&${plan.column}=${plan.op}.${w}&limit=1`, token)
           if (got.length) { hit = w; break }
         }
-        if (hit) params[plan.param] = hit
-        else unresolved.push(plan.param)
+        if (hit) keep(plan, hit)
+        else unresolved.push(plan)
         continue
       }
       const order = plan.op === "lt" ? `&order=${plan.column}.desc` : plan.op === "gt" ? `&order=${plan.column}.asc` : ""
@@ -163,12 +172,12 @@ async function resolveParams(
         token,
       )
       const row = rows[0]
-      if (!row) { unresolved.push(plan.param); continue }
+      if (!row) { unresolved.push(plan); continue }
       const raw = embedValue(row, plan.column)
-      if (raw === undefined || raw === null) unresolved.push(plan.param)
-      else params[plan.param] = String(raw)
+      if (raw === undefined || raw === null) unresolved.push(plan)
+      else keep(plan, String(raw))
     } catch {
-      unresolved.push(plan.param)
+      unresolved.push(plan)
     }
   }
   return { params, unresolved }
@@ -330,29 +339,32 @@ async function main(appDir: string): Promise<number> {
 
   // A route whose param never resolved is a coverage hole, not a pass, and a
   // param nothing plans for is that hole one step earlier.
-  for (const p of unplanned) {
+  for (const hole of unplanned) {
     findings.push({
       severity: "major",
-      path: "shell/shell.yaml",
-      message: `no read filters on :${p}, so no fixture can be resolved and every route using it went unlinted. Give the screen a region whose data-filter pins the param.`,
+      path: hole.route,
+      message: `no read filters on :${hole.param}, so no fixture can be resolved and this route went unlinted. Give the screen a region whose data-filter pins the param.`,
     })
   }
-  for (const p of unresolved) {
+  for (const hole of unresolved) {
     findings.push({
       severity: "major",
-      path: "shell/shell.yaml",
-      message: `no fixture value for :${p} — every route using it went unlinted. Seed a row the param's read can match.`,
+      path: hole.route,
+      message: `no fixture value for :${hole.param} — this route went unlinted. Seed a row the param's read can match.`,
     })
   }
 
   // A route whose param never resolved was already reported above; linting it
   // would measure the gone state.
   const live = routes.filter(
-    (route) => !route.path.split("/").some((s) => s.startsWith(":") && params[s.slice(1)] === undefined),
+    (route) =>
+      !route.path.split("/").some(
+        (s) => s.startsWith(":") && params.get(route.path)?.[s.slice(1)] === undefined,
+      ),
   )
 
   const lintRoute = async (context: ContextLike, viewport: Viewport, route: Route, out: Finding[]) => {
-    const url = fillRoute(route.path, params)
+    const url = fillRoute(route.path, params.get(route.path) ?? {})
     const where = `${viewport.name} ${route.path}`
     // Opening the page is inside the report: at eight pages in flight the
     // browser can refuse one, and a lane that threw would take every finding
@@ -549,6 +561,12 @@ function selfTest() {
     "  - path: '/profile/:handle'",
     "    files:",
     "      html: shell/screens/profile.html",
+    "  - path: '/category/:id'",
+    "    files:",
+    "      html: shell/screens/category.html",
+    "  - path: '/entry/:id'",
+    "    files:",
+    "      html: shell/screens/entry.html",
   ].join("\n")
   const markup: Record<string, string> = {
     "/article/:slug": `<div data-live="article" data-filter="slug=eq.{param.slug}"></div>`,
@@ -557,22 +575,47 @@ function selfTest() {
     "/search/:q": `<div data-live="article" data-filter="search=plfts(simple).{param.q}&amp;limit=20"></div>`,
     // Printed, never filtered on — the shape no fixture can come from.
     "/profile/:handle": `<h1 data-text="{param.handle}"></h1><div data-live="article"></div>`,
+    // One name, two tables. Both plans must survive.
+    "/category/:id": `<div data-live="category" data-filter="id=eq.{param.id}"></div>`,
+    "/entry/:id": `<div data-live="expense" data-filter="id=eq.{param.id}"></div>`,
   }
   const routes = routesFrom(yaml)
   const { plans, unplanned } = paramPlans(routes, markup)
-  const by = Object.fromEntries(plans.map((p) => [p.param, p]))
+  const by = Object.fromEntries(plans.map((p) => [p.route, p]))
   const eq = (got: unknown, want: unknown, what: string) => {
     const g = JSON.stringify(got), w = JSON.stringify(want)
     if (g !== w) throw new Error(`${what}: got ${g}, want ${w}`)
   }
-  eq(routes.length, 6, "route count")
-  eq(by.slug, { param: "slug", table: "article", column: "slug", op: "eq" }, "slug plan")
-  eq(by.name, { param: "name", table: "article", column: "article_tag.tag", op: "eq" }, "embedded column plan")
-  eq(by.when, { param: "when", table: "article_stats", column: "created_at", op: "lt" }, "cursor plan")
-  eq(by.q, { param: "q", table: "article", column: "search", op: "plfts(simple)" }, "full-text plan")
+  eq(routes.length, 8, "route count")
+  const plan = (route: string, rest: Record<string, string>) => ({ route, ...rest })
+  eq(by["/article/:slug"], plan("/article/:slug", { param: "slug", table: "article", column: "slug", op: "eq" }), "slug plan")
+  eq(
+    by["/tag/:name"],
+    plan("/tag/:name", { param: "name", table: "article", column: "article_tag.tag", op: "eq" }),
+    "embedded column plan",
+  )
+  eq(
+    by["/older/:when"],
+    plan("/older/:when", { param: "when", table: "article_stats", column: "created_at", op: "lt" }),
+    "cursor plan",
+  )
+  eq(
+    by["/search/:q"],
+    plan("/search/:q", { param: "q", table: "article", column: "search", op: "plfts(simple)" }),
+    "full-text plan",
+  )
+  // The regression: one `:id` over two tables. Keyed by the name alone, the
+  // second route is filled with the first route's row and lints the gone
+  // state — clean, and measuring nothing.
+  eq(by["/category/:id"]?.table, "category", "a shared param name keeps its own route's table")
+  eq(by["/entry/:id"]?.table, "expense", "and the second route is not answered by the first")
   // The regression: a param only ever printed plans nothing, and saying so is
   // the difference between a reported hole and a silent pass.
-  eq(unplanned, ["handle"], "a param nothing filters on is reported, not dropped")
+  eq(
+    unplanned,
+    [{ route: "/profile/:handle", param: "handle" }],
+    "a param nothing filters on is reported, not dropped",
+  )
   eq(fillRoute("/article/:slug", { slug: "a b" }), "/article/a%20b", "fillRoute encodes")
   eq(embedSelect("slug"), "slug", "plain column selects itself")
   eq(embedSelect("article_tag.tag"), "article_tag(tag)", "one hop")

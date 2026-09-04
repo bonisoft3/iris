@@ -666,6 +666,32 @@ function valueAsNumber(document: unknown): void {
   });
 }
 
+/** A button's `value`, which the DOM gives every one of them and linkedom gives
+ * none.
+ *
+ * The interpreter reads a control's leaves off the ELEMENT — `value` off the
+ * closest input, select, textarea or BUTTON — so in a browser every click
+ * carries `value: ""` from the button it came from, where here it carried
+ * nothing at all. A guard or an assign reading the event's value then answers
+ * one way under test and the other way in front of a reader, which is the whole
+ * class this shim closes: a questionnaire's Back arrow read an empty string as
+ * an unanswered question and blocked a step the reader had already answered. */
+function buttonValue(document: unknown): void {
+  const proto = Object.getPrototypeOf(
+    (document as { createElement(tag: string): object }).createElement("button"),
+  ) as object;
+  if (Object.getOwnPropertyDescriptor(proto, "value") !== undefined) return;
+  Object.defineProperty(proto, "value", {
+    configurable: true,
+    get(this: { getAttribute(name: string): string | null }) {
+      return this.getAttribute("value") ?? "";
+    },
+    set(this: { setAttribute(name: string, v: string): void }, v: string) {
+      this.setAttribute("value", String(v));
+    },
+  });
+}
+
 /** An element's box, which this tier has no layout to measure.
  *
  * A normalized pointer is a fraction of the affordance it landed on, so without
@@ -788,6 +814,7 @@ function controlProperties(document: unknown) {
     closest(selector: string): { querySelectorAll(sel: string): Input[] } | null;
   };
   valueAsNumber(document);
+  buttonValue(document);
   const proto = Object.getPrototypeOf(
     (document as { createElement(tag: string): object }).createElement("input"),
   ) as object;

@@ -81,6 +81,33 @@ describe("interest opens a surface and nothing holds it open", () => {
     await m.stop()
   })
 
+  it("stays open while the reader's FOCUS is on the surface", async () => {
+    // The keyboard's half of the clause above, and what a surface holding
+    // anything reachable needs: Tab takes focus off the trigger, and a surface
+    // that only heard the pointer would close on the way into itself — with
+    // the reader's focus inside it when it went.
+    const files = {
+      ...FILES,
+      "tip.html": html('<div id="tip" popover="auto"><a href="#/x" id="inside">More</a></div>'),
+    }
+    const m = await mount(files)
+    await m.settle()
+    m.fire("#trigger", "focusin")
+    await after(m, 0)
+    expect(open(m)).toBe(true)
+
+    // What a Tab does, in the order the DOM fires it.
+    m.fire("#trigger", "focusout")
+    m.fire("#inside", "focusin")
+    await after(m, 400)
+    expect(open(m)).toBe(true)
+
+    m.fire("#inside", "focusout")
+    await after(m, 400)
+    expect(open(m)).toBe(false)
+    await m.stop()
+  })
+
   it("opens on focus with no wait, because a keyboard reader has already arrived", async () => {
     const m = await mount()
     await m.settle()
