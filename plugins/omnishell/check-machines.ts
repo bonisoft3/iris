@@ -39,6 +39,7 @@ import {
   appFiles,
   appRoutes,
   appSeed,
+  appUnits,
   boxOf,
   type Cluster,
   type El,
@@ -46,6 +47,7 @@ import {
   mountScreen,
   type Route,
   type Row,
+  type Unit,
 } from "./test/screen-harness.ts";
 
 type Finding = { severity: string; path: string; message: string };
@@ -242,6 +244,7 @@ async function walkScreen(
   tables: Record<string, Row[]>,
   cluster: Cluster,
   files: Record<string, string>,
+  units: Record<string, Unit>,
 ): Promise<Walked> {
   const html = route.files.html;
   const markup = await Deno.readTextFile(new URL(html, appDir));
@@ -267,7 +270,21 @@ async function walkScreen(
   do {
     let m: Mounted | undefined;
     try {
-      m = await mountScreen({ route, files, tables, params, seed: SEED, epoch: EPOCH, cluster });
+      m = await mountScreen({
+        route,
+        files,
+        tables,
+        params,
+        seed: SEED,
+        epoch: EPOCH,
+        cluster,
+        // The names a data-hatch may carry, so a declared unit resolves and an
+        // undeclared one is still the wiring mistake it was — and no mount,
+        // because a unit renders nothing and declares no machine, and linkedom
+        // has neither of the boundaries one could be given.
+        units,
+        mountUnits: false,
+      });
       // Quiet, not settled: the clock must not move before the walk arms its
       // trace, or a state whose way out is `after: 0` has already taken it and
       // the arrow is missing from a chart that works.
@@ -385,13 +402,14 @@ export async function checkApp(appDir: URL): Promise<Walked> {
   // shell.yaml cannot change mid-run, and a mount per region would re-read and
   // re-parse it for every one.
   const cluster = await appCluster(appDir);
+  const units = await appUnits(appDir);
   const findings: Finding[] = [];
   let walked = 0;
   let authored = 0;
   for (const route of await appRoutes(appDir)) {
     let one: Walked;
     try {
-      one = await walkScreen(appDir, route, tables, cluster, await appFiles(appDir, route));
+      one = await walkScreen(appDir, route, tables, cluster, await appFiles(appDir, route), units);
     } catch (err) {
       findings.push({ severity: "error", path: route.files.html, message: said(err) });
       continue;

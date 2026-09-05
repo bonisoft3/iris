@@ -47,7 +47,7 @@ import (
 // --lock is explicit because deno anchors the lockfile at the workspace root
 // (this package.json), not beside --config; without it the pins go unread.
 _smokes: strings.Join([
-	for f in ["handler", "hatch", "login", "nav", "pending", "renderer"] {"interpreter/\(f)-smoke.js"},
+	for f in ["handler", "hatch", "login", "nav", "pending", "renderer", "worker"] {"interpreter/\(f)-smoke.js"},
 ], " ")
 
 _smokeCmd: {

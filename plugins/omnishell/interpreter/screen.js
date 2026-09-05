@@ -1097,16 +1097,48 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       for (const [key, value] of Object.entries(el.dataset)) {
         if (key.startsWith("prop") && key.length > 4) props[key[4].toLowerCase() + key.slice(5)] = value;
       }
+      // A caller that cannot give a unit its boundary says so rather than
+      // being handed a fiction: the machine walker mounts screens in linkedom,
+      // where neither a Worker nor a frame exists. The name still resolves
+      // above, so an undeclared unit is still the wiring mistake it was; only
+      // the mount is declined.
+      if (opts.mountUnits === false) continue;
       if (el._prontoHatch === undefined) {
         const name = el.dataset.hatch;
         const unit = resolveUnit(name);
         el._prontoHatch = mountHatch(el, {
           unit,
           src: new URL(unit.src, appBase).href,
-          // Q4 is open: one request-shaped return value is not a vocabulary.
-          // Until a second name earns one, an event the terminal cannot
-          // perform is surfaced rather than swallowed.
-          onEvent: (event) => console.warn(`hatch "${name}" emitted an unhandled event`, event),
+          // A unit's named event becomes a real DOM event on the mount, so the
+          // ordinary data-on-* path carries it the rest of the way: bind
+          // attaches the listener, bind builds the event, step runs the reduce
+          // with the region's whole world. Nothing here reaches for a handler,
+          // which is what makes the mount order-immune — bindHatches runs
+          // before wireEvents in the list branch, and a message never arrives
+          // in the same task as the mount.
+          // Not bubbling: only a data-on-* on the hatch host itself means this
+          // unit, and an ancestor region declaring the same name means its own
+          // affordance.
+          // A unit names its own event, so two things bound it. It must be a
+          // name the host DECLARED, and it must not be one a reader can
+          // produce — a host carrying both a data-hatch and a data-on-click
+          // would otherwise let the unit forge a click the reduce cannot tell
+          // from the hand's. Declaration alone is not that guarantee.
+          onEvent: (event) => {
+            // Every native gesture is an IDL handler property on the element;
+            // a unit's own vocabulary is not, so this asks the DOM rather than
+            // carrying a list that would go stale.
+            if (`on${event.name}` in el) return;
+            // Camel-cased the way the DOM cases it, or a hyphenated name
+            // builds a key `dataset` does not hold and the event is dropped
+            // where the wiring reads correct.
+            const declared = `on${event.name.replace(/-([a-z])/g, (_, c) => c.toUpperCase())}`;
+            if (el.dataset[declared.replace(/^on(.)/, (_, c) => `on${c.toUpperCase()}`)] === undefined) return;
+            el.dispatchEvent(new document.defaultView.CustomEvent(event.name, {
+              bubbles: false,
+              detail: event.detail,
+            }));
+          },
         });
         cleanups.push(() => el._prontoHatch.destroy());
       }
@@ -1357,7 +1389,14 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       item.addEventListener("dragstart", (e) => {
         region._prontoDragFrom = item.dataset.id;
         e.dataTransfer?.setData("text/plain", item.dataset.id); // Firefox refuses payloadless drags
+        // A screen cannot see which item is in the air any other way. The drag
+        // image is a SNAPSHOT — `:-webkit-drag` styles that and never matches
+        // the element left behind in the document — so a screen that draws the
+        // item somewhere else (a board whose pieces are a layer above its
+        // squares) has no way to let go of it for the duration without this.
+        item.setAttribute("data-dragging", "");
       });
+      item.addEventListener("dragend", () => item.removeAttribute("data-dragging"));
       item.addEventListener("dragover", (e) => e.preventDefault());
       item.addEventListener("drop", async (e) => {
         e.preventDefault();
@@ -1547,6 +1586,12 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
             // that means one of them has to be able to say which.
             // The field wears AnimationEvent's own property name.
             if (typeof e?.animationName === "string") fired.animationName = e.animationName;
+            // What a unit answered. The only CustomEvent on this path is a
+            // unit's named event, re-dispatched on its mount by bindHatches —
+            // its detail was parsed against a fixed grammar and frozen at the
+            // boundary, so what a reduce reads here is strings the terminal
+            // built and never the unit's own object.
+            if (e?.detail !== null && typeof e?.detail === "object") fired.detail = e.detail;
             await step(reduce, fired, 0);
           } catch (err) {
             console.error(err);
@@ -2092,7 +2137,11 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       return rows.map((row, i) => {
         const derived = {};
         for (const p of answers) {
-          if (p.name in row) {
+          // A fixture row answers `has` for every name by construction, so the
+          // collision this guards cannot be told from a name the row simply
+          // does not carry — and asking would refuse every projected region in
+          // the storybook.
+          if (ctx.inert !== true && p.name in row) {
             throw new ProjectionError(
               `region "${table}": data-project "${p.name}" is already a column of row ${JSON.stringify(row.id)}`,
             );
@@ -2621,6 +2670,14 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
   // props are whatever the screen-level {param.x} pass already resolved.
   for (const el of screen.querySelectorAll("[data-hatch]")) {
     if (!el.closest("template") && !el.closest("[data-live]")) {
+      // And no reduce either: wireEvents runs per region, so out here the
+      // listener would never be attached and the unit's answers would go
+      // nowhere, silently. A hatch whose event has to reach a handler lives
+      // inside a region — the same class of wiring mistake as naming a unit no
+      // app declared, and refused in the same place.
+      if (onAttrs(el).length > 0) {
+        throw new Error(`data-hatch="${el.dataset.hatch}" declares data-on-* outside every [data-live]`);
+      }
       bindHatches(el, { params, inert: opts.fixtures === true });
     }
   }

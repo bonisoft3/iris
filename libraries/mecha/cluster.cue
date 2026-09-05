@@ -157,7 +157,10 @@ _devJwtSecret: "pronto-dev-secret-please-override-32ch"
 				}
 				develop: watch: list.Concat([
 					[{action: "sync+restart", path: "docker/Caddyfile", target: "/etc/caddy/Caddyfile"}],
-					[for s in X.meta.statics {action: "sync+restart", path: s.file, target: s.target}],
+					// Honoured, not assumed: a static that says it is not watched is
+					// one whose edit is a rebuild — a generated file, or a vendored
+					// unit whose megabytes would restart the proxy on every launch.
+					[for s in X.meta.statics if s.watch {action: "sync+restart", path: s.file, target: s.target}],
 				])
 			}
 			if X.capabilities.server {

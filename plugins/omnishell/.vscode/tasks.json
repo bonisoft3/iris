@@ -65,7 +65,8 @@
         "interpreter/signout-smoke.js",
         "interpreter/slot-smoke.js",
         "interpreter/subscribe-smoke.js",
-        "interpreter/template-smoke.js"
+        "interpreter/template-smoke.js",
+        "interpreter/worker-smoke.js"
       ],
       "problemMatcher": [],
       "group": { "kind": "test" }
@@ -104,7 +105,8 @@
         "interpreter/signout-smoke.js",
         "interpreter/slot-smoke.js",
         "interpreter/subscribe-smoke.js",
-        "interpreter/template-smoke.js"
+        "interpreter/template-smoke.js",
+        "interpreter/worker-smoke.js"
       ],
       "problemMatcher": [],
       "group": { "kind": "test" }

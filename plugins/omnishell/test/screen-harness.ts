@@ -470,6 +470,10 @@ export type El = {
   readonly textContent: string | null;
 };
 
+/** A vendored unit, as shell.yaml declares it and as the interpreter resolves
+ * a `data-hatch` name against. */
+export type Unit = { isolation: string; capabilities: string[]; src: string };
+
 type Interpreter = {
   interpretScreen(
     mount: El,
@@ -477,6 +481,7 @@ type Interpreter = {
     route: Route,
     store: MemoryStore,
     params: Record<string, string>,
+    opts: { units: Record<string, Unit>; mountUnits: boolean },
   ): Promise<{ pause(): void; resume(): Promise<unknown>; stop(): void }>;
 };
 
@@ -575,6 +580,16 @@ export type MountSpec = {
   /** Let the screen answer a refusal without failing the test: the interpreter
    * reports one through the same console.error every silent failure takes. */
   expectRefusal?: boolean;
+  /** The vendored units a `data-hatch` may name. mountApp reads them from the
+   * app's own shell.yaml; a screen naming one it does not declare is refused at
+   * mount, so a hatch on the screen under test makes this mandatory. The unit
+   * itself still needs its boundary faked — a real Worker answers off the held
+   * clock, where settle() cannot see it. */
+  units?: Record<string, Unit>;
+  /** Whether a resolved unit is also mounted. The machine walker declares
+   * false: linkedom has neither a Worker nor a frame, and a unit renders
+   * nothing and declares no machine, so mounting one adds nothing to a walk. */
+  mountUnits?: boolean;
 };
 
 /** linkedom's HTMLFormElement carries no constraint API, and the interpreter
@@ -896,7 +911,10 @@ export async function mountScreen(spec: MountSpec): Promise<Mounted> {
   const store = memoryStore(spec.tables, spec.cluster ?? {});
   const mount = document.getElementById("shell");
   if (mount === null) throw new Error("the harness document has no mount");
-  const handle = await interpretScreen(mount, base, spec.route, store, spec.params ?? {});
+  const handle = await interpretScreen(mount, base, spec.route, store, spec.params ?? {}, {
+    units: spec.units ?? {},
+    mountUnits: spec.mountUnits ?? true,
+  });
 
   const step = spec.step ?? 100;
   const cap = spec.cap ?? 60_000;
@@ -1037,7 +1055,17 @@ export async function mountApp(
     files: await appFiles(spec.appDir, route),
     tables: { ...(await appSeed(spec.appDir)), ...spec.tables },
     cluster: { ...declared, ...spec.cluster },
+    units: { ...(await appUnits(spec.appDir)), ...spec.units },
   });
+}
+
+/** The vendored units an app declares (shell.yaml `units:`), which is what a
+ * `data-hatch` name resolves against. */
+export async function appUnits(appDir: URL): Promise<Record<string, Unit>> {
+  const shell = parseYaml(await Deno.readTextFile(new URL("shell/shell.yaml", appDir))) as {
+    units?: Record<string, Unit>;
+  };
+  return shell.units ?? {};
 }
 
 /** The rows a browser tier holds before anyone writes one (shell.yaml

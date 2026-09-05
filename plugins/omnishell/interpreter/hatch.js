@@ -1,17 +1,26 @@
-// The terminal-tier hatch: a vendored unit mounted into a screen inside a
-// sandboxed iframe, fed props and answering with named events.
+// The terminal-tier hatch: a vendored unit mounted into a screen behind one of
+// two boundaries, fed props and answering with named events.
 //
-// The unit document is the app's own, declared in CUE and audited — that is
-// where its trust comes from. What the unit renders is usually NOT ours: an
-// article embed is a provider's page, arriving over the network at read time,
-// unreviewable by anyone. So the sandbox is load-bearing even for a document
-// we wrote: it is the boundary the untrusted half sits behind, and the unit is
-// the thing that speaks this protocol on its behalf.
+// The unit itself is the app's own, declared in CUE and audited — that is where
+// its trust comes from. What sits behind it usually is not: an article embed is
+// a provider's page arriving over the network at read time, unreviewable by
+// anyone; an engine is megabytes of machine code nobody reads. Which of the two
+// a unit is decides its boundary, and the boundaries are not ordered — a frame
+// is contained and shares this thread, a worker owns a thread and shares this
+// origin.
 //
 // Props in are a current-value feed, resynchronised on every bind pass, the
 // same shape hydrateWidget's update(rows) has. Events out are named and
 // request-shaped: the unit describes, the terminal performs. `height` is the
-// one name the terminal performs today; everything else is handed to onEvent.
+// one name the terminal performs itself; everything else is handed to onEvent,
+// its detail parsed here first.
+import { mountWorkerUnit } from "./hatch-worker.js";
+
+export const PROPS = "pronto:props";
+export const READY = "pronto:ready";
+export const EVENT = "pronto:event";
+
+export const SRC_SCHEMES = new Set(["http:", "https:"]);
 
 // Fixed, and the terminal's to choose — a unit cannot widen it. Each token
 // costs something, so each is here for a stated reason:
@@ -41,22 +50,48 @@ const SANDBOX = "allow-scripts allow-popups allow-popups-to-escape-sandbox";
 // would reject every message the unit ever sends.
 const OPAQUE_ORIGIN = "null";
 
-const PROPS = "pronto:props";
-const READY = "pronto:ready";
-const EVENT = "pronto:event";
-
 // A unit that lies about its height must not be able to blow out the document.
 const MAX_HEIGHT = 10000;
 
-const SRC_SCHEMES = new Set(["http:", "https:"]);
+// The shape a unit's event detail may take. The reduce that receives it is a
+// compartment with nothing endowed and cannot defend itself, so the parse sits
+// here, on the trusted side, exactly as `height`'s number check does. What the
+// grammar means is the app's: the terminal cannot know what a move looks like,
+// only that a megabyte, a control character, a getter or a nested object must
+// not reach a screen.
+const DETAIL_KEYS = 8;
+const DETAIL_KEY = /^[a-z][a-z0-9_]{0,23}$/;
+const DETAIL_VALUE_LENGTH = 128;
+const DETAIL_VALUE = /^[\x20-\x7e]*$/;
+
+/** A frozen string→string record built key by key from `value`, or undefined
+ * when `value` is not one — and undefined drops the event that carried it.
+ * Nothing is passed through: the unit's own object never crosses. */
+export function parseDetail(value) {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const keys = Object.keys(value);
+  if (keys.length > DETAIL_KEYS) return undefined;
+  const detail = {};
+  for (const key of keys) {
+    if (!DETAIL_KEY.test(key)) return undefined;
+    const held = value[key];
+    if (typeof held !== "string") return undefined;
+    if (held.length > DETAIL_VALUE_LENGTH || !DETAIL_VALUE.test(held)) return undefined;
+    detail[key] = held;
+  }
+  return Object.freeze(detail);
+}
 
 export function mountHatch(root, { unit, src, onEvent } = {}) {
+  if (unit.isolation === "iframe") return mountFrameUnit(root, { unit, src, onEvent });
+  if (unit.isolation === "worker") return mountWorkerUnit(root, { unit, src, onEvent });
   // The schema offers three isolation boundaries and the terminal implements
-  // one. A unit asking for a boundary that does not exist must not quietly get
+  // two. A unit asking for a boundary that does not exist must not quietly get
   // a different one.
-  if (unit.isolation !== "iframe") {
-    throw new Error(`hatch isolation "${unit.isolation}" is not implemented (iframe only)`);
-  }
+  throw new Error(`hatch isolation "${unit.isolation}" is not implemented`);
+}
+
+function mountFrameUnit(root, { unit, src, onEvent }) {
   // An opaque-origin frame is granted no terminal capabilities at all.
   // Answering a request for one with silence would hand the app a unit that
   // cannot do what it declared.
@@ -113,7 +148,9 @@ export function mountHatch(root, { unit, src, onEvent } = {}) {
       frame.style.height = `${Math.min(Math.round(height), MAX_HEIGHT)}px`;
       return;
     }
-    onEvent?.(message);
+    const detail = parseDetail(message.detail);
+    if (detail === undefined) return;
+    onEvent?.({ name: message.name, detail });
   };
   globalThis.addEventListener("message", onMessage);
 

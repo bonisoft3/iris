@@ -8,21 +8,38 @@ import { parseHTML } from "npm:linkedom@0.18.4";
 const UNIT = { isolation: "iframe", capabilities: [], src: "shell/units/embed.html", note: "oEmbed host" };
 
 const SCREEN_HTML = `<section class="screen" data-screen="article">
-  <article data-live="article" data-order="created_at.desc">
+  <article data-live="article" data-order="created_at.desc" data-on-answer="shadow">
     <h1 data-text="{title}"></h1>
-    <div class="embed" data-hatch="embed" data-prop-url="{embed_url}" data-prop-theme="light"></div>
+    <div class="embed" data-hatch="embed" data-on-answer="record"
+         data-prop-url="{embed_url}" data-prop-theme="light"></div>
   </article>
 </section>`;
 
+// Jessie handlers, frozen mechanism: last expression is the reduce function.
+// `record` is the one the mount names; `shadow` sits on the enclosing region
+// and exists to be a witness that a unit's answer never reaches it.
+const RECORD_SOURCE = `const reduce = (state, event) => ({
+  updates: [{ id: "a1", patch: { chose: event.detail.uci } }],
+});
+reduce;`;
+const SHADOW_SOURCE = `const reduce = () => ({ updates: [{ id: "a1", patch: { chose: "the ancestor" } }] });
+reduce;`;
+
 const ROUTE = {
   screen: "article",
-  files: { html: "shell/screens/article.html", css: "shell/screens/article.css", handlers: [] },
+  files: {
+    html: "shell/screens/article.html",
+    css: "shell/screens/article.css",
+    handlers: ["shell/handlers/record.js", "shell/handlers/shadow.js"],
+  },
   states: ["loading", "empty", "populated"],
 };
 
 const assert = (cond, msg) => {
   if (!cond) throw new Error(`smoke failed: ${msg}`);
 };
+
+const tick = (ms = 20) => new Promise((r) => setTimeout(r, ms));
 
 function dom() {
   const { document } = parseHTML("<!doctype html><html><body><div id=out></div></body></html>");
@@ -132,9 +149,11 @@ Deno.test("messages from anywhere else, or of any other shape, are ignored", asy
   assert(events.length === 0, `nothing reached onEvent, got ${JSON.stringify(events)}`);
 
   // The channel is real: a named event the terminal cannot perform is handed
-  // on rather than dropped.
-  post(source, { type: "pronto:event", name: "select", id: "a1" });
+  // on rather than dropped — carrying the detail the boundary rebuilt, since
+  // an event with nothing sayable in it is one of the shapes above.
+  post(source, { type: "pronto:event", name: "select", detail: { id: "a1" } });
   assert(events.length === 1 && events[0].name === "select", `named event forwarded, got ${events.length}`);
+  assert(events[0].detail.id === "a1", `the parsed detail travels, got ${JSON.stringify(events[0].detail)}`);
   hatch.destroy();
 });
 
@@ -178,9 +197,8 @@ Deno.test("a unit the terminal cannot honour fails loudly", async () => {
     }
     throw new Error(`smoke failed: mounted anyway — ${why}`);
   };
-  // The schema offers three isolation boundaries; the terminal implements one.
+  // The schema offers three isolation boundaries; the terminal implements two.
   // Quietly substituting a different boundary is the failure worth refusing.
-  refuses({ ...UNIT, isolation: "worker" }, "https://a.example/u.html", "worker isolation");
   refuses({ ...UNIT, isolation: "compartment" }, "https://a.example/u.html", "compartment isolation");
   // An opaque-origin frame is granted nothing, so answering a capability
   // request with silence would hand the app a unit that cannot do its job.
@@ -196,6 +214,7 @@ Deno.test({
     const { document } = parseHTML("<!doctype html><html><body><div id=shell></div></body></html>");
     globalThis.document = document;
     const state = { rows: [{ id: "a1", title: "Post", embed_url: "https://x.example/1" }], notify: null };
+    const updates = [];
     const store = {
       query: async () => state.rows,
       subscribe: (_t, fn) => {
@@ -203,16 +222,21 @@ Deno.test({
         return () => {};
       },
       create: async () => {},
-      update: async () => {},
+      update: async (table, id, patch) => updates.push({ table, id, patch }),
       remove: async () => {},
     };
     globalThis.fetch = (url) => {
       const u = String(url);
       if (u.endsWith(".html")) return Promise.resolve(new Response(SCREEN_HTML));
       if (u.endsWith(".css")) return Promise.resolve(new Response(""));
+      if (u.endsWith("record.js")) return Promise.resolve(new Response(RECORD_SOURCE));
+      if (u.endsWith("shadow.js")) return Promise.resolve(new Response(SHADOW_SOURCE));
       return Promise.reject(new Error(`unexpected fetch ${u}`));
     };
 
+    // The real ses pin, pre-imported so ensureSes finds Compartment already
+    // installed: linkedom does not execute the <script> the browser path adds.
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
     const { interpretScreen } = await import("./screen.js");
     const mount = document.getElementById("shell");
     const base = "https://app.example/";
@@ -239,6 +263,16 @@ Deno.test({
     assert(host.querySelectorAll("iframe").length === 1, "still one frame after a refresh");
     assert(host.querySelector("iframe") === frame, "the frame itself survived, so the embed did not reload");
     assert(posts.at(-1).data.props.url === "https://x.example/2", "the new row reached the unit");
+
+    // The return path: a named event becomes a DOM event on the mount, and the
+    // ordinary data-on-* wiring carries it into the reduce with the region's
+    // world — the terminal never looks a handler up itself.
+    post(source, { type: "pronto:event", name: "answer", detail: { uci: "e2e4" } });
+    await tick();
+    assert(
+      JSON.stringify(updates) === JSON.stringify([{ table: "article", id: "a1", patch: { chose: "e2e4" } }]),
+      `the answer reached data-on-answer and nothing else, got ${JSON.stringify(updates)}`,
+    );
 
     // A screen naming a unit no app declared is a wiring mistake, and one that
     // would otherwise show as an empty box nobody notices.

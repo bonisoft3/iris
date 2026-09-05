@@ -299,7 +299,7 @@ export async function createShell({ config, mount }) {
     if (search.has("storybook")) {
       const { renderStorybook } = await import("./storybook.js");
       const { route, params } = currentRoute();
-      await renderStorybook(mount, appBase, route, params);
+      await renderStorybook(mount, appBase, route, params, cfg.units ?? {});
       return;
     }
 

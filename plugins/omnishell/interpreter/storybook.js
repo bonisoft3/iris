@@ -47,7 +47,7 @@ function fixtureStore(state) {
   };
 }
 
-export async function renderStorybook(mount, appBase, route, params = {}) {
+export async function renderStorybook(mount, appBase, route, params = {}, units = {}) {
   const style = document.createElement("style");
   style.textContent = `
     .storybook { display: flex; flex-wrap: wrap; gap: 24px; padding: 24px;
@@ -93,6 +93,10 @@ export async function renderStorybook(mount, appBase, route, params = {}) {
     await interpretScreen(frame, appBase, route, fixtureStore(state), params, {
       handlers: false,
       fixtures: true,
+      // Every data-hatch resolves before a region hydrates, ahead of the inert
+      // check, so a screen declaring a unit needs the table here even though
+      // `fixtures: true` means none is mounted.
+      units,
     });
     // data-state alone cannot say "posed": the live states (loading, empty,
     // populated, …) are drawn here under the same names the interpreter sets on

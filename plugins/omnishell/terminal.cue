@@ -159,16 +159,24 @@ _zagBundle: _ @embed(glob="interpreter/vendor/zag/*.js", type=text)
 		"os-bridge":    [Name=string]: {yields: string, note: string}
 		"network-peer": [Name=string]: {yields: string, note: string}
 
-		// Boundaries a unit can be given. "compartment" is SES, and it is what
-		// generated logic runs in — pure, endowment-free, the terminal's own
-		// code. "iframe" is the hatch's: a vendored unit the app brings, which
-		// is trusted because an engineer audited it, and contained because what
-		// it renders (a provider's embed) was audited by nobody. "worker" is
-		// declared by #App.capabilities.vendored and not implemented here — a
-		// unit asking for it is refused at mount rather than quietly given a
-		// different boundary.
+		// Boundaries a unit can be given. They are not ordered, and each buys
+		// one thing:
+		//   compartment  SES, and what generated logic runs in — no ambient
+		//                authority at all, the terminal's own code, this thread.
+		//   iframe       containment, and this thread. An opaque origin, no
+		//                storage, no cookies, no reach through window.parent —
+		//                which is what a unit rendering something audited by
+		//                nobody (a provider's embed, fetched at read time) has
+		//                to sit behind.
+		//   worker       a thread, and containment in no sense whatsoever. Same
+		//                origin, so fetch, IndexedDB and the cache API all
+		//                survive: this is MORE ambient authority than the frame
+		//                seat, not less. What stands behind a worker unit is
+		//                the app's audit of the wrapper and the pinned hash of
+		//                what the wrapper loads — audited and pinned, never
+		//                contained.
 		isolation: [...string]
-		isolation: *["compartment", "iframe"] | [...string]
+		isolation: *["compartment", "iframe", "worker"] | [...string]
 
 		// The terminal-tier hatch. Props in are the mount element's
 		// data-prop-* attributes, resolved against the row by the same binder
@@ -176,23 +184,41 @@ _zagBundle: _ @embed(glob="interpreter/vendor/zag/*.js", type=text)
 		// hatch in a live region tracks its row for free. Events out are named
 		// messages the unit posts over its lifetime; the terminal performs the
 		// names it knows and hands the rest to the screen.
-		hatch: {
-			isolation: string
+		// Keyed by boundary, because the two do not share their answers:
+		// `grants: []` is a true statement about an opaque origin and a false
+		// one about a same-origin worker, and `height` names a frame that a
+		// worker seat does not have.
+		hatch: [Boundary=string]: {
+			isolation: Boundary
 			mount:     string
 			props:     string
 			events: [Name=string]: {performs: string, note: string}
 			grants: [...string]
 			note: string
 		}
-		hatch: {
-			isolation: "iframe"
-			mount:     "data-hatch=\"<unit>\", naming an #App.capabilities.vendored entry"
-			props:     "data-prop-* attributes, delivered as one current-value object"
+		hatch: iframe: {
+			mount: "data-hatch=\"<unit>\", naming an #App.capabilities.vendored entry"
+			props: "data-prop-* attributes, delivered as one current-value object"
 			events: height: {performs: "sets the unit frame's height", note: "the unit measures itself; clamped so a wrong answer cannot blow out the page"}
+			events: answer: {
+				performs: "dispatches a non-bubbling CustomEvent of the same name on the mount element, where data-on-answer names the reduce that receives it"
+				note:     "the detail is rebuilt from validated strings and frozen; the unit's own object never crosses"
+			}
 			// An opaque origin is granted nothing, and the terminal refuses a
 			// unit that asks for a capability rather than granting silence.
 			grants: []
 			note: "sandbox allow-scripts allow-popups allow-popups-to-escape-sandbox, never allow-same-origin — the unit runs in an opaque origin and cannot reach this one. Props are delivered with targetOrigin \"*\", which an opaque origin leaves no alternative to, so a hatch is never given a secret"
+		}
+		hatch: worker: {
+			mount: "data-hatch=\"<unit>\", naming an #App.capabilities.vendored entry — the element renders nothing"
+			props: "data-prop-* attributes, delivered as one current-value object, withheld until the unit says it is ready"
+			events: answer: {
+				performs: "dispatches a non-bubbling CustomEvent of the same name on the mount element, where data-on-answer names the reduce that receives it"
+				note:     "the detail is rebuilt from validated strings and frozen; the unit's own object never crosses"
+			}
+			// The terminal grants a unit nothing at either boundary.
+			grants: []
+			note: "a classic same-origin Worker — its own thread, no DOM, and fetch/IndexedDB/the cache API intact. The port is the identity, so there is no origin check to make; the app's audit of the unit script and the pinned hash of what it loads are the whole boundary"
 		}
 	}
 
@@ -235,7 +261,7 @@ _zagBundle: _ @embed(glob="interpreter/vendor/zag/*.js", type=text)
 		modules: list.Concat([
 			[
 				"shell.js", "screen.js", "fragment.js", "data.js", "data-crud.js", "render.js",
-				"hatch.js", "storybook.js", "widget.js", "tier2-engine.js", "jessie.js",
+				"hatch.js", "hatch-worker.js", "storybook.js", "widget.js", "tier2-engine.js", "jessie.js",
 				"vendor/mecha-client.js", "vendor/js-yaml.js", "vendor/ses.umd.min.js",
 			],
 			// One module per kind in capabilities.widgets plus their shared
@@ -264,6 +290,13 @@ _zagBundle: _ @embed(glob="interpreter/vendor/zag/*.js", type=text)
 		// before the CDC loop has folded this session's own writes in.
 		folds: [...#Jessie]
 		folds: *[] | [...#Jessie]
+
+		// Every file a vendored unit needs served, its own `src` among them:
+		// the wrapper an engineer audited, and whatever that wrapper loads. A
+		// glue script derives its .wasm URL from its own script URL, so a
+		// unit's files land as siblings under one directory.
+		units: [...#Path]
+		units: *[] | [...#Path]
 
 		// Invariants of the terminal's own rendering surface, which no app can
 		// re-derive — the same reason auth, text-formats and widgets are
@@ -317,11 +350,15 @@ _zagBundle: _ @embed(glob="interpreter/vendor/zag/*.js", type=text)
 		statics: [...#Static]
 		statics: list.Concat([
 			[
-				{source: "shell-entry", file: T.surface.entry, target: "/srv/\(T.surface.entry)", watch: false},
-				{source: "shell-css", file: T.surface.css, target: "/srv/\(T.surface.css)", watch: false},
-				{source: "shell-boot", file: T.surface.boot, target: "/srv/\(T.surface.boot)", watch: false},
-				{source: "shell-config", file: "shell/shell.yaml", target: "/srv/shell/shell.yaml", watch: false},
-				{source: "shell-design-css", file: "shell/design.css", target: "/srv/shell/design.css", watch: false},
+				// Watched like the screens are: all of these are regenerated by
+				// `just generate` from the program, and a design token or a seed
+				// row that does not reach the running container is a hot reload
+				// that works for some edits and not others.
+				{source: "shell-entry", file: T.surface.entry, target: "/srv/\(T.surface.entry)", watch: true},
+				{source: "shell-css", file: T.surface.css, target: "/srv/\(T.surface.css)", watch: true},
+				{source: "shell-boot", file: T.surface.boot, target: "/srv/\(T.surface.boot)", watch: true},
+				{source: "shell-config", file: "shell/shell.yaml", target: "/srv/shell/shell.yaml", watch: true},
+				{source: "shell-design-css", file: "shell/design.css", target: "/srv/shell/design.css", watch: true},
 			],
 			[for s in T.surface.screens for kind in ["html", "css"] {
 				source: "screen-\(s.name)-\(kind)"
@@ -353,11 +390,23 @@ _zagBundle: _ @embed(glob="interpreter/vendor/zag/*.js", type=text)
 				target: "/srv/\(f)"
 				watch:  true
 			}],
+			// Unwatched, unlike every other app-authored file here: the watch
+			// list becomes compose develop sync+restart entries, and a unit's
+			// unaudited half is megabytes that would restart the proxy on every
+			// launch. Editing a unit is a rebuild.
+			[for u in T.surface.units {
+				source: "unit-\(strings.Replace(u, "/", "-", -1))"
+				file:   u
+				target: "/srv/\(u)"
+				watch:  false
+			}],
+			// The interpreter is hand-written and edited in the loop, so it is
+			// watched like an app's own screens are.
 			[for m in T.surface.modules {
 				source: "omnishell-\(strings.Replace(m, "/", "-", -1))"
 				file:   "\(T.surface.interpreterRoot)/\(m)"
 				target: "/omnishell/interpreter/\(m)"
-				watch:  false
+				watch:  true
 			}],
 		])
 	}
