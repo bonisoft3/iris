@@ -35,5 +35,5 @@ tasks:
     status:
     - test ! -e ../../.git
     cmds:
-    - '{{.TASK_EXE}} -t ../../.bayt/Taskfile.yml bayt:setup'
-version: '3'
+    - "{{.TASK_EXE}} -t ../../.bayt/Taskfile.yml bayt:setup"
+version: "3"

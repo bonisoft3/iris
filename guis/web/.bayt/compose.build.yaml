@@ -9,7 +9,8 @@ services:
       dockerfile: .bayt/Dockerfile.build
       target: build
       args:
-        BUILDKIT_SYNTAX: docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
     image: bayt-guis_web-build:${BAYT_IMAGE_TAG:-latest}
     scale: 0
   guis_web-build_bayt:
@@ -21,7 +22,8 @@ services:
       dockerfile: .bayt/Dockerfile.build
       target: build_bayt
       args:
-        BUILDKIT_SYNTAX: docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
     image: bayt-guis_web-build_bayt:latest
     scale: 0
   guis_web-build_srcs:
@@ -30,7 +32,8 @@ services:
       dockerfile: .bayt/Dockerfile.build
       target: build_srcs
       args:
-        BUILDKIT_SYNTAX: docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
     image: bayt-guis_web-build_srcs:latest
     scale: 0
   guis_web-build_outs:
@@ -39,7 +42,8 @@ services:
       dockerfile: .bayt/Dockerfile.build
       target: build_outs
       args:
-        BUILDKIT_SYNTAX: docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
       additional_contexts:
         guis_web-build: service:guis_web-build
     image: bayt-guis_web-build_outs:latest

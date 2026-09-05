@@ -59,33 +59,33 @@ tasks:
     status:
     - test ! -e ../../.git
     cmds:
-    - '{{.TASK_EXE}} -t ../../plugins/jvm/.bayt/Taskfile.yml bayt:build'
+    - "{{.TASK_EXE}} -t ../../plugins/jvm/.bayt/Taskfile.yml bayt:build"
   cross_plugins_micronaut_build:
     internal: true
     run: once
     status:
     - test ! -e ../../.git
     cmds:
-    - '{{.TASK_EXE}} -t ../../plugins/micronaut/.bayt/Taskfile.yml bayt:build'
+    - "{{.TASK_EXE}} -t ../../plugins/micronaut/.bayt/Taskfile.yml bayt:build"
   cross_libraries_xproto_build:
     internal: true
     run: once
     status:
     - test ! -e ../../.git
     cmds:
-    - '{{.TASK_EXE}} -t ../../libraries/xproto/.bayt/Taskfile.yml bayt:build'
+    - "{{.TASK_EXE}} -t ../../libraries/xproto/.bayt/Taskfile.yml bayt:build"
   cross_libraries_logs_build:
     internal: true
     run: once
     status:
     - test ! -e ../../.git
     cmds:
-    - '{{.TASK_EXE}} -t ../../libraries/logs/.bayt/Taskfile.yml bayt:build'
+    - "{{.TASK_EXE}} -t ../../libraries/logs/.bayt/Taskfile.yml bayt:build"
   cross_plugins_libstoml_build:
     internal: true
     run: once
     status:
     - test ! -e ../../.git
     cmds:
-    - '{{.TASK_EXE}} -t ../../plugins/libstoml/.bayt/Taskfile.yml bayt:build'
-version: '3'
+    - "{{.TASK_EXE}} -t ../../plugins/libstoml/.bayt/Taskfile.yml bayt:build"
+version: "3"

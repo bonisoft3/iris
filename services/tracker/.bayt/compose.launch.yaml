@@ -17,13 +17,17 @@ services:
       dockerfile: .bayt/Dockerfile.launch
       target: launch
       args:
-        BUILDKIT_SYNTAX: docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-launch
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-launch
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-launch
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-launch
         cache-to:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-launch,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-launch,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
         output:
         - type=${BAYT_COMPOSE_OUTPUT:-docker}
     image: bayt-services_tracker-launch:${BAYT_IMAGE_TAG:-latest}
@@ -44,13 +48,17 @@ services:
       dockerfile: .bayt/Dockerfile.launch
       target: launch_bayt
       args:
-        BUILDKIT_SYNTAX: docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-launch_bayt
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-launch_bayt
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-launch_bayt
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-launch_bayt
         cache-to:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-launch_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-launch_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
     image: bayt-services_tracker-launch_bayt:latest
     scale: 0
   services_tracker-launch_srcs:
@@ -63,12 +71,16 @@ services:
       dockerfile: .bayt/Dockerfile.launch
       target: launch_srcs
       args:
-        BUILDKIT_SYNTAX: docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-launch_srcs
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-launch_srcs
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-launch_srcs
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-launch_srcs
         cache-to:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-launch_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-launch_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
     image: bayt-services_tracker-launch_srcs:latest
     scale: 0

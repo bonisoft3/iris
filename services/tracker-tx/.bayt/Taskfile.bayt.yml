@@ -36,4 +36,4 @@ includes:
     taskfile: ../../../libraries/xproto/Taskfile.yml
     dir: ../../../libraries/xproto/
     optional: true
-version: '3'
+version: "3"

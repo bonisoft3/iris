@@ -8,7 +8,8 @@ services:
       dockerfile: .bayt/Dockerfile.setup
       target: setup
       args:
-        BUILDKIT_SYNTAX: docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
     image: bayt-guis_web-setup:${BAYT_IMAGE_TAG:-latest}
     scale: 0
   guis_web-setup_bayt:
@@ -19,6 +20,7 @@ services:
       dockerfile: .bayt/Dockerfile.setup
       target: setup_bayt
       args:
-        BUILDKIT_SYNTAX: docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
     image: bayt-guis_web-setup_bayt:latest
     scale: 0

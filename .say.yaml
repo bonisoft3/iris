@@ -16,3 +16,32 @@ say:
           - guis/iris/tests/playwright/package.json
           - guis/iris/bayt.cue
           - plugins/omnishell/package.json
+
+      # nushell's version is restated in every mise config and tool stub that
+      # needs it, and none can import it from another. A partial bump puts two
+      # interpreters in play — see .justfile's generate-all for what that does
+      # to the generated tree — and fails here as "pattern not found", naming
+      # the file that was missed.
+      #
+      # plugins/shall/compose.yaml is deliberately outside this: it apk-adds
+      # nushell from the wolfi index, which prunes old versions, so a pin
+      # there is a build failure with a date on it. Its container runs only
+      # shall.test.nu and writes nothing generated.
+      - pattern: '0\.115\.1'
+        files:
+          - .mise.toml
+          - plugins/shall/.mise.toml
+          - plugins/lazybox/mise.toml
+          - plugins/sayt/nu.toml
+          - plugins/sayt/nu.musl.toml
+          - plugins/bayt/runtime/nu.toml
+          - plugins/bayt/runtime/nu.musl.toml
+          - plugins/devserver/stubs/nu.toml
+          - plugins/devserver/stubs/nu_plugin_custom_values.toml
+          - plugins/devserver/stubs/nu_plugin_example.toml
+          - plugins/devserver/stubs/nu_plugin_formats.toml
+          - plugins/devserver/stubs/nu_plugin_gstat.toml
+          - plugins/devserver/stubs/nu_plugin_inc.toml
+          - plugins/devserver/stubs/nu_plugin_polars.toml
+          - plugins/devserver/stubs/nu_plugin_query.toml
+          - plugins/devserver/stubs/nu_plugin_stress_internals.toml

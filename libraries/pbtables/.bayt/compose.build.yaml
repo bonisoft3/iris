@@ -12,13 +12,17 @@ services:
       dockerfile: .bayt/Dockerfile.build
       target: build
       args:
-        BUILDKIT_SYNTAX: docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-build
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-build
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-build
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-build
         cache-to:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-build,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-build,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
     image: bayt-libraries_pbtables-build:${BAYT_IMAGE_TAG:-latest}
     scale: 0
   libraries_pbtables-build_bayt:
@@ -34,13 +38,17 @@ services:
       dockerfile: .bayt/Dockerfile.build
       target: build_bayt
       args:
-        BUILDKIT_SYNTAX: docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-build_bayt
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_pbtables-build_bayt
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-build_bayt
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_pbtables-build_bayt
         cache-to:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-build_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-build_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
     image: bayt-libraries_pbtables-build_bayt:latest
     scale: 0
   libraries_pbtables-build_srcs:
@@ -56,13 +64,17 @@ services:
       dockerfile: .bayt/Dockerfile.build
       target: build_srcs
       args:
-        BUILDKIT_SYNTAX: docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-build_srcs
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_pbtables-build_srcs
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-build_srcs
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_pbtables-build_srcs
         cache-to:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-build_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-build_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
     image: bayt-libraries_pbtables-build_srcs:latest
     scale: 0
   libraries_pbtables-build_outs:
@@ -71,14 +83,18 @@ services:
       dockerfile: .bayt/Dockerfile.build
       target: build_outs
       args:
-        BUILDKIT_SYNTAX: docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
       additional_contexts:
         libraries_pbtables-build: service:libraries_pbtables-build
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-build_outs
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_pbtables-build_outs
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-build_outs
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_pbtables-build_outs
         cache-to:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-build_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-build_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
     image: bayt-libraries_pbtables-build_outs:latest
     scale: 0

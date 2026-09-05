@@ -12,4 +12,4 @@ includes:
     taskfile: ./Taskfile.build.yaml
     dir: ../
     optional: true
-version: '3'
+version: "3"

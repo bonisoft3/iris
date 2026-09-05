@@ -9,7 +9,8 @@ services:
       dockerfile: .bayt/Dockerfile.launch
       target: launch
       args:
-        BUILDKIT_SYNTAX: docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
     command:
     - bash
     - -c
@@ -22,7 +23,7 @@ services:
       start_period: 60s
     image: bayt-services_tracker-tx-launch:${BAYT_IMAGE_TAG:-latest}
     ports:
-    - '8080'
+    - "8080"
     volumes:
     - //var/run/docker.sock:/var/run/docker.sock
   services_tracker-tx-launch_bayt:
@@ -35,7 +36,8 @@ services:
       dockerfile: .bayt/Dockerfile.launch
       target: launch_bayt
       args:
-        BUILDKIT_SYNTAX: docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
     image: bayt-services_tracker-tx-launch_bayt:latest
     scale: 0
   services_tracker-tx-launch_srcs:
@@ -46,6 +48,7 @@ services:
       dockerfile: .bayt/Dockerfile.launch
       target: launch_srcs
       args:
-        BUILDKIT_SYNTAX: docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
     image: bayt-services_tracker-tx-launch_srcs:latest
     scale: 0

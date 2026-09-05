@@ -6,13 +6,17 @@ services:
       dockerfile: .bayt/Dockerfile.dindbox
       target: dindbox
       args:
-        BUILDKIT_SYNTAX: docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-dindbox
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-dindbox
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-dindbox
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-dindbox
         cache-to:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-dindbox,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-dindbox,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
     image: bayt-services_tracker-dindbox:${BAYT_IMAGE_TAG:-latest}
     scale: 0
   services_tracker-dindbox_bayt:
@@ -21,12 +25,16 @@ services:
       dockerfile: .bayt/Dockerfile.dindbox
       target: dindbox_bayt
       args:
-        BUILDKIT_SYNTAX: docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
       x-bake:
         cache-from:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-dindbox_bayt
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-dindbox_bayt
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-dindbox_bayt
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-dindbox_bayt
         cache-to:
-        - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-dindbox_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+        - >-
+          type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-dindbox_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
     image: bayt-services_tracker-dindbox_bayt:latest
     scale: 0
