@@ -9,7 +9,7 @@ import { machineCandidates, machineShape, parseFilterSpec, parseReadSpec } from 
 type Unique = { name: string; cols: string[]; where?: string };
 export type Entity = {
   table: string;
-  path: string;
+  durability: string;
   fields: {
     name: string;
     type: string;
@@ -937,8 +937,8 @@ function caretLint(region: StopRegion, e: Entity, outer: Entity | undefined, wha
     ? [e, outer]
     : [e];
   for (const held of owns) {
-    if (BROWSER_TIERS.has(held.path)) continue;
-    return `${what} follows a "${held.path}" table ("${held.table}"), whose rows another reader can write — ` +
+    if (BROWSER_TIERS.has(held.durability)) continue;
+    return `${what} follows a "${held.durability}" table ("${held.table}"), whose rows another reader can write — ` +
       `their move would take this reader's focus; a caret follows a ` +
       `"${[...BROWSER_TIERS].join('" or "')}" row, which is the reader's own`;
   }
@@ -981,12 +981,12 @@ export function focusLint(region: StopRegion, e: Entity, outer?: Entity): string
  * view's `is.` predicate, an app fold's guard — so a column spelled two ways
  * disowns half its own rows with no error anywhere. */
 export function writeLint(writes: Write[], e: Entity): string | null {
-  if (!BROWSER_TIERS.has(e.path)) return null;
+  if (!BROWSER_TIERS.has(e.durability)) return null;
   for (const col of new Set(writes.map((w) => w.col))) {
     const field = e.fields.find((f) => f.name === col);
     if (field === undefined) return `a machine region writes "${col}" — not a field of "${e.table}"`;
     const values = writes.filter((w) => w.col === col).map((w) => w.value);
-    const tier = `"${e.path}" entity`;
+    const tier = `"${e.durability}" entity`;
     const spellings = new Set(values.map((v) => typeof v));
     if (spellings.size > 1) {
       const shown = [...new Set(values.map((v) => JSON.stringify(v)))].join(", ");

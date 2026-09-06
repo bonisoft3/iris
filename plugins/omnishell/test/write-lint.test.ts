@@ -3,7 +3,7 @@ import { type Entity, machineRegions, machineWrites, writeLint, type Write } fro
 
 const match = (extra: Partial<Entity> = {}): Entity => ({
   table: "match",
-  path: "device",
+  durability: "device",
   fields: [
     { name: "id", type: "text", pk: true },
     { name: "variant", type: "text" },
@@ -69,8 +69,8 @@ describe("writeLint stays silent on the corpus's shapes", () => {
   // decision: only tab and device rows are read back from the same local
   // factory that wrote them.
   it("only the browser tiers are this rule's", () => {
-    for (const path of ["crud", "live", "offline"]) {
-      expect(writeLint(w(["hand_no", 1], ["hand_no", "1"]), match({ path }))).toBe(null)
+    for (const durability of ["server", "live", "offline"]) {
+      expect(writeLint(w(["hand_no", 1], ["hand_no", "1"]), match({ durability }))).toBe(null)
     }
   })
 
@@ -103,7 +103,7 @@ describe("writeLint", () => {
   })
 
   it("catches it on a tab tier as well as a device tier", () => {
-    expect(writeLint(w(["stake", 2], ["stake", "2"]), match({ path: "tab" }))).toContain('"stake"')
+    expect(writeLint(w(["stake", 2], ["stake", "2"]), match({ durability: "tab" }))).toContain('"stake"')
   })
 
   // Two spellings that are both non-string are the same defect: a bool

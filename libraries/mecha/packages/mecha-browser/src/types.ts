@@ -24,6 +24,18 @@ export interface BrowserConfig {
   /** Optional seed data loader (called after schema init). */
   seedData?: (pglite: PGlite) => Promise<void>
   /**
+   * Resolves the signed-in subject's scopes, as `subject_scopes` does on a
+   * server. Supplying it switches PGlite off the superuser it connects as --
+   * superusers bypass RLS entirely, so without this every policy in `schema` is
+   * inert while looking correct.
+   *
+   * Omit it only for a schema that has no policies. Re-apply on identity change
+   * with `applyScopeSession` from `@mecha/postgrest-js`.
+   */
+  scopes?: (req?: Request) => string[] | Promise<string[]>
+  /** The non-superuser role the schema's policies are written against. */
+  role?: string
+  /**
    * App-provided service substitutes, registered on the MSW worker beside
    * /crud. Path is an MSW pattern ("/img/*"); the resolver sees the raw
    * Request so apps never import msw themselves.

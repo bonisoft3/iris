@@ -289,9 +289,9 @@ describe("a compile-time item set is one set under one row", () => {
 })
 
 describe("the column has one writer, and the tier is where that is decidable", () => {
-  const entity = (path: string) => ({
+  const entity = (durability: string) => ({
     table: "pick",
-    path,
+    durability,
     fields: [{ name: "id", type: "text", pk: true }, { name: "chk_left", type: "text" }],
   })
   const html = `<div data-live="pick" data-filter="id=eq.the">` +
@@ -364,7 +364,7 @@ describe("the column has one writer, and the tier is where that is decidable", (
     // Focus follows the delta and asks nothing about who caused it, which is
     // exact only while the answer cannot be anyone else.
     expect(roveLint(stopRegions(html, "data-rove")[0], entity("live"))).toMatch(/another reader can write/)
-    expect(roveLint(stopRegions(html, "data-rove")[0], entity("crud"))).toMatch(/a "crud" table/)
+    expect(roveLint(stopRegions(html, "data-rove")[0], entity("server"))).toMatch(/a "server" table/)
   })
 
   it("refuses a tabstop over a column the entity has not got", () => {
@@ -378,14 +378,14 @@ describe("the column has one writer, and the tier is where that is decidable", (
 // answer — the region recomputes it from the rows it is holding — so the
 // question the rule asks moves to the row the projection compares against.
 describe("a caret the region computes", () => {
-  const points = (path: string) => ({
+  const points = (durability: string) => ({
     table: "point",
-    path,
+    durability,
     fields: [{ name: "id", type: "text", pk: true }, { name: "value", type: "int" }],
   })
-  const cursor = (path: string) => ({
+  const cursor = (durability: string) => ({
     table: "cursor",
-    path,
+    durability,
     fields: [{ name: "id", type: "text", pk: true }, { name: "active", type: "text" }],
   })
   const plot = `<div data-live="cursor" data-filter="id=eq.the"><div data-live="point"` +

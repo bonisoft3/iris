@@ -69,7 +69,7 @@ describe("slotRegions", () => {
 describe("unwitnessedSlot", () => {
   const entity = (extra: Partial<Entity> = {}): Entity => ({
     table: "round",
-    path: "tab",
+    durability: "tab",
     fields: [
       { name: "id", type: "text", pk: true },
       { name: "current", type: "text", pk: false },

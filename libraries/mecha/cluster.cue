@@ -96,6 +96,11 @@ _devJwtSecret: "pronto-dev-secret-please-override-32ch"
 						PGRST_DB_URI:            "postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-\(X.meta.app)}"
 						PGRST_DB_SCHEMA:         "public"
 						PGRST_DB_ANON_ROLE:      "anon"
+						// Called once per request, in the request's transaction, after the
+						// role switch: it sets app.scopes, which the tenancy floor reads.
+						// Without it current_scopes() is empty and every floored table is
+						// invisible -- the floor fails closed, so this is not optional.
+						PGRST_DB_PRE_REQUEST:    "public.app_pre_request"
 						PGRST_SERVER_HOST:       "*"
 						PGRST_SERVER_PORT:       3000
 						PGRST_ADMIN_SERVER_PORT: 3001

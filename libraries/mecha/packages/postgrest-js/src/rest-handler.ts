@@ -126,7 +126,10 @@ function parsePrefer(header: string | null): {
   }
 }
 
-async function tableExists(db: PGlite, table: string): Promise<boolean> {
+/** What the handlers reach for, so a transaction can stand in for the connection. */
+type Queryable = Pick<PGlite, 'query' | 'exec'>
+
+async function tableExists(db: Queryable, table: string): Promise<boolean> {
   const result = await db.query<{ count: string }>(
     `SELECT COUNT(*) AS count FROM information_schema.tables WHERE table_schema = 'public' AND table_name = $1`,
     [table],
@@ -135,7 +138,7 @@ async function tableExists(db: PGlite, table: string): Promise<boolean> {
 }
 
 async function handleGet(
-  db: PGlite,
+  db: Queryable,
   table: string,
   url: URL,
   req: Request,
@@ -184,7 +187,7 @@ async function handleGet(
 }
 
 async function handlePost(
-  db: PGlite,
+  db: Queryable,
   table: string,
   req: Request,
 ): Promise<Response> {
@@ -243,7 +246,7 @@ async function handlePost(
 }
 
 async function handlePatch(
-  db: PGlite,
+  db: Queryable,
   table: string,
   url: URL,
   req: Request,
@@ -277,7 +280,7 @@ async function handlePatch(
 }
 
 async function handleDelete(
-  db: PGlite,
+  db: Queryable,
   table: string,
   url: URL,
 ): Promise<Response> {
@@ -292,6 +295,55 @@ async function handleDelete(
 }
 
 /**
+ * What PostgREST's `db-pre-request` hook does, for the browser tier.
+ *
+ * Both halves are required and neither is optional in effect. PGlite connects
+ * as `postgres`, a superuser, and **superusers bypass RLS entirely** -- FORCE
+ * does not reach them -- so without the role switch every policy is inert and
+ * the browser silently sees every scope. Without the scopes, `current_scopes()`
+ * returns empty and the floor hides everything. Omitting the option leaves both
+ * unset, which is right only for a database that has no policies.
+ */
+export interface RestHandlerAuth {
+  /** Resolves the subject's scopes for this request, as `subject_scopes` would. */
+  scopes: (req: Request) => string[] | Promise<string[]>
+  /** The non-superuser role policies are written against. */
+  role?: string
+}
+
+/**
+ * Applies a subject's scopes to a PGlite connection for the whole session.
+ *
+ * For the readers no request reaches: a browser-tier app queries its
+ * collections directly. Call it at boot and on identity change.
+ */
+export async function applyScopeSession(
+  db: PGlite,
+  scopes: string[],
+  role = 'app_user',
+): Promise<void> {
+  // One statement, not three awaited ones. Between a RESET and a SET the
+  // connection is the PGlite superuser, which bypasses RLS entirely -- and the
+  // connection is shared with the app's own live queries, so anything reading
+  // inside that window would see every scope. `exec` sends them together, so
+  // the window does not exist.
+  await db.exec(`RESET ROLE;` + scopeSql(scopes, role, false))
+}
+
+/** `local` decides whether the setting dies with the transaction. */
+function scopeSql(scopes: string[], role: string, local: boolean): string {
+  for (const s of scopes) {
+    if (s.includes(',')) {
+      throw new Error(`Invalid scope ${s}: a comma would split it into two scopes`)
+    }
+  }
+  return (
+    `SELECT set_config('app.scopes', '${scopes.join(',').replace(/'/g, "''")}', ${local});` +
+    `SET${local ? ' LOCAL' : ''} ROLE "${validateIdentifier(role)}";`
+  )
+}
+
+/**
  * Creates a PostgREST-subset request handler backed by a PGlite instance.
  *
  * Usage:
@@ -300,61 +352,26 @@ async function handleDelete(
  */
 export function createRestHandler(
   db: PGlite,
+  auth?: RestHandlerAuth,
 ): (req: Request) => Promise<Response> {
   return async (req: Request): Promise<Response> => {
     try {
-      const url = new URL(req.url)
-      // Extract first path segment as table name
-      const segments = url.pathname.split('/').filter(Boolean)
-      const table = segments[0]
-
-      if (!table) {
-        return new Response(JSON.stringify({ error: 'Missing table name' }), {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
+      // Transaction-local, not session-level: PGlite is one connection, shared
+      // with the app's own collection queries. `SET LOCAL` expires at commit,
+      // and PGlite serialises transactions, so no two requests overlap.
+      if (auth) {
+        const scopes = await auth.scopes(req)
+        const role = auth.role ?? 'app_user'
+        const res = await db.transaction(async (tx) => {
+          await tx.exec(scopeSql(scopes, role, true))
+          return await route(tx, req)
         })
+        // PGlite yields undefined for a transaction it rolled back without
+        // throwing, and there is no response to send in that case.
+        if (!res) throw new Error('request transaction rolled back')
+        return res
       }
-
-      // Validate table name is a safe identifier before using it in SQL
-      try {
-        validateIdentifier(table)
-      } catch {
-        return new Response(JSON.stringify({ error: `Invalid table name: ${table}` }), {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        })
-      }
-
-      // Validate table exists
-      const exists = await tableExists(db, table)
-      if (!exists) {
-        return new Response(
-          JSON.stringify({ error: `Table "${table}" not found` }),
-          {
-            status: 404,
-            headers: { 'Content-Type': 'application/json' },
-          },
-        )
-      }
-
-      switch (req.method.toUpperCase()) {
-        case 'GET':
-          return await handleGet(db, table, url, req)
-        case 'POST':
-          return await handlePost(db, table, req)
-        case 'PATCH':
-          return await handlePatch(db, table, url, req)
-        case 'DELETE':
-          return await handleDelete(db, table, url)
-        default:
-          return new Response(
-            JSON.stringify({ error: `Method ${req.method} not allowed` }),
-            {
-              status: 405,
-              headers: { 'Content-Type': 'application/json' },
-            },
-          )
-      }
+      return await route(db, req)
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
       const isValidationError = message.startsWith('Invalid identifier:')
@@ -363,5 +380,60 @@ export function createRestHandler(
         headers: { 'Content-Type': 'application/json' },
       })
     }
+  }
+}
+
+async function route(db: Queryable, req: Request): Promise<Response> {
+  const url = new URL(req.url)
+  // Extract first path segment as table name
+  const segments = url.pathname.split('/').filter(Boolean)
+  const table = segments[0]
+
+  if (!table) {
+    return new Response(JSON.stringify({ error: 'Missing table name' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
+  // Validate table name is a safe identifier before using it in SQL
+  try {
+    validateIdentifier(table)
+  } catch {
+    return new Response(JSON.stringify({ error: `Invalid table name: ${table}` }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
+  // Validate table exists
+  const exists = await tableExists(db, table)
+  if (!exists) {
+    return new Response(
+      JSON.stringify({ error: `Table "${table}" not found` }),
+      {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    )
+  }
+
+  switch (req.method.toUpperCase()) {
+    case 'GET':
+      return await handleGet(db, table, url, req)
+    case 'POST':
+      return await handlePost(db, table, req)
+    case 'PATCH':
+      return await handlePatch(db, table, url, req)
+    case 'DELETE':
+      return await handleDelete(db, table, url)
+    default:
+      return new Response(
+        JSON.stringify({ error: `Method ${req.method} not allowed` }),
+        {
+          status: 405,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      )
   }
 }

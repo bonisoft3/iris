@@ -65,7 +65,7 @@ describe("kindedRegions", () => {
 
 const entity = (extra: Partial<Entity> = {}): Entity => ({
   table: "entry",
-  path: "tab",
+  durability: "tab",
   fields: [
     { name: "id", type: "uuid", pk: true },
     { name: "kind", type: "text" },

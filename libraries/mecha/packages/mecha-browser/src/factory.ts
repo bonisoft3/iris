@@ -1,6 +1,6 @@
 import { PGlite } from '@electric-sql/pglite'
 import { live } from '@electric-sql/pglite/live'
-import { createRestHandler } from '@mecha/postgrest-js'
+import { createRestHandler, applyScopeSession } from '@mecha/postgrest-js'
 import { pgliteCollectionOptions } from '@mecha/tanstackdb-pglite'
 import type { PlatformContext, CollectionAdapter } from '@mecha/collections'
 import type { BrowserConfig } from './types.js'
@@ -20,7 +20,10 @@ export async function bootPlatform(config: BrowserConfig): Promise<PlatformConte
   await pglite.exec(config.schema)
 
   // 2. Create rest handler
-  const restHandler = createRestHandler(pglite)
+  const restHandler = createRestHandler(
+    pglite,
+    config.scopes ? { scopes: (req) => config.scopes!(req), role: config.role } : undefined,
+  )
 
   // 3. Create adapter
   const adapter: CollectionAdapter = {
@@ -113,6 +116,16 @@ export async function bootPlatform(config: BrowserConfig): Promise<PlatformConte
   // 6. Load seed data if configured
   if (config.seedData) {
     await config.seedData(pglite)
+  }
+
+  // 7. Last because seeding spans scopes and runs as the owner, which the floor
+  // would refuse under a role.
+  //
+  // A CDC pipeline sink writes on this session, so it writes confined to the
+  // reader's scopes, where the cluster's `service` holds BYPASSRLS and writes
+  // across them.
+  if (config.scopes) {
+    await applyScopeSession(pglite, await config.scopes(), config.role)
   }
 
   return {

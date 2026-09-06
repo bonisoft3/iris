@@ -18,6 +18,10 @@ ENV PGDATA=/postgresql-data
 COPY migrations/000_extensions.sql     /docker-entrypoint-initdb.d/000_extensions.sql
 COPY migrations/001_roles.sql          /docker-entrypoint-initdb.d/001_roles.sql
 COPY migrations/002_grants.sql         /docker-entrypoint-initdb.d/002_grants.sql
+# The floor ships with the image, not with a generator, so it is present in
+# every mecha database whatever emitted the tables above it. Sorts after 002 and
+# before the app-emitted 005 that calls rls_protect.
+COPY rls/rls.sql                       /docker-entrypoint-initdb.d/002a_rls.sql
 COPY migrations/003_publication.sql    /docker-entrypoint-initdb.d/003_publication.sql
 COPY migrations/004_create_tables.sql  /docker-entrypoint-initdb.d/004_create_tables.sql
 

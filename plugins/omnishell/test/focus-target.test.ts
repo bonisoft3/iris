@@ -177,7 +177,7 @@ describe("focus moves for the caret, and only inside the widget", () => {
 describe("a chart that cannot hear the reader is refused", () => {
   const entity = {
     table: "acc_demo",
-    path: "tab",
+    durability: "tab",
     fields: [
       { name: "id", type: "text", pk: true },
       { name: "caret", type: "text" },
@@ -201,6 +201,6 @@ describe("a chart that cannot hear the reader is refused", () => {
   })
 
   it("still refuses a row a second reader can write", () => {
-    expect(focusLint(scan(CHART), { ...entity, path: "live" })).toMatch(/another reader can write/)
+    expect(focusLint(scan(CHART), { ...entity, durability: "live" })).toMatch(/another reader can write/)
   })
 })
