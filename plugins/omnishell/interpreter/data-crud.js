@@ -29,6 +29,28 @@ export { embedTables, parseFilter, parseFilterSpec, parseLimit, parseSelect };
 
 const HEADERS = { "Content-Type": "application/json" };
 
+/**
+ * Runs `fn` in a task of its own, after the current one and everything it
+ * queues: a fold's writes — a drop, then a put, each awaited — all land before
+ * the region wakes, and a shape commit's several batches wake it once.
+ *
+ * A message, not a zero-delay timer. The browser clamps a repeated timer to
+ * four milliseconds, and a region wakes once per write — so every write past
+ * the first few pays the clamp, most of what clearing a thousand rows costs.
+ * A posted message is a task with no such floor.
+ */
+const later = (fn) => {
+  // A channel per wake, closed as it fires: an open port is a resource a
+  // runtime keeps alive, and a wake owns nothing once it has run.
+  const channel = new MessageChannel();
+  channel.port1.onmessage = () => {
+    channel.port1.close();
+    channel.port2.close();
+    fn();
+  };
+  channel.port2.postMessage(null);
+};
+
 function token() {
   const session = sessionStorage.getItem("pronto-token");
   return session ? JSON.parse(session).token : null;
@@ -108,6 +130,21 @@ export function isMaintainable(spec, embeds, access, accessOf = () => undefined)
 
 /** A table not everyone may read. undefined means no policy at all, so anyone may. */
 const isRestricted = (a) => a !== undefined && a.mode !== "public-read";
+
+/**
+ * Whether a read is the whole table: no predicate, no embed, no cap.
+ *
+ * Such a read gets no view. The collection already is that set, kept current
+ * by the same event stream a view would be fed from, so a view over it would
+ * maintain the set twice — and keep its order by moving array elements, which
+ * charges a bulk write the length of the table per row (subscribe-smoke.js,
+ * "a whole-table read is served by the collection"). Sorting the snapshot at
+ * read costs the read once.
+ */
+function isWhole(spec, embeds, limit) {
+  return Array.isArray(spec) && spec.length === 0 &&
+    Array.isArray(embeds) && embeds.length === 0 && limit === undefined;
+}
 
 function compareBy(order) {
   const keys = (order ?? "").split(",").filter(Boolean).map((k) => {
@@ -317,7 +354,7 @@ export function createStore(base = "", cfg = {}) {
     // through: visible exactly when the parent row is (a vanished parent
     // hides the child, matching the policy's EXISTS).
     const parent = client.collections[a.parent];
-    const p = parent?.toArray.find((r) => r[keyOf(a.parent)] === row[a.on]);
+    const p = parent?.get(row[a.on]);
     return p !== undefined && visible(a.parent, p);
   }
 
@@ -364,6 +401,7 @@ export function createStore(base = "", cfg = {}) {
     const a = access[table];
     const embeds = parseSelect(opts.select);
     if (!isMaintainable(spec, embeds, a, (t) => access[t])) return null;
+    if (isWhole(spec, embeds, parseLimit(opts.filter))) return null;
     if (embeds !== null && embeds.some((e) => client.collections[e.table] === undefined)) return null;
     // Views are keyed by the read they stand for, so the many nested regions
     // that share one — every row's comment probe on a screen — enter the graph
@@ -569,29 +607,36 @@ export function createStore(base = "", cfg = {}) {
       // The FK column is a convention, not a schema fact the client holds:
       // probe it on a synced row (synced rows carry every column) and leave
       // an unresolvable embed to the server.
-      const probe = c.toArray.find((r) => r.$synced !== false);
+      // Enumerated once: every row is enriched on the way out, and a table's
+      // length is what that costs.
+      const all = c.toArray;
+      const probe = all.find((r) => r.$synced !== false);
       if (probe === undefined || embeds.every(({ alias }) => probe[`${alias}_id`] !== undefined)) {
-        const capped = c.toArray
-          .filter((r) => visible(table, r) && preds.every((p) => p(r)))
-          .sort(compareBy(order));
+        // The snapshot is a fresh array, so it is sorted in place, and copied
+        // only where a predicate, a cap or an embed makes a different one.
+        const rows = access[table] === undefined && preds.length === 0
+          ? all
+          : all.filter((r) => visible(table, r) && preds.every((p) => p(r)));
+        if (order) rows.sort(compareBy(order));
         const limit = parseLimit(opts.filter);
-        return (limit === undefined ? capped : capped.slice(0, limit))
-          .map((row) => {
-            if (embeds.length === 0) return row;
-            const out = { ...row };
-            for (const { alias, table: rel, cols } of embeds) {
-              const target = client.collections[rel].toArray.find(
-                (r) => r[keyOf(rel)] === row[`${alias}_id`],
-              );
-              // null embed mirrors PostgREST under RLS: a joined row this
-              // reader cannot see binds blank, never leaks.
-              out[alias] =
-                target !== undefined && visible(rel, target)
-                  ? Object.fromEntries(cols.map((col) => [col, target[col]]))
-                  : null;
-            }
-            return out;
-          });
+        const capped = limit === undefined ? rows : rows.slice(0, limit);
+        if (embeds.length === 0) return capped;
+        return capped.map((row) => {
+          const out = { ...row };
+          for (const { alias, table: rel, cols } of embeds) {
+            // A collection is keyed by the same column keyOf names, so the
+            // joined row is one lookup; a scan of the related table per row
+            // is the product of the two tables per read.
+            const target = client.collections[rel].get(row[`${alias}_id`]);
+            // null embed mirrors PostgREST under RLS: a joined row this
+            // reader cannot see binds blank, never leaks.
+            out[alias] =
+              target !== undefined && visible(rel, target)
+                ? Object.fromEntries(cols.map((col) => [col, target[col]]))
+                : null;
+          }
+          return out;
+        });
       }
     }
     // Server-computed read: fts, embed-path filter, or untranslatable
@@ -629,65 +674,102 @@ export function createStore(base = "", cfg = {}) {
     return p === undefined ? [] : [p.from, p.pair?.table].filter(Boolean);
   };
 
+  /**
+   * A collection's changes, every one of them. Left to its default, a
+   * subscription hears only about keys it has been told of: a row already in
+   * the collection when the subscription opens is not, so its later delete is
+   * never delivered, and a region reading a seeded or resumed table keeps
+   * drawing a row the store no longer holds. `includeInitialState: false`,
+   * stated rather than left unset, is the engine's "every key is seen": no
+   * filtering, no snapshot walked, no key set kept per subscription.
+   */
+  function watch(collection, fn) {
+    return stopper(collection.subscribeChanges(fn, { includeInitialState: false }));
+  }
+  /** An engine subscription handle, either shape, as a plain stop. */
+  const stopper = (sub) => (typeof sub === "function" ? sub : () => sub.unsubscribe());
+
+  /**
+   * One wake per burst, carrying what the burst named.
+   *
+   * Changes are accumulated across the window, because a shape commit arrives
+   * as several batches and the region is woken once for all of them. The
+   * wake carries the rows they named; a cause with no rows — a change set the
+   * read cannot attribute, a settle on another table — widens it to
+   * everything, which asks the region to reconsider every row rather than
+   * pretend nothing moved. A wake that named nothing is not delivered, and
+   * neither is one that comes due after the subscription stopped: a region
+   * torn down in the same task would otherwise be refreshed as if it stood,
+   * re-hydrating nested regions nothing will ever stop.
+   */
+  function coalesce(fn) {
+    let scheduled = false;
+    let stopped = false;
+    let batch = [];
+    let unattributed = false;
+    const schedule = () => {
+      if (scheduled) return;
+      scheduled = true;
+      later(() => {
+        scheduled = false;
+        if (stopped || (batch.length === 0 && !unattributed)) return;
+        const changes = unattributed ? undefined : batch;
+        batch = [];
+        unattributed = false;
+        fn(changes);
+      });
+    };
+    return {
+      /** These rows moved. */
+      named: (changes) => {
+        for (const c of changes) batch.push(c);
+        schedule();
+      },
+      /** Something moved, and which rows is not known. */
+      widened: () => {
+        unattributed = true;
+        schedule();
+      },
+      /** A write of this table settled, naming the keys it wrote. */
+      settled: (keys) => {
+        if (keys === undefined) unattributed = true;
+        else for (const id of keys) batch.push({ value: { id } });
+        schedule();
+      },
+      stop: () => {
+        stopped = true;
+      },
+    };
+  }
+
   function subscribe(table, fn, opts = {}) {
+    const wakes = coalesce(fn);
     // A maintained view's own changes ARE this region's input changing —
     // computed by the engine against the actual query rather than guessed
     // from a predicate over one table's raw change set. Nothing else needs
     // watching: a row leaving the filter, a row entering it, and a row moving
     // in the order all arrive here and nowhere else.
-    const held = maintainedView(table, opts, true);
-    if (held !== null) {
-      let scheduled = false;
-      // Accumulated across the coalescing window, because a shape commit
-      // arrives as several batches and the region is woken once for all of
-      // them. `unattributed` is the honest answer for a wake whose cause is
-      // not a change set — a settled own write — and it asks for everything
-      // to be reconsidered rather than pretending nothing moved.
-      let batch = [];
-      let unattributed = false;
-      const wake = () => {
-        if (scheduled) return;
-        scheduled = true;
-        setTimeout(() => {
-          scheduled = false;
-          const changes = unattributed ? undefined : batch;
-          batch = [];
-          unattributed = false;
-          fn(changes);
-        }, 0);
-      };
-      const stop = held.view.subscribeChanges((changes) => {
-        if (Array.isArray(changes)) batch.push(...changes);
-        else unattributed = true;
-        wake();
+    const view = maintainedView(table, opts, true);
+    if (view !== null) {
+      // Through watch, for the same reason a raw collection is: a region
+      // joining a view another already holds subscribes after the view has
+      // its rows, and would otherwise never hear one of them go.
+      const stop = watch(view.view, (changes) => {
+        if (Array.isArray(changes)) wakes.named(changes);
+        else wakes.widened();
       });
       // The engine maintains the view over the sink alone; the projection is
       // applied after it, so the source's changes have to arrive separately.
       const sourceStops = foldSourceOf(table)
         .filter((t) => client.collections[t] !== undefined)
-        .map((t) =>
-          client.collections[t].subscribeChanges(() => {
-            unattributed = true;
-            wake();
-          })
-        );
-      // A write names the rows it wrote, so the wake it causes names them too.
-      // Attributed, the pass re-binds those rows and leaves the rest of the
-      // collection alone; unattributed, it re-binds every row in the region,
-      // which costs the length of the list rather than the length of the batch.
-      const settle = (keys) => {
-        if (keys === undefined) unattributed = true;
-        else batch.push(...keys.map((id) => ({ value: { id } })));
-        wake();
-      };
-      settleListeners.set(table, (settleListeners.get(table) ?? new Set()).add(settle));
+        .map((t) => watch(client.collections[t], wakes.widened));
+      settleListeners.set(table, (settleListeners.get(table) ?? new Set()).add(wakes.settled));
       return () => {
-        (typeof stop === "function" ? stop : stop.unsubscribe?.bind(stop))?.();
-        for (const s of sourceStops) {
-          (typeof s === "function" ? s : s.unsubscribe?.bind(s))?.();
-        }
-        settleListeners.get(table).delete(settle);
-        held.release();
+        wakes.stop();
+        stop();
+        for (const s of sourceStops) s();
+        settleListeners.get(table).delete(wakes.settled);
+        view.release();
       };
     }
     const deps = [
@@ -703,42 +785,33 @@ export function createStore(base = "", cfg = {}) {
     // cost a re-read: without this every comment written anywhere re-queries
     // every comment region on the page.
     const preds = parseFilter(opts.filter);
-    let scheduled = false;
-    let dirty = false;
-    const schedule = () => {
-      // Coalesce bursts: one re-render per microtask flood (a shape commit
-      // delivers many ops at once).
-      if (scheduled) return;
-      scheduled = true;
-      setTimeout(() => {
-        scheduled = false;
-        if (!dirty) return;
-        dirty = false;
-        fn();
-      }, 0);
-    };
-    // Anything we cannot reason about — another dependency's table, an
-    // untranslatable filter, a settled own-write — is unconditionally the
-    // region's input changing. Being unsure costs a re-read, never a miss.
-    const wake = () => {
-      dirty = true;
-      schedule();
-    };
+    // Whether a change to this table names exactly the rows whose rendering it
+    // can move. That holds when the read is decided here — predicates the
+    // client evaluates, nothing joined — so a row the change did not name is
+    // rendered from a value nothing touched. A server-computed read can move a
+    // row a write never named (a trigger, a computed column), so it keeps
+    // asking for everything to be reconsidered.
+    const embeds = parseSelect(opts.select);
+    const attributable = preds !== null && Array.isArray(embeds) && embeds.length === 0;
+    // Anything the read cannot reason about — another dependency's table, an
+    // untranslatable filter — is unconditionally the region's input changing.
+    // Being unsure costs a re-read, never a miss.
     const wakeMatching = (changes) => {
-      dirty ||= touches(preds, changes);
-      schedule();
+      if (!touches(preds, changes)) return;
+      if (attributable && Array.isArray(changes)) wakes.named(changes);
+      else wakes.widened();
     };
+    const settle = attributable ? wakes.settled : wakes.widened;
     const stops = deps.map((t) =>
-      client.collections[t].subscribeChanges(t === table && preds !== null ? wakeMatching : wake),
+      watch(client.collections[t], t === table && preds !== null ? wakeMatching : wakes.widened)
     );
     for (const t of deps) {
-      settleListeners.set(t, (settleListeners.get(t) ?? new Set()).add(wake));
+      settleListeners.set(t, (settleListeners.get(t) ?? new Set()).add(t === table ? settle : wakes.widened));
     }
     return () => {
-      for (const stop of stops) {
-        (typeof stop === "function" ? stop : stop.unsubscribe?.bind(stop))?.();
-      }
-      for (const t of deps) settleListeners.get(t).delete(wake);
+      wakes.stop();
+      for (const stop of stops) stop();
+      for (const t of deps) settleListeners.get(t).delete(t === table ? settle : wakes.widened);
     };
   }
 

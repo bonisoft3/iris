@@ -669,12 +669,12 @@ const hatchesIn = (node) => [
 ];
 
 /** Whether `el` is the scope's own to bind: nothing between it and the scope
- * declares a read, and nothing between it and the scope is one of `within` —
- * the elements whose insides belong to somebody else. */
-function ownedBy(el, scope, within) {
+ * declares a read. */
+function ownedBy(el, scope) {
   for (let n = el; n && n !== scope; n = n.parentElement) {
-    if (n.matches?.("[data-live]")) return false;
-    if (within !== undefined && within.has(n)) return false;
+    // An attribute probe, not a selector match: this runs once per ancestor
+    // of every element bound, and a match is an order of magnitude dearer.
+    if (n.hasAttribute?.("data-live")) return false;
   }
   return true;
 }
@@ -1188,10 +1188,14 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
    * every interest binding likewise: both name a target by id and both are
    * wired once per element, so one pass carries them. */
   function wireKeysIn(scope) {
-    if (scope.dataset?.key !== undefined) wireKeys(scope);
+    wireKeysOn(scope);
     for (const el of scope.querySelectorAll("[data-key]")) if (ownedBy(el, scope)) wireKeys(el);
-    if (scope.dataset?.interest !== undefined) wireInterest(scope);
     for (const el of scope.querySelectorAll("[data-interest]")) if (ownedBy(el, scope)) wireInterest(el);
+  }
+  /** The element's own bindings, and none of its descendants'. */
+  function wireKeysOn(el) {
+    if (el.dataset?.key !== undefined) wireKeys(el);
+    if (el.dataset?.interest !== undefined) wireInterest(el);
   }
 
   function wireKeys(el) {
@@ -1665,15 +1669,24 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     // that declares the read. Inside an item it acts on that row and carries
     // its id; outside one it acts on what the region read. The walk stops at
     // the next [data-live], which binds its own.
-    const bindTree = (root, id, skip) => {
+    const bindTree = (root, id) => {
       bind(root, id);
       for (const el of root.querySelectorAll("*")) {
-        if (!ownedBy(el, root, skip)) continue;
+        if (!ownedBy(el, root)) continue;
         bind(el, id);
       }
     };
-    bindTree(region, undefined, new Set(items));
-    for (const item of items) bindTree(item, item.dataset.id);
+    // A slot's affordances are its own descendants, which persist, so the
+    // whole tree is walked. A list's are its items, and only the ones not yet
+    // wired are handed in: a surviving node was wired when it arrived and its
+    // listeners outlive the refresh, so walking it again is a walk of the
+    // whole list per write. Nothing else of a list's is left to bind — its
+    // markup outside the items is swept on the first render.
+    if (items === null) bindTree(region, undefined);
+    else {
+      bind(region, undefined);
+      for (const item of items) bindTree(item, item.dataset.id);
+    }
 
     // data-machine: the #Machine subset — machine.cue holds the vocabulary
     // and its doctrine — executed here without a compartment, because a
@@ -2243,10 +2256,17 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
      * reader does not own, where a second reader's write would land as a jump
      * of this one's caret.
      */
+    // Whether the region's markup can ever carry a member of either set. Asked
+    // of the markup once rather than of the rendered tree on every refresh: a
+    // region with none scans its whole list per write to learn nothing.
+    const declares = (selector) =>
+      region.querySelector(selector) !== null ||
+      templates.some(({ el }) => el.content.querySelector(selector) !== null);
+    const roving = declares("[data-rove]");
+    const focusing = declares("[data-focus]");
+    const dragging = templates.some(({ el }) => el.content.querySelector("[data-drag-handle]") !== null);
     const rove = () => {
-      // Almost no region declares one, and this runs on every refresh of every
-      // region: one selector match answers before any per-stop work.
-      if (region.querySelector("[data-rove]") === null) return;
+      if (!roving) return;
       // Every stop the region owns, whatever row each came from. A list whose
       // rows are the members and a compile-time set of N members under one row
       // are the same set — the region's shape says nothing about the tabstop,
@@ -2295,7 +2315,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
      * theirs. `focusLint` refuses a region that does not hear it.
      */
     const moveFocus = () => {
-      if (region.querySelector("[data-focus]") === null) return;
+      if (!focusing) return;
       const members = [...region.querySelectorAll("[data-focus]")].filter((el) => ownedBy(el, region));
       const reading = members.filter((el) => el.getAttribute("data-focus") === "true");
       if (reading.length > 1) {
@@ -2316,6 +2336,8 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     // the list instead costs all four, and leaves no node alive long enough
     // for an enter or exit animation to play on.
     const live = new Map();
+    // Rows playing their exit, still in the list.
+    let exiting = 0;
     let currentRows = [];
     // The first paint is not an arrival: animating every row in on load reads
     // as the page still assembling itself, and delays the moment it looks
@@ -2390,6 +2412,11 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       }
       entry.node = node;
       entry.tmpl = tmpl;
+      // Set once the node's keys and affordances are attached. A pass that
+      // throws mid-way — a row missing a column the item binds — leaves it
+      // unset, so the pass that succeeds wires what the first did not reach
+      // rather than taking the node for done.
+      entry.wired = false;
     };
 
     const eachNested = (fn) => {
@@ -2406,8 +2433,8 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       currentRows = stored;
       const rows = projected(stored);
       // Which rows this pass has to reconsider. null means all of them: a
-      // first paint, a retry after an outage, a settled own write, or any
-      // wake the store could not attribute to a delta.
+      // first paint, a retry after an outage, or any wake the store could not
+      // attribute to a delta.
       //
       // The delta names rows, never positions, so order below is still read
       // off the maintained array — 13 moves cost 0.1ms at 20 rows and have
@@ -2436,6 +2463,9 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         {
           const ready = [];
           const order = [];
+          // The nodes not yet wired, which are the ones with anything left
+          // to attach.
+          const fresh = [];
           const seen = new Set();
           let arriving = 0;
           for (const row of rows) if (!live.has(String(row.id))) arriving += 1;
@@ -2464,7 +2494,9 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
             // value, so re-binding it would rebuild a body the reader may be
             // mid-selection in, and re-hydrate nested regions whose filters
             // cannot have moved.
-            if (arrived || dirty === null || dirty.has(key)) {
+            // A node not yet wired is bound whatever the delta says: its
+            // first pass may have thrown before reaching it.
+            if (arrived || dirty === null || dirty.has(key) || !entry.wired) {
               // A surviving row whose matched template changed re-stamps from
               // the new one: the old node's nested regions and hatches are
               // released exactly as the departed-row sweep releases them, and
@@ -2492,6 +2524,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
               bindTexts(entry.node, entry.ctx, renderers);
               bindHatches(entry.node, entry.ctx);
               syncNested(entry, ready);
+              if (!entry.wired) fresh.push(entry);
             }
             order.push(entry.node);
           }
@@ -2500,19 +2533,27 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
             if (!seen.has(key)) departing.push([key, entry]);
           }
           const leaving = departing.length <= GESTURE;
+          // Everything going and nothing mid-exit is the list emptied in one
+          // call: taking ten thousand rows out one at a time costs twice what
+          // taking them out together does.
+          const wholesale = !leaving && order.length === 0 && exiting === 0;
+          const release = (node) => {
+            // A hatch holds a page-level message listener; the node going
+            // away is what releases it.
+            for (const el of hatchesIn(node)) el._prontoHatch?.destroy();
+            if (!wholesale) node.remove();
+          };
           for (const [key, entry] of departing) {
             for (const n of entry.nested.values()) n.h.stop();
-            const node = entry.node;
-            const release = () => {
-              // A hatch holds a page-level message listener; the node going
-              // away is what releases it.
-              for (const el of hatchesIn(node)) el._prontoHatch?.destroy();
-              node.remove();
-            };
             // A row on its way out stays in the list until its animation ends.
             // A thousand of them have no animation worth waiting for.
-            if (leaving) playExit(node, release);
-            else release();
+            if (leaving) {
+              exiting += 1;
+              playExit(entry.node, () => {
+                exiting -= 1;
+                release(entry.node);
+              });
+            } else release(entry.node);
             live.delete(key);
           }
           await Promise.all(ready);
@@ -2524,10 +2565,13 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
           // `:empty` does not match an element holding whitespace. The newline
           // between a probe's tags and its <template> is enough to make a
           // region that rendered no rows read as full.
-          const keep = new Set(order);
-          for (const child of [...region.childNodes]) {
-            if (keep.has(child) || child.dataset?.exit !== undefined) continue;
-            child.remove();
+          if (wholesale) region.replaceChildren();
+          else {
+            const keep = new Set(order);
+            for (const child of [...region.childNodes]) {
+              if (keep.has(child) || child.dataset?.exit !== undefined) continue;
+              child.remove();
+            }
           }
           // Minimal moves, stepping over nodes on their way out: a node already
           // in position is left where it is. Where moveBefore is absent that is
@@ -2566,13 +2610,16 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
           // a column that row lacks is the same program error its
           // change-signature raises.
           fromEnclosing(() => bindElementAttributes(region, ctx), table, "own element");
-          wireKeysIn(region);
-          for (const node of order) wireKeysIn(node);
-          const { deliver, apply } = wireEvents(region, order, () => currentRows, handlers, ctx);
+          // The region's own element, and the items not yet wired: a key on
+          // a surviving node was wired when the node arrived, and nothing
+          // else of the region's markup survives the sweep.
+          wireKeysOn(region);
+          const nodes = fresh.map((f) => f.node);
+          for (const node of nodes) wireKeysIn(node);
+          const { deliver, apply } = wireEvents(region, nodes, () => currentRows, handlers, ctx);
           const reduce = handlers.get(region.dataset.handler);
-          if (reduce && templates.some((t) => t.el.content.querySelector("[data-drag-handle]"))) {
-            wireDrag(region, order, () => currentRows, reduce, deliver, apply);
-          }
+          if (reduce && dragging) wireDrag(region, nodes, () => currentRows, reduce, deliver, apply);
+          for (const f of fresh) f.wired = true;
           first = false;
         }
         if (top) {
@@ -2608,7 +2655,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         slotCtx.row = row;
         // A singleton has affordances too, and its one row is what they act
         // on: the reduce is handed it the way a list's is handed its rows.
-        wireEvents(region, [], () => (currentRow === undefined ? [] : [currentRow]), handlers, slotCtx);
+        wireEvents(region, null, () => (currentRow === undefined ? [] : [currentRow]), handlers, slotCtx);
         bindAttributes(region, slotCtx);
         wireKeysIn(region);
         bindTexts(region, slotCtx, renderers);
@@ -2626,10 +2673,19 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     // pass after that treats a surviving row as an arrival. The subscription's
     // own coalescing only debounces scheduling — it does not wait for the
     // refresh it scheduled.
+    //
+    // The follow-up carries the union of what the coalesced wakes named. The
+    // first wake's delta alone would leave the rows a later one named bound to
+    // values the pass never read; a wake naming nothing widens the follow-up
+    // to everything.
     let running = false;
     let queued = false;
+    let queuedChanges;
     const refreshSerially = async (changes) => {
       if (running) {
+        if (!queued) queuedChanges = changes;
+        else if (queuedChanges !== undefined && changes !== undefined) queuedChanges = [...queuedChanges, ...changes];
+        else queuedChanges = undefined;
         queued = true;
         return;
       }
@@ -2639,6 +2695,8 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         do {
           queued = false;
           await refresh(changes);
+          changes = queuedChanges;
+          queuedChanges = undefined;
         } while (queued);
       } finally {
         running = false;
@@ -2653,13 +2711,20 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     // The change set rides through to refresh. Every other caller — the first
     // paint, resume, the outage retry — passes nothing, which reconsiders
     // every row.
+    // A pass that threw bound nothing it was handed, and the wake that clears
+    // its retry carries only its own rows. The pass after a failure is a full
+    // one whatever it was handed, or the rows the failed delta named stay
+    // bound to values no pass read.
+    let stale = false;
     const guarded = async (changes) => {
       clearTimeout(retryTimer);
       try {
-        await refreshSerially(changes);
+        await refreshSerially(stale ? undefined : changes);
+        stale = false;
         retryMs = 2000;
         if (top && screen.dataset.state === "network-error") setState(base);
       } catch (err) {
+        stale = true;
         // A slot that matched two rows, or a row no template admits, is a
         // broken invariant, not an outage: no retry can repair it, and the
         // network-error dressing would say the store is down when the data is

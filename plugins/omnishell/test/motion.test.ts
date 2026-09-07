@@ -34,9 +34,14 @@ async function boot(initial: any[]) {
   }) as any
 
   let rows = initial
+  // A read the test can hold open, so a wake can land while a refresh waits.
+  let gate: Promise<void> = Promise.resolve()
   const subs = new Set<any>()
   const store = {
-    query: async () => rows,
+    query: async () => {
+      await gate
+      return rows
+    },
     subscribe: (_t: string, fn: any) => {
       subs.add(fn)
       return () => subs.delete(fn)
@@ -56,6 +61,10 @@ async function boot(initial: any[]) {
       rows = next
       for (const fn of [...subs]) await fn()
     },
+    rows: (next: any[]) => { rows = next },
+    gate: (p: Promise<void>) => { gate = p },
+    /** One wake, carrying a delta or none, as the store would deliver it. */
+    wake: (changes: any) => Promise.all([...subs].map((fn) => fn(changes))),
     tick,
   }
 }
@@ -105,6 +114,72 @@ describe("motion slots", () => {
     // What remains is the region's empty message, which is a row of no row.
     expect(app.items().some((li) => li.hasAttribute("data-exit"))).toBe(false)
     expect(app.items().filter((li) => !li.classList.contains("empty")).length).toBe(0)
+  })
+
+  // Everything departing at once is the list emptied in one call — unless a
+  // gesture's row is still playing its exit, which that call would tear out
+  // mid-animation. The load then leaves row by row around it.
+  it("keeps a row that is still leaving when the load around it goes", async () => {
+    const start = Array.from({ length: 40 }, (_, i) => row(`r${i}`, `R${i}`))
+    const app = await boot(start)
+    const leaving = app.items()[39]
+
+    await app.render(start.slice(0, 39))
+    expect(leaving.hasAttribute("data-exit")).toBe(true)
+
+    await app.render([])
+    expect(leaving.isConnected).toBe(true)
+    expect(app.items().filter((li) => !li.classList.contains("empty")).length).toBe(1)
+
+    await app.tick()
+    expect(leaving.isConnected).toBe(false)
+    expect(app.document.querySelector("li.empty")?.textContent).toBe("Nothing here")
+  })
+
+  // A wake landing mid-refresh queues a follow-up, which carries the union of
+  // what the coalesced wakes named. Carrying only the first wake's delta would
+  // leave the rows a later wake named bound to values the pass never read.
+  it("carries every queued delta into the follow-up refresh", async () => {
+    const app = await boot([row("a", "A1"), row("b", "B1"), row("c", "C1")])
+    const texts = () => app.items().map((li) => li.textContent)
+    let release!: () => void
+    const gate = new Promise<void>((r) => { release = r })
+    app.gate(gate)
+    app.rows([row("a", "A2"), row("b", "B2"), row("c", "C2")])
+    // The first wake starts a refresh that waits on the store; the next two
+    // land while it is waiting, each naming one row.
+    const first = app.wake([{ value: { id: "a" } }])
+    const second = app.wake([{ value: { id: "b" } }])
+    const third = app.wake([{ value: { id: "c" } }])
+    release()
+    await Promise.all([first, second, third])
+    expect(texts()).toEqual(["A2", "B2", "C2"])
+  })
+
+  it("widens the follow-up to every row when a queued wake names none", async () => {
+    const app = await boot([row("a", "A1"), row("b", "B1")])
+    let release!: () => void
+    const gate = new Promise<void>((r) => { release = r })
+    app.gate(gate)
+    app.rows([row("a", "A2"), row("b", "B2")])
+    const first = app.wake([{ value: { id: "a" } }])
+    const second = app.wake(undefined)
+    release()
+    await Promise.all([first, second])
+    expect(app.items().map((li) => li.textContent)).toEqual(["A2", "B2"])
+  })
+
+  // A pass that throws binds nothing it was handed. The wake that follows
+  // carries only its own rows, so it has to be a full pass, or the rows the
+  // failed delta named stay bound to values no pass read.
+  it("makes the pass after a failed one a full pass", async () => {
+    const app = await boot([row("a", "A1"), row("b", "B1")])
+    app.rows([row("a", "A2"), row("b", "B2")])
+    app.gate(Promise.reject(new Error("store down")))
+    await app.wake([{ value: { id: "b" } }])
+    app.gate(Promise.resolve())
+    await app.wake([{ value: { id: "a" } }])
+    expect(app.items().map((li) => li.textContent)).toEqual(["A2", "B2"])
   })
 
   it("leaves a surviving row unstamped", async () => {

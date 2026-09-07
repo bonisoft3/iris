@@ -272,6 +272,15 @@ export function createMechaClient(config: MechaClientConfig): MechaClient {
   // the durable half, and a pluggable `Strategy` (debounce / queue / throttle),
   // which is this function's job done properly and by the library. Moving
   // `run` onto it would also retire the hand-rolled phase bookkeeping below.
+  //
+  // Two more things the upgrade has to answer for, measured on 0.6.17 with
+  // ten thousand rows in a tab collection. A collection keeps its keys in a
+  // sorted array and splices per row, so a batch deleting in key order moves
+  // half the array per row: 40 ms of a clear, and quadratic in the table. And
+  // a local tier's write still builds a transaction, a mutation object and a
+  // UUID per row for a collection with nothing to be optimistic against:
+  // 33 ms of the same clear. `writeBatch` on the sync side is the door out
+  // of the second; the first is the collection's own state.
   function run(mutationFnName: string, phaseKeys: string[], mutate: () => void): Promise<void> {
     for (const phaseKey of phaseKeys) setPhase(phaseKey, "queued")
     // autoCommit off: mutate() would otherwise self-commit and race the

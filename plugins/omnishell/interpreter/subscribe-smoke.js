@@ -321,3 +321,123 @@ Deno.test({
     assert(globalThis.__prontoViews.size === 0, "the subscription's release closed the view");
   },
 });
+
+// A read of the whole table opens no view: the collection is that set already,
+// and a view over it would keep the order by moving array elements — which a
+// bulk write paid per row. The region still hears which rows moved.
+Deno.test({
+  name: "a whole-table read is served by the collection, with its changes attributed",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    const store = createStore("", { local: { row: "tab" } });
+    await store.write("row", [{ key: "a", row: { ord: 2 } }, { key: "b", row: { ord: 1 } }]);
+    await new Promise((r) => setTimeout(r, 5));
+    const wakes = [];
+    const stop = store.subscribe("row", (changes) => wakes.push(changes), { order: "ord.asc" });
+    assert(globalThis.__prontoViews.size === 0, "no view for a whole read");
+    // A cap is not a whole read: the engine's ordered index is what stops a
+    // capped read scanning the table.
+    const capped = store.subscribe("row", () => {}, { order: "ord.asc", filter: "limit=1" });
+    assert(globalThis.__prontoViews.size === 1, "a capped read keeps its view");
+    capped();
+    const rows = await store.query("row", "ord.asc", { order: "ord.asc" });
+    assert(JSON.stringify(rows.map((r) => r.id)) === JSON.stringify(["b", "a"]), "ordered at read");
+    await store.patch("row", [{ key: "a", changes: { ord: 0 } }]);
+    await new Promise((r) => setTimeout(r, 5));
+    assert(wakes.length === 1, `one wake, got ${wakes.length}`);
+    assert(Array.isArray(wakes[0]) && wakes[0].some((c) => String(c.value?.id) === "a"), "the wake names the row");
+    stop();
+  },
+});
+
+// A fold's writes are one conclusion — a drop, then a put, each awaited — and
+// they reach the region as one wake with both in it.
+Deno.test({
+  name: "a fold's several writes wake a region once, with every write in the wake",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    const store = createStore("", { local: { row: "tab" } });
+    await store.write("row", [{ key: "a", row: { ord: 1 } }]);
+    await new Promise((r) => setTimeout(r, 5));
+    const wakes = [];
+    const stop = store.subscribe("row", (changes) => wakes.push(changes), {});
+    await store.drop("row", ["a"]);
+    await store.write("row", [{ key: "b", row: { ord: 2 } }, { key: "c", row: { ord: 3 } }]);
+    assert(wakes.length === 0, "the wake is a task of its own, after every write of the fold");
+    await new Promise((r) => setTimeout(r, 5));
+    assert(wakes.length === 1, `one wake for the fold, got ${wakes.length}`);
+    const ids = [...new Set(wakes[0].map((c) => String(c.value?.id ?? c.previousValue?.id)))].sort();
+    assert(JSON.stringify(ids) === JSON.stringify(["a", "b", "c"]), `every write in it, got ${ids}`);
+    stop();
+  },
+});
+
+// A subscription is told only of keys it has seen. A row written before the
+// region subscribed — a seed, a table a screen returns to — must still report
+// its delete, or the region keeps drawing a row the store no longer holds.
+Deno.test({
+  name: "a row older than the subscription still reports its delete",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    const store = createStore("", { local: { row: "tab" } });
+    await store.write("row", [{ key: "old", row: { ord: 1 } }]);
+    await new Promise((r) => setTimeout(r, 5));
+    const wakes = [];
+    const stop = store.subscribe("row", (changes) => wakes.push(changes), {});
+    await new Promise((r) => setTimeout(r, 5));
+    assert(wakes.length === 0, "subscribing alone wakes nothing: the standing rows are no burst");
+    await store.drop("row", ["old"]);
+    await new Promise((r) => setTimeout(r, 5));
+    assert(wakes.length === 1, `the delete woke the region, got ${wakes.length}`);
+    assert(wakes[0].every((c) => c.type !== "insert"), "nothing of the standing state rides in the wake");
+    assert(wakes[0].some((c) => c.type === "delete" && String(c.key) === "old"), "and named the row");
+    stop();
+  },
+});
+
+// A view is shared by every region reading the same filter, and the second
+// of them subscribes after the view has its rows. It must still hear one of
+// those rows go, or it keeps drawing a row the store no longer holds.
+Deno.test({
+  name: "a region joining a shared view still hears a standing row's delete",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    const store = createStore("", { local: { row: "tab" } });
+    await store.write("row", [{ key: "a", row: { kind: "x" } }, { key: "b", row: { kind: "x" } }]);
+    const opts = { filter: "kind=eq.x" };
+    const first = store.subscribe("row", () => {}, opts);
+    await store.query("row", null, opts);
+    await new Promise((r) => setTimeout(r, 5));
+    const wakes = [];
+    const second = store.subscribe("row", (changes) => wakes.push(changes), opts);
+    assert(globalThis.__prontoViews.size === 1, "one view between them");
+    await store.drop("row", ["a"]);
+    await new Promise((r) => setTimeout(r, 5));
+    assert(wakes.length === 1, `the late joiner woke, got ${wakes.length}`);
+    assert(wakes[0].some((c) => c.type === "delete" && String(c.key) === "a"), "and heard the delete");
+    second();
+    first();
+  },
+});
+
+// A wake comes due in a task of its own; a subscription stopped before then
+// must not be delivered, or a region torn down in the same task is refreshed
+// as if it stood.
+Deno.test({
+  name: "a wake pending when the subscription stops is not delivered",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    const store = createStore("", { local: { row: "tab" } });
+    const wakes = [];
+    const stop = store.subscribe("row", (changes) => wakes.push(changes), {});
+    await store.write("row", [{ key: "a", row: { ord: 1 } }]);
+    stop();
+    await new Promise((r) => setTimeout(r, 5));
+    assert(wakes.length === 0, `no wake after stop, got ${wakes.length}`);
+  },
+});

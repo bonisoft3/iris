@@ -52,23 +52,23 @@ const ownerOf = (el: object, name: string): Record<string, unknown> => {
 const rows = (n: number) =>
   Array.from({ length: n }, (_, i) => ({ id: String(i), pos: i, label: `row ${i}` }))
 
-/** Node.contains calls made re-binding a region of `n` items, which is what
- * one append to a table that long costs. */
-const containsToAppend = async (n: number): Promise<number> => {
+/** Calls of one DOM method made appending one row to a region of `n` items,
+ * which is what one append to a table that long costs. */
+const callsToAppend = async (n: number, method: string): Promise<number> => {
   const m = await mountScreen({ route: ROUTE, files: FILES, tables: { cell: rows(n) }, seed: 1 })
   await m.settle()
-  const proto = ownerOf(m.mount, "contains")
-  const real = proto.contains as (o: unknown) => boolean
+  const proto = ownerOf(m.mount, method)
+  const real = proto[method] as (...args: unknown[]) => unknown
   let calls = 0
-  proto.contains = function (this: unknown, other: unknown) {
+  proto[method] = function (this: unknown, ...args: unknown[]) {
     calls += 1
-    return real.call(this, other)
+    return real.apply(this, args)
   }
   try {
     await m.store.create("cell", { id: String(n), pos: n, label: `row ${n}` })
     await m.settle()
   } finally {
-    proto.contains = real
+    proto[method] = real
     await m.stop()
   }
   return calls
@@ -76,10 +76,19 @@ const containsToAppend = async (n: number): Promise<number> => {
 
 describe("binding a region", () => {
   it("asks a containment question per element, not per element and row", async () => {
-    const small = await containsToAppend(100)
-    const large = await containsToAppend(400)
+    const small = await callsToAppend(100, "contains")
+    const large = await callsToAppend(400, "contains")
     // Four times the rows is four times the work, give or take the fixed cost
     // of the screen around the region. Quadratic would be sixteen.
     expect(large).toBeLessThan(small * 6 + 100)
+  })
+
+  it("asks the arriving row what it binds, not every row on every write", async () => {
+    // A surviving row was bound and wired when it arrived, so the pass that
+    // adds one row queries the arrival alone.
+    const small = await callsToAppend(100, "querySelectorAll")
+    const large = await callsToAppend(400, "querySelectorAll")
+    // One row arrived either time; the rows already standing cost nothing.
+    expect(large).toBe(small)
   })
 })
