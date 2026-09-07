@@ -1,3 +1,4 @@
+import { batched } from "./batched-store.js";
 // Deno smoke: named/recursive templates. A <template data-item data-name="X">
 // declared anywhere in the screen may be referenced by a region via
 // data-template="X" instead of containing its own template. Resolution is
@@ -41,7 +42,7 @@ function boot(html, rows) {
   globalThis.document = document;
   const wakes = new Set();
   let reads = 0;
-  const store = {
+  const store = batched({
     query: async (_t, _order, opts) => {
       reads++;
       const m = /^parent_id=eq\.(.*)$/.exec(opts.filter ?? "");
@@ -56,7 +57,7 @@ function boot(html, rows) {
     update: async () => {},
     put: async () => {},
     remove: async () => {},
-  };
+  });
   globalThis.fetch = (url) => {
     const u = String(url);
     if (u.endsWith(".html")) return Promise.resolve(new Response(html));

@@ -1,8 +1,40 @@
-# @omnishell/core
+# omnishell
 
-Frontend framework that makes UI bugs harder to introduce. Fewer patterns, stricter types, architectural rails over flexibility.
+Two halves live in this directory, and which one you want depends on what you
+are building.
 
-## Modules
+**The interpreter** (`interpreter/`) runs a pronto app's screens: a screen is
+HTML, a `data-live` region is a standing query in PostgREST's filter grammar, a
+form is the only way to change data, and a Jessie reduce is a pure function from
+rows to writes. Nothing here is React.
+
+> **Writing an app? Start with [DEVELOPING.md](DEVELOPING.md).** It covers the
+> reduce contract, what wakes it and what it receives, the rules that bite, and
+> the mappings to Elm/TEA, Datalog, htmx and Datomic. `apps/shadcnui` is the
+> worked gallery for the presentation vocabulary; `apps/chess` is the reference
+> for the data plane.
+
+**The React library** (`src/`, published as `@omnishell/core`) is a frontend
+framework that makes UI bugs harder to introduce: fewer patterns, stricter
+types, architectural rails over flexibility. Auth, layout, and the lint presets
+are documented below.
+
+## The interpreter
+
+| Concern | Where |
+|---|---|
+| Writing a screen — the contracts, in one page | [DEVELOPING.md](DEVELOPING.md) |
+| Region grammar, bindings, forms, clicks | `interpreter/screen.js` (the comments are the spec) |
+| The reduce sandbox and its denylist | `plugins/pronto/jessie.ts` |
+| What may be declared: entities, screens, forms, seeds | `plugins/pronto/schema.cue` |
+| Emission — markup, `shell.yaml`, compose, docker | `plugins/pronto/write.ts` |
+| Design tokens and presets | `plugins/pronto/styles.ts`, `apps/shadcnui` |
+| Terminal doctrine, incremental model, the event surface | `plugins/pronto/docs/` |
+
+The interpreter is loaded by `interpreter/shell.js` at runtime; it is plain ES
+modules and takes no build step.
+
+## The React library
 
 ### Auth
 
@@ -105,7 +137,7 @@ AI component review + regression gate.
 import { reviewComponentScreenshot, detectRegression } from "@omnishell/core/lint/storybook/ai-review"
 ```
 
-## TODO: Distribution
+### TODO: Distribution
 
 Omnishell is consumed as TypeScript source, which is ideal for HMR (edit a lint rule, see the change immediately). But ESLint under Node ESM can't resolve extensionless `.ts` inter-module imports. Current workaround: `bun build` a bundle on demand, but this breaks HMR.
 
@@ -127,7 +159,7 @@ The right fix: make omnishell a **workspace package** so bun/pnpm resolve import
 
 **Also affected:** `createLayout` and `createAuth` — any consumer reaching them via relative paths (`../../../src/...`) breaks in worktrees. With workspace linking, these become `@omnishell/core/layout` and `@omnishell/core/auth`.
 
-## Development
+## Development (this directory)
 
 ```bash
 just setup    # install bun via mise

@@ -1,3 +1,4 @@
+import { batched } from "./batched-store.js";
 // Deno smoke: the slot cardinality precondition. A slot (singleton region)
 // whose read matches two rows errors naming the region's table and filter —
 // and the error is a precondition, not an outage: the guarded retry loop
@@ -22,7 +23,7 @@ function boot(html, rows) {
   globalThis.document = document;
 
   const subs = new Set();
-  const store = {
+  const store = batched({
     query: async () => rows,
     subscribe: (_table, cb) => {
       subs.add(cb);
@@ -32,7 +33,7 @@ function boot(html, rows) {
     update: async () => {},
     put: async () => {},
     remove: async () => {},
-  };
+  });
 
   globalThis.fetch = (url) => {
     const u = String(url);

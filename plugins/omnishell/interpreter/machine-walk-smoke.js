@@ -1,3 +1,4 @@
+import { batched } from "./batched-store.js";
 // Deno smoke: the chart-derived path walker over a guarded machine with
 // leaves — every arrow of the fib specimen fires, including the guard's
 // numeric branch (driven to, not solved), the after arrow, and the root
@@ -72,7 +73,7 @@ Deno.test({
     const rows = [];
     const subs = new Set();
     const knobs = { refuseNext: false };
-    const store = {
+    const store = batched({
       query: async () => rows,
       subscribe: (_t, cb) => {
         subs.add(cb);
@@ -93,7 +94,7 @@ Deno.test({
         for (const cb of subs) setTimeout(cb, 0);
       },
       remove: async () => {},
-    };
+    });
     globalThis.fetch = (url) => {
       const u = String(url);
       if (u.endsWith(".html")) return Promise.resolve(new Response(SCREEN_HTML));

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "@test/harness"
 import { parseHTML } from "linkedom"
 import { interpretScreen } from "../interpreter/screen.js"
+import { batched } from "../interpreter/batched-store.js"
 
 // An item whose whole markup is one form — a row of per-choice buttons, each
 // its own tiny mutation — is not inside itself, so a descendant-only search
@@ -38,7 +39,7 @@ async function boot(rows: any[]) {
   }) as any
 
   const created: any[] = []
-  const store = {
+  const store = batched({
     query: async () => rows,
     subscribe: () => () => {},
     create: async (entity: string, values: any) => {
@@ -46,7 +47,7 @@ async function boot(rows: any[]) {
     },
     update: async () => {},
     remove: async () => {},
-  }
+  }) as any
   const mount = document.getElementById("shell")
   await interpretScreen(mount, "http://localhost/", ROUTE, store, {}, { handlers: false })
   return { document, Event, created }

@@ -242,8 +242,8 @@ export function createStore(base = "", cfg = {}) {
     const key = keyOf(table);
     for (const row of rows) {
       if (row[key] === undefined) throw new Error(`seed ${table}: a row carries no ${key}`);
-      await client.insert(table, row);
     }
+    await client.insert(table, rows);
   }
 
   // Browser-tier rows outlive the invariants declared over them: a device
@@ -281,7 +281,7 @@ export function createStore(base = "", cfg = {}) {
           String(a.created_at ?? "") < String(b.created_at ?? "") ? -1 : String(a.created_at ?? "") > String(b.created_at ?? "") ? 1 : 0
         );
         for (const loser of newestLast.slice(0, -1)) {
-          await client.remove(table, loser[keyOf(table)]);
+          await client.remove(table, [loser[keyOf(table)]]);
           dropped++;
         }
       }
@@ -606,12 +606,12 @@ export function createStore(base = "", cfg = {}) {
   // event follows — the region would keep the raced, pre-write result until
   // navigation. Settlement of an own mutation is therefore its own signal.
   const settleListeners = new Map();
-  function notifySettled(table) {
-    for (const fn of settleListeners.get(table) ?? []) fn();
+  function notifySettled(table, keys) {
+    for (const fn of settleListeners.get(table) ?? []) fn(keys);
   }
-  function onSettled(promise, table) {
+  function onSettled(promise, table, keys) {
     promise.then(
-      () => notifySettled(table),
+      () => notifySettled(table, keys),
       // A refusal rolls the optimistic state back, which re-renders through
       // the collections on its own.
       () => {},
@@ -671,8 +671,13 @@ export function createStore(base = "", cfg = {}) {
             wake();
           })
         );
-      const settle = () => {
-        unattributed = true;
+      // A write names the rows it wrote, so the wake it causes names them too.
+      // Attributed, the pass re-binds those rows and leaves the rest of the
+      // collection alone; unattributed, it re-binds every row in the region,
+      // which costs the length of the list rather than the length of the batch.
+      const settle = (keys) => {
+        if (keys === undefined) unattributed = true;
+        else batch.push(...keys.map((id) => ({ value: { id } })));
         wake();
       };
       settleListeners.set(table, (settleListeners.get(table) ?? new Set()).add(settle));
@@ -737,15 +742,79 @@ export function createStore(base = "", cfg = {}) {
     };
   }
 
-  async function create(table, values, onRefused) {
-    // Client-minted key: retries are only idempotent because the id travels
-    // with every attempt (mecha's proxy absorbs duplicate POSTs).
-    const row = values.id === undefined ? { id: crypto.randomUUID(), ...values } : values;
-    await settle(onSettled(client.insert(table, row), table), ACCEPT_MS, onRefused);
+  /* Every mutation below takes a batch, because the collection does its work
+   * per CALL and not per row: it maintains the live queries each region reads
+   * a table through, and that is what a write costs. A caller with a hundred
+   * rows that writes them one at a time pays for the whole table a hundred
+   * times, which is how building one becomes quadratic in its own size. There
+   * is no singular form here, so there is none to reach for. */
+
+  /** Rows stated by their own keys — inserted where absent, patched where
+   * present. The caller derived each key from what its row identifies, so the
+   * same row written twice is the same row, and fields a row does not name are
+   * left alone: it states a row, it does not replace one. */
+  // Each edit is {key, row}: the key beside the row it identifies, the way
+  // patch and drop already take theirs. The row need not repeat it, and the key
+  // wins where it does — a caller states identity in one place.
+  async function write(table, edits, onRefused) {
+    if (edits.length === 0) return;
+    await ensurePrepared(table);
+    const key = keyOf(table);
+    const rows = edits.map((e) => {
+      if (e?.key === undefined) throw new Error(`write ${table}: an edit names no ${key}`);
+      return { ...e.row, [key]: e.key };
+    });
+    const collection = client.collections[table];
+    if (collection === undefined) throw new Error(`write on unsynced table: ${table}`);
+    if (!collection.isReady()) await collection.toArrayWhenReady();
+    // Asked once for the batch. Asked per row it is a scan of the table per
+    // row, which is the quadratic term this whole shape exists to remove.
+    // Stringified for the lookup and kept in its own type for the write: a key
+    // the collection holds as a number is still that number when patched.
+    const present = new Map(collection.toArray.map((r) => [String(r[key]), r[key]]));
+    const fresh = [];
+    const standing = [];
+    for (const row of rows) {
+      const have = present.get(String(row[key]));
+      if (have === undefined) fresh.push(row);
+      else standing.push({ key: have, changes: row });
+    }
+    await Promise.all([
+      fresh.length === 0 ? undefined : settle(
+        onSettled(client.insert(table, fresh), table, fresh.map((r) => String(r[key]))),
+        ACCEPT_MS,
+        onRefused,
+      ),
+      standing.length === 0 ? undefined : settle(
+        onSettled(client.update(table, standing), table, standing.map((e) => String(e.key))),
+        ACCEPT_MS,
+        onRefused,
+      ),
+    ].filter(Boolean));
   }
 
-  async function update(table, id, values, onRefused) {
-    await settle(onSettled(client.update(table, id, values), table), ACCEPT_MS, onRefused);
+  /** Rows asserted to be new. A form's create says so, and saying so is what
+   * makes a duplicate a refusal the reader can be told about rather than a
+   * silent patch of somebody else's row. */
+  async function add(table, rows, onRefused) {
+    if (rows.length === 0) return;
+    await ensurePrepared(table);
+    const key = keyOf(table);
+    await settle(
+      onSettled(client.insert(table, rows), table, rows.map((r) => String(r[key]))),
+      ACCEPT_MS,
+      onRefused,
+    );
+  }
+
+  /** Named fields of rows that are already there. */
+  async function patch(table, edits, onRefused) {
+    if (edits.length === 0) return;
+    await settle(
+      onSettled(client.update(table, edits), table, edits.map((e) => String(e.key))),
+      ACCEPT_MS,
+      onRefused,
+    );
   }
 
   // Write the row for a natural key, whether or not it exists yet.
@@ -760,7 +829,7 @@ export function createStore(base = "", cfg = {}) {
   // The owner column is filled from the session when the form omits it: it is
   // DEFAULT auth_uid() and materialises server-side, so the reader's own rows
   // carry it while the row they are about to write does not.
-  async function upsert(table, values, onRefused) {
+  async function upsertBy(table, values, onRefused) {
     await ensurePrepared(table);
     const owner = access[table]?.owner;
     const keys = upsertKey(cfg.uniques?.[table], keyOf(table), owner, values);
@@ -775,29 +844,21 @@ export function createStore(base = "", cfg = {}) {
     const existing = collection.toArray.find(
       (r) => visible(table, r) && keys.every((c, i) => at(r, c) === wanted[i]),
     );
-    if (existing === undefined) return create(table, values, onRefused);
-    return update(table, existing[keyOf(table)], values, onRefused);
+    if (existing === undefined) {
+      // The key the row will be found by next time, minted here because the
+      // natural key is not the primary one and nothing else will supply it.
+      return write(table, [{ id: crypto.randomUUID(), ...values }], onRefused);
+    }
+    return patch(table, [{ key: existing[keyOf(table)], changes: values }], onRefused);
   }
 
-  // A row stated by its own key. Unlike upsert above there is no natural key to
-  // find: the caller derived the key from what the row identifies, so the same
-  // row written twice is the same row. Fields it does not name are left alone —
-  // it states a row, it does not replace one.
-  async function put(table, row, onRefused) {
-    await ensurePrepared(table);
-    const key = keyOf(table);
-    if (row?.[key] === undefined) throw new Error(`put ${table}: the row carries no ${key}`);
-    const collection = client.collections[table];
-    if (collection === undefined) throw new Error(`put on unsynced table: ${table}`);
-    if (!collection.isReady()) await collection.toArrayWhenReady();
-    const wanted = String(row[key]);
-    const existing = collection.toArray.find((r) => String(r[key]) === wanted);
-    if (existing === undefined) return create(table, row, onRefused);
-    return update(table, existing[key], row, onRefused);
-  }
-
-  async function remove(table, id, onRefused) {
-    await settle(onSettled(client.remove(table, id), table), ACCEPT_MS, onRefused);
+  async function drop(table, keys, onRefused) {
+    if (keys.length === 0) return;
+    await settle(
+      onSettled(client.remove(table, keys), table, keys.map((k) => String(k))),
+      ACCEPT_MS,
+      onRefused,
+    );
   }
 
   // Filter-scoped bulk delete (SPEC #Form.filter): resolve the matching keys,
@@ -812,7 +873,7 @@ export function createStore(base = "", cfg = {}) {
   // every subsequent click while other sessions are unaffected. The collection
   // holds every row this reader may see (the shape is the whole table), so it
   // is the same set, read from the tier that owns the optimistic state.
-  async function removeWhere(table, filter, onRefused) {
+  async function dropWhere(table, filter, onRefused) {
     // A limit is a cap the parser reads apart from the predicates, and a
     // DELETE has no ordering to cap against — honoring the rest of the filter
     // would silently widen the deletion's scope.
@@ -834,10 +895,8 @@ export function createStore(base = "", cfg = {}) {
     const keys = rows
       .map((r) => r[keyOf(table)])
       .filter((k) => collection === undefined || collection.has?.(k) !== false);
-    await Promise.all(
-      keys.map((k) => settle(onSettled(client.remove(table, k), table), ACCEPT_MS, onRefused)),
-    );
+    await drop(table, keys, onRefused);
   }
 
-  return { query, create, update, upsert, put, remove, removeWhere, subscribe };
+  return { query, add, write, patch, drop, dropWhere, upsertBy, subscribe };
 }

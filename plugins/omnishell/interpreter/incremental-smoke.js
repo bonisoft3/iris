@@ -1,3 +1,4 @@
+import { batched } from "./batched-store.js";
 // Deno smoke: a region only re-renders the rows its input actually changed.
 //
 // This is the property the whole incremental model is for. The store hands
@@ -34,7 +35,7 @@ function boot(rows) {
   );
   globalThis.document = document;
   let wake;
-  const store = {
+  const store = batched({
     query: async () => rows,
     subscribe: (_t, fn) => {
       wake = fn;
@@ -43,7 +44,7 @@ function boot(rows) {
     create: async () => {},
     update: async () => {},
     remove: async () => {},
-  };
+  });
   globalThis.fetch = (url) => {
     const u = String(url);
     if (u.endsWith(".html")) return Promise.resolve(new Response(SCREEN_HTML));

@@ -77,6 +77,36 @@ describe("motion slots", () => {
     expect(arrived.hasAttribute("data-enter")).toBe(false)
   })
 
+  // Motion costs a frame and a style resolution per node, so a pass that moves
+  // more rows than a reader can follow plays nothing — the judgement the first
+  // paint already makes, applied to every later pass.
+  it("stamps a whole gesture of arrivals", async () => {
+    const app = await boot([row("a", "Alpha")])
+    const many = [row("a", "Alpha"), ...Array.from({ length: 32 }, (_, i) => row(`g${i}`, `G${i}`))]
+
+    await app.render(many)
+    expect(app.items().filter((li) => li.hasAttribute("data-enter")).length).toBe(32)
+  })
+
+  it("stamps none of a load", async () => {
+    const app = await boot([row("a", "Alpha")])
+    const many = [row("a", "Alpha"), ...Array.from({ length: 33 }, (_, i) => row(`l${i}`, `L${i}`))]
+
+    await app.render(many)
+    expect(app.items().some((li) => li.hasAttribute("data-enter"))).toBe(false)
+  })
+
+  it("takes a load away at once, without waiting for motion", async () => {
+    const start = Array.from({ length: 33 }, (_, i) => row(`d${i}`, `D${i}`))
+    const app = await boot(start)
+
+    await app.render([])
+    // A departing gesture stays in the list while it plays; a load does not.
+    // What remains is the region's empty message, which is a row of no row.
+    expect(app.items().some((li) => li.hasAttribute("data-exit"))).toBe(false)
+    expect(app.items().filter((li) => !li.classList.contains("empty")).length).toBe(0)
+  })
+
   it("leaves a surviving row unstamped", async () => {
     const app = await boot([row("a", "Alpha")])
     await app.render([row("a", "Alpha"), row("b", "Beta")])

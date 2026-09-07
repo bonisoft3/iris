@@ -57,13 +57,32 @@ export interface MechaClientConfig {
 
 export type SyncPhase = "queued" | "delivered"
 
+/** One row's worth of an update batch: which row, and what changes about it. */
+export interface Edit {
+  key: string
+  changes: Record<string, unknown>
+}
+
 export interface MechaClient {
   collections: Record<string, Collection<any, any, any>>
   /** Resolves after storage probe, leader election, and outbox replay. */
   ready: Promise<void>
-  insert(tableId: string, row: Record<string, unknown>): Promise<void>
-  update(tableId: string, key: string, changes: Record<string, unknown>): Promise<void>
-  remove(tableId: string, key: string): Promise<void>
+  /**
+   * Every mutation takes a batch, and a single write is a batch of one.
+   *
+   * The collection behind a table maintains the live queries every region
+   * reads it through, and it does that work per CALL, not per row. Offering a
+   * singular form invites the loop that makes building a table quadratic in
+   * its own size, so there is no singular form to reach for.
+   *
+   * UPGRADE (@tanstack/db 0.6.17 → 0.8.7): batching fixes the write side of a
+   * large table; the read side is still every row of it in the DOM. 0.8.7 ships
+   * `live-query-window-controller` and virtual row props, which is the seam for
+   * windowing a collection a region draws.
+   */
+  insert(tableId: string, rows: Record<string, unknown>[]): Promise<void>
+  update(tableId: string, edits: Edit[]): Promise<void>
+  remove(tableId: string, keys: string[]): Promise<void>
   /** `${tableId}:${key}` → phase while a write is in flight; cleared on delivery. */
   syncPhase(tableId: string, key: string): SyncPhase | undefined
   subscribeSyncPhases(listener: () => void): () => void
@@ -243,8 +262,18 @@ export function createMechaClient(config: MechaClientConfig): MechaClient {
     },
   })
 
-  function run(mutationFnName: string, phaseKey: string, mutate: () => void): Promise<void> {
-    setPhase(phaseKey, "queued")
+  // A remote batch is one offline transaction over the whole set: one commit,
+  // one retry, all of it or none. What it does NOT do is pace itself — a fold
+  // that states ten thousand rows against a synced table sends them as one
+  // commit and hopes.
+  //
+  // UPGRADE (@tanstack/db 0.6.17 → 0.8.7): `paced-mutations` is where this
+  // belongs. It takes an `onMutate` for the optimistic half, a `mutationFn` for
+  // the durable half, and a pluggable `Strategy` (debounce / queue / throttle),
+  // which is this function's job done properly and by the library. Moving
+  // `run` onto it would also retire the hand-rolled phase bookkeeping below.
+  function run(mutationFnName: string, phaseKeys: string[], mutate: () => void): Promise<void> {
+    for (const phaseKey of phaseKeys) setPhase(phaseKey, "queued")
     // autoCommit off: mutate() would otherwise self-commit and race the
     // explicit commit below into "no longer pending".
     const tx = executor.createOfflineTransaction({ mutationFnName, autoCommit: false })
@@ -255,28 +284,49 @@ export function createMechaClient(config: MechaClientConfig): MechaClient {
   return {
     collections,
     ready: executor.waitForInit().then(() => undefined),
-    insert(tableId, row) {
+    insert(tableId, rows) {
       const t = byId.get(tableId)
       if (!t) throw new Error(`unknown table id: ${tableId}`)
-      if (row[t.key] === undefined) throw new Error(`insert ${tableId}: caller must mint '${t.key}' — retries depend on it`)
-      if (isLocal(t)) return Promise.resolve(void collections[tableId].insert(row))
-      return run(`insert:${tableId}`, `${tableId}:${row[t.key]}`, () => collections[tableId].insert(row))
+      for (const row of rows) {
+        if (row[t.key] === undefined) {
+          throw new Error(`insert ${tableId}: caller must mint '${t.key}' — retries depend on it`)
+        }
+      }
+      if (rows.length === 0) return Promise.resolve()
+      // One call, whatever the batch's size: the collection recomputes the live
+      // queries over this table once for it.
+      if (isLocal(t)) return Promise.resolve(void collections[tableId].insert(rows))
+      return run(
+        `insert:${tableId}`,
+        rows.map((row) => `${tableId}:${String(row[t.key])}`),
+        () => collections[tableId].insert(rows),
+      )
     },
-    update(tableId, key, changes) {
+    update(tableId, edits) {
       const t = byId.get(tableId)
       if (!t) throw new Error(`unknown table id: ${tableId}`)
+      if (edits.length === 0) return Promise.resolve()
+      const keys = edits.map((e) => e.key)
+      // The collection hands back one draft per key, in the order asked for, so
+      // each edit's changes land on its own row.
       const apply = () =>
-        collections[tableId].update(key, (draft: any) => {
-          Object.assign(draft, changes)
+        collections[tableId].update(keys, (drafts: any) => {
+          const list = Array.isArray(drafts) ? drafts : [drafts]
+          list.forEach((draft, i) => Object.assign(draft, edits[i].changes))
         })
       if (isLocal(t)) return Promise.resolve(void apply())
-      return run(`update:${tableId}`, `${tableId}:${key}`, apply)
+      return run(`update:${tableId}`, keys.map((k) => `${tableId}:${k}`), apply)
     },
-    remove(tableId, key) {
+    remove(tableId, keys) {
       const t = byId.get(tableId)
       if (!t) throw new Error(`unknown table id: ${tableId}`)
-      if (isLocal(t)) return Promise.resolve(void collections[tableId].delete(key))
-      return run(`delete:${tableId}`, `${tableId}:${key}`, () => collections[tableId].delete(key))
+      if (keys.length === 0) return Promise.resolve()
+      if (isLocal(t)) return Promise.resolve(void collections[tableId].delete(keys))
+      return run(
+        `delete:${tableId}`,
+        keys.map((k) => `${tableId}:${k}`),
+        () => collections[tableId].delete(keys),
+      )
     },
     syncPhase(tableId, key) {
       return phases.get(`${tableId}:${key}`)

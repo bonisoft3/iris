@@ -35,11 +35,11 @@ describe("deleteSpec", () => {
 })
 
 // The synced tier refuses the same cap, before it touches any collection.
-describe("data-crud removeWhere", () => {
+describe("data-crud dropWhere", () => {
   it("refuses a limit before reconciling", async () => {
     const store = createStore()
     let err: Error | undefined
-    await store.removeWhere("note", "kind=eq.card&limit=1").catch((e: Error) => (err = e))
+    await store.dropWhere("note", "kind=eq.card&limit=1").catch((e: Error) => (err = e))
     expect(String(err)).toMatch(/carries a limit/)
   })
 })

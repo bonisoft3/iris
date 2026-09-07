@@ -1,3 +1,4 @@
+import { batched } from "./batched-store.js";
 // Deno smoke: data-machine end to end — the XState-JSON data subset executed
 // by the terminal through the same step() path as a Jessie reduce, against a
 // linkedom screen and a fake store. The colour-cycling button is the whole
@@ -29,7 +30,7 @@ function boot(html, handlerSource) {
   const rows = [];
   const calls = { puts: [], updates: [] };
   const subs = new Set();
-  const store = {
+  const store = batched({
     query: async () => rows,
     subscribe: (_table, cb) => {
       subs.add(cb);
@@ -45,7 +46,7 @@ function boot(html, handlerSource) {
       for (const cb of subs) setTimeout(cb, 0);
     },
     remove: async () => {},
-  };
+  });
 
   globalThis.fetch = (url) => {
     const u = String(url);
@@ -236,7 +237,7 @@ Deno.test({
     const { document, Event, store, calls } = boot(
       html,
       `const reduce = (state, event) => event.type === "refused"
-  ? { updates: [{ id: "notice", patch: { entity: event.entity, id: event.id, kind: event.kind } }] }
+  ? { updates: [{ op: "patch", id: "notice", row: { entity: event.entity, id: event.id, kind: event.kind } }] }
   : { updates: [] };
 reduce;`,
     );

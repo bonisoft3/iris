@@ -96,7 +96,7 @@ Deno.test({
     await withBrowser(async (createStore) => {
       const store = createStore("", config());
       await store.query("command", null, {});
-      await store.remove("command", "search");
+      await store.drop("command", ["search"]);
       const after = await store.query("command", "position.asc", {});
       assert(after.length === 2, `the deleted row is gone, got ${after.length}`);
       assert(!after.some((r) => r.id === "search"), "and no read re-seeds it");
@@ -112,7 +112,7 @@ Deno.test({
     await withBrowser(async (createStore) => {
       const first = createStore("", config());
       await first.query("command", null, {});
-      await first.remove("command", "search");
+      await first.drop("command", ["search"]);
       const next = createStore("", config());
       const rows = await next.query("command", null, {});
       assert(rows.length === 3, `a tab collection is born empty and reseeds, got ${rows.length}`);

@@ -4,6 +4,7 @@
 // compartment evaluation exactly as the browser does.
 import { parseHTML } from "npm:linkedom@0.18.4";
 import { parseFilter } from "./fragment.js";
+import { batched } from "./batched-store.js";
 
 const SCREEN_HTML = `<div class="note-detail">
   <ul class="items" data-live="note_item" data-handler="reorder-items" data-order="position.asc">
@@ -22,7 +23,7 @@ const HANDLER_SOURCE = `const reduce = (state, event) => {
   const ids = state.items.map((item) => item.id);
   ids.splice(ids.indexOf(event.fromId), 1);
   ids.splice(ids.indexOf(event.toId), 0, event.fromId);
-  return { updates: ids.map((id, i) => ({ id, patch: { position: (i + 1) * 10 } })) };
+  return { updates: ids.map((id, i) => ({ op: "patch", id, row: { position: (i + 1) * 10 } })) };
 };
 reduce;`;
 
@@ -51,12 +52,12 @@ function boot() {
     { id: "b", position: 20 },
     { id: "c", position: 30 },
   ];
-  const calls = { updates: [], creates: [], puts: [], rows: [] };
+  const calls = { updates: [], creates: [], puts: [], rows: [], drops: [] };
   // put is the only write here that changes what a later read returns, so it
   // is the only one that wakes a subscriber — which is what lets a smoke
   // exercise a reduce concluding about its own collection.
   const subs = new Set();
-  const store = {
+  const store = batched({
     // Honors the region's filter the way the real stores do — the slot
     // fixtures below pin one row, as the cardinality precondition demands.
     query: async (_table, _order, opts) =>
@@ -76,8 +77,13 @@ function boot() {
       else rows[i] = { ...rows[i], ...row };
       for (const cb of subs) setTimeout(cb, 0);
     },
-    remove: async () => {},
-  };
+    remove: async (table, id) => {
+      calls.drops.push({ table, id });
+      const i = rows.findIndex((r) => String(r.id) === String(id));
+      if (i >= 0) rows.splice(i, 1);
+      for (const cb of subs) setTimeout(cb, 0);
+    },
+  });
 
   globalThis.fetch = (url, init) => {
     const u = String(url);
@@ -219,8 +225,8 @@ Deno.test({
     await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
     const { document, Event, store, calls } = boot();
     withHandler(`const reduce = (state, event) => event.type === "click"
-  ? { updates: [{ id: "a", patch: { position: 1 } }], then: { type: "settle" } }
-  : { updates: [{ id: "b", patch: { position: 2 } }] };
+  ? { updates: [{ op: "patch", id: "a", row: { position: 1 } }], then: { type: "settle" } }
+  : { updates: [{ op: "patch", id: "b", row: { position: 2 } }] };
 reduce;`);
     const { interpretScreen } = await import("./screen.js");
 
@@ -261,8 +267,8 @@ Deno.test({
   if (event.type !== "mutation") return { updates: [] };
   const has = (id) => state.items.some((r) => r.id === id);
   const wait = { type: "settle", delay: 60 };
-  if (!has("d1")) return { updates: [{ row: { id: "d1", position: 91 } }], then: wait };
-  if (!has("d2")) return { updates: [{ row: { id: "d2", position: 92 } }], then: wait };
+  if (!has("d1")) return { updates: [{ op: "put", id: "d1", row: { position: 91 } }], then: wait };
+  if (!has("d2")) return { updates: [{ op: "put", id: "d2", row: { position: 92 } }], then: wait };
   return { updates: [] };
 };
 reduce;`));
@@ -305,7 +311,7 @@ Deno.test({
       const u = String(url);
       if (u.endsWith("reorder-items.js")) {
         return Promise.resolve(new Response(`const reduce = (state) => ({
-  updates: [{ id: "a", patch: { position: state.rows.note_attachment.length } }],
+  updates: [{ op: "patch", id: "a", row: { position: state.rows.note_attachment.length } }],
 });
 reduce;`));
       }
@@ -358,7 +364,7 @@ Deno.test({
       const u = String(url);
       if (u.endsWith("reorder-items.js")) {
         return Promise.resolve(new Response(`const reduce = (state) => ({
-  updates: [{ id: "a", patch: { position: state.rows.note_attachment.length + ":" + state.rows.top.map((r) => r.id).join(",") } }],
+  updates: [{ op: "patch", id: "a", row: { position: state.rows.note_attachment.length + ":" + state.rows.top.map((r) => r.id).join(",") } }],
 });
 reduce;`));
       }
@@ -412,7 +418,7 @@ Deno.test({
       const u = String(url);
       if (u.endsWith("reorder-items.js")) {
         return Promise.resolve(new Response(`const reduce = (state) => ({
-  updates: [{ id: "a", patch: { position: state.rows.mine.length } }],
+  updates: [{ op: "patch", id: "a", row: { position: state.rows.mine.length } }],
 });
 reduce;`));
       }
@@ -516,7 +522,7 @@ Deno.test({
     // The key is derived from what the row identifies, which is the whole
     // reason a reduce is allowed to write a row it has not seen.
     withHandler(`const reduce = (state, event) => ({
-  updates: [{ row: { id: \`d:\${state.items.length}\`, position: 40 } }],
+  updates: [{ op: "put", id: \`d:\${state.items.length}\`, row: { position: 40 } }],
 });
 reduce;`);
     const { interpretScreen } = await import("./screen.js");
@@ -553,7 +559,7 @@ Deno.test({
       const u = String(url);
       if (u.endsWith("reorder-items.js")) {
         return Promise.resolve(new Response(`const reduce = (state, event) => ({
-  updates: [{ id: "a", patch: { position: event.from ?? "nobody" } }],
+  updates: [{ op: "patch", id: "a", row: { position: event.from ?? "nobody" } }],
 });
 reduce;`));
       }
@@ -600,7 +606,7 @@ Deno.test({
       const u = String(url);
       if (u.endsWith("reorder-items.js")) {
         return Promise.resolve(new Response(`const reduce = (state, event) => ({
-  updates: [{ id: "a", patch: { position: event.animationName === "beat" ? 1 : 0 } }],
+  updates: [{ op: "patch", id: "a", row: { position: event.animationName === "beat" ? 1 : 0 } }],
 });
 reduce;`));
       }
@@ -642,7 +648,7 @@ Deno.test({
     const { document, Event, store, calls } = boot();
     withHandler(`const reduce = (state, event) => event.type === "click"
   ? { updates: [], then: { type: "drawn", seed: true } }
-  : { updates: [{ id: "a", patch: { position: typeof event.seed } }] };
+  : { updates: [{ op: "patch", id: "a", row: { position: typeof event.seed } }] };
 reduce;`);
     const { interpretScreen } = await import("./screen.js");
 
@@ -667,8 +673,8 @@ Deno.test({
     await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
     const { document, Event, store, calls } = boot();
     withHandler(`const reduce = (state, event) => event.type === "click"
-  ? { updates: [{ id: "a", patch: { position: 1 } }], then: { type: "settle", delay: 120 } }
-  : { updates: [{ id: "b", patch: { position: 2 } }] };
+  ? { updates: [{ op: "patch", id: "a", row: { position: 1 } }], then: { type: "settle", delay: 120 } }
+  : { updates: [{ op: "patch", id: "b", row: { position: 2 } }] };
 reduce;`);
     const { interpretScreen } = await import("./screen.js");
 
@@ -698,7 +704,7 @@ Deno.test({
     await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
     const { document, Event, store, calls } = boot();
     withHandler(`const reduce = () => ({
-  updates: [{ id: "a", patch: { position: 1 } }],
+  updates: [{ op: "patch", id: "a", row: { position: 1 } }],
   then: { type: "again" },
 });
 reduce;`);
@@ -735,7 +741,7 @@ Deno.test({
     store.update = async () => {
       throw refusal();
     };
-    withHandler(`const reduce = () => ({ updates: [{ id: "a", patch: { position: 1 } }] });
+    withHandler(`const reduce = () => ({ updates: [{ op: "patch", id: "a", row: { position: 1 } }] });
 reduce;`);
     const { interpretScreen } = await import("./screen.js");
 
@@ -765,7 +771,7 @@ Deno.test({
     store.update = async (_table, _id, _patch, onRefused) => {
       late = onRefused;
     };
-    withHandler(`const reduce = () => ({ updates: [{ id: "a", patch: { position: 1 } }] });
+    withHandler(`const reduce = () => ({ updates: [{ op: "patch", id: "a", row: { position: 1 } }] });
 reduce;`);
     const { interpretScreen } = await import("./screen.js");
 
@@ -800,9 +806,9 @@ Deno.test({
       const u = String(url);
       if (u.endsWith("reorder-items.js")) {
         return Promise.resolve(new Response(`const reduce = (state, event) => {
-  if (event.type === "click") return { updates: [{ id: "a", patch: { position: 1 } }] };
+  if (event.type === "click") return { updates: [{ op: "patch", id: "a", row: { position: 1 } }] };
   if (event.type === "refused") {
-    return { updates: [{ row: { id: "notice", position: 99, of: event.id, kind: event.kind, entity: event.entity } }] };
+    return { updates: [{ op: "put", id: "notice", row: { position: 99, of: event.id, kind: event.kind, entity: event.entity } }] };
   }
   return { updates: [] };
 };
@@ -878,7 +884,7 @@ Deno.test({
       if (u.endsWith("reorder-items.js")) {
         return Promise.resolve(new Response(`const reduce = (state, event) => {
   if (event.type === "refused") {
-    return { updates: [{ row: { id: "notice", position: 99, kind: event.kind, entity: event.entity } }] };
+    return { updates: [{ op: "put", id: "notice", row: { position: 99, kind: event.kind, entity: event.entity } }] };
   }
   return { updates: [] };
 };
@@ -933,7 +939,7 @@ Deno.test({
       const u = String(url);
       if (u.endsWith("reorder-items.js")) {
         return Promise.resolve(new Response(`const reduce = (state, event) => ({
-  updates: [{ id: "sum", patch: { total: state.items.reduce((n, r) => n + r.position, 0), on: event.type } }],
+  updates: [{ op: "patch", id: "sum", row: { total: state.items.reduce((n, r) => n + r.position, 0), on: event.type } }],
 });
 reduce;`));
       }
@@ -977,7 +983,7 @@ Deno.test({
         return Promise.resolve(new Response(`const reduce = (state, event) => {
   if (state.rows.note_item.some((r) => String(r.id).startsWith("m"))) return { updates: [] };
   if (event.type !== "open") return { updates: [], then: { type: "open", seed: true } };
-  return { updates: [{ row: { id: "m" + event.seed, position: 99 } }] };
+  return { updates: [{ op: "put", id: "m" + event.seed, row: { position: 99 } }] };
 };
 reduce;`));
       }
@@ -1028,7 +1034,7 @@ Deno.test({
         return Promise.resolve(new Response(`const reduce = (state, event) => {
   const world = state.rows.mine.map((r) => r.id).sort().join("+");
   if (world === "") return { updates: [] };
-  return { updates: [{ id: "probe-" + world, patch: { seen: true } }] };
+  return { updates: [{ op: "patch", id: "probe-" + world, row: { seen: true } }] };
 };
 reduce;`));
       }
@@ -1071,7 +1077,7 @@ Deno.test({
         return Promise.resolve(new Response(`const reduce = (state, event) => {
   const seen = state.rows.self.map((r) => r.id).join("+");
   if (seen === "") return { updates: [] };
-  return { updates: [{ id: "probe-" + seen, patch: { seen: true } }] };
+  return { updates: [{ op: "patch", id: "probe-" + seen, row: { seen: true } }] };
 };
 reduce;`));
       }
@@ -1102,6 +1108,135 @@ reduce;`));
     assert(
       calls.updates.some((c) => c.id === "probe-b"),
       `after the rebind the named read resolves against row b, got ${JSON.stringify(calls.updates)}`,
+    );
+  },
+});
+
+Deno.test({
+  name: "a fold's run of stated rows reaches the store as one call",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, store } = boot();
+    // What the store is handed, rather than what it does with it: the whole
+    // point of the batch is that the collection is touched once for it, and a
+    // decomposition below this line cannot put that back.
+    const batches = [];
+    const inner = store.write;
+    store.write = async (table, rows, onRefused) => {
+      batches.push(rows.length);
+      return inner(table, rows, onRefused);
+    };
+    const outer = globalThis.fetch;
+    globalThis.fetch = (url, init) => {
+      const u = String(url);
+      if (u.endsWith("reorder-items.js")) {
+        // A fixpoint, because a write is a mutation and a mutation wakes this
+        // fold again: one that restated its rows unconditionally would write
+        // them forever.
+        return Promise.resolve(new Response(`const reduce = (state) => state.items.some((r) => r.id === "r1")
+  ? ({ updates: [] })
+  : ({
+      updates: [
+        { op: "put", entity: "note_item", id: "r1", row: { tag: "one" } },
+        { op: "put", entity: "note_item", id: "r2", row: { tag: "two" } },
+        { op: "put", entity: "note_item", id: "r3", row: { tag: "three" } },
+      ],
+    });
+reduce;`));
+      }
+      if (u.endsWith(".html")) {
+        return Promise.resolve(new Response(
+          SCREEN_HTML.replace('data-handler="reorder-items"', 'data-on-mutation="reorder-items"'),
+        ));
+      }
+      return outer(url, init);
+    };
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
+    await tick(40);
+
+    assert(
+      batches.length === 1 && batches[0] === 3,
+      `three stated rows are one write of three, got ${JSON.stringify(batches)}`,
+    );
+  },
+});
+
+Deno.test({
+  name: "a reduce states a row's absence, and the row goes",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, Event, store, calls } = boot();
+    // Recompute absolutely, write differentially: the fold keeps the rows it
+    // wants and states the absence of the rest. Without a delete it could only
+    // ever grow the set.
+    withHandler(`const reduce = (state, event) => event.type !== "click" ? { updates: [] } : {
+  updates: state.items.filter((r) => r.id !== "b").map((r) => ({ op: "delete", id: r.id })),
+};
+reduce;`);
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
+    assert(mount.querySelectorAll("li[data-id]").length === 3, "three rows hydrated");
+
+    mount.querySelector(".items").dispatchEvent(new Event("click"));
+    await tick(60);
+
+    assert(
+      JSON.stringify(calls.drops) ===
+        JSON.stringify([{ table: "note_item", id: "a" }, { table: "note_item", id: "c" }]),
+      `both absences reached the store as drops, got ${JSON.stringify(calls.drops)}`,
+    );
+    const left = [...mount.querySelectorAll("li[data-id]")].map((li) => li.dataset.id);
+    assert(JSON.stringify(left) === JSON.stringify(["b"]), `only the kept row is drawn, got ${left}`);
+    assert(calls.updates.length === 0 && calls.rows.length === 0, "a delete is not a write");
+  },
+});
+
+Deno.test({
+  name: "an update that names no op is a program error",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, Event, store, calls } = boot();
+    // Inferring the op from which key is present is what lets a fold say one
+    // thing and mean another: a patch that happens to carry a row is a put by
+    // accident, and silence is how that ships.
+    //
+    // Two good updates of DIFFERENT ops go first, so a run of them is complete
+    // and ready to write before the bad one is reached: the batch is classified
+    // before any of it is written, and a fold's own bug must not land half a
+    // batch before it is found.
+    withHandler(`const reduce = (state, event) => event.type !== "click" ? { updates: [] } : {
+  updates: [
+    { op: "patch", id: "b", row: { position: 7 } },
+    { op: "put", id: "z", row: { position: 8 } },
+    { id: "a", row: { position: 1 } },
+  ],
+};
+reduce;`);
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    await interpretScreen(mount, "http://localhost:8080/keep/", ROUTE, store, {});
+    mount.querySelector(".items").dispatchEvent(new Event("click"));
+    await tick(60);
+
+    assert(
+      mount.firstElementChild.dataset.state === "network-error",
+      `the screen reports the reduce's throw, got ${mount.firstElementChild.dataset.state}`,
+    );
+    assert(
+      calls.updates.length === 0 && calls.rows.length === 0 && calls.drops.length === 0,
+      "a batch the terminal cannot classify writes none of itself",
     );
   },
 });

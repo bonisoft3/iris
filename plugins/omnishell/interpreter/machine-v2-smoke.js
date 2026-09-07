@@ -1,3 +1,4 @@
+import { batched } from "./batched-store.js";
 // Deno smoke: the #Machine v2 grammar end to end — value positions holding
 // literals and Jessie references, guarded candidate lists, raise, root-level
 // on:, after as the relocated invoke, context in the synthesized fallback,
@@ -75,7 +76,7 @@ function boot(html = SCREEN_HTML, rows = []) {
   const puts = [];
   const subs = new Set();
   const knobs = { refuseNext: false };
-  const store = {
+  const store = batched({
     query: async () => rows,
     subscribe: (_table, cb) => {
       subs.add(cb);
@@ -97,7 +98,7 @@ function boot(html = SCREEN_HTML, rows = []) {
       for (const cb of subs) setTimeout(cb, 0);
     },
     remove: async () => {},
-  };
+  });
   globalThis.fetch = (url) => {
     const u = String(url);
     if (u.endsWith(".html")) return Promise.resolve(new Response(html));

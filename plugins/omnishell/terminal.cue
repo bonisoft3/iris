@@ -248,11 +248,11 @@ _zagBundle: _ @embed(glob="interpreter/vendor/zag/*.js", type=text)
 
 		// The entry page fetches the boot graph in parallel at t=0 instead of
 		// discovering each import a round-trip after its parent executes.
-		// data.js and storybook.js are tier-gated and stay lazy; ses stays
-		// undeclared here too — jessie.js injects it for handlers, after first
-		// paint, and preloading its bytes at t=0 starves the paint-critical
-		// modules on a slow link.
-		_preloadSkip: {"data.js": true, "storybook.js": true, "vendor/ses.umd.min.js": true}
+		// storybook.js is tier-gated and stays lazy; ses stays undeclared here
+		// too — jessie.js injects it for handlers, after first paint, and
+		// preloading its bytes at t=0 starves the paint-critical modules on a
+		// slow link.
+		_preloadSkip: {"storybook.js": true, "vendor/ses.umd.min.js": true}
 		_preloadHtml: strings.Join([for m in modules if _preloadSkip[m] == _|_ {
 			"<link rel=\"modulepreload\" href=\"/omnishell/interpreter/\(m)\">"
 		}], "\n")
@@ -260,7 +260,7 @@ _zagBundle: _ @embed(glob="interpreter/vendor/zag/*.js", type=text)
 		modules: [...#Path]
 		modules: list.Concat([
 			[
-				"shell.js", "screen.js", "fragment.js", "data.js", "data-crud.js", "render.js",
+				"shell.js", "screen.js", "fragment.js", "data-crud.js", "render.js",
 				"hatch.js", "hatch-worker.js", "storybook.js", "widget.js", "tier2-engine.js", "jessie.js",
 				"vendor/mecha-client.js", "vendor/js-yaml.js", "vendor/ses.umd.min.js",
 			],

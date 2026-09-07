@@ -1,3 +1,4 @@
+import { batched } from "./batched-store.js";
 // Deno smoke: per-kind templates. A region holds several item templates, each
 // optionally narrowed by a data-when fragment; per row the first template in
 // document order whose predicates admit it stamps the shape, one with no
@@ -50,7 +51,7 @@ function boot(html, rows) {
   );
   globalThis.document = document;
   let wake;
-  const store = {
+  const store = batched({
     query: async () => rows,
     subscribe: (_t, fn) => {
       wake = fn;
@@ -60,7 +61,7 @@ function boot(html, rows) {
     update: async () => {},
     put: async () => {},
     remove: async () => {},
-  };
+  });
   globalThis.fetch = (url) => {
     const u = String(url);
     if (u.endsWith(".html")) return Promise.resolve(new Response(html));

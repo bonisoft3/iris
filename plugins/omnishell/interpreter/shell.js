@@ -1,17 +1,16 @@
 // createShell: the omnishell entry for pronto-emitted apps. Reads the file
-// map (shell.yaml), boots a store for the selected tier, mounts the route
-// matching the location hash, and hands the screen to the interpreter. No
-// build step exists on this path by design.
+// map (shell.yaml), boots the store, mounts the route matching the location
+// hash, and hands the screen to the interpreter. No build step exists on
+// this path by design.
 //
-// Tiers: default is the local virtual cluster through the /crud gateway
-// (sayt launch); `?tier=browser` boots PGlite in-tab (launch@browser).
-// `?storybook` renders every storyboard state against fixtures instead.
+// The store is the local virtual cluster through the /crud gateway (sayt
+// launch). `?storybook` renders every storyboard state against fixtures
+// instead.
 //
-// Auth (cfg.auth: {required, service}) gates only the cluster tier: the
-// login screen is terminal chrome, driving the WebAuthn ceremony or the
-// guest mint against the auth service and stashing {token, user} in
-// sessionStorage["pronto-token"]. Storybook and ?tier=browser bypass auth
-// entirely — the fixture/PGlite tiers run without the cluster, so no auth
+// Auth (cfg.auth: {required, service}): the login screen is terminal chrome,
+// driving the WebAuthn ceremony or the guest mint against the auth service
+// and stashing {token, user} in sessionStorage["pronto-token"]. Storybook
+// bypasses it entirely: the fixture tier runs without the cluster, so no auth
 // service exists to sign against.
 
 import { load } from "./vendor/js-yaml.js";
@@ -304,7 +303,7 @@ export async function createShell({ config, mount }) {
     }
 
     let session = null;
-    if (cfg.auth?.required && search.get("tier") !== "browser") {
+    if (cfg.auth?.required) {
       const stored = sessionStorage.getItem("pronto-token");
       // A stored token is not a session. The account it names can be gone —
       // the row dropped, the database recreated — and nothing about the token
@@ -332,14 +331,8 @@ export async function createShell({ config, mount }) {
       }
     }
 
-    let store;
-    if (search.get("tier") === "browser") {
-      const browser = await import("./data.js");
-      store = await browser.createStore(appBase, cfg);
-    } else {
-      const cluster = await import("./data-crud.js");
-      store = cluster.createStore("", { ...cfg, appBase });
-    }
+    const { createStore } = await import("./data-crud.js");
+    const store = createStore("", { ...cfg, appBase });
 
     // The navigation stack belongs to the terminal — there is one back button,
     // so no screen can own it. A screen the user leaves keeps its DOM, hidden

@@ -1,3 +1,4 @@
+import { batched } from "./batched-store.js";
 // Deno smoke: the offline-capture surface — optimistic rows that carry only
 // their submitted fields must render (blank-bound, badge-stamped) instead of
 // crashing the screen, and a form whose write is still on its way must resolve
@@ -40,7 +41,7 @@ function boot(rows) {
 
   const calls = { creates: [] };
   let deferred;
-  const store = {
+  const store = batched({
     query: async () => rows,
     subscribe: () => () => {},
     create: (table, values) => {
@@ -49,7 +50,7 @@ function boot(rows) {
     },
     update: async () => {},
     remove: async () => {},
-  };
+  });
 
   globalThis.fetch = (url) => {
     const u = String(url);

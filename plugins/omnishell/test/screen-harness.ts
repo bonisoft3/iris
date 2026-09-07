@@ -15,6 +15,7 @@ import { parseHTML } from "npm:linkedom@0.18.4";
 import { load as parseYaml } from "../interpreter/vendor/js-yaml.js";
 import { embedTables, parseFilter, parseLimit, parseSelect } from "../interpreter/fragment.js";
 import { upsertKey as resolveKey } from "../interpreter/data-crud.js";
+import { batched } from "../interpreter/batched-store.js";
 
 /** data-crud.js is the shipped store, not a typed module: the natural key an
  * upsert resolves against comes from there so there is one resolution and not
@@ -108,6 +109,15 @@ export type MemoryStore = {
   upsert(table: string, values: Row): Promise<void>;
   update(table: string, id: unknown, patch: Row): Promise<void>;
   put(table: string, row: Row): Promise<void>;
+  // The batch surface the interpreter writes through. A test drives the
+  // singular methods above; the interpreter drives these, and `batched` below
+  // is what keeps the two describing the same store.
+  add(table: string, rows: Row[]): Promise<void>;
+  write(table: string, rows: Row[]): Promise<void>;
+  patch(table: string, edits: { key: string; changes: Row }[]): Promise<void>;
+  drop(table: string, keys: string[]): Promise<void>;
+  dropWhere(table: string, filter: string): Promise<void>;
+  upsertBy(table: string, values: Row): Promise<void>;
   remove(table: string, id: unknown): Promise<void>;
   removeWhere(table: string, filter: string): Promise<void>;
   /** The rows a table holds, as the store holds them. */
@@ -411,7 +421,12 @@ export function memoryStore(tables: Record<string, Row[]>, cluster: Cluster = {}
     for (const row of doomed) await store.remove(table, row[keyOf(table)]);
   };
 
-  return store;
+  // The harness keeps its own upsert and removeWhere: tests drive them
+  // directly and they model natural-key resolution the adapter cannot.
+  const wrapped = batched(store) as MemoryStore;
+  wrapped.upsertBy = store.upsert;
+  wrapped.dropWhere = store.removeWhere;
+  return wrapped;
 }
 
 /** Every route the app ships, in the order shell.yaml lists them — what a
@@ -928,21 +943,33 @@ export async function mountScreen(spec: MountSpec): Promise<Mounted> {
       : new Error(`a listener rejected and the DOM swallowed it: ${String(first)}`);
   };
 
-  // Yields macrotasks until two in a row pass with no write and no wake
-  // outstanding. Not a sleep: a promise chain the interpreter started only
-  // runs between turns, and there is nothing else to wait on.
+  /** Regions still inside a pass. A wake delivered during the turn a drain is
+   * measuring starts a refresh that writes no row, so the store's version and
+   * its wake count both read quiet while the screen is still drawing. Waits are
+   * not counted: they come due only when settle advances the clock, and waiting
+   * on one without advancing would never end. */
+  const rendering = () =>
+    (global as { __prontoBusy?: () => { regions: number } }).__prontoBusy?.().regions ?? 0;
+
+  // Yields macrotasks until three in a row pass with nothing outstanding. Not a
+  // sleep: a promise chain the interpreter started only runs between turns, and
+  // there is nothing else to wait on.
+  //
+  // Three, because a hand-off spans three: a wake is delivered on one turn, the
+  // pass it starts reads on the next, and what that read writes lands on the
+  // third. The middle turn is the one no counter reports.
   const quiet = async () => {
     raiseEscaped();
-    for (let turns = 0, calm = 0; calm < 2; turns++) {
+    for (let turns = 0, calm = 0; calm < 3; turns++) {
       if (turns > 500) throw new Error("the store never went quiet: something writes on every turn");
       const before = store.version;
       await macrotask();
-      calm = store.pendingWakes === 0 && store.version === before ? calm + 1 : 0;
+      calm = store.pendingWakes === 0 && store.version === before && rendering() === 0 ? calm + 1 : 0;
     }
   };
 
   const settle = async () => {
-    for (let spent = 0;;) {
+    for (let spent = 0, twice = false;;) {
       await quiet();
       raiseEscaped();
       if (clock.advance(0) > 0) {
@@ -964,7 +991,15 @@ export async function mountScreen(spec: MountSpec): Promise<Mounted> {
       // and it writes no row — so the loop would exit past it and `stop` would
       // then drop the collector with the error still in it.
       raiseEscaped();
-      if (clock.advance(0) === 0 && store.version === before) return;
+      if (clock.advance(0) === 0 && store.version === before && rendering() === 0) {
+        // Settling is idempotent or it has not settled. Draining once more is
+        // what tells apart a screen that has stopped from one whose next turn
+        // was queued while this drain was measuring.
+        if (twice) return;
+        twice = true;
+        continue;
+      }
+      twice = false;
     }
   };
 

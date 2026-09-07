@@ -99,7 +99,7 @@ const BEAT = `(state, event) => {
   const beats = Number(row.beats);
   if (beats >= 3) return { updates: [] };
   return {
-    updates: [{ entity: "tick", id: row.id, patch: { beats: String(beats + 1) } }],
+    updates: [{ op: "patch", entity: "tick", id: row.id, row: { beats: String(beats + 1) } }],
     then: { type: "mutation", delay: 500 },
   };
 }`

@@ -15,11 +15,11 @@ describe("createMechaClient", () => {
   })
 
   it("rejects writes to unknown table ids", () => {
-    expect(() => client.insert("nope", { id: "x" })).toThrow(/unknown table id/)
+    expect(() => client.insert("nope", [{ id: "x" }])).toThrow(/unknown table id/)
   })
 
   it("refuses inserts without a client-minted key — retries depend on it", () => {
-    expect(() => client.insert("tasks", { title: "no id" })).toThrow(/must mint 'id'/)
+    expect(() => client.insert("tasks", [{ title: "no id" }])).toThrow(/must mint 'id'/)
   })
 
   it("tracks a queued sync phase per key", () => {

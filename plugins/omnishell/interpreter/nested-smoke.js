@@ -1,3 +1,4 @@
+import { batched } from "./batched-store.js";
 // Deno smoke: a nested region inside an item's template, hydrated with real
 // rows — the article shape. Every other smoke's regions are flat, and the
 // batteries fill parametrized routes with slugs matching nothing, so a
@@ -38,7 +39,7 @@ function boot(rows) {
     if (u.endsWith(".css")) return Promise.resolve(new Response(""));
     return Promise.reject(new Error(`unexpected fetch ${u}`));
   };
-  const store = {
+  const store = batched({
     // The nested region's filter arrives interpolated from the parent row;
     // honoring it is what the smoke is about.
     query: async (_table, _order, opts) => {
@@ -53,7 +54,7 @@ function boot(rows) {
     update: async () => {},
     put: async () => {},
     remove: async () => {},
-  };
+  });
   return { document, store };
 }
 

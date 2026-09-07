@@ -641,6 +641,13 @@ function playEnter(node) {
 // that was impossible while every render rebuilt the list. The cap is a leak
 // guard: an animation that never settles must not strand the node forever.
 const MOTION_CAP_MS = 1000;
+
+// How many rows may arrive or leave in one pass and still be a gesture. Motion
+// costs a frame and a style resolution PER NODE — `settle` asks each one what
+// it is animating — so a pass moving a thousand rows spends a thousand of those
+// on motion no reader can follow. Past this many the pass is a load, which is
+// the same judgement the first paint already makes.
+const GESTURE = 32;
 function playExit(node, done) {
   node.dataset.exit = "";
   settle(node, done);
@@ -661,9 +668,13 @@ const hatchesIn = (node) => [
   ...node.querySelectorAll("[data-hatch]"),
 ];
 
-function ownedBy(el, scope) {
+/** Whether `el` is the scope's own to bind: nothing between it and the scope
+ * declares a read, and nothing between it and the scope is one of `within` —
+ * the elements whose insides belong to somebody else. */
+function ownedBy(el, scope, within) {
   for (let n = el; n && n !== scope; n = n.parentElement) {
     if (n.matches?.("[data-live]")) return false;
+    if (within !== undefined && within.has(n)) return false;
   }
   return true;
 }
@@ -1333,17 +1344,26 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         setState(err?.name === "NonRetriableError" ? "validation-error" : "network-error");
       };
       try {
-        if (action === "create") await store.create(entity, await values(), refused);
+        // A form's create mints the key the store now requires of every write:
+        // retries are only idempotent because the key travels with each attempt.
+        if (action === "create") {
+          // The key is minted here because every write now carries one: retries
+          // are idempotent only because the key travels with each attempt.
+          const row = await values();
+          await store.add(entity, [row.id === undefined ? { id: crypto.randomUUID(), ...row } : row], refused);
+        }
         // Write the row for this natural key, existing or not. The form says
         // what the row should be; whether that is an insert or an update is the
         // store's question, answered against the collection.
-        else if (action === "upsert") await store.upsert(entity, await values(), refused);
-        else if (action === "update") await store.update(entity, rowId(), await values(), refused);
+        else if (action === "upsert") await store.upsertBy(entity, await values(), refused);
+        else if (action === "update") {
+          await store.patch(entity, [{ key: rowId(), changes: await values() }], refused);
+        }
         else if (action === "delete" && form.dataset.filter !== undefined) {
           // Filter-scoped bulk delete: the filter, not the row context,
           // names the rows (SPEC #Form.filter).
-          await store.removeWhere(entity, interpolateFilter(form.dataset.filter, getCtx()), refused);
-        } else if (action === "delete") await store.remove(entity, rowId(), refused);
+          await store.dropWhere(entity, interpolateFilter(form.dataset.filter, getCtx()), refused);
+        } else if (action === "delete") await store.drop(entity, [rowId()], refused);
         else throw new Error(`unknown action: ${action}`);
         if (edits === editsAtSubmit) form.reset();
         setState("success");
@@ -1374,10 +1394,10 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
 
   // Stage-4's only handler event source: DOM drags become {type:"move",
   // fromId, toId} against {items: [{id, position}]} read from the region's
-  // current rows in DOM order; the handler's {updates: [{id, patch}]} apply as
+  // current rows in DOM order; the handler's {updates: [{op, id, row}]} apply as
   // ordinary update mutations. Handler failures surface as network-error,
   // never as a crashed screen.
-  function wireDrag(region, items, getRows, reduce, deliver) {
+  function wireDrag(region, items, getRows, reduce, deliver, apply) {
     for (const item of items) {
       // Item nodes outlive a refresh, so each is wired once — re-wiring would
       // stack another listener pair on every render. The drag's origin lives
@@ -1406,16 +1426,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         try {
           const state = { items: getRows().map((r) => ({ id: r.id, position: r.position })) };
           const result = reduce(state, { type: "move", fromId, toId });
-          for (const u of result.updates ?? []) {
-            const entity = region.dataset.live;
-            try {
-              await store.update(entity, u.id, u.patch, (err) => deliver(entity, u.id, err));
-            } catch (err) {
-              if (err?.name !== "NonRetriableError") throw err;
-              deliver(entity, u.id, err);
-              return;
-            }
-          }
+          await apply(result.updates ?? [], deliver);
         } catch (err) {
           console.error(err);
           setState("network-error");
@@ -1513,6 +1524,77 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     region._prontoRefusal = rowsReduce ? deliver : undefined;
 
     const STEPS = 8;
+    // Every write a reduce states, in the order it stated them. The shapes and
+    // what they mean are DEVELOPING.md's; what matters here is why they are
+    // safe. A put states the row for a key derived from what the row
+    // identifies — the same conclusion reached twice is the same row, which is
+    // what lets a reduce be woken more than once. A delete is what makes
+    // "recompute absolutely, write differentially" total: without it a fold can
+    // grow its set and never shrink it.
+    //
+    // Consecutive updates of the same op against the same collection go down as
+    // one call. Applied one at a time each costs the whole table, so a fold
+    // stating a thousand rows would be quadratic in the table's size.
+    const OPS = new Set(["put", "patch", "delete"]);
+    const SHAPES = '{op: "put", id, row}, {op: "patch", id, row} or {op: "delete", id}';
+    const opOf = (u) => {
+      // Naming the op is what keeps a fold from saying one thing and meaning
+      // another: a patch that happens to carry a row would be a put by
+      // accident, and silence is how that ships.
+      if (!OPS.has(u.op)) {
+        throw new Error(`an update states op: ${[...OPS].join(" | ")}, not ${JSON.stringify(u.op)} — ${SHAPES}`);
+      }
+      if (u.id === undefined) throw new Error(`a ${u.op} names no id — ${SHAPES}`);
+      if (u.op !== "delete" && u.row === undefined) throw new Error(`a ${u.op} carries no row — ${SHAPES}`);
+      return u.op;
+    };
+    /** Answers false when a refusal ended the batch, so a caller knows the
+     * writes after it were never made: they concluded from a premise the store
+     * has withdrawn. Answered rather than held, because a click and a drag can
+     * be inside this at once and a flag between them is one they would share. */
+    const applyUpdates = async (updates, deliver) => {
+      // Every update is classified before any is written. A refusal mid-batch
+      // is a fact about the world; a malformed update is the fold's own bug,
+      // and finding it after half the batch has landed is worse than not
+      // writing at all.
+      const ops = updates.map(opOf);
+      let at = 0;
+      while (at < updates.length) {
+        const u = updates[at];
+        const entity = u.entity ?? region.dataset.live;
+        const op = ops[at];
+        const id = u.id;
+        let upto = at + 1;
+        while (
+          upto < updates.length && ops[upto] === op &&
+          (updates[upto].entity ?? region.dataset.live) === entity
+        ) upto += 1;
+        const run = updates.slice(at, upto);
+        try {
+          if (op === "put") {
+            await store.write(entity, run.map((x) => ({ key: x.id, row: x.row })), (err) => deliver(entity, id, err));
+          } else if (op === "delete") {
+            await store.drop(entity, run.map((x) => x.id), (err) => deliver(entity, id, err));
+          } else {
+            await store.patch(
+              entity,
+              run.map((x) => ({ key: x.id, changes: x.row })),
+              (err) => deliver(entity, id, err),
+            );
+          }
+        } catch (err) {
+          // A fast refusal (rejected inside the store's acceptance window) is
+          // the same fact as a late one and takes the same path. Anything else
+          // stays the outer catch's network-error.
+          if (err?.name !== "NonRetriableError") throw err;
+          deliver(entity, id, err);
+          return false;
+        }
+        at = upto;
+      }
+      return true;
+    };
+
     const step = async (reduce, event, depth) => {
       const result = reduce({ items: getRows(), rows: await worldOf() }, event);
       // A `then` that is callable is a promise, not a command: an async reduce
@@ -1520,28 +1602,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       if (typeof result?.then === "function") {
         throw new Error(`handler for "${event.type}" returned a promise; a reduce returns its updates`);
       }
-      // Two ways to write, and the difference is what the reduce knows. A
-      // patch changes named fields of a row that is there; a row states one
-      // whether or not it is, and is only safe because the key is derived from
-      // what the row identifies — the same conclusion reached twice is the
-      // same row, which is what lets a reduce be woken more than once.
-      for (const u of result?.updates ?? []) {
-        const entity = u.entity ?? region.dataset.live;
-        const id = u.row !== undefined ? u.row.id : u.id;
-        try {
-          if (u.row !== undefined) await store.put(entity, u.row, (err) => deliver(entity, id, err));
-          else await store.update(entity, u.id, u.patch, (err) => deliver(entity, id, err));
-        } catch (err) {
-          // A fast refusal (rejected inside the store's acceptance window) is
-          // the same fact as a late one and takes the same path; the chain
-          // stops, since its remaining writes conclude from a premise the
-          // store just withdrew. Anything else stays the outer catch's
-          // network-error.
-          if (err?.name !== "NonRetriableError") throw err;
-          deliver(entity, id, err);
-          return;
-        }
-      }
+      if (!await applyUpdates(result?.updates ?? [], deliver)) return;
       const next = result?.then;
       if (!next?.type) return;
       // The terminal owns the depth. A cascade with no owner has no end, and
@@ -1607,12 +1668,11 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     const bindTree = (root, id, skip) => {
       bind(root, id);
       for (const el of root.querySelectorAll("*")) {
-        if (!ownedBy(el, root)) continue;
-        if (skip !== undefined && skip.some((it) => it.contains(el))) continue;
+        if (!ownedBy(el, root, skip)) continue;
         bind(el, id);
       }
     };
-    bindTree(region, undefined, items);
+    bindTree(region, undefined, new Set(items));
     for (const item of items) bindTree(item, item.dataset.id);
 
     // data-machine: the #Machine subset — machine.cue holds the vocabulary
@@ -1725,7 +1785,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         if (chosen.c.target !== undefined || Object.keys(patch).length > 0) {
           const stated = { ...(row === region._prontoFallbackRow ? row : { id: row.id, [machine.field]: row[machine.field] }), ...patch };
           if (chosen.c.target !== undefined) stated[machine.field] = chosen.c.target;
-          out.updates = [{ row: stated }];
+          out.updates = [{ op: "put", id: stated.id, row: stated }];
           // The chain's own view of the row: a raise delivered after this
           // write must conclude from it, not from the slot's last refresh —
           // the store's wake is asynchronous and the chain is not.
@@ -1916,7 +1976,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
         wake();
       }
     }
-    return { deliver };
+    return { deliver, apply: applyUpdates };
   }
 
   // Field-backed widgets. A [data-widget] dresses the form control inside it:
@@ -2262,6 +2322,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     // ready. Only rows that arrive afterwards play.
     let first = true;
 
+
     // Regions nested inside an item, excluding any that sit under a deeper
     // one — those belong to that region's own pass.
     // Scoped to the item: closest() would walk past it to the enclosing
@@ -2376,6 +2437,9 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
           const ready = [];
           const order = [];
           const seen = new Set();
+          let arriving = 0;
+          for (const row of rows) if (!live.has(String(row.id))) arriving += 1;
+          const entering = !first && arriving <= GESTURE;
           for (const row of rows) {
             const key = String(row.id);
             seen.add(key);
@@ -2391,7 +2455,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
               live.set(key, entry);
               // Stamped before the node is in the document, so its arriving
               // style is the first one the browser ever computes for it.
-              if (!first) playEnter(entry.node);
+              if (entering) playEnter(entry.node);
             } else {
               entry.ctx.row = row;
             }
@@ -2431,16 +2495,24 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
             }
             order.push(entry.node);
           }
+          const departing = [];
           for (const [key, entry] of live) {
-            if (seen.has(key)) continue;
+            if (!seen.has(key)) departing.push([key, entry]);
+          }
+          const leaving = departing.length <= GESTURE;
+          for (const [key, entry] of departing) {
             for (const n of entry.nested.values()) n.h.stop();
             const node = entry.node;
-            playExit(node, () => {
+            const release = () => {
               // A hatch holds a page-level message listener; the node going
               // away is what releases it.
               for (const el of hatchesIn(node)) el._prontoHatch?.destroy();
               node.remove();
-            });
+            };
+            // A row on its way out stays in the list until its animation ends.
+            // A thousand of them have no animation worth waiting for.
+            if (leaving) playExit(node, release);
+            else release();
             live.delete(key);
           }
           await Promise.all(ready);
@@ -2496,10 +2568,10 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
           fromEnclosing(() => bindElementAttributes(region, ctx), table, "own element");
           wireKeysIn(region);
           for (const node of order) wireKeysIn(node);
-          const { deliver } = wireEvents(region, order, () => currentRows, handlers, ctx);
+          const { deliver, apply } = wireEvents(region, order, () => currentRows, handlers, ctx);
           const reduce = handlers.get(region.dataset.handler);
           if (reduce && templates.some((t) => t.el.content.querySelector("[data-drag-handle]"))) {
-            wireDrag(region, order, () => currentRows, reduce, deliver);
+            wireDrag(region, order, () => currentRows, reduce, deliver, apply);
           }
           first = false;
         }

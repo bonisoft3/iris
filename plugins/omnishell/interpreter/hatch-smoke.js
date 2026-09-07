@@ -1,3 +1,4 @@
+import { batched } from "./batched-store.js";
 // Deno smoke: the terminal-tier hatch — a vendored unit in a sandboxed
 // iframe, props in and named events out. The frame is driven through a stub
 // contentWindow: linkedom has no
@@ -19,10 +20,10 @@ const SCREEN_HTML = `<section class="screen" data-screen="article">
 // `record` is the one the mount names; `shadow` sits on the enclosing region
 // and exists to be a witness that a unit's answer never reaches it.
 const RECORD_SOURCE = `const reduce = (state, event) => ({
-  updates: [{ id: "a1", patch: { chose: event.detail.uci } }],
+  updates: [{ op: "patch", id: "a1", row: { chose: event.detail.uci } }],
 });
 reduce;`;
-const SHADOW_SOURCE = `const reduce = () => ({ updates: [{ id: "a1", patch: { chose: "the ancestor" } }] });
+const SHADOW_SOURCE = `const reduce = () => ({ updates: [{ op: "patch", id: "a1", row: { chose: "the ancestor" } }] });
 reduce;`;
 
 const ROUTE = {
@@ -215,7 +216,7 @@ Deno.test({
     globalThis.document = document;
     const state = { rows: [{ id: "a1", title: "Post", embed_url: "https://x.example/1" }], notify: null };
     const updates = [];
-    const store = {
+    const store = batched({
       query: async () => state.rows,
       subscribe: (_t, fn) => {
         state.notify = fn;
@@ -224,7 +225,7 @@ Deno.test({
       create: async () => {},
       update: async (table, id, patch) => updates.push({ table, id, patch }),
       remove: async () => {},
-    };
+    });
     globalThis.fetch = (url) => {
       const u = String(url);
       if (u.endsWith(".html")) return Promise.resolve(new Response(SCREEN_HTML));

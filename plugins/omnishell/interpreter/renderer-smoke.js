@@ -1,3 +1,4 @@
+import { batched } from "./batched-store.js";
 // Deno smoke: the platform half of the renderer role — the node schema, the
 // tag and attribute allowlist, the URL-scheme check, the builder, and the
 // reconciliation that keeps the DOM
@@ -178,13 +179,13 @@ Deno.test({
 
     const { document } = parseHTML("<!doctype html><html><head></head><body><div id=shell></div></body></html>");
     globalThis.document = document;
-    const store = {
+    const store = batched({
       query: async () => [{ id: "a1", body: "hello" }],
       subscribe: () => () => {},
       create: async () => {},
       update: async () => {},
       remove: async () => {},
-    };
+    });
     globalThis.fetch = (url) => {
       const u = String(url);
       if (u.endsWith("shout.js")) return Promise.resolve(new Response(SHOUT));

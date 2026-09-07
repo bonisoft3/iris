@@ -282,9 +282,9 @@ Deno.test({
   sanitizeResources: false,
   async fn() {
     const store = createStore("", { local: { round: "tab" } });
-    await store.put("round", { id: "r1", current: "yes", created_at: 2 });
-    await store.put("round", { id: "r2", current: "no", created_at: 1 });
-    await store.put("round", { id: "r3", current: "yes", created_at: 5 });
+    await store.write("round", [{ key: "r1", row: { current: "yes", created_at: 2 } }]);
+    await store.write("round", [{ key: "r2", row: { current: "no", created_at: 1 } }]);
+    await store.write("round", [{ key: "r3", row: { current: "yes", created_at: 5 } }]);
 
     // A query alone never opens a view; only a subscription does.
     const spec = parseReadSpec("round?current=eq.yes&order=created_at.desc");
