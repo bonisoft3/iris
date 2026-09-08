@@ -226,19 +226,31 @@ export function createStore(base = "", cfg = {}) {
     // sinks like note_progress key on their subject). Without it the synced
     // collection keys every row on a missing column and the whole table
     // collapses onto one key.
-    tables: tables.map((t) => ({ id: t, table: t, key: cfg.keys?.[t], durability: local[t] })),
+    //
+    // cfg.access rides along so the client knows which tables a grant can
+    // reach; a note shared to this subject is not in its scopes, and arrives
+    // one shape per row instead.
+    tables: tables.map((t) => ({
+      id: t,
+      table: t,
+      key: cfg.keys?.[t],
+      durability: local[t],
+      access: cfg.access?.[t],
+    })),
     electricUrl: `${base}/electric`,
     crudUrl: `${base}/crud`,
+    authUrl: `${base}/auth`,
     token,
+    subject: userId,
   });
 
   // Debug seam: the running client is inspectable from the console.
   globalThis.__mechaClient = client;
 
-  // cfg.access is the emitted RLS mirror (shell.yaml `access`): the Electric
-  // sync plane is unscoped in the dev cluster — every browser's collections
-  // hold every user's rows — so collection reads re-apply row visibility
-  // here. PostgREST reads (embeds, fts) are already RLS-scoped server-side.
+  // cfg.access is the emitted RLS mirror (shell.yaml `access`): collection
+  // reads re-apply row visibility, and a region re-renders when a table that
+  // decides it changes (accessDeps below). PostgREST reads (embeds, fts) are
+  // RLS-scoped server-side.
   const access = cfg.access ?? {};
   const keyOf = (t) => cfg.keys?.[t] ?? "id";
 

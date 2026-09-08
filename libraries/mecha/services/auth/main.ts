@@ -20,6 +20,10 @@ const RP_ID = Deno.env.get("WEBAUTHN_RP_ID") ?? "localhost";
 const ORIGIN = Deno.env.get("WEBAUTHN_ORIGIN") ?? "http://localhost:8080";
 
 const USER_TOKEN_TTL_S = 7 * 24 * 3600;
+// A shape token outlives one long-poll cycle and little else: Electric holds a
+// request open for 300s, so a token shorter than that expires mid-stream, and a
+// long one is a scope set that cannot be revoked.
+const SHAPE_TOKEN_TTL_S = 900;
 const STATE_TTL_S = 300;
 
 export const sql = postgres(DATABASE_URL);
@@ -31,6 +35,11 @@ export async function migrate(): Promise<void> {
     public_key bytea not null,
     counter bigint not null default 0
   )`;
+  // Read by this service alone, on its own connection; no app role reaches
+  // it, and the audit is told so rather than left to report it.
+  await sql`INSERT INTO mecha.rls_exempt VALUES
+    ('public.webauthn_credential', 'the auth service''s own table: read by it alone, on its own connection')
+    ON CONFLICT DO NOTHING`;
 }
 
 // --- HS256 JWT via WebCrypto ---
@@ -101,6 +110,186 @@ export function issueUserToken(id: string, handle: string): Promise<string> {
     handle,
     exp: Math.floor(Date.now() / 1000) + USER_TOKEN_TTL_S,
   });
+}
+
+// --- The sync path's gatekeeper ---
+//
+// Electric names four parameters the server must own. Deciding them means
+// asking Postgres which scopes a subject holds, so Caddy asks here over
+// `forward_auth` (pronto/assets/Caddyfile) and this service decides.
+//
+// The predicate is built from `subject_scopes`, the same function
+// `app_pre_request` uses for the CRUD path. One derivation, two deliveries: the
+// paths cannot disagree about a subject's reach without disagreeing here first.
+
+/** The `where` a shape may carry, canonical so the comparison can be equality. */
+export function shapeWhere(scopes: string[]): string {
+  return `scope_id IN (${scopes.map((s) => `'${s.replaceAll("'", "''")}'`).join(",")})`;
+}
+
+/**
+ * Whether the floor reaches this table.
+ *
+ * A shape's predicate names `scope_id`, so a table without one cannot carry a
+ * scoped shape: Electric answers 400 and the app reads it as a sync fault. The
+ * refusal belongs here, where the reason is known — the table is exempt from
+ * the floor, and until its scope derivation exists it has no business on a sync
+ * path that is supposed to be scoped.
+ */
+async function isFloored(table: string): Promise<boolean> {
+  // The floor's own precondition (has_scope in rls.sql); to_regclass is NULL
+  // for a table that does not exist, and NULL has no scope.
+  const rows = await sql`SELECT public.has_scope(to_regclass(${"public." + table})) AS ok`;
+  return rows[0].ok as boolean;
+}
+
+async function subjectScopes(uid: string | null): Promise<string[]> {
+  const rows = await sql`SELECT public.subject_scopes(${uid}) AS scopes`;
+  return rows[0].scopes as string[];
+}
+
+/** A table name Electric will accept, and nothing that could be a predicate. */
+function validTable(t: unknown): t is string {
+  return typeof t === "string" && /^[a-z_][a-z0-9_]{0,62}$/.test(t);
+}
+
+/** The `where` of a per-row shape, canonical so the comparison can be equality. */
+export function rowWhere(column: string, value: string): string {
+  return `${column} = '${value.replaceAll("'", "''")}'`;
+}
+
+// Whether a shape over `table` keyed `column = value` reaches only rows this
+// subject may read: mecha.shape_reach, asked as the subject. Role and claims
+// are set here the way PostgREST sets them on a request, and rls.sql says why
+// the switch has to be the caller's.
+async function rowReach(uid: string, table: string, column: string, value: string): Promise<boolean> {
+  return await sql.begin(async (tx) => {
+    await tx`SET LOCAL ROLE app_user`;
+    await tx`SELECT set_config('request.jwt.claims', ${JSON.stringify({ sub: uid, role: "app_user" })}, true)`;
+    await tx`SELECT public.app_pre_request()`;
+    const rows = await tx`SELECT mecha.shape_reach(${"public." + table}, ${column}, ${value}) AS ok`;
+    return rows[0].ok as boolean;
+  });
+}
+
+async function bearerClaims(req: Request): Promise<Record<string, unknown> | null> {
+  const auth = req.headers.get("authorization");
+  if (!auth || !auth.startsWith("Bearer ")) return null;
+  return await verifyJwt(auth.slice("Bearer ".length));
+}
+
+// A request's subject: a session's claims, no claims when no token was sent,
+// and refused when a token was sent and is not a session.
+type Subject = { claims: Record<string, unknown> | null } | "refused";
+async function subjectOf(req: Request): Promise<Subject> {
+  if (!req.headers.get("authorization")) return { claims: null };
+  const claims = await bearerClaims(req);
+  if (!claims || claims.role !== "app_user") return "refused";
+  return { claims };
+}
+
+// Mints one token per shape, so a token names the table it was issued for and
+// carries no reach beyond it.
+async function shapeToken(req: Request): Promise<Response> {
+  const subject = await subjectOf(req);
+  if (subject === "refused" || subject.claims === null) return jsonError(401, "invalid token");
+  const sub = subject.claims.sub as string;
+  const body = await readBody(req);
+  if (!body || !validTable(body.table)) return jsonError(400, "table required");
+
+  // Two shapes a token can name. Keyed, it is one row's worth of a table,
+  // reached by a subject the floor does not deliver it to; unkeyed, it is the
+  // subject's scopes, over a table that carries one. Both need a session: a
+  // shape carries the floor and nothing above it, and it is the permissive
+  // layer above the floor that keeps anon out of a table on the CRUD path.
+  let where: string;
+  if (body.key !== undefined) {
+    const key = body.key as Record<string, unknown> | null;
+    if (
+      typeof key !== "object" || key === null || !validTable(key.column) ||
+      typeof key.value !== "string" || key.value.length > 200
+    ) {
+      return jsonError(400, "key must name a column and a value");
+    }
+    if (!(await rowReach(sub, body.table, key.column, key.value))) {
+      return jsonError(403, "row not reachable");
+    }
+    where = rowWhere(key.column, key.value);
+  } else {
+    const [floored, scopes] = await Promise.all([isFloored(body.table), subjectScopes(sub)]);
+    if (!floored) {
+      return jsonError(
+        409,
+        `${body.table} carries no scope_id: it is exempt from the tenancy floor, ` +
+          `so no shape over it can be scoped`,
+      );
+    }
+    where = shapeWhere(scopes);
+  }
+  const token = await signJwt({
+    typ: "shape",
+    table: body.table,
+    where,
+    sub,
+    exp: Math.floor(Date.now() / 1000) + SHAPE_TOKEN_TTL_S,
+  });
+  // `where` goes back so the client sends exactly what was authorized: the
+  // check below is equality, and a client that rebuilds the string differently
+  // is refused for a reason it cannot see.
+  return json(200, { token, table: body.table, where, expires_in: SHAPE_TOKEN_TTL_S });
+}
+
+// The parameters a shape request may carry besides the two the token names:
+// Electric's paging and streaming, none of which widens what a row predicate
+// admits. Anything else is refused, `columns`, `replica`, `params` and the
+// secret among them: a parameter this list does not know has a reach it does
+// not know either.
+const SHAPE_FREE_PARAMS = new Set([
+  "offset",
+  "handle",
+  "live",
+  "live_sse",
+  "experimental_live_sse",
+  "cursor",
+  "expired_handle",
+  "log",
+  "cache-buster",
+]);
+
+// What Caddy asks before proxying to Electric. It answers about the request
+// Caddy actually received, not about one the client describes: the method and
+// URI arrive in X-Forwarded-Method and X-Forwarded-Uri, and every parameter
+// that decides reach is compared.
+async function shapeVerify(req: Request): Promise<Response> {
+  const claims = await bearerClaims(req);
+  if (!claims || claims.typ !== "shape") return jsonError(401, "invalid shape token");
+
+  if (req.headers.get("x-forwarded-method") !== "GET") return jsonError(403, "method not allowed");
+  const forwarded = req.headers.get("x-forwarded-uri");
+  if (!forwarded) return jsonError(403, "no forwarded uri");
+  // The shape route and nothing beside it: the proxy adds the secret to
+  // whatever passes, and a token for a shape says nothing about any other
+  // route Electric serves.
+  if (!/^\/v1\/shape(\?|$)/.test(forwarded)) return jsonError(403, "not the shape route");
+  // The raw query, not a parsed URL: a request line has no fragment, so `#`
+  // is query text here as it is to Electric.
+  if (forwarded.includes("#")) return jsonError(403, "fragment in uri");
+  const q = forwarded.indexOf("?");
+  const params = new URLSearchParams(q === -1 ? "" : forwarded.slice(q + 1));
+
+  // Electric keeps the last copy of a repeated parameter, so a parameter is
+  // compared only once it is known to have one value.
+  for (const key of new Set(params.keys())) {
+    if (params.getAll(key).length !== 1) return jsonError(403, `${key} repeated`);
+    if (key !== "table" && key !== "where" && !SHAPE_FREE_PARAMS.has(key)) {
+      return jsonError(403, `${key} is not a shape parameter`);
+    }
+  }
+  // A missing parameter is not a matching one. `??` would let an absent `where`
+  // read as authorized against a claim that named a predicate.
+  if (params.get("table") !== claims.table) return jsonError(403, "table not authorized");
+  if (params.get("where") !== claims.where) return jsonError(403, "where not authorized");
+  return json(200, { ok: true });
 }
 
 // --- HTTP surface ---
@@ -295,10 +484,9 @@ async function guest(_req: Request): Promise<Response> {
 }
 
 async function whoami(req: Request): Promise<Response> {
-  const auth = req.headers.get("authorization");
-  if (!auth || !auth.startsWith("Bearer ")) return jsonError(401, "missing token");
-  const claims = await verifyJwt(auth.slice("Bearer ".length));
-  if (!claims || claims.role !== "app_user") return jsonError(401, "invalid token");
+  const subject = await subjectOf(req);
+  if (subject === "refused" || subject.claims === null) return jsonError(401, "invalid token");
+  const claims = subject.claims;
   return json(200, { id: claims.sub, handle: claims.handle });
 }
 
@@ -322,6 +510,12 @@ export async function handler(req: Request): Promise<Response> {
     }
     if (req.method === "GET" && path === "/auth/whoami") {
       return await whoami(req);
+    }
+    if (req.method === "POST" && path === "/auth/shape") {
+      return await shapeToken(req);
+    }
+    if (req.method === "GET" && path === "/auth/shape/verify") {
+      return await shapeVerify(req);
     }
     return jsonError(404, "not found");
   } catch (e) {

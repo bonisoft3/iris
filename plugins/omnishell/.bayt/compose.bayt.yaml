@@ -6,3 +6,7 @@ include:
   required: false
 - path: ./compose.integrate.yaml
   required: false
+- path: ./compose.bundle.yaml
+  required: false
+- path: ../../../libraries/mecha/.bayt/compose.bayt.yaml
+  required: false

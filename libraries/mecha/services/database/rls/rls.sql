@@ -23,6 +23,22 @@ CREATE OR REPLACE FUNCTION public.current_scopes() RETURNS text[]
       '{}'::text[])
   $$;
 
+-- The scopes a subject holds, derived in one place because two tiers read it:
+-- PostgREST through `app_pre_request` below, and the sync path's gatekeeper,
+-- which cannot share the GUC because it answers before the request exists. Two
+-- derivations would be two answers to "how far does this subject reach".
+--
+-- `public:` is held by everyone, signed in or not, so a public row is reached by
+-- carrying that scope rather than by being exempt from the floor. That is what
+-- lets a public table sync: a shape predicate can name a scope, and cannot name
+-- an exception.
+--
+CREATE OR REPLACE FUNCTION public.subject_scopes(uid text) RETURNS text[]
+  LANGUAGE sql STABLE AS $$
+    SELECT CASE WHEN uid IS NULL OR uid = '' THEN ARRAY['public:']
+                ELSE ARRAY['public:', 'user:' || uid] END
+  $$;
+
 -- The caller supplies `scope_id`: its derivation differs per access mode and
 -- belongs to whoever declared the entity. Prefer a generated column --
 -- `scope_id text GENERATED ALWAYS AS ('user:' || owner) STORED` -- because
@@ -49,6 +65,16 @@ CREATE OR REPLACE FUNCTION public.current_scopes() RETURNS text[]
 -- stands -- so the emitted 008_validations.sql opens with a DO block that
 -- refuses to install under a role holding neither.
 DROP PROCEDURE IF EXISTS public.rls_protect(regclass, text);
+-- Whether a table carries a scope the floor can read: the column, NOT NULL.
+-- The floor's precondition and the gate's answer to "can this table carry a
+-- scoped shape" are this one question. NULL for no table is false.
+CREATE OR REPLACE FUNCTION public.has_scope(tbl regclass) RETURNS boolean
+  LANGUAGE sql STABLE AS $$
+    SELECT EXISTS (SELECT 1 FROM pg_attribute a
+                    WHERE a.attrelid = tbl AND a.attname = 'scope_id'
+                      AND a.attnotnull AND NOT a.attisdropped)
+  $$;
+
 CREATE OR REPLACE PROCEDURE public.rls_protect(tbl regclass)
   LANGUAGE plpgsql
   -- A policy binds its function references when it is created, and binds them
@@ -57,9 +83,7 @@ CREATE OR REPLACE PROCEDURE public.rls_protect(tbl regclass)
   SET search_path = pg_catalog, public
   AS $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_attribute a
-                  WHERE a.attrelid = tbl AND a.attname = 'scope_id'
-                    AND a.attnotnull AND NOT a.attisdropped) THEN
+  IF NOT public.has_scope(tbl) THEN
     RAISE EXCEPTION
       'rls_protect(%): scope_id must exist and be NOT NULL -- a NULL scope fails '
       '= ANY(), so the row is invisible to every role while the audit reports the '
@@ -92,7 +116,8 @@ BEGIN
   IF sub LIKE '%,%' THEN
     RAISE EXCEPTION 'jwt sub contains a comma, which would split into two scopes';
   END IF;
-  PERFORM set_config('app.scopes', coalesce('user:' || sub, ''), true);
+  PERFORM set_config('app.scopes',
+    array_to_string(public.subject_scopes(sub), ','), true);
 END $$;
 
 -- Tables the floor cannot cover, declared rather than discovered.
@@ -118,6 +143,107 @@ CREATE TABLE IF NOT EXISTS mecha.rls_exempt (
 );
 GRANT USAGE ON SCHEMA mecha TO PUBLIC;
 GRANT SELECT ON mecha.rls_exempt TO PUBLIC;
+
+-- Where a shape may be keyed besides `scope_id`, declared rather than
+-- discovered. A row of `table_name` keyed by `column_name` has the visibility
+-- of the `parent` row that column names: a composition's rows are content of
+-- their parent. Declaring the edge is what makes a per-object shape
+-- (`note_item where note_id = '<row>'`) authorizable at all: the gate cannot
+-- prove from a policy that every present and future row under a key is
+-- readable, but an app that emitted the policy can say so, once, here.
+--
+-- `parent = 'subject'` is the one edge that names no table: the keyed rows
+-- are addressed to a subject -- a grant table by its sharee column -- and the
+-- value must be the caller. Not `app_user` by its key, which would make the
+-- edge as wide as that table's policy, and an app may make app_user public.
+--
+-- Outside `public` for the reason given at `rls_exempt`: a row here widens
+-- what a shape may carry, and an app grant must not be able to add one.
+CREATE TABLE IF NOT EXISTS mecha.shape_key (
+  table_name  text NOT NULL,
+  column_name text NOT NULL,
+  parent      text NOT NULL,
+  parent_key  text NOT NULL,
+  PRIMARY KEY (table_name, column_name)
+);
+GRANT SELECT ON mecha.shape_key TO PUBLIC;
+
+-- A composition's scope is its parent's, and a generated column cannot reach
+-- another table, so this trigger writes it and overwrites anything supplied.
+-- BEFORE, so the value is in the row Postgres stores; on UPDATE too, because
+-- re-pointing the parent key is a move. Arguments: parent table, parent key,
+-- the child's column naming it. The child's value is cast to the parent
+-- key's type, so the lookup is the parent key's index.
+--
+-- A child of no parent has no scope. Where the column is a foreign key the
+-- key refuses it, and this raises the same violation first, since NOT NULL
+-- would otherwise answer before the key does. Where it is not -- a sink a
+-- pipeline writes for a row that may since be gone -- the row is derived
+-- data of nothing and is not stored, so the batch it came in lands.
+CREATE OR REPLACE FUNCTION mecha.scope_from_parent() RETURNS trigger
+  LANGUAGE plpgsql
+  SET search_path = pg_catalog, public
+  AS $$
+DECLARE
+  ty text;
+BEGIN
+  SELECT format_type(a.atttypid, a.atttypmod) INTO ty FROM pg_attribute a
+    WHERE a.attrelid = TG_ARGV[0]::regclass AND a.attname = TG_ARGV[1] AND NOT a.attisdropped;
+  EXECUTE format('SELECT p.scope_id FROM %s p WHERE p.%I = ($1).%I::%s',
+                 TG_ARGV[0]::regclass, TG_ARGV[1], TG_ARGV[2], ty)
+    INTO NEW.scope_id USING NEW;
+  IF NEW.scope_id IS NULL THEN
+    IF EXISTS (SELECT 1 FROM pg_constraint c
+                WHERE c.conrelid = TG_RELID AND c.contype = 'f'
+                  AND c.conkey = ARRAY[(SELECT attnum FROM pg_attribute
+                                         WHERE attrelid = TG_RELID AND attname = TG_ARGV[2])]) THEN
+      RAISE foreign_key_violation USING MESSAGE =
+        format('Key is not present in table "%s".', TG_ARGV[0]);
+    END IF;
+    RETURN NULL;
+  END IF;
+  RETURN NEW;
+END $$;
+
+-- Whether a shape over `tbl` keyed `col = val` reaches only rows the caller
+-- may read: the edge is declared, and the caller can read the parent row.
+-- Evaluated as the caller, and it has to be: the gatekeeper sets the
+-- subject's role and claims on its transaction first, so the SELECT on the
+-- parent is the app's own policies answering -- the one derivation the CRUD
+-- path reads. Not SECURITY DEFINER, which Postgres forbids from switching
+-- role, and which would answer as its owner anyway.
+CREATE OR REPLACE FUNCTION mecha.shape_reach(tbl text, col text, val text) RETURNS boolean
+  LANGUAGE plpgsql STABLE
+  SET search_path = pg_catalog, public
+  AS $$
+DECLARE
+  p text;
+  k text;
+  ty text;
+  ok boolean;
+BEGIN
+  SELECT parent, parent_key INTO p, k FROM mecha.shape_key
+    WHERE table_name = tbl AND column_name = col;
+  IF p IS NULL THEN RETURN false; END IF;
+  IF p = 'subject' THEN
+    RETURN val = nullif(current_setting('request.jwt.claims', true)::json->>'sub', '');
+  END IF;
+  -- The value is cast to the key's own type, so the comparison can use the
+  -- key's index; comparing on the text side would scan the parent per mint.
+  -- A value the type will not take -- unparseable, out of range -- names no
+  -- row: data_exception is the whole class.
+  SELECT format_type(a.atttypid, a.atttypmod) INTO ty FROM pg_attribute a
+    WHERE a.attrelid = p::regclass AND a.attname = k AND NOT a.attisdropped;
+  IF ty IS NULL THEN RETURN false; END IF;
+  BEGIN
+    EXECUTE format('SELECT EXISTS (SELECT 1 FROM %s WHERE %I = $1::%s)', p::regclass, k, ty)
+      INTO ok USING val;
+  EXCEPTION WHEN data_exception THEN
+    RETURN false;
+  END;
+  RETURN ok;
+END $$;
+GRANT EXECUTE ON FUNCTION mecha.shape_reach(text, text, text) TO PUBLIC;
 
 -- It reads the catalog rather than the source because a hand-written migration
 -- can bypass a generator and cannot bypass this. Every term rejects an object
@@ -155,6 +281,10 @@ AS $$
            ELSE CASE
              WHEN NOT c.relrowsecurity      THEN 'RLS not enabled'
              WHEN NOT c.relforcerowsecurity THEN 'RLS not forced: the owner is exempt'
+             WHEN EXISTS (SELECT 1 FROM pg_policy p
+                           WHERE p.polrelid = c.oid AND p.polpermissive
+                             AND p.polroles = '{0}'::oid[])
+               THEN 'a permissive policy granted to PUBLIC: every role holds public:, so anon reaches what it admits'
              ELSE 'no tenancy policy: restrictive, PUBLIC, FOR ALL, both sides the scope test'
            END
          END
@@ -174,6 +304,9 @@ AS $$
           OR (c.relkind IN ('r', 'p')
               AND (NOT c.relrowsecurity
                    OR NOT c.relforcerowsecurity
+                   OR EXISTS (SELECT 1 FROM pg_policy p
+                               WHERE p.polrelid = c.oid AND p.polpermissive
+                                 AND p.polroles = '{0}'::oid[])
                    OR NOT EXISTS (
                         SELECT 1 FROM pg_policy p
                          WHERE p.polrelid = c.oid
@@ -202,5 +335,6 @@ REVOKE EXECUTE ON FUNCTION mecha.rls_audit() FROM PUBLIC;
 -- -- by a row, in the list a reviewer reads, rather than by a term in the
 -- predicate where nobody would find it.
 INSERT INTO mecha.rls_exempt VALUES
-  ('mecha.rls_exempt', 'the exemption list: readable by all, writable by none')
+  ('mecha.rls_exempt', 'the exemption list: readable by all, writable by none'),
+  ('mecha.shape_key', 'the shape edges: readable by all, writable by none')
   ON CONFLICT DO NOTHING;

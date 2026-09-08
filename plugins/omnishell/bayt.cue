@@ -137,7 +137,34 @@ _omnishell: bayt.#project & {
 			cmd: _smokeCmd
 		}
 
-		"generate": sayt.generate & {cmd: "builtin": do: "true"}
+		// The terminal's data plane, a build product of
+		// libraries/mecha/packages/client: `tsc` and the unit tests read src/,
+		// the browser reads this.
+		//
+		// The cross-project srcs dep materialises mecha at its natural
+		// /monorepo/... path, so entry.ts's relative import resolves in the build
+		// exactly as it does in the worktree.
+		//
+		// The output is checked in, like .bayt/ and the apps' emitted trees: the
+		// shell images COPY it from the repo (pronto's terminal emit), and CI's
+		// tests job runs `bayt:generate` and fails on a diff.
+		"bundle": mise.exec & {
+			visibility: "public"
+			taskfile: run: "when_changed"
+			deps: ["libraries_mecha:setup:srcs"]
+			srcs: globs: ["interpreter/vendor/entry.ts"]
+			outs: globs: ["interpreter/vendor/mecha-client.js"]
+			cmd: "builtin": do: strings.Join([
+				"deno bundle",
+				"--config ../../libraries/mecha/packages/client/deno.json",
+				"--platform browser --format esm --minify",
+				"interpreter/vendor/entry.ts",
+				"-o interpreter/vendor/mecha-client.js",
+			], " ")
+			dockerfile: from: ref: ":setup"
+		}
+
+		"generate": sayt.generate & {deps: [":bundle"], cmd: "builtin": do: "true"}
 	}
 }
 

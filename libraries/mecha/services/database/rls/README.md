@@ -39,7 +39,7 @@ casual and PostgREST-served paths; it is not a seal.
 
 ```
 psql -d <db> -f rls.sql
-psql -d <db> -f rls_test.sql      # WARNING: rls: 41/41 pass
+psql -d <db> -f rls_test.sql      # WARNING: rls: 57/57 pass
 ```
 
 Design: `docs/superpowers/specs/2026-09-05-permissions-design.md`.

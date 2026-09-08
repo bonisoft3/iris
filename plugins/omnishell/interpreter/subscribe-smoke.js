@@ -281,7 +281,7 @@ Deno.test({
   sanitizeOps: false,
   sanitizeResources: false,
   async fn() {
-    const store = createStore("", { local: { round: "tab" } });
+    const store = await createStore("", { local: { round: "tab" } });
     await store.write("round", [{ key: "r1", row: { current: "yes", created_at: 2 } }]);
     await store.write("round", [{ key: "r2", row: { current: "no", created_at: 1 } }]);
     await store.write("round", [{ key: "r3", row: { current: "yes", created_at: 5 } }]);

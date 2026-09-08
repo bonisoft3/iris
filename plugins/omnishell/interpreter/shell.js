@@ -31,6 +31,8 @@ async function accountLives(session) {
     const res = await fetch(`/crud/app_user?id=eq.${encodeURIComponent(sub)}&select=id&limit=1`, {
       headers: { Authorization: `Bearer ${session.token}` },
     });
+    // A refused token is a dead session, however live its account.
+    if (res.status === 401) return false;
     if (!res.ok) return true;
     return (await res.json()).length > 0;
   } catch {

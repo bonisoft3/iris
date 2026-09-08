@@ -64,7 +64,7 @@ Deno.test({
   sanitizeResources: false,
   async fn() {
     await withBrowser(async (createStore) => {
-      const store = createStore("", config());
+      const store = await createStore("", config());
       const rows = await store.query("command", "position.asc", {});
       assert(rows.length === 3, `three seeded rows, got ${rows.length}`);
       assert(
@@ -81,7 +81,7 @@ Deno.test({
   sanitizeResources: false,
   async fn() {
     await withBrowser(async (createStore) => {
-      const store = createStore("", config());
+      const store = await createStore("", config());
       const rows = await store.query("command", null, { filter: "id=eq.search" });
       assert(rows.length === 1 && rows[0].label === "Search", `one row by id, got ${JSON.stringify(rows)}`);
     });
@@ -94,7 +94,7 @@ Deno.test({
   sanitizeResources: false,
   async fn() {
     await withBrowser(async (createStore) => {
-      const store = createStore("", config());
+      const store = await createStore("", config());
       await store.query("command", null, {});
       await store.drop("command", ["search"]);
       const after = await store.query("command", "position.asc", {});
@@ -110,10 +110,10 @@ Deno.test({
   sanitizeResources: false,
   async fn() {
     await withBrowser(async (createStore) => {
-      const first = createStore("", config());
+      const first = await createStore("", config());
       await first.query("command", null, {});
       await first.drop("command", ["search"]);
-      const next = createStore("", config());
+      const next = await createStore("", config());
       const rows = await next.query("command", null, {});
       assert(rows.length === 3, `a tab collection is born empty and reseeds, got ${rows.length}`);
     });
@@ -126,7 +126,7 @@ Deno.test({
   sanitizeResources: false,
   async fn() {
     await withBrowser(async (createStore) => {
-      const store = createStore("", {
+      const store = await createStore("", {
         local: { command: "tab" },
         seed: { command: [{ label: "New note" }] },
       });

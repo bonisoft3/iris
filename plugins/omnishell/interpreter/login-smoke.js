@@ -25,8 +25,11 @@ function boot() {
     "<!doctype html><html><head></head><body><div id=shell></div></body></html>",
   );
   globalThis.document = document;
+  globalThis.window = globalThis;
   globalThis.addEventListener = () => {};
   globalThis.requestAnimationFrame = (fn) => setTimeout(fn, 0);
+  globalThis.scrollTo = () => {};
+  Object.defineProperty(globalThis, "scrollY", { get: () => 0, configurable: true });
   Object.defineProperty(globalThis, "location", {
     value: { href: "http://localhost:8080/shell/", search: "", hash: "" },
     configurable: true,
@@ -104,6 +107,12 @@ Deno.test({
     // every screen for the rest of the session.
     if (mount.querySelector(".shell-login")) {
       throw new Error(`smoke failed: login screen outlived the session\n${mount.innerHTML}`);
+    }
+    // A boot failure also empties the mount (the banner replaces its
+    // children), so an absent form proves nothing on its own: the screen the
+    // gate was guarding has to be the thing standing in its place.
+    if (!mount.querySelector('[data-screen="home"]')) {
+      throw new Error(`smoke failed: no screen behind the gate\n${mount.innerHTML}`);
     }
     if (sessionStorage.getItem("pronto-token") === null) {
       throw new Error("smoke failed: session not stored");

@@ -78,7 +78,7 @@ Deno.test({
         ]),
       },
       async (createStore, warnings) => {
-        const store = createStore("", {
+        const store = await createStore("", {
           local: { match: "device" },
           partialUniques: { match: [{ cols: ["status"], where: "status=eq.playing" }] },
         });
@@ -110,7 +110,7 @@ Deno.test({
         ]),
       },
       async (createStore, warnings) => {
-        const store = createStore("", {
+        const store = await createStore("", {
           local: { doc: "device" },
           uniques: { doc: [["slug"]] },
         });
@@ -136,7 +136,7 @@ Deno.test({
         ]),
       },
       async (createStore, warnings) => {
-        const store = createStore("", {
+        const store = await createStore("", {
           local: { match: "device" },
           partialUniques: { match: [{ cols: ["status"], where: "status=eq.playing" }] },
         });

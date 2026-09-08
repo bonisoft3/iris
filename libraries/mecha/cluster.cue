@@ -25,6 +25,9 @@ import (
 _devServiceJwt: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZSIsInN1YiI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMCIsImV4cCI6MTk4ODE1MDQwMH0.eeAs4VbzZYwz32jEudSFT_zMeuL18M4cEFY8Jn1jPwY"
 
 _devJwtSecret: "pronto-dev-secret-please-override-32ch"
+// The query parameter caddy adds after the gate and electric checks; one
+// literal, so the two cannot be given different ones by a slip.
+_devElectricSecret: "dev-electric-secret"
 
 #Cluster: X={
 	state: {
@@ -148,6 +151,11 @@ _devJwtSecret: "pronto-dev-secret-please-override-32ch"
 				ports: [
 					"${CADDY_TLS_HOST_PORT:-8443}:8443",
 				]
+				// The Caddyfile substitutes this into the electric route, which is
+				// the only place the secret is added. Same default as the electric
+				// service reads, and both are overridden together or neither.
+				environment: ELECTRIC_SECRET: "${ELECTRIC_SECRET:-\(_devElectricSecret)}"
+
 				// mkcert's pair, issued on the host by `just setup` and trusted
 				// there once with `mkcert -install`. A DIRECTORY mount, not two
 				// file mounts: an editor or a re-issue replaces a file's inode and
@@ -173,8 +181,20 @@ _devJwtSecret: "pronto-dev-secret-please-override-32ch"
 					image: "electricsql/electric@sha256:f311edc272e227ddaea593c5205a02c3d1e5969c2db0f7655a039a5e24abb176"
 					depends_on: database: condition: "service_healthy"
 					environment: {
-						DATABASE_URL:      "postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-\(X.meta.app)}?sslmode=disable"
-						ELECTRIC_INSECURE: "true"
+						// Its own role, holding BYPASSRLS as a stated attribute: 001_roles
+						// (emit.cue `_bypass`) says what an unstated one costs.
+						// The role's password is the migration's literal (001_roles), and the
+						// database trusts every password here (initdb --auth=trust); a
+						// deployment sets the role's password and this URL together,
+						// outside this file.
+						DATABASE_URL: "postgresql://electric:electric@database:5432/${POSTGRES_DB:-\(X.meta.app)}?sslmode=disable"
+						// The proxy is the only way in: caddy runs forward_auth against the
+						// gatekeeper and then adds this, so a request that reaches electric
+						// without passing the gate has no secret to present.
+						ELECTRIC_SECRET: "${ELECTRIC_SECRET:-\(_devElectricSecret)}"
+						// Validate the publication 007 declares rather than build one; 007
+						// says what building one would require of this role.
+						ELECTRIC_MANUAL_TABLE_PUBLISHING: "true"
 					}
 					healthcheck: {
 						test: ["CMD", "curl", "-f", "http://localhost:3000/v1/health"]
@@ -340,9 +360,11 @@ _devJwtSecret: "pronto-dev-secret-please-override-32ch"
 			// TLS certificate — and the path in the config is the container's,
 			// so a host-side lint would fail on every machine for a file that is
 			// only ever mounted at runtime. adapt still fails on anything
-			// malformed, which is what a lint is for. Piped to `ignore` because
-			// it prints the adapted JSON on success and sayt runs it in nu.
-			cmds: ["mise exec -- caddy adapt --config docker/Caddyfile --adapter caddyfile | ignore"]
+			// malformed, which is what a lint is for. Output to /dev/null: in nu,
+			// `| ignore` drops the exit code with it. The secret placeholder has
+			// to hold something for the line to parse; compose sets it at
+			// runtime, and this is not runtime.
+			cmds: ["with-env {ELECTRIC_SECRET: lint} { mise exec -- caddy adapt --config docker/Caddyfile --adapter caddyfile out> /dev/null }"]
 			note: "checks the cluster's own proxy config parses"
 		}
 		// The door is h2, h2 needs TLS, and TLS needs a certificate the

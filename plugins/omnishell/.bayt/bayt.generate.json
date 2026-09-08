@@ -37,12 +37,56 @@
   },
   "visibility": "internal",
   "emitsSrcs": false,
-  "deps": [],
-  "sameProjectDeps": [],
-  "transitiveDeps": [],
-  "transitiveCrossDeps": [],
-  "upClosure": [],
-  "chainedDeps": [],
+  "deps": [
+    "bundle"
+  ],
+  "sameProjectDeps": [
+    "bundle"
+  ],
+  "transitiveDeps": [
+    "bundle",
+    "setup"
+  ],
+  "transitiveCrossDeps": [
+    {
+      "name": "setup_srcs",
+      "project": "libraries_mecha",
+      "dir": "libraries/mecha",
+      "outs": {
+        "globs": [
+          "packages/**"
+        ],
+        "exclude": []
+      }
+    }
+  ],
+  "upClosure": [
+    "plugins/omnishell/.bayt/compose.bundle.yaml",
+    "plugins/omnishell/.bayt/compose.setup.yaml",
+    "libraries/mecha/.bayt/compose.setup.yaml"
+  ],
+  "chainedDeps": [
+    {
+      "name": "bundle",
+      "project": "plugins_omnishell",
+      "dir": "plugins/omnishell",
+      "outs": {
+        "globs": [
+          "interpreter/vendor/mecha-client.js"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "setup",
+      "project": "plugins_omnishell",
+      "dir": "plugins/omnishell",
+      "outs": {
+        "globs": [],
+        "exclude": []
+      }
+    }
+  ],
   "cmds": [
     {
       "srcs": {

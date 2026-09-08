@@ -3,6 +3,7 @@ import type { Collection } from "@tanstack/db"
 import { electricCollectionOptions } from "@tanstack/electric-db-collection"
 import { NonRetriableError, startOfflineExecutor } from "@tanstack/offline-transactions"
 import { localOnlyCollectionOptions, localStorageCollectionOptions } from "@tanstack/db"
+import { unionCollectionOptions } from "./union.js"
 
 /**
  * Mecha client v2 — the platform's at-least-once data plane for one app.
@@ -37,7 +38,20 @@ export interface MechaTable {
    * outbox — there is nothing for at-least-once delivery to deliver to.
    */
   durability?: "crud" | "tab" | "device"
+  /**
+   * The table's row visibility as the app declared it (shell.yaml `access`).
+   * Two arms matter here, and they are what the floor cannot deliver: a
+   * per-object share on an owned table, and a composition under one. Such a
+   * table is reached by a changing set of shapes rather than one.
+   */
+  access?: TableAccess
 }
+
+export type TableAccess =
+  | { mode: "owned"; owner: string; shared?: { via: string; on: string; user: string } }
+  | { mode: "through"; parent: string; on: string }
+  | { mode: "public-read" }
+  | { mode: "service-only" }
 
 export interface MechaClientConfig {
   tables: MechaTable[]
@@ -53,6 +67,83 @@ export interface MechaClientConfig {
   maxTransactionAgeMs?: number
   /** Grace before an unsubscribed collection closes its shape (default 5s). */
   shapeIdleMs?: number
+  /**
+   * Gatekeeper route prefix, e.g. `/auth` -- endpoints hang off it as
+   * `/auth/shape`, because the auth service mounts its routes with that prefix
+   * and Caddy does not strip it. Every shape carries a token minted there, and
+   * the predicate the mint answers: the proxy admits nothing else.
+   */
+  authUrl: string
+  /** The signed-in subject, which is what a grant is addressed to. */
+  subject?: () => string | null
+}
+
+// A shape token is re-minted before it dies, not after. Electric holds a live
+// request open for 300s, so a token that expires mid-poll costs a reconnect and
+// a re-sync; refreshing with more than that left means the swap always lands
+// between requests.
+const SHAPE_TOKEN_SKEW_MS = 400_000
+
+export type RowKey = { column: string; value: string }
+
+/**
+ * Mints and holds one shape token per shape, and answers the two things a
+ * shape request carries from it: the header and the predicate.
+ *
+ * Both are lazy: Electric resolves a function param per request, so nothing
+ * is minted for a shape no region ever subscribes, and a refresh is a new
+ * header on the next poll rather than a new shape. The predicate is the
+ * mint's own string, which is what the gate compares.
+ */
+function shapeAuthority(authUrl: string, token: (() => string | null) | undefined, fetcher: typeof fetch) {
+  type Held = { token: string; where: string; expiresAt: number }
+  const held = new Map<string, Held>()
+  const inflight = new Map<string, Promise<Held>>()
+  const nameOf = (table: string, key?: RowKey) => (key ? `${table}|${key.column}=${key.value}` : table)
+
+  async function mint(table: string, key?: RowKey): Promise<Held> {
+    const session = token?.()
+    const res = await fetcher(`${authUrl}/shape`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        ...(session ? { Authorization: `Bearer ${session}` } : {}),
+      },
+      body: JSON.stringify({ table, ...(key ? { key } : {}) }),
+    })
+    if (!res.ok) {
+      throw new Error(`shape token refused for ${nameOf(table, key)}: ${res.status}`)
+    }
+    const body = await res.json()
+    const rec: Held = {
+      token: body.token,
+      where: body.where,
+      expiresAt: Date.now() + body.expires_in * 1000,
+    }
+    held.set(nameOf(table, key), rec)
+    return rec
+  }
+
+  // One mint per shape in flight. Without this the `where` and the header --
+  // two lazy values resolved for the same request -- each start their own.
+  function current(table: string, key?: RowKey): Promise<Held> {
+    const name = nameOf(table, key)
+    const rec = held.get(name)
+    if (rec && rec.expiresAt - Date.now() > SHAPE_TOKEN_SKEW_MS) return Promise.resolve(rec)
+    let p = inflight.get(name)
+    if (!p) {
+      p = mint(table, key).finally(() => inflight.delete(name))
+      inflight.set(name, p)
+    }
+    return p
+  }
+
+  return {
+    authorization: (table: string, key?: RowKey) => async () => `Bearer ${(await current(table, key)).token}`,
+    where: (table: string, key?: RowKey) => async () => (await current(table, key)).where,
+    /** Drops a held token, so the next request mints. */
+    forget: (table: string, key?: RowKey) => void held.delete(nameOf(table, key)),
+  }
 }
 
 export type SyncPhase = "queued" | "delivered"
@@ -109,12 +200,14 @@ function resolveUrl(raw: string): string {
 export function createMechaClient(config: MechaClientConfig): MechaClient {
   const electricUrl = resolveUrl(config.electricUrl ?? "/electric")
   const crudUrl = config.crudUrl ?? "/crud"
+  const shapes = shapeAuthority(config.authUrl, config.token, config.fetcher ?? fetch)
   const doFetch = config.fetcher ?? fetch
   const maxAge = config.maxTransactionAgeMs ?? 7 * 24 * 60 * 60 * 1000
 
-  const byId = new Map<string, Required<MechaTable>>()
+  type Table = Required<Omit<MechaTable, "access">> & { access?: TableAccess }
+  const byId = new Map<string, Table>()
   for (const t of config.tables) {
-    byId.set(t.id, { id: t.id, table: t.table, key: t.key ?? "id", durability: t.durability ?? "crud" })
+    byId.set(t.id, { id: t.id, table: t.table, key: t.key ?? "id", durability: t.durability ?? "crud", access: t.access })
   }
 
   const phases = new Map<string, SyncPhase>()
@@ -125,8 +218,78 @@ export function createMechaClient(config: MechaClientConfig): MechaClient {
     phaseListeners.forEach((fn) => fn())
   }
 
+  const gcTime = config.shapeIdleMs ?? SHAPE_IDLE_MS
+  // One Electric shape as a collection. Its `where` and its header are the
+  // authority's, resolved together per request from one token.
+  function shape(t: Table, key?: RowKey) {
+    return createCollection({
+      // Never startSync: true. Sync begins on the first subscriber, so a
+      // screen opens only the shapes its regions actually read.
+      gcTime,
+      ...electricCollectionOptions({
+        id: key ? `mecha:${t.id}@${key.column}=${key.value}` : `mecha:${t.id}`,
+        getKey: (item: any) => item[t.key],
+        shapeOptions: {
+          url: `${electricUrl}/v1/shape`,
+          // Typed as a string upstream, resolved as a supplier at runtime like
+          // any other param.
+          params: { table: t.table, where: shapes.where(t.table, key) as any },
+          headers: { Authorization: shapes.authorization(t.table, key) },
+          // A refused token is re-minted, not retried: the refresh runs ahead
+          // of expiry by a margin, but a machine asleep through it resumes
+          // into a 401, and the retry resolves the header afresh. Anything
+          // else stops the stream, as it would unhandled.
+          onError: (e: any) => {
+            if (e?.status === 401) {
+              shapes.forget(t.table, key)
+              return {}
+            }
+            throw e
+          },
+          // int8 (every mecha table's txid) must land as Number, not the
+          // client default BigInt: synced rows become mutation originals in
+          // the offline outbox, whose JSON serialization has no BigInt path
+          // and would throw on every update/delete of a synced row. txids
+          // stay far below 2^53, so Number is lossless here.
+          parser: { int8: (value: string) => Number(value) },
+        },
+        // No persistence handlers: writes ride the offline executor below —
+        // handlers would tie delivery to the optimistic transaction's
+        // lifetime instead of the durable outbox's.
+      }),
+    } as any)
+  }
+
+  // The tables a grant can reach: a shared table, its grant table, and every
+  // composition under it. Each is a union of shapes; every other table is
+  // the one shape its scope names.
+  const byTable = new Map<string, Table>()
+  for (const t of byId.values()) byTable.set(t.table, t)
+  type Family = { owner: Table; shared: { via: string; on: string; user: string }; via: Table; members: Table[] }
+  const families: Family[] = []
+  for (const owner of byId.values()) {
+    const a = owner.access
+    if (a?.mode !== "owned" || a.shared === undefined) continue
+    const via = byTable.get(a.shared.via)
+    if (via === undefined) {
+      throw new Error(`${owner.table} is shared via ${a.shared.via}, which is not a table of this client`)
+    }
+    // A grant opens one shape per row on the shared table and each
+    // composition under it, the edges the emit declares; the grant table
+    // takes the grant list, and a per-row shape only if it is a composition.
+    const children = [...byId.values()].filter((c) => c.access?.mode === "through" && c.access.parent === owner.table)
+    const members = [owner, ...children]
+    // A grant reaches a member through a shape, and a local tier has none.
+    for (const m of [...members, via]) {
+      if (m.durability !== "crud") throw new Error(`${m.table} is reached by a grant and cannot be a ${m.durability} tier`)
+    }
+    families.push({ owner, shared: a.shared, via, members })
+  }
+  const reachable = new Set<string>()
+  for (const f of families) for (const m of [...f.members, f.via]) reachable.add(m.id)
+
   const collections: Record<string, Collection<any, any, any>> = {}
-  const isLocal = (t: Required<MechaTable>) => t.durability === "tab" || t.durability === "device"
+  const isLocal = (t: Table) => t.durability === "tab" || t.durability === "device"
   for (const t of byId.values()) {
     if (isLocal(t)) {
       collections[t.id] = createCollection(
@@ -140,28 +303,102 @@ export function createMechaClient(config: MechaClientConfig): MechaClient {
       )
       continue
     }
+    if (!reachable.has(t.id)) {
+      collections[t.id] = shape(t)
+      continue
+    }
     collections[t.id] = createCollection({
-      // Never startSync: true. Sync begins on the first subscriber, so a
-      // screen opens only the shapes its regions actually read.
-      gcTime: config.shapeIdleMs ?? SHAPE_IDLE_MS,
-      ...electricCollectionOptions({
-        id: `mecha:${t.id}`,
-        getKey: (item: any) => item[t.key],
-        shapeOptions: {
-          url: `${electricUrl}/v1/shape`,
-          params: { table: t.table },
-          // int8 (every mecha table's txid) must land as Number, not the
-          // client default BigInt: synced rows become mutation originals in
-          // the offline outbox, whose JSON serialization has no BigInt path
-          // and would throw on every update/delete of a synced row. txids
-          // stay far below 2^53, so Number is lossless here.
-          parser: { int8: (value: string) => Number(value) },
-        },
-        // No persistence handlers: writes ride the offline executor below —
-        // handlers would tie delivery to the optimistic transaction's
-        // lifetime instead of the durable outbox's.
-      }),
+      gcTime,
+      ...unionCollectionOptions({ id: `mecha:${t.id}`, getKey: (item: any) => item[t.key], base: shape(t) }),
     } as any)
+  }
+
+  // A family's reach opens with its first reader and closes with its last:
+  // the grant list is a shape over the grant table addressed to the subject,
+  // and each grant opens one shape per member, keyed by the row it names.
+  // Whichever member a screen reads first opens the whole family, so a
+  // composition read alone still arrives.
+  for (const { owner, shared, via, members } of families) {
+    let readers = 0
+    let grants: Collection<any, any, any> | null = null
+    let grantSub: { unsubscribe(): void } | null = null
+    const opened = new Map<string, Collection<any, any, any>[]>()
+
+    // The column a member's per-row shape is keyed on: the shared table by
+    // its key, its grant table by the column naming the row, a composition
+    // by its edge to the parent.
+    const keyed = (m: Table) => (m === owner ? m.key : (m.access as { on: string }).on)
+    const open = (row: string) => {
+      if (opened.has(row)) return
+      const shapes = members.map((m) => {
+        const c = shape(m, { column: keyed(m), value: row })
+        ;(collections[m.id].utils as any).add(c)
+        return c
+      })
+      opened.set(row, shapes)
+    }
+    const close = (row: string) => {
+      const shapes = opened.get(row)
+      if (!shapes) return
+      opened.delete(row)
+      members.forEach((m, i) => {
+        ;(collections[m.id].utils as any).drop(shapes[i])
+        void shapes[i].cleanup()
+      })
+    }
+    // Opened by the first reader that has a subject.
+    const acquire = () => {
+      readers++
+      if (grants !== null) return
+      const me = config.subject?.()
+      if (!me) return
+      grants = shape(via, { column: shared.user, value: me })
+      ;(collections[via.id].utils as any).add(grants)
+      // A grant names one row; re-pointed, it is a close and an open.
+      grantSub = grants.subscribeChanges(
+        (changes) => {
+          for (const c of changes) {
+            const row = String(c.value[shared.on])
+            const was = c.previousValue === undefined ? undefined : String(c.previousValue[shared.on])
+            if (c.type === "delete") close(row)
+            else {
+              if (was !== undefined && was !== row) close(was)
+              open(row)
+            }
+          }
+        },
+        { includeInitialState: true },
+      )
+    }
+    const release = () => {
+      if (--readers > 0) return
+      grantSub?.unsubscribe()
+      grantSub = null
+      for (const row of [...opened.keys()]) close(row)
+      if (grants) {
+        ;(collections[via.id].utils as any).drop(grants)
+        void grants.cleanup()
+        grants = null
+      }
+    }
+    for (const m of new Set([...members, via])) {
+      const c = collections[m.id] as any
+      const inner = c.config.sync.sync
+      c.config.sync.sync = (params: any) => {
+        acquire()
+        let stop: () => void
+        try {
+          stop = inner(params)
+        } catch (e) {
+          release()
+          throw e
+        }
+        return () => {
+          stop()
+          release()
+        }
+      }
+    }
   }
 
   function headers(extra: Record<string, string> = {}): Record<string, string> {

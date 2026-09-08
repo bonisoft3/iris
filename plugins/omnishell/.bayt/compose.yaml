@@ -22,3 +22,9 @@ services:
     profiles:
     - integrate
     scale: 1
+  bundle:
+    extends:
+      file: ./compose.bundle.yaml
+      service: plugins_omnishell-bundle
+    profiles:
+    - bundle

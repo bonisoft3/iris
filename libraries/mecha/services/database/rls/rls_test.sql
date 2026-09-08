@@ -306,7 +306,7 @@ BEGIN
   -- failure modes are current_scopes's failure modes one tier up.
   PERFORM set_config('request.jwt.claims', '{"sub":"ana"}', true);
   PERFORM app_pre_request();
-  IF current_scopes() <> ARRAY['user:ana'] THEN
+  IF current_scopes() <> ARRAY['public:', 'user:ana'] THEN
     RAISE EXCEPTION '36 app_pre_request did not derive the subject scope';
   END IF;
 
@@ -320,13 +320,36 @@ BEGIN
     IF sqlerrm LIKE '37 %' THEN RAISE; END IF;
   END;
 
-  -- An anonymous request carries claims with no subject. It must mint nothing:
-  -- a bare 'user:' is a scope, and a row could carry it.
+  -- An anonymous request carries claims with no subject. It must mint no
+  -- *subject* scope -- a bare 'user:' is a scope a row could carry -- and must
+  -- still hold `public:`, which is what lets an anonymous reader see a public
+  -- row through the floor rather than around it.
   PERFORM set_config('request.jwt.claims', '{}', true);
   PERFORM app_pre_request();
-  IF current_scopes() <> '{}'::text[] THEN
-    RAISE EXCEPTION '38 a subjectless request minted a scope';
+  IF current_scopes() <> ARRAY['public:'] THEN
+    RAISE EXCEPTION '38 a subjectless request did not hold exactly public:';
   END IF;
+
+  -- The floor over a public table. `public:` is a scope like any other, so the
+  -- same restrictive policy carries it; what differs is only that every subject
+  -- holds it. Nothing here says a public row is *writable* -- the floor's WITH
+  -- CHECK admits any scope the caller holds, so writes stay guarded by the
+  -- permissive policies and the table grants.
+  CREATE TABLE _f_public(id int, scope_id text GENERATED ALWAYS AS ('public:') STORED NOT NULL);
+  INSERT INTO _f_public(id) VALUES (1), (2);
+  CALL rls_protect('_f_public');
+  CREATE POLICY readable ON _f_public FOR SELECT TO _f_anon USING (true);
+  GRANT SELECT ON _f_public TO _f_anon;
+  SET LOCAL ROLE _f_anon;
+  PERFORM set_config('app.scopes', array_to_string(subject_scopes(NULL), ','), true);
+  SELECT count(*) INTO n FROM _f_public;
+  RESET ROLE;
+  IF n <> 2 THEN
+    RAISE EXCEPTION '39 an anonymous reader could not see a floored public table (saw %)', n;
+  END IF;
+  SELECT count(*) INTO n FROM mecha.rls_unprotected WHERE table_name = 'public._f_public';
+  IF n <> 0 THEN RAISE EXCEPTION '40 a floored public table was flagged'; END IF;
+  DROP TABLE _f_public;
 
   -- The audit names every table the floor does not cover, so who may read it
   -- is part of the floor. The view and the function under it are two surfaces
@@ -335,7 +358,7 @@ BEGIN
     SET LOCAL ROLE _f_anon;
     PERFORM count(*) FROM mecha.rls_unprotected;
     RESET ROLE;
-    RAISE EXCEPTION '39 a non-superuser read the audit view';
+    RAISE EXCEPTION '41 a non-superuser read the audit view';
   EXCEPTION WHEN insufficient_privilege THEN RESET ROLE;
   END;
 
@@ -343,7 +366,7 @@ BEGIN
     SET LOCAL ROLE _f_anon;
     PERFORM count(*) FROM mecha.rls_audit();
     RESET ROLE;
-    RAISE EXCEPTION '40 a non-superuser called the audit function';
+    RAISE EXCEPTION '42 a non-superuser called the audit function';
   EXCEPTION WHEN insufficient_privilege THEN RESET ROLE;
   END;
 
@@ -357,10 +380,117 @@ BEGIN
   CALL rls_protect('_f_hostile');
   SET LOCAL search_path = public;
   SELECT count(*) INTO n FROM mecha.rls_unprotected WHERE table_name = 'public._f_hostile';
-  IF n <> 0 THEN RAISE EXCEPTION '41 rls_protect inherited the caller''s search_path'; END IF;
+  IF n <> 0 THEN RAISE EXCEPTION '43 rls_protect inherited the caller''s search_path'; END IF;
   DROP TABLE _f_hostile; DROP SCHEMA _f_evil2 CASCADE;
 
-  RAISE WARNING 'rls: 41/41 pass';
+  -- The gatekeeper's per-row question, asked as the subject. An undeclared
+  -- edge is unreachable whatever the row; a declared one reaches exactly what
+  -- the parent's policies show the subject.
+  CREATE TABLE _f_doc(id serial primary key, owner text not null);
+  CREATE TABLE _f_line(id serial primary key, doc_id int not null references _f_doc(id), body text);
+  INSERT INTO _f_doc(owner) VALUES ('ana'), ('davi');
+  ALTER TABLE _f_doc ENABLE ROW LEVEL SECURITY;
+  CREATE POLICY own ON _f_doc FOR SELECT TO _f_app USING (owner = current_setting('app.subject', true));
+  GRANT SELECT ON _f_doc, _f_line TO _f_app;
+  INSERT INTO mecha.shape_key VALUES ('public._f_line', 'doc_id', 'public._f_doc', 'id');
+  PERFORM set_config('app.subject', 'ana', true);
+  SET LOCAL ROLE _f_app;
+  IF NOT mecha.shape_reach('public._f_line', 'doc_id', '1') THEN
+    RAISE EXCEPTION '44 a declared edge did not reach a row the subject reads';
+  END IF;
+  IF mecha.shape_reach('public._f_line', 'doc_id', '2') THEN
+    RAISE EXCEPTION '45 a declared edge reached a row the subject cannot read';
+  END IF;
+  IF mecha.shape_reach('public._f_line', 'body', '1') THEN
+    RAISE EXCEPTION '46 an undeclared edge was reachable';
+  END IF;
+  -- A value the key's type refuses, unparseable or out of range, names no row.
+  IF mecha.shape_reach('public._f_line', 'doc_id', 'no such row') THEN
+    RAISE EXCEPTION '47 an edge reached a row that does not exist';
+  END IF;
+  IF mecha.shape_reach('public._f_line', 'doc_id', '99') THEN
+    RAISE EXCEPTION '47 an edge reached a row that does not exist';
+  END IF;
+  IF mecha.shape_reach('public._f_line', 'doc_id', '99999999999999999999') THEN
+    RAISE EXCEPTION '47 an edge reached a row that does not exist';
+  END IF;
+  RESET ROLE;
+  -- The subject edge: reaches the caller and nobody else, whatever any table
+  -- says about who may read whom.
+  INSERT INTO mecha.shape_key VALUES ('public._f_grant', 'user_id', 'subject', 'id');
+  PERFORM set_config('request.jwt.claims', '{"sub":"ana"}', true);
+  SET LOCAL ROLE _f_app;
+  IF NOT mecha.shape_reach('public._f_grant', 'user_id', 'ana') THEN
+    RAISE EXCEPTION '49 the subject edge did not reach the caller';
+  END IF;
+  IF mecha.shape_reach('public._f_grant', 'user_id', 'davi') THEN
+    RAISE EXCEPTION '50 the subject edge reached another subject';
+  END IF;
+  RESET ROLE;
+  PERFORM set_config('request.jwt.claims', '{}', true);
+  SET LOCAL ROLE _f_app;
+  IF mecha.shape_reach('public._f_grant', 'user_id', 'ana') THEN
+    RAISE EXCEPTION '51 the subject edge reached a subject from no claims';
+  END IF;
+  RESET ROLE;
+  DELETE FROM mecha.shape_key WHERE table_name = 'public._f_grant';
+  BEGIN
+    SET LOCAL ROLE _f_app;
+    INSERT INTO mecha.shape_key VALUES ('public._f_line', 'body', 'public._f_line', 'id');
+    RESET ROLE;
+    RAISE EXCEPTION '48 an app role declared a shape edge';
+  EXCEPTION WHEN insufficient_privilege THEN RESET ROLE;
+  END;
+  DELETE FROM mecha.shape_key WHERE table_name = 'public._f_line';
+  DROP TABLE _f_line, _f_doc;
+
+  -- The composition trigger: a child takes its parent's scope, overwriting
+  -- what it was handed, through a key whose type differs from the parent's.
+  CREATE TABLE _f_parent(id uuid primary key default gen_random_uuid(), scope_id text not null);
+  CREATE TABLE _f_child(id serial primary key, parent_id text not null, scope_id text not null);
+  CREATE TRIGGER _f_child_scope BEFORE INSERT OR UPDATE ON _f_child
+    FOR EACH ROW EXECUTE FUNCTION mecha.scope_from_parent('_f_parent', 'id', 'parent_id');
+  INSERT INTO _f_parent(scope_id) VALUES ('user:ana'), ('user:davi');
+  INSERT INTO _f_child(parent_id, scope_id)
+    SELECT id::text, 'user:liar' FROM _f_parent WHERE scope_id = 'user:ana';
+  IF (SELECT scope_id FROM _f_child) <> 'user:ana' THEN
+    RAISE EXCEPTION '52 a composition did not take its parent''s scope';
+  END IF;
+  UPDATE _f_child SET parent_id = (SELECT id::text FROM _f_parent WHERE scope_id = 'user:davi');
+  IF (SELECT scope_id FROM _f_child) <> 'user:davi' THEN
+    RAISE EXCEPTION '53 a re-pointed composition kept the scope it left';
+  END IF;
+  -- No key on the column: a sink. An orphan is not stored, and the statement
+  -- it came in lands.
+  INSERT INTO _f_child(parent_id) VALUES (gen_random_uuid()::text);
+  SELECT count(*) INTO n FROM _f_child;
+  IF n <> 1 THEN RAISE EXCEPTION '54 an orphan of a sink was stored'; END IF;
+  -- A key on the column: the orphan is refused as the key refuses it.
+  CREATE TABLE _f_keyed(id serial primary key, parent_id uuid not null references _f_parent(id), scope_id text not null);
+  CREATE TRIGGER _f_keyed_scope BEFORE INSERT OR UPDATE ON _f_keyed
+    FOR EACH ROW EXECUTE FUNCTION mecha.scope_from_parent('_f_parent', 'id', 'parent_id');
+  BEGIN
+    INSERT INTO _f_keyed(parent_id) VALUES (gen_random_uuid());
+    RAISE EXCEPTION '55 an orphan of a keyed composition was stored';
+  EXCEPTION WHEN foreign_key_violation THEN NULL;
+  END;
+  DROP TABLE _f_keyed, _f_child, _f_parent;
+
+  -- Every role holds `public:`, so a permissive policy granted to PUBLIC on a
+  -- floored public table hands anon whatever it admits, writes included: the
+  -- floor's WITH CHECK is satisfied by a scope anon holds. The audit says so.
+  CREATE TABLE _f_open(id int, scope_id text GENERATED ALWAYS AS ('public:') STORED NOT NULL);
+  CALL rls_protect('_f_open');
+  CREATE POLICY wide ON _f_open FOR ALL USING (true) WITH CHECK (true);
+  SELECT count(*) INTO n FROM mecha.rls_unprotected WHERE table_name = 'public._f_open';
+  IF n <> 1 THEN RAISE EXCEPTION '56 a permissive policy granted to PUBLIC was not flagged'; END IF;
+  DROP POLICY wide ON _f_open;
+  CREATE POLICY narrow ON _f_open FOR ALL TO _f_app USING (true) WITH CHECK (true);
+  SELECT count(*) INTO n FROM mecha.rls_unprotected WHERE table_name = 'public._f_open';
+  IF n <> 0 THEN RAISE EXCEPTION '57 a permissive policy granted to a role was flagged'; END IF;
+  DROP TABLE _f_open;
+
+  RAISE WARNING 'rls: 57/57 pass';
 END $$;
 
 DROP TABLE _f_posting, _f_note, _f_denied;

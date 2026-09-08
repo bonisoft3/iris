@@ -36,7 +36,7 @@ describe("the store surface", () => {
     }
     try {
       const { createStore } = await import("../interpreter/data-crud.js")
-      const store = createStore("", { app: "surface", entities: {}, migrations: [], pipelines: [] })
+      const store = await createStore("", { app: "surface", entities: {}, migrations: [], pipelines: [] })
       expect(Object.keys(store).sort()).toEqual([...SURFACE].sort())
     } finally {
       if (!had) delete (globalThis as Record<string, unknown>).localStorage
