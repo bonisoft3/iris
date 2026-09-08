@@ -20,8 +20,7 @@
 //    timing, bounded raise) are excluded structurally in canonical.ts.
 //
 // Static imports on purpose: a dynamic import() issued after the smokes'
-// lockdown() never settles — the constraint behind screen.js's static widget
-// import; module load happens before any test body runs.
+// lockdown() never settles; module load happens before any test body runs.
 
 import { createMachine, initialTransition, transition } from "npm:xstate@5.32.6";
 import { getShortestPaths } from "npm:@xstate/graph@3.0.4";

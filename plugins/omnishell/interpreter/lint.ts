@@ -432,12 +432,11 @@ export function templateArity(html: string): string[] {
   return out;
 }
 
-// A gesture reaches the interpreter through exactly four seams, and every one
-// of them is a property of the control's ancestor-or-self chain: the form it
-// submits, the region whose bindTree walks it, the region whose machine
-// listens for the event, or the widget whose vendored kind spreads props onto
-// its parts. Nothing else in a screen is a control's contract, so a control
-// covered by none of the four is theatre.
+// A gesture reaches the interpreter through exactly three seams, and every
+// one of them is a property of the control's ancestor-or-self chain: the form
+// it submits, the region whose bindTree walks it, or the region whose machine
+// listens for the event. Nothing else in a screen is a control's contract, so
+// a control covered by none of the three is theatre.
 const CONTROL_INPUT = new Set(["submit", "button", "reset", "image"]);
 const SUBMIT_INPUT = new Set(["submit", "image"]);
 const ON_ATTR = /\sdata-on-[a-z][a-z-]*=/;
@@ -496,22 +495,20 @@ export function unwitnessedControls(html: string): string[] {
     click: boolean;
     ids: Set<string>;
     form: boolean;
-    widget: boolean;
     id?: string;
   };
-  type Own = { part: boolean; submits: boolean };
-  const NONE: Cover = { live: false, on: false, click: false, ids: new Set(), form: false, widget: false };
+  type Own = { submits: boolean };
+  const NONE: Cover = { live: false, on: false, click: false, ids: new Set(), form: false };
   const merge = (a: Cover, b: Cover): Cover => ({
     live: a.live || b.live,
     on: a.on || b.on,
     click: a.click || b.click,
     ids: new Set([...a.ids, ...b.ids]),
     form: a.form || b.form,
-    widget: a.widget || b.widget,
     id: a.id ?? b.id,
   });
   const reached = (c: Cover, own: Own) =>
-    (c.widget && own.part) || (c.form && own.submits) || (c.live && c.on) || c.click ||
+    (c.form && own.submits) || (c.live && c.on) || c.click ||
     (c.id !== undefined && c.ids.has(c.id));
   // A named item template is stamped into whichever regions reference it by
   // data-template, and those may come later in the screen — so a control
@@ -552,7 +549,6 @@ export function unwitnessedControls(html: string): string[] {
       click: outer.click || keyed === null,
       ids: keyed === null || keyed.size === 0 ? outer.ids : new Set([...outer.ids, ...keyed]),
       form: outer.form || (tag === "form" && attr("data-action") !== undefined),
-      widget: outer.widget || attr("data-widget") !== undefined,
       id: attr("id") ?? outer.id,
     };
     if (tag === "form" && attr("data-action") !== undefined && attr("id") !== undefined) {
@@ -576,12 +572,10 @@ export function unwitnessedControls(html: string): string[] {
       // A button's default type is submit; type="button" and type="reset"
       // reach no submit listener however deep in a form they sit.
       const own: Own = {
-        part: has("data-part"),
         submits: tag === "button" ? type === undefined || type === "submit" : SUBMIT_INPUT.has(type as string),
       };
       const why = `${label(tag, attr)} is wired to nothing: no data-on-* inside a [data-live] region, ` +
-        `no form[data-action] it can submit, no enclosing region whose machine answers its click, ` +
-        `and no [data-widget] part`;
+        `no form[data-action] it can submit, and no enclosing region whose machine answers its click`;
       const attached = attr("form");
       if (names.length > 0 || attached !== undefined) {
         deferred.push({ names, cover, own, why, attached });

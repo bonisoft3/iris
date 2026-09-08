@@ -83,17 +83,15 @@ describe("unwitnessedControls stays silent on wired controls", () => {
     expect(unwitnessedControls(html)).toEqual([])
   })
 
-  // apps/thenote/shell/screens/note.html: zag spreads its own event handlers
-  // onto every [data-part] of a mounted widget, so a part carries no form, no
-  // region and no data-on-* and is wired all the same.
-  it("a widget's parts", () => {
+  // A [data-widget] is nothing the interpreter knows: a button under one is
+  // as bare as one anywhere.
+  it("a widget's parts are not a seam", () => {
     expect(
       unwitnessedControls(
         '<span class="daypick" data-widget="date-picker" data-part="root">' +
-          '<button type="button" data-part="trigger" aria-label="Choose a day">x</button>' +
-          '<button type="button" data-part="prevTrigger">&lsaquo;</button></span>',
+          '<button type="button" data-part="trigger" aria-label="Choose a day">x</button></span>',
       ),
-    ).toEqual([])
+    ).toHaveLength(1)
   })
 
   // A form[data-action] outside every region is wired at screen level: it
@@ -113,13 +111,13 @@ describe("unwitnessedControls stays silent on wired controls", () => {
 
   // A type="button" submits nothing however deep in a form it sits, so a
   // machine's click is the only seam that can reach it.
-  it("a type=button part inside a widget inside a form", () => {
+  it("a type=button inside a form is not wired by the form", () => {
     expect(
       unwitnessedControls(
-        '<form data-action="create"><div data-widget="combobox" data-part="root" class="picker">' +
-          '<button type="button" data-part="trigger" aria-label="show labels">v</button></div></form>',
+        '<form data-action="create"><div class="picker">' +
+          '<button type="button" aria-label="show labels">v</button></div></form>',
       ),
-    ).toEqual([])
+    ).toHaveLength(1)
   })
 
   it("a control stamped from an item template belongs to its region", () => {

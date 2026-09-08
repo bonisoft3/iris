@@ -73,25 +73,13 @@ const TAGS = {
 // beside TAGS rather than inferred from it.
 const URL_ATTRS = new Set(["href", "src", "cite"]);
 
-function checkAttr(tag, name, trusted) {
+function checkAttr(tag, name) {
   // data-* is refused ahead of the allowlist because its reason is different
   // and worth saying: the terminal's own binding vocabulary is data-*, so a
   // renderer that could emit one could forge a data-live region, a data-text
   // binding or a data-hatch mount out of a reader's prose.
-  //
-  // The refusal is about PROVENANCE, not the attribute. A renderer's nodes
-  // describe a reader's content; a widget kind's nodes describe what its own
-  // machine computed — a calendar's weeks, a picker's accepted files — and
-  // that is vendored terminal code, the same trust as this file. Those parts
-  // are nothing BUT data-*: data-part is how the dispatcher finds them and
-  // data-selected/data-today is what a screen's CSS keys on. So the trusted
-  // caller may set them, and nothing else about the allowlist moves.
   if (name.startsWith("data-")) {
-    if (!trusted) throw new Error(`renderer may not set ${name}: data-* is the terminal's own vocabulary`);
-    // Trusted data-* passes outright rather than falling to the per-tag
-    // allowlist below, which enumerates HTML's own attributes and could never
-    // list data-part or the state attributes a machine stamps.
-    return;
+    throw new Error(`renderer may not set ${name}: data-* is the terminal's own vocabulary`);
   }
   // on* would be script, and style is both an exfiltration channel and a
   // second opinion about appearance, which design tokens already own.
@@ -107,7 +95,7 @@ function checkAttr(tag, name, trusted) {
 // document never reaches it.
 const MAX_DEPTH = 256;
 
-function toNode(node, depth = 0, trusted = false) {
+function toNode(node, depth = 0) {
   if (typeof node === "string") return document.createTextNode(node);
   if (node === null || typeof node !== "object" || typeof node.tag !== "string") {
     throw new Error(`renderer produced ${JSON.stringify(node)}, not a string or {tag}`);
@@ -124,7 +112,7 @@ function toNode(node, depth = 0, trusted = false) {
   }
   const el = document.createElement(tag);
   for (const [name, value] of Object.entries(attrs)) {
-    checkAttr(tag, name, trusted);
+    checkAttr(tag, name);
     // `{target: cond ? "_blank" : undefined}` is how a conditional attribute
     // is written, and setAttribute stringifies: left alone it sets the literal
     // "undefined", which for target is a real browsing-context name.
@@ -142,7 +130,7 @@ function toNode(node, depth = 0, trusted = false) {
   // on the element, not the description: any path that puts a target on the
   // DOM is a path this has to see, whatever shape the description had.
   if (tag === "a" && el.hasAttribute("target")) el.setAttribute("rel", "noopener noreferrer");
-  for (const child of children) el.append(toNode(child, depth + 1, trusted));
+  for (const child of children) el.append(toNode(child, depth + 1));
   return el;
 }
 
@@ -163,14 +151,14 @@ function toNode(node, depth = 0, trusted = false) {
  * a library: it names the one that fits (morphdom, because it never creates
  * nodes and so leaves the allowlist owning that), and why the others do not.
  */
-export function buildNodes(nodes, target, { trusted = false } = {}) {
+export function buildNodes(nodes, target) {
   if (!Array.isArray(nodes)) throw new Error(`renderer must return an array of nodes, got ${typeof nodes}`);
   const description = JSON.stringify(nodes);
   if (target._prontoRendered === description) return;
   // Not `nodes.map(toNode)`: map passes the index as the second argument, so
   // every top-level block would start at its own ordinal depth and a long flat
   // article would be refused for its length.
-  const built = nodes.map((node) => toNode(node, 0, trusted));
+  const built = nodes.map((node) => toNode(node, 0));
   target.replaceChildren(...built);
   target._prontoRendered = description;
 }

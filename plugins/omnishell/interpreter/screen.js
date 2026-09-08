@@ -4,9 +4,6 @@
 import { renderInto } from "./render.js";
 import { mountHatch } from "./hatch.js";
 import { machineCandidates, machineShape, parseFilter, parseFilterSpec, parseReadSpec } from "./fragment.js";
-// Statically, not on demand: a dynamic import issued after the handler
-// compartment has locked down never settles (vendor/entry-zag/index.ts).
-import { hydrateFieldWidget } from "./widget.js";
 import { evaluateRole } from "./jessie.js";
 
 async function fetchText(url) {
@@ -1095,7 +1092,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
   // props, already resolved against the row by bindAttributes, so a hatch in a
   // region re-synchronises with its row for free. This dispatcher never learns
   // what a unit is: it hands over the props it finds and mounts what the
-  // app declared, exactly as widget.js never learns what a combobox is.
+  // app declared.
   function bindHatches(scope, ctx) {
     const targets = scope.matches?.("[data-hatch]") ? [scope] : [];
     targets.push(...scope.querySelectorAll("[data-hatch]"));
@@ -1268,12 +1265,6 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
           if (input.checked) out[input.name] = input.value;
         } else if (input.type === "checkbox") out[input.name] = input.checked;
         else if (input.type === "file" && input.dataset.upload !== undefined) {
-          // A file control's anatomy belongs to the terminal's markup, not
-          // to the screen: the native widget is unstylable, so it is only
-          // clipped and the label wrapper is what the user clicks. The input
-          // keeps its name, form and validity, and the screen supplies the
-          // words through the aria-label it already writes.
-          //
           // The blob goes to the store's object bucket first; the mutation
           // carries only the resulting key under the input's name. An empty
           // optional file input contributes no value (required-ness was
@@ -2006,35 +1997,6 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
       }
     }
     return { deliver, apply: applyUpdates };
-  }
-
-  // Field-backed widgets. A [data-widget] dresses the form control inside it:
-  // the machine owns the affordance, the input stays the value the form
-  // submits, so values() and validity never learn a widget was here.
-  //
-  // The machine reads its initial value from the control, so a widget sitting
-  // inside a region has to wait for that region to bind or it seeds itself
-  // from an empty input. It waits for its OWN region and no other: gating the
-  // whole pass on every region lets one stalled region leave every field
-  // widget on the screen unmounted.
-  async function mountFieldWidgets(scope, readyOf) {
-    if (opts.handlers === false) return;
-    await Promise.all([...scope.querySelectorAll("[data-widget]")].map(async (root) => {
-      if (root._prontoWidget !== undefined) return;
-      // Every kind dresses a form control, so a [data-widget] wrapping a
-      // region names a kind this terminal does not have.
-      if (root.querySelector("[data-live]") !== null) {
-        throw new ProgramError(`[data-widget="${root.dataset.widget}"] holds a region: a kind dresses a control, it does not own rows`);
-      }
-      const input = root.querySelector("input, select, textarea");
-      if (input === null) return;
-      await readyOf.get(root.closest("[data-live]"));
-      const w = await hydrateFieldWidget(root, {input});
-      // Marked only once it is really mounted: setting this first would
-      // remember a failed mount as done.
-      root._prontoWidget = w;
-      cleanups.push(() => w.destroy());
-    }));
   }
 
   // top: only top-level regions drive the screen state machine; nested regions
@@ -2803,20 +2765,15 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
 
   const regions = [];
   const pending = [];
-  const readyOf = new Map();
   for (const region of screen.querySelectorAll("[data-live]")) {
     if (region.parentElement.closest("[data-live]")) continue;
     const h = hydrateRegion(region, { params, inert: opts.fixtures === true }, true);
     regions.push(h);
     pending.push(h.ready);
-    readyOf.set(region, h.ready);
   }
   // Screen chrome outside every region — a combobox's input sits beside the
   // listbox it drives, not inside it. Regions wire their own as they render.
   wireKeysIn(screen);
-
-  // Not behind the barrier below: a field widget waits for its own region.
-  const fieldWidgets = mountFieldWidgets(screen, readyOf);
 
 
   // A hatch outside every region has no row to resynchronise against; its
@@ -2850,7 +2807,6 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
   }
 
   await Promise.all(pending);
-  await fieldWidgets;
   if (regions.length === 0) {
     screen.dataset.state = route.states?.[0] ?? "populated";
   }

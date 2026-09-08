@@ -10,8 +10,7 @@
 // The seat speaks pronto:props / pronto:ready / pronto:event and nothing else.
 // A unit driving some other protocol — UCI, an RPC, a codec — is the app's
 // wrapper script, which is also the half an engineer can read: this dispatcher
-// never learns what a unit is, exactly as widget.js never learns what a
-// combobox is.
+// never learns what a unit is.
 import { EVENT, parseDetail, PROPS, READY, SRC_SCHEMES } from "./hatch.js";
 
 export function mountWorkerUnit(root, { unit, src, onEvent } = {}) {

@@ -22,7 +22,6 @@ import { checkHorizontalOverflow } from "./src/lint/playwright/checks/horizontal
 import { checkConstrainedImages } from "./src/lint/playwright/checks/constrained-images.ts"
 import { checkViewportBounds } from "./src/lint/playwright/checks/viewport-bounds.ts"
 import { checkTouchTargets } from "./src/lint/playwright/checks/touch-targets.ts"
-import { checkWidgetsMounted } from "./src/lint/playwright/checks/widgets-mounted.ts"
 import { checkFocusOrder } from "./src/lint/playwright/checks/focus-order.ts"
 import { armCLS, checkCLS } from "./src/lint/playwright/checks/cls.ts"
 import { captureConsole, analyzeConsole } from "./src/lint/playwright/checks/console-messages.ts"
@@ -211,10 +210,9 @@ async function openRoute(
  * Hold until the screen stops becoming itself: no DOM mutation, no geometry
  * change, no image still loading, for one quiet interval.
  *
- * Mutation matters as much as motion. A widget machine stamps `data-scope`
- * without moving a box, and `checkWidgetsMounted` reads that attribute — a
- * predicate watching only geometry would clear the screen before the widget
- * it is about to call inert has mounted.
+ * Mutation matters as much as motion: a machine writes `data-state` without
+ * moving a box, and a predicate watching only geometry would clear the screen
+ * before the state a check reads has landed.
  *
  * Console messages need no separate window: measured across two apps, every
  * error and warning arrived before this predicate cleared, because what logs
@@ -435,7 +433,6 @@ async function main(appDir: string): Promise<number> {
           checkConstrainedImages(p),
           checkViewportBounds(p),
           checkTouchTargets(p, { minSize: TOUCH_MIN }),
-          checkWidgetsMounted(p),
           checkFocusOrder(p),
           checkCLS(p),
         ])

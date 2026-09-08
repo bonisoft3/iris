@@ -24,13 +24,6 @@ _shellHtmlAsset: _ @embed(file="shell.html", type=text)
 _shellCssAsset:  _ @embed(file="shell.css", type=text)
 _bootJsAsset:    _ @embed(file="boot.js", type=text)
 
-// @embed may descend into this package's own subdirectories, though never
-// above it — the same rule that keeps the shell assets local. The
-// `bundle:zag` script clears this directory before writing, so what is matched
-// here is exactly what the build produced — including the shared chunks, whose
-// names are the bundler's to choose.
-_zagBundle: _ @embed(glob="interpreter/vendor/zag/*.js", type=text)
-
 // cluster.#Static-shaped, not imported — see the terminal-planes doc's
 // note on why terminal.cue and cluster.cue each define their own copy
 // rather than coupling the two packages together.
@@ -106,7 +99,7 @@ _zagBundle: _ @embed(glob="interpreter/vendor/zag/*.js", type=text)
 			note: string
 		}
 		renderer: {
-			role:    "jessie, evaluated in a compartment with nothing endowed, like handler and adapter"
+			role:    "jessie, evaluated in a compartment with nothing endowed, like handler and fold"
 			returns: "an array of nodes, where a node is a string (always text) or {tag, attrs?, children?}"
 			owns: schema: {is: "the node description", note: "there is no node kind for raw markup, so no renderer can ask for it and no value can smuggle it"}
 			owns: tags: {is: "a prose-element allowlist", note: "no script/style, no iframe/object/embed (that is the hatch, under a sandbox), no form/input (mutations are forms a screen author wrote), no svg/math"}
@@ -114,26 +107,6 @@ _zagBundle: _ @embed(glob="interpreter/vendor/zag/*.js", type=text)
 			owns: urls: {is: "the http/https/mailto scheme check", note: "applied by the builder whether or not the renderer consulted it; a refused URL drops the attribute rather than throwing, because a reader's content must not take the screen down"}
 			owns: reconciliation: {is: "the DOM write itself", note: "an unchanged description is not written at all, so a re-bind cannot cost the reader their text selection and idempotence is structural rather than each renderer's to earn"}
 			note: "a structural violation — unknown tag, malformed node, refused attribute — throws, because that is a bug in the renderer and not in anyone's data"
-		}
-
-		// What data-widget may name. Each kind's own anatomy — not this list —
-		// is the authority on its part names.
-		//
-		// Every kind here dresses a form control: the widget keeps the name,
-		// validity and value the form submits, so nothing downstream learns a
-		// widget was there. A choice over a table's rows is a region and a
-		// machine, not a kind — the components tier states those.
-		widgets: [Name=string]: {selects: string, parts: [...string], note: string}
-		widgets: "date-picker": {
-			selects: "one date, from a calendar"
-			parts: ["clearTrigger", "content", "control", "input", "nextTrigger", "positioner", "prevTrigger", "root", "table", "tableBody", "tableCell", "tableHead", "tableRow", "trigger", "view", "viewControl", "viewTrigger"]
-			note: #"field-backed: it dresses a native <input type="date">, which keeps the name, validity and value the form submits, so nothing downstream learns a widget was here. The day grid is the machine's own — no region holds those cells and no markup could author them — so this kind describes them and the terminal builds them under the renderer's allowlist"#
-		}
-
-		widgets: "file-upload": {
-			selects: "one or more files, from a dialog or a drop"
-			parts: ["clearTrigger", "dropzone", "item", "itemDeleteTrigger", "itemGroup", "itemName", "itemPreview", "itemPreviewImage", "itemSizeText", "label", "root", "trigger"]
-			note: #"field-backed: it dresses a native <input type="file">, whose FileList stays what the form submits — written through a DataTransfer, the only way a machine's list can become a control's value. The chosen files are the machine's own list, arriving from a dialog and a drop rather than from a query, so this kind describes one row per file and the terminal builds them. A dropzone is the one affordance the platform supplies no primitive for"#
 		}
 
 		sensors: [Name=string]: {yields: string, note: string}
@@ -258,16 +231,11 @@ _zagBundle: _ @embed(glob="interpreter/vendor/zag/*.js", type=text)
 		}], "\n")
 
 		modules: [...#Path]
-		modules: list.Concat([
-			[
-				"shell.js", "screen.js", "fragment.js", "data-crud.js", "render.js",
-				"hatch.js", "hatch-worker.js", "storybook.js", "widget.js", "tier2-engine.js", "jessie.js",
-				"vendor/mecha-client.js", "vendor/js-yaml.js", "vendor/ses.umd.min.js",
-			],
-			// One module per kind in capabilities.widgets plus their shared
-			// chunks, hash-named and so globbed rather than listed.
-			[for p, _ in _zagBundle {strings.TrimPrefix(p, "interpreter/")}],
-		])
+		modules: [
+			"shell.js", "screen.js", "fragment.js", "data-crud.js", "render.js",
+			"hatch.js", "hatch-worker.js", "storybook.js", "jessie.js",
+			"vendor/mecha-client.js", "vendor/js-yaml.js", "vendor/ses.umd.min.js",
+		]
 
 		screens: [...{name: string, html: #Path, css: #Path}]
 
@@ -299,9 +267,8 @@ _zagBundle: _ @embed(glob="interpreter/vendor/zag/*.js", type=text)
 		units: *[] | [...#Path]
 
 		// Invariants of the terminal's own rendering surface, which no app can
-		// re-derive — the same reason auth, text-formats and widgets are
-		// published here. `verb` is the cheapest layer that can answer the
-		// check.
+		// re-derive — the same reason auth and text-formats are published
+		// here. `verb` is the cheapest layer that can answer the check.
 		checks: [Name=string]: {verb: "setup" | "lint" | "test" | "integrate", cmds: [...string], note: string}
 		checks: visual: {
 			// A laid-out page over real content, so the cluster has to be up
