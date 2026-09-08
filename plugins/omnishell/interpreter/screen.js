@@ -1495,35 +1495,51 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
     // A refusal is an event, not a callback. A write settles twice — accepted
     // optimistically, then confirmed or withdrawn — so the withdrawal cannot
     // be a return value: the value is already on screen. With a mutation
-    // reduce mounted it arrives there as {type: "refused", entity, id?, kind}
-    // and the reduce renders it like any other conclusion; without one the
-    // terminal's default applies, the same states a form's refusal sets.
+    // reduce mounted it arrives there as {type: "refused", entity, id?, kind,
+    // validation?} and the reduce renders it like any other conclusion;
+    // without one the terminal's default applies, the same states a form's
+    // refusal sets.
     // `kind` tells the server's no ("refused" — NonRetriableError, the
     // optimistic row already rolled back) from a transport or program failure
     // ("failed").
+    // The validation that said no: the store seat stamps it on the error; the
+    // server's travels in PostgREST's message, `validation <table>.<name>` —
+    // matched unanchored, because that message sits inside a JSON body. Read
+    // only on a refusal: a program error carrying a validation's name (its
+    // module 404s, its predicate answers no boolean) shares the same prefix
+    // and named nothing that said no.
+    const validationOf = (err) =>
+      // A table name is whatever the schema calls it, so only the validation
+      // half of the pair is constrained; the table half stops at the dot.
+      err?.validation ?? /validation ([^\s.]+)\.([a-z][a-z0-9-]*)/.exec(err?.message ?? "")?.[2];
+    const refusal = (entity, id, err) => {
+      const fired = { type: "refused", entity, kind: err?.name === "NonRetriableError" ? "refused" : "failed" };
+      if (id !== undefined) fired.id = id;
+      if (fired.kind === "refused") {
+        const validation = validationOf(err);
+        if (validation !== undefined) fired.validation = validation;
+      }
+      return fired;
+    };
     const deliver = (entity, id, err) => {
       console.error(err);
       // The store withdrew the write, so the chain-local machine view holding
       // it is withdrawn with it — the refusal transition concludes from what
       // the store still holds, not from the state that was just rolled back.
       region._prontoMachineRow = undefined;
-      const kind = err?.name === "NonRetriableError" ? "refused" : "failed";
+      const fired = refusal(entity, id, err);
       if (machineRefused.length > 0) {
-        const fired = { type: "refused", entity, kind };
-        if (id !== undefined) fired.id = id;
         for (const hear of machineRefused) hear(fired);
         return;
       }
       if (rowsReduce) {
-        const fired = { type: "refused", entity, kind };
-        if (id !== undefined) fired.id = id;
         step(rowsReduce, fired, 0).catch((e) => {
           console.error(e);
           setState("network-error");
         });
         return;
       }
-      setState(kind === "refused" ? "validation-error" : "network-error");
+      setState(fired.kind === "refused" ? "validation-error" : "network-error");
     };
     region._prontoRefusal = rowsReduce ? deliver : undefined;
 

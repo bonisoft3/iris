@@ -24,6 +24,7 @@ import {
   not,
 } from "./vendor/mecha-client.js";
 import { embedTables, parseFilter, parseFilterSpec, parseLimit, parseSelect } from "./fragment.js";
+import { evaluateRole } from "./jessie.js";
 
 export { embedTables, parseFilter, parseFilterSpec, parseLimit, parseSelect };
 
@@ -240,6 +241,97 @@ export function createStore(base = "", cfg = {}) {
   // here. PostgREST reads (embeds, fts) are already RLS-scoped server-side.
   const access = cfg.access ?? {};
   const keyOf = (t) => cfg.keys?.[t] ?? "id";
+
+  // Validations by table (shell.yaml); each table's modules load on its first
+  // write, through the same compartment a handler runs in.
+  const validations = cfg.validations ?? {};
+  const predicates = new Map();
+  function predicatesFor(table) {
+    let p = predicates.get(table);
+    if (p === undefined) {
+      // Dropped on rejection: a fetch that failed once would otherwise refuse
+      // the table for the rest of the session.
+      p = Promise.all(Object.entries(validations[table] ?? {}).map(async ([name, v]) => {
+        const res = await fetch(new URL(v.src, cfg.appBase));
+        if (!res.ok) throw new Error(`validation ${table}.${name}: ${v.src} ${res.status}`);
+        return { name, edges: v.edges ?? [], test: await evaluateRole(await res.text(), "validation") };
+      })).catch((e) => {
+        predicates.delete(table);
+        throw e;
+      });
+      predicates.set(table, p);
+    }
+    return p;
+  }
+
+  // The store seat: every validation of the table judges the row the write
+  // would produce, over the reader's own copy of the rows its edges name.
+  // The owner column is filled from the session when the produced row omits
+  // it — the server defaults it, and a predicate over an absent owner judges
+  // nothing. Filled after the merge, so an update never restates the owner of
+  // a row this reader does not own.
+  // `current` is the standing row, when the caller already holds it: finding it
+  // again is a scan of the table per row.
+  // `edgeIndex` is one write's shared bucketing of each edge's visible rows by
+  // the column it joins on, so a batch costs one pass over an edge table rather
+  // than one per row. It is keyed by table AND join column: two validations of
+  // one entity may walk to one table on different columns.
+  async function validate(table, type, row, current, edgeIndex) {
+    const list = await predicatesFor(table);
+    if (list.length === 0) return;
+    const collection = client.collections[table];
+    if (collection === undefined) throw new Error(`validation on unsynced table: ${table}`);
+    if (!collection.isReady()) await collection.toArrayWhenReady();
+    const key = keyOf(table);
+    const held = type !== "update"
+      ? undefined
+      : current ?? collection.toArray.find((r) => String(r[key]) === String(row[key]));
+    // An update states the fields that change, so judging it without the row
+    // it changes would judge a fragment as if it were the whole row.
+    if (type === "update" && held === undefined) {
+      throw new Error(`validation ${table}: update of a row the store does not hold: ${String(row[key])}`);
+    }
+    const items = held === undefined ? [] : [held];
+    let produced = held === undefined ? row : { ...held, ...row };
+    const owner = access[table]?.owner;
+    if (owner !== undefined && produced[owner] === undefined) {
+      produced = { ...produced, [owner]: userId() };
+    }
+    const event = { type, row: produced };
+    for (const v of list) {
+      const rows = {};
+      for (const edge of v.edges) {
+        await ensurePrepared(edge.table);
+        const c = client.collections[edge.table];
+        if (c === undefined) throw new Error(`validation ${table}.${v.name}: reads unsynced table ${edge.table}`);
+        if (!c.isReady()) await c.toArrayWhenReady();
+        const want = String(event.row[edge.from]);
+        const at = `${edge.table} ${edge.key}`;
+        let index = edgeIndex.get(at);
+        if (index === undefined) {
+          index = new Map();
+          for (const r of c.toArray) {
+            if (!visible(edge.table, r)) continue;
+            const k = String(r[edge.key]);
+            const bucket = index.get(k);
+            if (bucket === undefined) index.set(k, [r]);
+            else bucket.push(r);
+          }
+          edgeIndex.set(at, index);
+        }
+        rows[edge.table] = index.get(want) ?? [];
+      }
+      const verdict = v.test({ items, rows }, event);
+      if (verdict === true) continue;
+      if (verdict !== false) {
+        throw new Error(`validation ${table}.${v.name}: the predicate answered ${typeof verdict}`);
+      }
+      const err = new Error(`validation ${table}.${v.name}`);
+      err.name = "NonRetriableError";
+      err.validation = v.name;
+      throw err;
+    }
+  }
 
   // A local collection is made ready for use once per boot, before the first
   // read or write touches it: its bootstrap rows are written, then its
@@ -841,16 +933,27 @@ export function createStore(base = "", cfg = {}) {
     if (collection === undefined) throw new Error(`write on unsynced table: ${table}`);
     if (!collection.isReady()) await collection.toArrayWhenReady();
     // Asked once for the batch. Asked per row it is a scan of the table per
-    // row, which is the quadratic term this whole shape exists to remove.
+    // row, which is the quadratic term this whole shape exists to remove — and
+    // the standing row itself, so the judge below does not scan for it either.
     // Stringified for the lookup and kept in its own type for the write: a key
     // the collection holds as a number is still that number when patched.
-    const present = new Map(collection.toArray.map((r) => [String(r[key]), r[key]]));
+    const byKey = new Map(collection.toArray.map((r) => [String(r[key]), r]));
+    const edgeIndex = new Map();
+    for (const row of rows) {
+      const have = byKey.get(String(row[key]));
+      if (have === undefined) await validate(table, "insert", row, undefined, edgeIndex);
+      else await validate(table, "update", row, have, edgeIndex);
+    }
+    // Judging awaits, so the collection may have moved under the snapshot the
+    // verdicts were read from; the partition the client calls carry is the one
+    // that stands now, or an insert would be aimed at a row that has arrived.
+    const now = new Map(collection.toArray.map((r) => [String(r[key]), r]));
     const fresh = [];
     const standing = [];
     for (const row of rows) {
-      const have = present.get(String(row[key]));
+      const have = now.get(String(row[key]));
       if (have === undefined) fresh.push(row);
-      else standing.push({ key: have, changes: row });
+      else standing.push({ key: have[key], changes: row });
     }
     await Promise.all([
       fresh.length === 0 ? undefined : settle(
@@ -873,6 +976,8 @@ export function createStore(base = "", cfg = {}) {
     if (rows.length === 0) return;
     await ensurePrepared(table);
     const key = keyOf(table);
+    const edgeIndex = new Map();
+    for (const row of rows) await validate(table, "insert", row, undefined, edgeIndex);
     await settle(
       onSettled(client.insert(table, rows), table, rows.map((r) => String(r[key]))),
       ACCEPT_MS,
@@ -883,6 +988,12 @@ export function createStore(base = "", cfg = {}) {
   /** Named fields of rows that are already there. */
   async function patch(table, edits, onRefused) {
     if (edits.length === 0) return;
+    await ensurePrepared(table);
+    const key = keyOf(table);
+    // The key last: a `changes` naming the key cannot redirect the judgement
+    // onto a row other than the one this edit identifies.
+    const edgeIndex = new Map();
+    for (const e of edits) await validate(table, "update", { ...e.changes, [key]: e.key }, undefined, edgeIndex);
     await settle(
       onSettled(client.update(table, edits), table, edits.map((e) => String(e.key))),
       ACCEPT_MS,
@@ -920,7 +1031,8 @@ export function createStore(base = "", cfg = {}) {
     if (existing === undefined) {
       // The key the row will be found by next time, minted here because the
       // natural key is not the primary one and nothing else will supply it.
-      return write(table, [{ id: crypto.randomUUID(), ...values }], onRefused);
+      const id = crypto.randomUUID();
+      return write(table, [{ key: id, row: { [keyOf(table)]: id, ...values } }], onRefused);
     }
     return patch(table, [{ key: existing[keyOf(table)], changes: values }], onRefused);
   }

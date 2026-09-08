@@ -49,6 +49,13 @@ const ROLES = {
     ok: (v) => typeof v === "function",
     want: "its render function",
   },
+  // validation(state, event) -> boolean. Needs nothing.
+  validation: {
+    endow: () => ({}),
+    wrap: (s) => s,
+    ok: (v) => typeof v === "function",
+    want: "its predicate",
+  },
   // A pipeline transform. Authored as an ES module because the same file is
   // inlined into the rpk stream at container tier; a Compartment script takes
   // no `export` and yields its last expression, so both ends adapt it.

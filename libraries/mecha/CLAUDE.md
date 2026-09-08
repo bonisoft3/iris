@@ -49,7 +49,7 @@ Frontend / Test
 
 | Service | Image/Tool | Role |
 |---------|-----------|------|
-| `database` | `postgres:18-trixie` | PostgreSQL with wal_level=logical |
+| `database` | `postgres:18-trixie` + plv8 | PostgreSQL with wal_level=logical; plv8 runs a Jessie validation predicate inside the write's transaction, via a `SECURITY DEFINER` trigger emitted per validated table |
 | `crud` | `postgrest/postgrest:v12.2.3` | Auto-generated REST API |
 | `caddy` | `caddy:2.9-alpine` | Reverse proxy with idempotent CRUD inserts (replaces OpenResty) |
 | `mesh` | `daprio/daprd:1.16.1` | Dapr sidecar — retry, circuit breaker, pubsub |

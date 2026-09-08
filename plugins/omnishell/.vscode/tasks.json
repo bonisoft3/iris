@@ -66,6 +66,7 @@
         "interpreter/slot-smoke.js",
         "interpreter/subscribe-smoke.js",
         "interpreter/template-smoke.js",
+        "interpreter/validation-smoke.js",
         "interpreter/worker-smoke.js"
       ],
       "problemMatcher": [],
@@ -106,6 +107,7 @@
         "interpreter/slot-smoke.js",
         "interpreter/subscribe-smoke.js",
         "interpreter/template-smoke.js",
+        "interpreter/validation-smoke.js",
         "interpreter/worker-smoke.js"
       ],
       "problemMatcher": [],

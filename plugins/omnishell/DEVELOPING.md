@@ -57,7 +57,7 @@ endowed**.
 | `data-on-mutation="ref"` | `{type: "mutation"}` | any write to a table in `data-reads` |
 | `data-on-click="ref"` | `{type: "click", id, from}` | `id` is the **row's** id; `from` is the element's DOM `id` |
 | a returned `then` | `{type: <yours>}` | your own scheduled beat |
-| a refused write | `{type: "refused", entity, kind, id}` | `kind` is `"refused"` (validation) or `"failed"` |
+| a refused write | `{type: "refused", entity, kind, id, validation}` | `kind` is `"refused"` (validation) or `"failed"`; `validation` names the validation that said no, when one did |
 
 > **A click carries no payload.** There is no way to attach `{"sq": "e4"}` to a
 > button. `id` and `from` are all you get, so **design the row id to be the
@@ -108,10 +108,10 @@ store just withdrew.
 **What it may not have**
 
 `window`, `document`, `globalThis`, `fetch`, `XMLHttpRequest`, `WebSocket`,
-`eval`, `Function`, `import`, `require`, `Date` and `Math.random` are refused by
-`plugins/pronto/jessie.ts`. The compartment endows nothing besides, so timers
-and every other global are absent whether or not they are named. Two
-consequences worth stating plainly:
+`eval`, `Function`, `import`, `require`, `Date`, `Math.random`, `plv8` and
+`this` are refused by `plugins/pronto/jessie.ts`. The compartment endows
+nothing besides, so timers and every other global are absent whether or not
+they are named. Two consequences worth stating plainly:
 
 - **No dependency.** Rules, parsing, algorithms: written in the handler. That is
   only safe with a grader — `apps/chess` generates moves in

@@ -237,13 +237,14 @@ Deno.test({
     const { document, Event, store, calls } = boot(
       html,
       `const reduce = (state, event) => event.type === "refused"
-  ? { updates: [{ op: "patch", id: "notice", row: { entity: event.entity, id: event.id, kind: event.kind } }] }
+  ? { updates: [{ op: "patch", id: "notice", row: { entity: event.entity, id: event.id, kind: event.kind, validation: event.validation } }] }
   : { updates: [] };
 reduce;`,
     );
     store.put = async () => {
       const err = new Error("409 refused");
       err.name = "NonRetriableError";
+      err.validation = "own-article";
       throw err;
     };
     const { interpretScreen } = await import("./screen.js");
@@ -257,10 +258,93 @@ reduce;`,
 
     assert(
       JSON.stringify(calls.updates) ===
-        JSON.stringify([{ table: "tint", id: "notice", patch: { entity: "tint", id: "the", kind: "refused" } }]),
+        JSON.stringify([{
+          table: "tint",
+          id: "notice",
+          patch: { entity: "tint", id: "the", kind: "refused", validation: "own-article" },
+        }]),
       `the refusal became the reduce's event, got ${JSON.stringify(calls.updates)}`,
     );
     assert(mount.firstElementChild.dataset.state === "populated", "the reduce owns the words; no state flip");
+  },
+});
+
+Deno.test({
+  name: "the server's refusal names its validation out of the client's own message",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, Event, store, calls } = boot(
+      screenHtml(MACHINE, ' data-on-mutation="log"'),
+      `const reduce = (state, event) => event.type === "refused"
+  ? { updates: [{ op: "patch", id: "notice", row: { kind: event.kind, validation: event.validation } }] }
+  : { updates: [] };
+reduce;`,
+    );
+    // A refusal raised by the trigger reaches the terminal as the mecha
+    // client's own wording, with no `validation` property to read: the name
+    // comes out of the message or nowhere.
+    store.put = async () => {
+      const err = new Error(
+        'insert favorite failed: 400 {"code":"23514","details":null,"hint":null,"message":"validation favorite.own-article"}',
+      );
+      err.name = "NonRetriableError";
+      throw err;
+    };
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    const route = { ...ROUTE, files: { ...ROUTE.files, handlers: ["shell/handlers/log.js"] } };
+    await interpretScreen(mount, "http://localhost:8080/keep/", route, store, {});
+    mount.querySelector("[data-live]").dispatchEvent(new Event("click"));
+    await tick(40);
+
+    assert(
+      JSON.stringify(calls.updates) ===
+        JSON.stringify([{ table: "tint", id: "notice", patch: { kind: "refused", validation: "own-article" } }]),
+      `the message named the validation, got ${JSON.stringify(calls.updates)}`,
+    );
+  },
+});
+
+Deno.test({
+  name: "a program error naming a validation is not a validation that said no",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    await import("https://cdn.jsdelivr.net/npm/ses@1.15.0/dist/ses.umd.min.js");
+    const { document, Event, store, calls } = boot(
+      screenHtml(MACHINE, ' data-on-mutation="log"'),
+      `const reduce = (state, event) => event.type === "refused"
+  ? { updates: [{ op: "patch", id: "notice", row: { kind: event.kind, validation: event.validation } }] }
+  : { updates: [] };
+reduce;`,
+    );
+    // The seat's own program errors carry a validation's name in the same
+    // words a server refusal does — a module that 404s, a predicate that
+    // answers no boolean. Neither is a rule saying no. Delivered late, past
+    // the acceptance window, because a fast failure never reaches the event at
+    // all: applyUpdates rethrows anything that is not NonRetriableError.
+    store.put = async (_table, _row, onRefused) => {
+      setTimeout(
+        () => onRefused(new Error("validation favorite.own-article: the predicate answered string")),
+        0,
+      );
+    };
+    const { interpretScreen } = await import("./screen.js");
+
+    const mount = document.getElementById("shell");
+    const route = { ...ROUTE, files: { ...ROUTE.files, handlers: ["shell/handlers/log.js"] } };
+    await interpretScreen(mount, "http://localhost:8080/keep/", route, store, {});
+    mount.querySelector("[data-live]").dispatchEvent(new Event("click"));
+    await tick(40);
+
+    assert(
+      JSON.stringify(calls.updates) ===
+        JSON.stringify([{ table: "tint", id: "notice", patch: { kind: "failed" } }]),
+      `a failure names no validation, got ${JSON.stringify(calls.updates)}`,
+    );
   },
 });
 

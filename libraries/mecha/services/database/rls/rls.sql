@@ -33,6 +33,21 @@ CREATE OR REPLACE FUNCTION public.current_scopes() RETURNS text[]
 -- a reader who does not know to look for them; assertions 16 and 17 say why. A
 -- role that must see across scopes takes BYPASSRLS, which is a row in pg_roles
 -- and so auditable, rather than an absence from a TO list, which is not.
+--
+-- The other sanctioned reach across scopes is the emitted validation trigger,
+-- `<table>_validate()`: SECURITY DEFINER, owned by the migration role, fired
+-- AFTER INSERT OR UPDATE. AFTER, so only a write the caller's own policies
+-- already admitted reaches the definer's read: a caller who cannot write the
+-- row cannot use the predicate as an oracle over rows they cannot see. It reads
+-- the rows an entity's declared `via` edges name -- one query per edge, joined
+-- on the referenced id -- and answers once per write. The refusal it raises
+-- carries only `validation <table>.<name>`, never a row, so the reach discloses
+-- one bit per admitted write and nothing else. Its precondition: the migration
+-- role must bypass RLS, as a superuser or a role holding BYPASSRLS. Where it
+-- does not, FORCE ROW LEVEL SECURITY scopes the definer's read by the CALLER's
+-- app.scopes and the trigger judges what the writer can see rather than what
+-- stands -- so the emitted 008_validations.sql opens with a DO block that
+-- refuses to install under a role holding neither.
 DROP PROCEDURE IF EXISTS public.rls_protect(regclass, text);
 CREATE OR REPLACE PROCEDURE public.rls_protect(tbl regclass)
   LANGUAGE plpgsql

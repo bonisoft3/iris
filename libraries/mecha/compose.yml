@@ -35,6 +35,9 @@ services:
       POSTGRES_INITDB_ARGS: "--no-sync --no-locale --encoding=UTF8 --auth=trust"
     tmpfs:
       - /postgresql-data
+    configs:
+      - source: validation-smoke
+        target: /docker-entrypoint-initdb.d/950_validation_smoke.sql
     healthcheck:
       test: ["CMD", "pg_isready", "-h", "localhost", "-p", "5432", "-d", "${POSTGRES_DB:-mecha}", "-U", "${POSTGRES_USER:-postgres}"]
       start_interval: 100ms
@@ -449,3 +452,7 @@ services:
     restart: "no"
     profiles:
       - test-blobs
+
+configs:
+  validation-smoke:
+    file: tests/validation-smoke.sql
