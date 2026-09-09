@@ -9,7 +9,7 @@
 // focused field and reloads an embedded document; moveBefore relocates without
 // the teardown. Measured before landing it: a two-row swap in a twenty-row
 // list reloaded 13 iframes with insertBefore and 0 with moveBefore
-// (docs/2026-08-02-reconciliation-libraries.md).
+// (plugins/omnishell/docs/2026-08-02-reconciliation-libraries.md).
 import { test, expect, type Page } from "@playwright/test"
 import { readFile } from "node:fs/promises"
 import path from "node:path"

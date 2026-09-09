@@ -3,7 +3,7 @@
 Written after one afternoon of live inspection produced four bugs whose
 fixes averaged five lines and whose diagnoses averaged an agent-hour each.
 The ground: `2026-08-27-events-and-the-clock.md` (the terminal owns every
-effect), `2026-08-31-one-ladder-one-grammar.md` (state is rows; events are
+effect), `plugins/pronto/docs/2026-08-31-one-ladder-one-grammar.md` (state is rows; events are
 derived), and `2026-08-30-machines-not-widgets.md` (commands are values).
 Those docs spent their arguments making the session deterministic; this doc
 collects the payment.

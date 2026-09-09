@@ -347,7 +347,7 @@ export function formatDatetime(value) {
 /**
  * A region's derived columns. The clause set is closed and the refusals behind
  * it are the design; both are stated in
- * plugins/pronto/docs/2026-09-01-aria-is-columns.md.
+ * plugins/omnishell/docs/2026-09-01-aria-is-columns.md.
  *
  * Those refusals are why no incremental-view engine appears here: every answer
  * is a function of rows the region already holds at refresh, so the pass it
@@ -906,7 +906,7 @@ const INTEREST_OUT = 200;
  * the grace that makes it hoverable, and nothing else.
  *
  * Three constraints hold it up, and the argument for each is
- * plugins/pronto/docs/2026-09-03-what-a-gesture-costs.md. It stores nothing, so
+ * plugins/omnishell/docs/2026-09-03-what-a-gesture-costs.md. It stores nothing, so
  * no row can disagree with it. Its waits are the terminal's clock and never
  * setTimeout, or `?clock=manual` could not hold them still. And the surface must
  * be `popover="auto"`, so WCAG 1.4.13's DISMISSIBLE clause is the element's and
@@ -1536,7 +1536,7 @@ export async function interpretScreen(mount, appBase, route, store, params = {},
 
     const STEPS = 8;
     // Every write a reduce states, in the order it stated them. The shapes and
-    // what they mean are DEVELOPING.md's; what matters here is why they are
+    // what they mean are GUIDE.md's; what matters here is why they are
     // safe. A put states the row for a key derived from what the row
     // identifies — the same conclusion reached twice is the same row, which is
     // what lets a reduce be woken more than once. A delete is what makes

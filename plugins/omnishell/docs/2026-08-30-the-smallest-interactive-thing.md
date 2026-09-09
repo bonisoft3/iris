@@ -2,7 +2,7 @@
 
 Written from asking one question — *how do you make a button that changes
 colour when clicked?* — and following the answer down. `2026-08-02-terminal-doctrine.md`
-and `2026-08-27-the-row-that-changed.md` are the ground; `2026-08-29-the-screen-typechecker.md`
+and `2026-08-27-the-row-that-changed.md` are the ground; `plugins/pronto/docs/2026-08-29-the-screen-typechecker.md`
 is adjacent and partly superseded here (see "What this changes about that doc").
 
 The claim: **omnishell's restrictive layer is fine, and its ceremony is flat.**
@@ -210,7 +210,7 @@ that produced this doc:
 
 ## What this changes about the screen-typechecker doc
 
-`2026-08-29-the-screen-typechecker.md` proposes seven static rules comparing
+`plugins/pronto/docs/2026-08-29-the-screen-typechecker.md` proposes seven static rules comparing
 markup against the program. Change 3 above **deletes rules R1 and R7 rather
 than implementing them**: there is nothing to compare once `reads` and
 `files.handlers` are derived from the markup instead of restated beside it.

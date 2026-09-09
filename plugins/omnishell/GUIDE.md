@@ -1,8 +1,10 @@
 # Writing a screen
 
-The app author's page. It covers the **interpreter** — the half of omnishell
-that runs a pronto app's screens. For the React library half (auth, layout,
-lint presets) see `README.md`.
+The app author's guide. It covers the **interpreter** — the half of omnishell
+that runs a pronto app's screens. Every `data-*` it answers is catalogued in
+`docs/2026-07-30-the-binding-vocabulary.md`; this page is how to use them. For
+the React library half (auth, layout, lint presets) see `README.md`, and for
+changing the interpreter itself see `CONTRIBUTING.md`.
 
 If you have written Elm, React with `useReducer`, or htmx, you already know the
 shape; see [Lineage](#lineage-and-mappings) at the foot for the translation
@@ -260,7 +262,7 @@ borrowed on purpose.
 
 ### The Elm Architecture
 
-The closest single ancestor. `plugins/pronto/docs/2026-08-02-terminal-doctrine.md`
+The closest single ancestor. `docs/2026-08-02-terminal-doctrine.md`
 argues the comparison directly, including where pronto is *better* (data
 subscriptions are declarative and in the markup) and where it is thinner
 (everything else that can wake an app).
@@ -342,9 +344,9 @@ are the machinery underneath `libraries/mecha`.
 
 ### Further reading in this tree
 
-- `plugins/pronto/docs/2026-08-02-terminal-doctrine.md` — the roles, and the Elm comparison
+- `docs/2026-08-02-terminal-doctrine.md` — the roles, and the Elm comparison
 - `plugins/pronto/docs/2026-08-02-incremental-model.md` — the semantics under the regions
-- `plugins/pronto/docs/2026-08-27-events-and-the-clock.md` — what may wake a handler, and why the event surface is asymmetric
+- `docs/2026-08-27-events-and-the-clock.md` — what may wake a handler, and why the event surface is asymmetric
 - `plugins/pronto/docs/2026-08-12-derived-counts-the-reader-is-inside.md` — one derivation worked end to end
 - `apps/shadcnui` — 33 screens, 30 components: the presentation gallery
 - `apps/chess` — the reference for the data plane: reduce, seeds, clock, derived board

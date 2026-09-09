@@ -4,7 +4,7 @@ Written from the design conversation that followed
 `2026-08-30-the-smallest-interactive-thing.md` (whose items 1–3 and 5 landed
 as PR #1640), against the ground `2026-08-03-component-tier.md` laid: XState's
 config is data, it runs under SES with nothing endowed, and the browser now
-ships the popover/dialog/anchor primitives. `2026-08-29-the-screen-typechecker.md`
+ships the popover/dialog/anchor primitives. `plugins/pronto/docs/2026-08-29-the-screen-typechecker.md`
 supplies the R4 finding this doc finally answers. The forcing consumer is
 `apps/omnishell-shadcn-ui` (its brief.md is the product statement).
 

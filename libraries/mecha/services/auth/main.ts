@@ -1,6 +1,6 @@
-// Auth service: WebAuthn passkey ceremonies plus a guest mint. Contract:
-// plugins/pronto/docs/2026-07-30-keep-stage3-vocabulary.md — endpoints are
-// mounted WITH the /auth prefix (Caddy strips nothing). Stateless: the
+// Auth service: WebAuthn passkey ceremonies plus a guest mint. The token
+// contract three components share is README.md; endpoints are mounted WITH
+// the /auth prefix (Caddy strips nothing). Stateless: the
 // WebAuthn challenge travels in a short-lived HS256 `state` JWT instead of
 // server-side sessions. app_user is a program entity created by the database
 // migrations; this service only self-migrates webauthn_credential.

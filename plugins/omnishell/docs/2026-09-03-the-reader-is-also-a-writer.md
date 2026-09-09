@@ -5,7 +5,7 @@ declined the other on its own argument. The ground:
 `2026-09-03-what-a-gesture-costs.md` (which named both, and was right about why
 the tabstop was hard), `2026-09-01-aria-is-columns.md` (the projection, its
 refusals, and its rule against a second dialect),
-`2026-08-12-derived-counts-the-reader-is-inside.md` (when a number over rows is
+`plugins/pronto/docs/2026-08-12-derived-counts-the-reader-is-inside.md` (when a number over rows is
 exact).
 
 Two claims. **The tabstop was never a focus problem; it was a two-writer

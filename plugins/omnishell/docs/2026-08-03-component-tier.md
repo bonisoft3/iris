@@ -301,24 +301,23 @@ Making machines first-class helps here for a second reason: it shrinks the
 amount of hand-written Jessie wiring, and hand-written wiring is where
 undeclared cycles come from.
 
-## Open questions
+## What those questions turned out to be
 
-Ordered by what would change the design if answered badly.
+Five were open here, and none was answered on its own terms — which is the
+useful part, because it says the tier boundary this doc drew was in the wrong
+place.
 
-1. **Does `maintainedView` consolidate correctly on a small in-memory
-   collection?** The machinery was built for store tables with their indexes;
-   driving it from a 42-row machine-derived collection is a different usage and
-   is unmeasured.
-2. **What does a dataflow pass cost per machine render?** Machines render on
-   hover; 42 rows through a graph is heavier than spreading props onto nodes
-   that already exist.
-3. **How much of `subscribe(table, ...)` assumes a table name?** A
-   machine-backed source must satisfy that contract or the region needs a
-   second input path — a refactor, not a free composition.
-4. **What is the smallest useful action and guard vocabulary?** Let it grow
-   from one component rather than designing it up front.
-5. **How does a machine reach the palette?** A kind will want date arithmetic
-   (`@internationalized/date`) alongside its machine. Both are pure and both
-   run in a Compartment, but the completion-value contract admits one value
-   per module, so composing them is a packaging question that is not yet
-   answered.
+Three dissolved. Driving `maintainedView` from a machine-derived collection,
+the per-render cost of a dataflow pass, and whether `subscribe` assumes a table
+name were all questions about a machine feeding the view graph as a second kind
+of source. It does not: a machine writes a row into a browser-tier table and a
+region binds that table like any other, so there is one source kind and the
+questions have no subject.
+
+Two were answered by the grammar. The smallest useful action and guard
+vocabulary is `guard`, `target`, `assign`, `raise` and `after`, closed and
+stated in `plugins/omnishell/machine.cue`. And a machine reaches the palette
+through a value position: a guard, an assign's value or a delay holds either a
+literal or the name of a Jessie module, with literal params, so one module
+serves every instance a component generates. The calendar is the only screen
+that uses it, and it uses it for a month's arithmetic and nothing else.

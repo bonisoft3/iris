@@ -149,21 +149,29 @@ adopted); channel-versus-object for the hatch; screen-level versus region-level
 hatch — leaning region, so a region hatch is the region's mount point and
 form participation with the code coming from a bundle instead of an import.
 
-## Open questions
+## The questions this left open
 
-1. ~~**Channel or object for the hatch?**~~ Resolved as neither, and built for
-   the iframe boundary: props in are a current-value feed, events out are named
-   and request-shaped. See `2026-08-02-terminal-hatch.md` §Q1.
-2. **Is "returned requests" right for every Jessie role**, or only the pure
+Listed as pending work in `PENDING.md`; the arguments are here.
+
+1. **Is "returned requests" right for every Jessie role**, or only the pure
    mapping ones?
-3. **Do subscriptions generalise** from `data-live` to timers, keyboard,
-   presence — and does that stay in markup?
-4. **Is there a Msg equivalent** — a closed vocabulary of what a unit may
+2. **Do subscriptions generalise** from `data-live` to timers, keyboard,
+   presence — and does that stay in markup? Narrowed, not resolved: a Jessie
+   role is evaluated with `endow: () => ({})`, because a role that could read
+   the clock or reach the network would stop being a function of its inputs,
+   which is the only reason it is safe to run app source without reading it.
+   A timer, a keyboard listener and a presence feed are each definitionally
+   one of those. So generalising subscriptions into the role grammar is a
+   purity violation rather than a vocabulary extension, and the two are in
+   direct tension. MediaPipe's frame-by-frame camera case and
+   `sensors."device-orientation"` are independent evidence that the question
+   is live; neither is grantable until it is answered.
+3. **Is there a Msg equivalent** — a closed vocabulary of what a unit may
    emit? That is what a contribution manifest would be.
-5. **What does a merge-policy role receive?** TanStack DB has no conflict
+4. **What does a merge-policy role receive?** TanStack DB has no conflict
    resolution, but it does track `rowOrigins` and `preSyncVisibleState`, which
    is the raw material without the policy.
-6. **Where does presence live?** Shared but not durable — neither side owns
+5. **Where does presence live?** Shared but not durable — neither side owns
    that quadrant today.
 
 ## Facts not to re-derive
@@ -176,10 +184,10 @@ form participation with the code coming from a bundle instead of an import.
   mecha's, not TanStack's.
 - bun **cannot resolve remote imports at all** (reads the URL as a file path);
   deno resolves and caches them.
-- `guis/iris` is pnpm through the root workspace and imports only the
-  Playwright subpaths; `guis/snapcards` is bun and imports the auth half, the
+- One consuming application is pnpm through the root workspace and imports
+  only the Playwright subpaths; the other is bun and imports the auth half, the
   eslint rules, and eleven of the twelve mecha packages as `workspace:*`. So
-  mecha cannot move to deno without breaking snapcards.
+  mecha cannot move to deno without breaking the bun consumer.
 - `plugins/omnishell/interpreter` has **no package importers** — `terminal.cue`
   mounts it as statics. That is why it is the one piece that can move freely.
 - `WebAuthnAdapter`, `tailwind-preset.ts` and `lint/css/tokens.css` have zero
@@ -191,11 +199,5 @@ form participation with the code coming from a bundle instead of an import.
 `plugins/omnishell/interpreter/` (the implementation),
 `plugins/pronto/{schema.cue,emit.cue,SPEC.md,prelude.md}`,
 `libraries/mecha/cluster.cue`,
-`plugins/pronto/docs/2026-08-01-visual-lint.md`.
+`2026-08-01-visual-lint.md`.
 
-Branches: `docs/pronto-design` carries the platform work and thenote;
-`chore/omnishell-mecha-deno` carries the interpreter's move to deno and an
-unfinished attempt to publish the terminal's motion vocabulary as data — whose
-central claim (that the stylesheet cannot name an unpublished slot) is
-**false as it stands**: `--motion-ease` and `--motion-shift` are still
-hard-coded in the rule templates, and `#MotionCue.slot` is an open `string`.

@@ -3,7 +3,7 @@
 Written from the apps/truco compile, from questions that compile raised and
 could not answer inside the app. `2026-08-02-terminal-doctrine.md` names the
 roles, `-incremental-model.md` supplies the semantics under them, and
-`2026-08-12-derived-counts-the-reader-is-inside.md` works one derivation all
+`plugins/pronto/docs/2026-08-12-derived-counts-the-reader-is-inside.md` works one derivation all
 the way through. This doc answers a narrower question those three leave open:
 **what may wake a handler, and where does time come from.**
 

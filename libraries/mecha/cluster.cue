@@ -150,7 +150,7 @@ _devElectricSecret: "dev-electric-secret"
 				// it — but it is deliberately NOT published: the browser's
 				// six-connections-per-origin cap only exists on HTTP/1.1, and a
 				// second front door is a path that only ever runs on a laptop
-				// (plugins/pronto/docs/2026-08-09-connection-ceiling.md).
+				// (docs/2026-08-09-connection-ceiling.md).
 				ports: [
 					"${CADDY_TLS_HOST_PORT:-8443}:8443",
 				]

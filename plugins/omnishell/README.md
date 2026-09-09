@@ -8,7 +8,7 @@ HTML, a `data-live` region is a standing query in PostgREST's filter grammar, a
 form is the only way to change data, and a Jessie reduce is a pure function from
 rows to writes. Nothing here is React.
 
-> **Writing an app? Start with [DEVELOPING.md](DEVELOPING.md).** It covers the
+> **Writing an app? Start with [GUIDE.md](GUIDE.md).** It covers the
 > reduce contract, what wakes it and what it receives, the rules that bite, and
 > the mappings to Elm/TEA, Datalog, htmx and Datomic. `apps/shadcnui` is the
 > worked gallery for the presentation vocabulary; `apps/chess` is the reference
@@ -23,13 +23,15 @@ are documented below.
 
 | Concern | Where |
 |---|---|
-| Writing a screen — the contracts, in one page | [DEVELOPING.md](DEVELOPING.md) |
+| Writing a screen — the contracts, in one page | [GUIDE.md](GUIDE.md) |
 | Region grammar, bindings, forms, clicks | `interpreter/screen.js` (the comments are the spec) |
 | The reduce sandbox and its denylist | `plugins/pronto/jessie.ts` |
 | What may be declared: entities, screens, forms, seeds | `plugins/pronto/schema.cue` |
 | Emission — markup, `shell.yaml`, compose, docker | `plugins/pronto/write.ts` |
 | Design tokens and presets | `plugins/pronto/styles.ts`, `apps/shadcnui` |
-| Terminal doctrine, incremental model, the event surface | `plugins/pronto/docs/` |
+| Terminal doctrine, the event surface, the arguments | [`docs/`](docs/) |
+| Every `data-*`, with its meaning | [`docs/2026-07-30-the-binding-vocabulary.md`](docs/2026-07-30-the-binding-vocabulary.md) |
+| Changing the interpreter itself | [CONTRIBUTING.md](CONTRIBUTING.md) |
 
 The interpreter is loaded by `interpreter/shell.js` at runtime; it is plain ES
 modules and takes no build step.
@@ -137,11 +139,11 @@ AI component review + regression gate.
 import { reviewComponentScreenshot, detectRegression } from "@omnishell/core/lint/storybook/ai-review"
 ```
 
-### TODO: Distribution
+### Distribution
 
-Omnishell is consumed as TypeScript source, which is ideal for HMR (edit a lint rule, see the change immediately). But ESLint under Node ESM can't resolve extensionless `.ts` inter-module imports. Current workaround: `bun build` a bundle on demand, but this breaks HMR.
+Omnishell is consumed as TypeScript source, which is what makes HMR work — edit a lint rule, see the change immediately. The cost is that ESLint under Node ESM cannot resolve extensionless `.ts` inter-module imports, so a consumer either builds a bundle on demand and loses HMR, or runs ESLint under a resolver that handles `.ts`.
 
-The right fix: make omnishell a **workspace package** so bun/pnpm resolve imports natively.
+Resolving it means making omnishell a **workspace package**, so bun and pnpm resolve the imports natively. Neither path below is built.
 
 **Monorepo (bun workspace):**
 1. Add omnishell to the root `package.json` workspaces: `"plugins/omnishell"`
@@ -159,11 +161,14 @@ The right fix: make omnishell a **workspace package** so bun/pnpm resolve import
 
 **Also affected:** `createLayout` and `createAuth` — any consumer reaching them via relative paths (`../../../src/...`) breaks in worktrees. With workspace linking, these become `@omnishell/core/layout` and `@omnishell/core/auth`.
 
-## Development (this directory)
+## Development
 
 ```bash
-just setup    # install bun via mise
-just build    # typecheck (tsc --noEmit)
-just test     # the deno unit suite over test/
+just setup     # install bun via mise
+just build     # typecheck (tsc --noEmit)
+just test      # the deno unit suite over test/
 just integrate # Docker build, then that suite plus this target's share of the smokes
 ```
+
+[CONTRIBUTING.md](CONTRIBUTING.md) covers which test tier can see which kind of
+change, and the two invariants to preserve when touching the interpreter.

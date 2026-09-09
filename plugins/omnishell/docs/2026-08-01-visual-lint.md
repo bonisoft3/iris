@@ -1,18 +1,22 @@
 # How the visual lint suite reaches a pronto-emitted app
 
-Date: 2026-08-01. Status: design; nothing wired. Measurements in this
-document were taken against `apps/thenote` served statically (no compose
-stack) and driven with Playwright; they are reproducible with the recipe
-in §2.
+The suite this designed is built: `plugins/omnishell/check-visual.ts` runs the
+battery, `integrate` runs it, and §7's ranked plan is the order it landed in.
+What still holds here is the part that took measuring — which checks need a
+rendered page, which need a cluster, and which need neither — because that
+verdict is what decides where a new check hooks. Measurements were taken
+against `apps/thenote` served statically, driven with Playwright, and are
+reproducible with the recipe in §2. What the battery still cannot see is
+`PENDING.md`'s to list, not this doc's.
 
 `plugins/omnishell/src/lint/playwright/` holds nine DOM checks
 (theme-stability, focus-order, touch-targets, horizontal-overflow,
 interactive-overlap, constrained-images, cls, console-messages,
 viewport-bounds), the `visualLint` battery that runs seven of them, an AI
 `vision-review`, and a `route-coverage` crawler. Three consumers import
-it: `guis/iris` (through the `@omnishell/core/playwright/visual-lint`
-package export), `guis/snapcards` (relative path), and omnishell's own
-`playwright-tests/`. No emitted app is a consumer.
+it: two applications outside this package — one through the
+`@omnishell/core/playwright/visual-lint` export, one by relative path — and
+omnishell's own `playwright-tests/`. No emitted app is a consumer.
 
 The suite was written against a component storybook rendered one story per
 page at viewport width. A pronto app has neither: it has one storybook
@@ -129,8 +133,8 @@ instead of `window` — which is an additive parameter, not a rewrite.
 
 ## 5. The hook point
 
-`guis/iris/.say.yaml` and `guis/snapcards/.say.yaml` agree on a two-verb
-split, and neither uses `lint` for it:
+Both consuming applications' `.say.yaml` agree on a two-verb split, and
+neither uses `lint` for it:
 
 - **`integrate` @ `browser`** (`priority: -1`, `stop: true`) runs the
   deterministic DOM battery with no docker and no backend. Iris:
@@ -177,12 +181,11 @@ converge, that is a workspace change, not a pronto one.
 
 ## 6. Rules for touching shared code
 
-`checkThemeStability` and every sibling reach `guis/iris`,
-`guis/snapcards` and omnishell's own `playwright-tests/` through
-`visual-lint.ts`. Its behaviour is load-bearing for two shipped apps:
-`guis/iris/e2e/visual-lint.spec.ts` maintains a wrapper that drops this
-exact rule as flaky, and `playwright-tests/visual-lint.pw.ts` asserts on
-its output directly. **No check's default behaviour changes.** Everything
+`checkThemeStability` and every sibling reach both consuming applications
+and omnishell's own `playwright-tests/` through `visual-lint.ts`. Its
+behaviour is load-bearing for two shipped apps: one keeps a wrapper that
+drops this exact rule as flaky, and `playwright-tests/visual-lint.pw.ts`
+asserts on its output directly. **No check's default behaviour changes.** Everything
 pronto needs arrives as an optional parameter with today's behaviour as
 the default:
 

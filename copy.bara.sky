@@ -161,7 +161,7 @@ WORKFLOWS = [
                 [core.replace(
                     before = "Tags are prefixed per component: `plugins/bayt/vX.Y.Z`,\n`plugins/bayt/runtime/vX.Y.Z`. Tag the merge commit, and only once its SHA\nappears downstream as a `GitOrigin-RevId:` trailer — CI going green is not the\nsignal.",
                     after = "Tags are `vX.Y.Z` and `runtime/vX.Y.Z`. Tag the merge commit.",
-                    paths = glob(["DEVELOPING.md"]),
+                    paths = glob(["CONTRIBUTING.md"]),
                 )],
                 noop_behavior = "IGNORE_NOOP",
             ),
