@@ -229,7 +229,11 @@ SessionTouchOutcome: {
     durability: "live"          // the publication excludes it; see below
     writers:    "pipeline"
     fields: [
-        {name: "id", type: "uuid", pk: true},   // the tick's key, joined
+        {name: "id", type: "uuid", pk: true, default: "uuidv7()"},
+        // The tick answered, and never the key: a fan-out writes one row
+        // per tenant per tick, and a shared key makes one upsert address
+        // the same row twice.
+        {name: "tick_id", type: "uuid", ref: "<the emits entity>"},
         {name: "employer_id", type: "uuid", ref: "employer"},
         {name: "renewed", type: "bool"},        // not redirected to the door
         {name: "checked_at", type: "timestamptz"},
@@ -237,8 +241,9 @@ SessionTouchOutcome: {
 }
 ```
 
-One row per tenant per tick, sharing the tick's id, so a tick and its answers
-join. `renewed: false` is the interesting row: the session lapsed and the next
+One row per tenant per tick, naming the tick it answers, with
+`uniques: [{cols: ["tick_id", "employer_id"]}]` and the upsert targeting that
+pair (`?on_conflict=tick_id,employer_id`). `renewed: false` is the interesting row: the session lapsed and the next
 operation needs a fresh challenge. Nothing retries a touch — the next tick is
 five minutes away and recomputes the same answer.
 
@@ -263,10 +268,20 @@ So the whole thing is the app's own declaration:
 - the pipeline's `transform.aggregate` selects from it like any other table
 - no grant, no policy and no mecha change is involved
 
-The one rule worth stating because it is easy to get wrong: **do not put the
-cookies on the emits entity.** That table is CDC-published, so every tick would
-carry the credentials onto the bus, into Redis, and into any pipeline with a
-consumer group on `cdc-events`. Join to them at pipeline time instead.
+`service-only` settles the query path and only the query path. **A row's
+contents reach the bus whatever its policy says**: every `durability: "server"`
+entity is in the publication, conduit reads it by logical replication, and
+logical decoding answers to no RLS. So a credential in
+a column is a credential in Redis and in every consumer group on `cdc-events`,
+whether that column sits on the emits entity or on the restricted table beside
+it. The emits entity only makes it worse, by putting it there on every tick
+rather than on every write.
+
+The way out is not a policy. Keep the credential out of Postgres: store it
+wherever the app already keeps blobs and let the row carry its key, since a key
+on the bus is not a credential. Where it genuinely must be a column, `live`
+durability keeps it off this publication at the cost of putting it on
+Electric's, which is the browser's sync path — a trade, not an answer.
 
 ## The wake
 

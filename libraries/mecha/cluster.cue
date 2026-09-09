@@ -369,6 +369,12 @@ _devElectricSecret: "dev-electric-secret"
 						"rclone-s3": condition: "service_healthy"
 						imgproxy: condition:    "service_healthy"
 					}
+					// `launch` is what a consumer brings up, so a clock absent
+					// from here is a clock nothing starts. It pulls the ticker
+					// in behind it.
+					if len(X.state.schedules) > 0 {
+						clock: condition: "service_started"
+					}
 
 					// Consumer-added services (escape hatches) gate here by
 					// unification, which the closed definition would otherwise refuse.
