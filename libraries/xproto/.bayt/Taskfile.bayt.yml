@@ -1,0 +1,84 @@
+# generated from bayt.cue — do not edit
+includes:
+  build:
+    taskfile: ./Taskfile.build.yaml
+    dir: ../
+    optional: true
+  setup:
+    taskfile: ./Taskfile.setup.yaml
+    dir: ../
+    optional: true
+  descriptor:
+    taskfile: ./Taskfile.descriptor.yaml
+    dir: ../
+    optional: true
+  gen-go:
+    taskfile: ./Taskfile.gen-go.yaml
+    dir: ../
+    optional: true
+  doctor:
+    taskfile: ./Taskfile.doctor.yaml
+    dir: ../
+    optional: true
+  test:
+    taskfile: ./Taskfile.test.yaml
+    dir: ../
+    optional: true
+  integrate:
+    taskfile: ./Taskfile.integrate.yaml
+    dir: ../
+    optional: true
+  generate:
+    taskfile: ./Taskfile.generate.yaml
+    dir: ../
+    optional: true
+  lint:
+    taskfile: ./Taskfile.lint.yaml
+    dir: ../
+    optional: true
+  plugins_jvm:
+    taskfile: ../../../plugins/jvm/Taskfile.yml
+    dir: ../../../plugins/jvm/
+    optional: true
+  libraries_logs:
+    taskfile: ../../../libraries/logs/Taskfile.yml
+    dir: ../../../libraries/logs/
+    optional: true
+  workspaceroot:
+    taskfile: ../../../Taskfile.yml
+    dir: ../../../
+    optional: true
+  plugins_libstoml:
+    taskfile: ../../../plugins/libstoml/Taskfile.yml
+    dir: ../../../plugins/libstoml/
+    optional: true
+tasks:
+  cross_plugins_jvm_build:
+    internal: true
+    run: once
+    status:
+    - test ! -e ../../.git
+    cmds:
+    - "{{.TASK_EXE}} -t ../../plugins/jvm/.bayt/Taskfile.yml bayt:build"
+  cross_libraries_logs_build:
+    internal: true
+    run: once
+    status:
+    - test ! -e ../../.git
+    cmds:
+    - "{{.TASK_EXE}} -t ../../libraries/logs/.bayt/Taskfile.yml bayt:build"
+  cross_workspaceroot_setup:
+    internal: true
+    run: once
+    status:
+    - test ! -e ../../.git
+    cmds:
+    - "{{.TASK_EXE}} -t ../../.bayt/Taskfile.yml bayt:setup"
+  cross_plugins_libstoml_build:
+    internal: true
+    run: once
+    status:
+    - test ! -e ../../.git
+    cmds:
+    - "{{.TASK_EXE}} -t ../../plugins/libstoml/.bayt/Taskfile.yml bayt:build"
+version: "3"

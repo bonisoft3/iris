@@ -1,0 +1,37 @@
+load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@io_grpc_grpc_java//:java_grpc_library.bzl", "java_grpc_library")
+load("//:kt_jvm_grpc_head.bzl", "kt_jvm_grpc_library", "kt_jvm_proto_library")
+
+proto_library(
+    name = "trash_proto",
+    srcs = glob(["trash/**/*.proto"]),
+    deps = [
+        "@com_google_protobuf//:timestamp_proto",
+        "@com_google_googleapis//google/type:latlng_proto",
+        "@com_google_googleapis//google/type:money_proto",
+        "@com_google_googleapis//google/type:postal_address_proto",
+    ]
+)
+
+java_proto_library(
+    name = "trash_java_proto",
+    deps = [":trash_proto"],
+)
+
+java_grpc_library(
+    name = "trash_java_grpc",
+    srcs = [":trash_proto"],
+    deps = [":trash_java_proto"],
+)
+
+kt_jvm_proto_library(
+    visibility = [ "//visibility:public" ],
+    name = "trash_kotlin_proto",
+    deps = [":trash_proto"],
+)
+
+kt_jvm_grpc_library(
+    name = "trash_kotlin_grpc",
+    srcs = [":trash_proto"],
+    deps = [":trash_java_proto"],
+)

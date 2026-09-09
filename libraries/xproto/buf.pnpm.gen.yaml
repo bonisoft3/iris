@@ -1,0 +1,10 @@
+version: v1
+managed:
+  enabled: true
+plugins:
+  - plugin: buf.build/bufbuild/es:v1.4.1
+    opt: target=ts
+    out: .turbo/bufbuild
+  - plugin: buf.build/connectrpc/es:v1.1.3
+    opt: target=ts
+    out: .turbo/bufbuild

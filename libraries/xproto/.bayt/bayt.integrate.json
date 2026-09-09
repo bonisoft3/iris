@@ -1,0 +1,585 @@
+{
+  "_generated_from": "bayt.cue (do not edit)",
+  "bake": {
+    "platforms": [],
+    "tags": [],
+    "args": {},
+    "cache": {
+      "from": [
+        "type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-integrate",
+        "type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-integrate"
+      ],
+      "to": [
+        "type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-integrate,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3"
+      ]
+    }
+  },
+  "compose": {
+    "up": true,
+    "manual": true,
+    "environment": {
+      "GRADLE_USER_HOME": "/opt/gradle-home"
+    },
+    "ports": [],
+    "volumes": [],
+    "depends_on": {}
+  },
+  "dockerfile": {
+    "preamble": [],
+    "preambleCopyContexts": [],
+    "from": {
+      "ref": ":build",
+      "name": "libraries_xproto-build"
+    },
+    "mounts": [
+      {
+        "type": "cache",
+        "target": "/root/.gradle",
+        "scope": "global",
+        "required": false
+      },
+      {
+        "type": "cache",
+        "target": ".gradle/configuration-cache",
+        "scope": "target",
+        "required": false
+      }
+    ],
+    "add": [],
+    "secrets": {},
+    "extra_hosts": [],
+    "epilogue": [],
+    "copy": [],
+    "healthcheck": null,
+    "expose": [],
+    "entrypoint": null,
+    "incremental": false,
+    "cmd": null
+  },
+  "name": "integrate",
+  "project": "libraries_xproto",
+  "dir": "libraries/xproto",
+  "activate": "mise x --",
+  "srcs": {
+    "globs": [
+      "src/it/**/*.java",
+      "src/it/**/*.kt",
+      "src/it/resources/**/*"
+    ],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [
+      "build/test-results/integrationTest/**/*.xml",
+      "build/reports/tests/integrationTest/**/*"
+    ],
+    "exclude": []
+  },
+  "state": {
+    "globs": []
+  },
+  "env": {},
+  "synthetics": {
+    "bayt": {
+      "name": "integrate_bayt",
+      "project": "libraries_xproto",
+      "dir": "libraries/xproto",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          ".bayt/compose.integrate.yaml",
+          ".bayt/Dockerfile.integrate",
+          ".bayt/bayt.integrate.json",
+          ".bayt/Taskfile.yml",
+          ".bayt/Taskfile.bayt.yml",
+          ".bayt/Taskfile.integrate.yaml",
+          ".bayt/compose.integrate.closure.yaml",
+          ".bayt/init.gradle.kts"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "libraries/xproto/.bayt/compose.integrate.yaml",
+        "libraries/xproto/.bayt/compose.build.yaml",
+        "libraries/xproto/.bayt/compose.setup.yaml",
+        "plugins/jvm/.bayt/compose.build.yaml",
+        "plugins/jvm/.bayt/compose.setup.yaml",
+        ".bayt/compose.setup.yaml",
+        "plugins/libstoml/.bayt/compose.build.yaml",
+        "plugins/libstoml/.bayt/compose.setup.yaml",
+        "libraries/logs/.bayt/compose.build.yaml",
+        "libraries/logs/.bayt/compose.setup.yaml"
+      ]
+    },
+    "outs": {
+      "name": "integrate_outs",
+      "project": "libraries_xproto",
+      "dir": "libraries/xproto",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          "build/test-results/integrationTest/**/*.xml",
+          "build/reports/tests/integrationTest/**/*"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "libraries/xproto/.bayt/compose.integrate.yaml",
+        "libraries/xproto/.bayt/compose.build.yaml",
+        "libraries/xproto/.bayt/compose.setup.yaml",
+        "plugins/jvm/.bayt/compose.build.yaml",
+        "plugins/jvm/.bayt/compose.setup.yaml",
+        ".bayt/compose.setup.yaml",
+        "plugins/libstoml/.bayt/compose.build.yaml",
+        "plugins/libstoml/.bayt/compose.setup.yaml",
+        "libraries/logs/.bayt/compose.build.yaml",
+        "libraries/logs/.bayt/compose.setup.yaml"
+      ]
+    },
+    "srcs": {
+      "name": "integrate_srcs",
+      "project": "libraries_xproto",
+      "dir": "libraries/xproto",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          "src/it/**/*.java",
+          "src/it/**/*.kt",
+          "src/it/resources/**/*",
+          "build.gradle.kts",
+          "src/main/**/*.gradle.kts",
+          "gradle.properties",
+          "gradle/wrapper/gradle-wrapper.jar",
+          "gradlew",
+          "src/main/**/*.java",
+          "src/main/**/*.kt",
+          "gradle/lib[s].versions.toml",
+          "settings.gradle.kts",
+          "src/main/**/*.sq",
+          "src/main/**/*.sql",
+          "src/main/**/*.sqm",
+          "src/**/*.kt",
+          "src/**/*.gradle.kts",
+          "src/**/*.java",
+          "src/**/*.sql",
+          "src/**/*.sq",
+          "src/**/*.sqm",
+          "trash/**/*.proto",
+          "buf.gradle.gen.yaml",
+          "buf.yaml",
+          "buf.lock",
+          "gradle/wrapper/gradle-wrapper.properties",
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [
+        "build_srcs",
+        "setup_srcs"
+      ],
+      "transitiveCrossDeps": [
+        {
+          "name": "build_srcs",
+          "project": "plugins_libstoml",
+          "dir": "plugins/libstoml",
+          "outs": {
+            "globs": [
+              "build.gradle.kts",
+              "src/main/**/*.gradle.kts",
+              "gradle.properties",
+              "gradle/wrapper/gradle-wrapper.jar",
+              "gradlew",
+              "src/main/**/*.java",
+              "src/main/**/*.kt",
+              "gradle/lib[s].versions.toml",
+              "settings.gradle.kts",
+              "src/main/**/*.sq",
+              "src/main/**/*.sql",
+              "src/main/**/*.sqm",
+              "gradle/wrapper/gradle-wrapper.properties",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "name": "build_srcs",
+          "project": "plugins_jvm",
+          "dir": "plugins/jvm",
+          "outs": {
+            "globs": [
+              "build.gradle.kts",
+              "src/main/**/*.gradle.kts",
+              "gradle.properties",
+              "gradle/wrapper/gradle-wrapper.jar",
+              "gradlew",
+              "src/main/**/*.java",
+              "src/main/**/*.kt",
+              "gradle/lib[s].versions.toml",
+              "settings.gradle.kts",
+              "src/main/**/*.sq",
+              "src/main/**/*.sql",
+              "src/main/**/*.sqm",
+              "gradle/wrapper/gradle-wrapper.properties",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "name": "build_srcs",
+          "project": "libraries_logs",
+          "dir": "libraries/logs",
+          "outs": {
+            "globs": [
+              "build.gradle.kts",
+              "src/main/**/*.gradle.kts",
+              "gradle.properties",
+              "gradle/wrapper/gradle-wrapper.jar",
+              "gradlew",
+              "src/main/**/*.java",
+              "src/main/**/*.kt",
+              "gradle/lib[s].versions.toml",
+              "settings.gradle.kts",
+              "src/main/**/*.sq",
+              "src/main/**/*.sql",
+              "src/main/**/*.sqm",
+              "gradle/wrapper/gradle-wrapper.properties",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "name": "setup_srcs",
+          "project": "workspaceroot",
+          "dir": "",
+          "outs": {
+            "globs": [
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock",
+              "gradle/libs.versions.toml",
+              "plugins/devserver/dind.sh"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "plugins_libstoml",
+          "name": "setup_srcs",
+          "dir": "plugins/libstoml",
+          "outs": {
+            "globs": [
+              "gradle/wrapper/gradle-wrapper.properties",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "plugins_jvm",
+          "name": "setup_srcs",
+          "dir": "plugins/jvm",
+          "outs": {
+            "globs": [
+              "gradle/wrapper/gradle-wrapper.properties",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "libraries_logs",
+          "name": "setup_srcs",
+          "dir": "libraries/logs",
+          "outs": {
+            "globs": [
+              "gradle/wrapper/gradle-wrapper.properties",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "libraries_xproto",
+          "name": "build_srcs",
+          "dir": "libraries/xproto",
+          "outs": {
+            "globs": [
+              "build.gradle.kts",
+              "src/main/**/*.gradle.kts",
+              "gradle.properties",
+              "gradle/wrapper/gradle-wrapper.jar",
+              "gradlew",
+              "src/main/**/*.java",
+              "src/main/**/*.kt",
+              "gradle/lib[s].versions.toml",
+              "settings.gradle.kts",
+              "src/main/**/*.sq",
+              "src/main/**/*.sql",
+              "src/main/**/*.sqm",
+              "src/**/*.kt",
+              "src/**/*.gradle.kts",
+              "src/**/*.java",
+              "src/**/*.sql",
+              "src/**/*.sq",
+              "src/**/*.sqm",
+              "build.gradle.kts",
+              "settings.gradle.kts",
+              "gradle.properties",
+              "gradlew",
+              "gradle/wrapper/gradle-wrapper.jar",
+              "trash/**/*.proto",
+              "buf.gradle.gen.yaml",
+              "buf.yaml",
+              "buf.lock"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "libraries_xproto",
+          "name": "setup_srcs",
+          "dir": "libraries/xproto",
+          "outs": {
+            "globs": [
+              "gradle/wrapper/gradle-wrapper.properties",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock"
+            ],
+            "exclude": []
+          }
+        }
+      ],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "libraries/xproto/.bayt/compose.integrate.yaml",
+        "libraries/xproto/.bayt/compose.build.yaml",
+        "libraries/xproto/.bayt/compose.setup.yaml",
+        "plugins/jvm/.bayt/compose.build.yaml",
+        "plugins/jvm/.bayt/compose.setup.yaml",
+        ".bayt/compose.setup.yaml",
+        "plugins/libstoml/.bayt/compose.build.yaml",
+        "plugins/libstoml/.bayt/compose.setup.yaml",
+        "libraries/logs/.bayt/compose.build.yaml",
+        "libraries/logs/.bayt/compose.setup.yaml"
+      ]
+    }
+  },
+  "taskfile": {
+    "run": "when_changed",
+    "incremental": true,
+    "preconditions": []
+  },
+  "visibility": "internal",
+  "emitsSrcs": true,
+  "deps": [
+    "build"
+  ],
+  "sameProjectDeps": [
+    "build"
+  ],
+  "transitiveDeps": [
+    "build",
+    "setup"
+  ],
+  "transitiveCrossDeps": [
+    {
+      "name": "build",
+      "project": "plugins_libstoml",
+      "dir": "plugins/libstoml",
+      "outs": {
+        "globs": [
+          "build/**/*",
+          ".gradle/**/*",
+          "build.gradle.kts",
+          "settings.gradle.kts",
+          "gradle.properties",
+          "gradlew",
+          "gradle/wrapper/**/*",
+          "gradle/lib[s].versions.toml"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "build",
+      "project": "plugins_jvm",
+      "dir": "plugins/jvm",
+      "outs": {
+        "globs": [
+          "build/**/*",
+          ".gradle/**/*",
+          "build.gradle.kts",
+          "settings.gradle.kts",
+          "gradle.properties",
+          "gradlew",
+          "gradle/wrapper/**/*",
+          "gradle/lib[s].versions.toml"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "build",
+      "project": "libraries_logs",
+      "dir": "libraries/logs",
+      "outs": {
+        "globs": [
+          "build/**/*",
+          ".gradle/**/*",
+          "build.gradle.kts",
+          "settings.gradle.kts",
+          "gradle.properties",
+          "gradlew",
+          "gradle/wrapper/**/*",
+          "gradle/lib[s].versions.toml"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "setup",
+      "project": "workspaceroot",
+      "dir": "",
+      "outs": {
+        "globs": [
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock",
+          "gradle/libs.versions.toml",
+          "plugins/devserver/dind.sh",
+          ".task/bayt/setup.hash"
+        ],
+        "exclude": []
+      }
+    }
+  ],
+  "upClosure": [
+    "libraries/xproto/.bayt/compose.integrate.yaml",
+    "libraries/xproto/.bayt/compose.build.yaml",
+    "libraries/xproto/.bayt/compose.setup.yaml",
+    "plugins/jvm/.bayt/compose.build.yaml",
+    "plugins/jvm/.bayt/compose.setup.yaml",
+    ".bayt/compose.setup.yaml",
+    "plugins/libstoml/.bayt/compose.build.yaml",
+    "plugins/libstoml/.bayt/compose.setup.yaml",
+    "libraries/logs/.bayt/compose.build.yaml",
+    "libraries/logs/.bayt/compose.setup.yaml"
+  ],
+  "chainedDeps": [
+    {
+      "name": "build",
+      "project": "libraries_xproto",
+      "dir": "libraries/xproto",
+      "outs": {
+        "globs": [
+          "build/**/*",
+          ".gradle/**/*",
+          "build.gradle.kts",
+          "settings.gradle.kts",
+          "gradle.properties",
+          "gradlew",
+          "gradle/wrapper/**/*",
+          "gradle/lib[s].versions.toml"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "setup",
+      "project": "libraries_xproto",
+      "dir": "libraries/xproto",
+      "outs": {
+        "globs": [
+          "gradle/wrapper/gradle-wrapper.properties",
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock",
+          ".task/bayt/setup.hash"
+        ],
+        "exclude": []
+      }
+    }
+  ],
+  "cmds": [
+    {
+      "srcs": {
+        "globs": [
+          "src/it/**/*.java",
+          "src/it/**/*.kt",
+          "src/it/resources/**/*"
+        ],
+        "exclude": [],
+        "defaultGlobs": null,
+        "defaultExclude": null
+      },
+      "do": "./gradlew --init-script .bayt/init.gradle.kts integrationTest --rerun",
+      "name": "builtin",
+      "shell": "exec",
+      "stop": false
+    }
+  ],
+  "cache": {
+    "full": true,
+    "similar": false
+  }
+}

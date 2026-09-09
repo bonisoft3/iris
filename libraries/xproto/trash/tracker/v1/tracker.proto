@@ -1,0 +1,208 @@
+syntax = "proto3";
+
+package trash.tracker.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/type/money.proto";
+import "google/type/latlng.proto";
+import "google/type/postal_address.proto";
+
+option go_package = "xproto/gen/books/v1";
+
+// The greeting service definition.
+service TrackerService {
+  rpc Track(TrackRequest) returns (TrackResponse) {}
+  rpc Classify(ClassifyRequest) returns (ClassifyResponse) {}
+  rpc TrackUser(UserIrisRequest) returns (UserIrisResponse) {}
+  rpc Dropout(DropoutRequest) returns (DropoutResponse){}
+  rpc PlaceOpen(PlaceOpenRequest) returns (PlaceOpenResponse) {}
+  rpc TranslateOnDemand(TranslateRequest) returns (TranslateResponse) {}
+  rpc SaveUser(UserIrisRequest) returns (UserIrisResponse) {}
+  rpc RegisterDonation(DonationRequest) returns (DonationResponse) {}
+  rpc UserAlreadyAskedForThisItem(DonationsLookup) returns (AlreadyAskedForThisItem) {}
+  rpc GetUserInfo(UserInfoRequest) returns (UserInfoResponse) {}
+  rpc EditUser(UserIrisRequest) returns (UserIrisResponse) {}
+}
+
+service NewsService {
+  rpc ManyNews(NewsRequest) returns (NewsResponse) {}
+}
+service ObjectMaterialService {
+  rpc ObjectMaterial(ObjectMaterialRequest) returns (ObjectMaterialResponse) {}
+}
+
+service DisposalPlaceService {
+  rpc AddDisposalPlace(DisposalPlaceRequest) returns (DisposalPlaceResponse) {}
+}
+
+message DonationsLookup {
+  string user_id = 1;
+  string item_id = 2;
+}
+
+message UserInfoRequest {
+  string user_id = 1;
+}
+
+message UserInfoResponse {
+  string phone_number = 1;
+  string address = 2;
+  string address_complement = 3;
+}
+
+message AlreadyAskedForThisItem {
+  bool already_asked_for_this_item = 1;
+}
+
+message DonationResponse {
+  string donation_id = 1;
+}
+
+message DonationRequest {
+  string firebase_id = 1;
+  string item_id = 2;
+}
+
+// The request message containing the user's name.
+message TrackRequest {
+  TrashItem item = 1;
+}
+
+// The response message containing the greetings
+message TrackResponse {
+  string id = 1;
+  bool is_disposal_place = 2;
+}
+
+message UserIrisRequest {
+  UserIris user = 1;
+}
+
+message UserIrisResponse {
+  string id = 1;
+}
+
+message PlaceOpenRequest {
+  string place_id = 1;
+}
+
+message PlaceOpenResponse {
+  bool open = 1;
+}
+
+message NearbyRecyclingPlaces {
+  string name = 1;
+  string distance = 2;
+  string formatted_address = 3;
+  string phone_number = 4;
+  string place_id = 5;
+}
+
+message TrashItem {
+  string id = 1;
+  string description = 2;
+  string picture = 3;
+  google.protobuf.Timestamp ts = 4;
+  google.type.LatLng latlng = 5;
+  google.type.PostalAddress address = 6;
+  google.type.Money price = 7;
+  string icon = 8;
+  string label = 9;
+  string caption = 10;
+  string disposal_instructions = 11;
+  string user_id = 12;
+  bool tagged_as_innapropriate = 13;
+  string sub_classifications = 14;
+  string user_language = 15;
+  string user_city = 16;
+  repeated NearbyRecyclingPlaces nearby_recycling_places = 17;
+  string object_material = 18;
+  bool is_disposal_place = 19;
+  string model = 20;
+}
+
+message UserIris {
+  string id = 1;
+  google.protobuf.Timestamp ts = 2;
+  string firebase_id = 3;
+  string phone_number = 4;
+  string home_address = 5;
+  string address_complement = 6;
+}
+
+message NewsItem {
+  string id = 1;
+  google.protobuf.Timestamp saved_on = 2;
+  string url_to_image = 3;
+  string title = 4;
+  string source_name = 5;
+  string description = 6;
+  string url = 7;
+  google.protobuf.Timestamp news_item_date = 8;
+  string lang = 15;
+}
+
+message NewsRequest {
+  repeated NewsItem news = 1;
+}
+
+message NewsResponse {
+  repeated string ids = 1;
+}
+
+
+message DropoutRequest {
+  string user_id = 1;
+}
+
+message DropoutResponse {
+  string user_id = 1;
+}
+
+message ObjectMaterialRequest {
+  string picture = 1;
+}
+
+message ObjectMaterialResponse {
+  string object_material = 1;
+}
+
+message ClassifyRequest {
+  string trash_item_id = 1;
+}
+
+message ClassifyResponse {
+  string icon = 1;
+  string label = 2;
+}
+
+message DisposalPlaceLocation {
+  string id = 1;
+  google.protobuf.Timestamp created_on = 2;
+  string material_type = 3;
+  string user_id = 4;
+  google.type.LatLng latlng = 5;
+  string img_url = 6;
+}
+
+message DisposalPlaceRequest {
+  DisposalPlaceLocation disposal_place = 1;
+}
+
+message DisposalPlaceResponse {
+  string id = 1;
+}
+
+message TranslateRequest {
+  string item_id = 1;
+  string target_language = 2;
+}
+
+message TrashItemTranslations {
+  string caption = 1;
+  string disposal_instructions = 2;
+}
+
+message TranslateResponse {
+  string translation_id = 1;
+}

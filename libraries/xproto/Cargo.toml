@@ -1,0 +1,18 @@
+[package]
+name = "xproto"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+
+[lib]  # library with all protos
+name = "xproto"
+path = "xproto.rs"
+# https://stackoverflow.com/q/66074003, https://stackoverflow.com/a/66759106
+doctest = false 
+
+[dependencies]
+tonic = { workspace = true }
+prost = { workspace = true }
+serde = { workspace = true }
+pbjson = { workspace = true }
