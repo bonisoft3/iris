@@ -33,6 +33,9 @@ _devElectricSecret: "dev-electric-secret"
 	state: {
 		migrations: [...string]
 		pipelines: [...{name: string, file: string}]
+		// Names only: the cluster needs to know whether any schedule exists,
+		// never what it says. The seed migration carries the rest.
+		schedules: [...string]
 	}
 
 	capabilities: {
@@ -314,6 +317,36 @@ _devElectricSecret: "dev-electric-secret"
 						path:   p.file
 						target: "/pipelines/\(p.name).yaml"
 					}]
+				}
+			}
+			// Only an app that declares a schedule gets a clock. A ticker with
+			// nothing to sweep is a container answering pokes nobody sends.
+			if len(X.state.schedules) > 0 {
+				ticker: {
+					build: {context: "\(X.meta.mechaPath)/services/ticker", dockerfile: "Dockerfile"}
+					depends_on: crud: condition: "service_healthy"
+					environment: {
+						// Straight to PostgREST, like the pipelines above.
+						CRUD_URL: "http://crud:3000"
+						// mesh-events, never mesh: the wake has to reach the
+						// daprd bundled with the WAL reader and the pipeline
+						// worker, which is the unit asleep at cloud tier.
+						MESH_URL:    "http://mesh-events:3500"
+						SERVICE_JWT: "${SERVICE_JWT:-\(_devServiceJwt)}"
+					}
+					restart: "on-failure"
+				}
+				// What pokes the ticker. services/clock/clock.yaml states the
+				// pipeline and why the cadence is what it is.
+				clock: {
+					build: {context: X.meta.mechaPath, dockerfile: "services/clock/Dockerfile"}
+					depends_on: ticker: condition: "service_started"
+					environment: {
+						POKE_INTERVAL: "${POKE_INTERVAL:-60s}"
+						POKE_CALLER:   "compose"
+						SERVICE_JWT:   "${SERVICE_JWT:-\(_devServiceJwt)}"
+					}
+					restart: "on-failure"
 				}
 			}
 			launch: {

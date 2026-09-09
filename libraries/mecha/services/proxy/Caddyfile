@@ -31,6 +31,12 @@
 		}
 	}
 
+	# Mounted WITH the prefix: the ticker answers POST /poke and 404s
+	# everything else, so stripping would 404 every poke.
+	handle /poke {
+		reverse_proxy ticker:9998
+	}
+
 	handle /health {
 		respond "OK" 200
 	}

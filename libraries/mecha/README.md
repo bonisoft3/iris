@@ -167,6 +167,8 @@ In production on Cloud Run, Conduit, rpk (transform), and Dapr are bundled as si
 
 The key insight: CDC consumers (Conduit WAL reader) and stream consumers (rpk Pub/Sub pull) need continuous CPU, but by bundling them with the ingress container (Dapr), they get CPU only while the pod is alive. One public-facing ingress container (Dapr) receives the first request, which wakes all sidecars. When traffic stops, the entire unit scales to zero — no orphaned CDC readers burning CPU on an idle database.
 
+Nothing in the user's request path talks to Dapr, so that first request has to come from somewhere. It is the ticker's (`services/ticker`): a clock inside the unit cannot wake the unit, which is why a periodic wake is a component and not a pipeline input.
+
 ```
 Cloud Run multi-container service
 ┌─────────────────────────────────────────────┐
@@ -192,7 +194,7 @@ Cloud Run multi-container service
 | Real-time sync | ElectricSQL | HTTP shape stream API | same | Cloud Run |
 | Object storage | rclone-s3 | rclone.conf | local filesystem | GCS |
 | Image processing | imgproxy | URL-based transforms | same | Cloud Run |
-| Heartbeat | rpk generate input | Co-located, scales with activity | same | same |
+| Periodic wake | ticker (`services/ticker`) | Five-field cron in the `schedule` table | same | same |
 
 ### Key design decisions (v2)
 

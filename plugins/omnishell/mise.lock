@@ -19,6 +19,11 @@ checksum = "sha256:764389a4d499c56e7b950d4d7d9bb52a9a55b87717d25f6ce65faee895dfa
 url = "https://github.com/denoland/deno/releases/download/v2.3.7/deno-aarch64-apple-darwin.zip"
 url_api = "https://api.github.com/repos/denoland/deno/releases/assets/266694481"
 
+[tools."github:denoland/deno"."platforms.macos-x64"]
+checksum = "sha256:49655e8059ffd59976bf23f9ed0d843c9c6e33ceb3d0e780bd3d87ee5e051734"
+url = "https://github.com/denoland/deno/releases/download/v2.3.7/deno-x86_64-apple-darwin.zip"
+url_api = "https://api.github.com/repos/denoland/deno/releases/assets/266642498"
+
 [tools."github:denoland/deno"."platforms.windows-x64"]
 checksum = "sha256:5c3b396d190efa2c348a1935cbfec8e7eac2d428efef3b413174ebebbb6817d4"
 url = "https://github.com/denoland/deno/releases/download/v2.3.7/deno-x86_64-pc-windows-msvc.zip"

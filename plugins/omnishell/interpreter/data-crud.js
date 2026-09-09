@@ -214,6 +214,38 @@ export function upsertKey(uniques, pk, owner, values) {
   return candidates.find((cols) => cols.every((c) => values[c] !== undefined || c === owner)) ?? null;
 }
 
+/**
+ * How many OTHER readers a fold sink counts, before this reader's own intent.
+ *
+ * Pure on purpose: the caller looks the reader's source row and private pair
+ * out of the local collections and hands them in, so the rule this file exists
+ * to state can be tested without a client, a network or a tier.
+ */
+const stateOf = (p, r) => (r[p.retracted] == null ? 1 : 0);
+
+// Every input is a synced, persisted collection, so this answers at boot and
+// stays answerable offline — there is no branch that waits on the network.
+export function othersFor(p, sinkRow, mine, pair) {
+  const total = sinkRow[p.projects];
+  const acked = mine !== undefined && mine.$synced !== false && mine.txid != null;
+  // The public total's read is at or after this exact acknowledged version,
+  // so it counted the reader as the row now reads. No pair needed, and this
+  // is the one question a watermark answers exactly: two server txids about
+  // versions that exist. It is also what keeps a first favourite from
+  // spiking — the total starts including the reader before their pair
+  // arrives, and without this the reader adds themselves twice.
+  if (acked && sinkRow[p.watermark] != null && sinkRow[p.watermark] >= mine.txid) {
+    return total - stateOf(p, mine);
+  }
+  // The read predates the reader's latest change, so the freshest total
+  // cannot be paired with anything the reader knows. The pair's own read is
+  // internally consistent whatever has happened since: older, never wrong,
+  // and never a frozen pixel.
+  if (pair !== undefined) return pair[p.pair.total] - pair[p.pair.counted];
+  // No pair was ever written, so no read has ever counted this reader.
+  return total;
+}
+
 export function createStore(base = "", cfg = {}) {
   // cfg.local names the browser-only tiers (shell.yaml `local:`), which are
   // collections like any other here — read by a region, mutated by a form —
@@ -626,45 +658,12 @@ export function createStore(base = "", cfg = {}) {
   // bounded row cannot carry unbounded history. Every rule tried here failed at
   // some number of changes. So the pipeline states it instead, per reader, in a
   // table RLS keeps private.
-  const naturalOf = (p, r) => {
-    const owner = access[p.from]?.owner;
-    const cols = p.dedupe?.length ? p.dedupe : [keyOf(p.from)];
-    return cols.map((c) => r[c] ?? (c === owner ? userId() : undefined)).join("\u0000");
-  };
-  const stateOf = (p, r) => (r[p.retracted] == null ? 1 : 0);
-
-  // Every input is a synced, persisted collection, so this answers at boot and
-  // stays answerable offline — there is no branch that waits on the network.
-  function othersFor(p, sinkRow, mine) {
-    const total = sinkRow.favorite_count;
-    const acked = mine !== undefined && mine.$synced !== false && mine.txid != null;
-    // The public total's read is at or after this exact acknowledged version,
-    // so it counted the reader as the row now reads. No pair needed, and this
-    // is the one question a watermark answers exactly: two server txids about
-    // versions that exist. It is also what keeps a first favourite from
-    // spiking — the total starts including the reader before their pair
-    // arrives, and without this the reader adds themselves twice.
-    if (acked && sinkRow[p.watermark] != null && sinkRow[p.watermark] >= mine.txid) {
-      return total - stateOf(p, mine);
-    }
-    const pairs = client.collections[p.pair.table];
-    const pair = pairs?.toArray.find(
-      (r) => visible(p.pair.table, r) && String(r[p.key]) === String(sinkRow[p.key]),
-    );
-    // The read predates the reader's latest change, so the freshest total
-    // cannot be paired with anything the reader knows. The pair's own read is
-    // internally consistent whatever has happened since: older, never wrong,
-    // and never a frozen pixel.
-    if (pair !== undefined) return pair[p.pair.total] - pair[p.pair.counted];
-    // No pair was ever written, so no read has ever counted this reader.
-    return total;
-  }
-
   async function project(table, rows) {
     const p = foldSinks.get(table);
     if (p === undefined || rows.length === 0 || p.pair === undefined) return rows;
     const source = client.collections[p.from];
     if (source === undefined) return rows;
+    const pairs = client.collections[p.pair.table];
     return rows.map((sinkRow) => {
       const k = sinkRow[p.key];
       // One row per natural key: the unique index says the reader holds at
@@ -674,8 +673,13 @@ export function createStore(base = "", cfg = {}) {
         if (r[p.key] !== k || !visible(p.from, r)) continue;
         if (mine === undefined || (mine.txid ?? Infinity) < (r.txid ?? Infinity)) mine = r;
       }
+      const pair = pairs?.toArray.find(
+        (r) => visible(p.pair.table, r) && String(r[p.key]) === String(k),
+      );
       const intent = mine === undefined ? 0 : stateOf(p, mine);
-      return { ...sinkRow, favorite_count: othersFor(p, sinkRow, mine) + intent };
+      // The projected column is the one the fold DECLARES; the interpreter is
+      // generic and must never name an app's column.
+      return { ...sinkRow, [p.projects]: othersFor(p, sinkRow, mine, pair) + intent };
     });
   }
 

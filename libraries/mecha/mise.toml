@@ -16,6 +16,7 @@ aqua.minisign = false
 "github:bufbuild/buf" = "1.66.1"
 "github:cue-lang/cue" = "0.16.1"
 "github:hairyhenderson/gomplate" = "5.0.0"
+"github:denoland/deno" = "v2.3.7"
 "github:go-task/task" = "v3.49.1"
 "github:dapr/dapr" = "1.17.3"
 "github:dapr/cli" = "1.17.0"

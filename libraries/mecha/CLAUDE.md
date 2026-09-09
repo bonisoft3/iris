@@ -192,6 +192,7 @@ say launch
 - `services/mesh/` — Dapr sidecar with Redis Streams pubsub + resiliency
 - `services/cdc/` — Conduit CDC (PostgreSQL WAL → HTTP)
 - `services/transform/` — rpk bloblang pipelines
+- `services/ticker/` — periodic wake: `POST /poke` → one row per due tick (see its README; the argument is `docs/2026-09-08-a-tick-needs-no-durability.md`)
 
 ### Infrastructure
 - `compose.yml` — Docker Compose with additive profiles

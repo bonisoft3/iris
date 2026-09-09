@@ -84,13 +84,25 @@ tasks:
   # ================================================================
 
   test:
-    desc: "Run unit tests: cue vet + buf lint (pure, cross-platform)"
+    desc: "Run unit tests: cue vet + buf lint + Deno services (pure, cross-platform)"
     deps: [buf:generate]
     cmds:
       # Select packages explicitly: bayt.cue adds a `mecha` package to the
       # root, so an unqualified `cue vet ./...` errors on the mixed dir.
       - cue vet ./...:tmpl ./...:database
       - buf lint proto
+      - task: test:ticker
+
+  test:ticker:
+    desc: "ticker unit tests (pure: no clock, no network)"
+    dir: services/ticker
+    cmds:
+      # mise x puts the real tool bin dir on PATH — see cue:generate.
+      - mise x -- deno test --allow-read --allow-env .
+    sources:
+      - "*.ts"
+      - "deno.json"
+      - "deno.lock"
 
   # ================================================================
   # Smoke tests
