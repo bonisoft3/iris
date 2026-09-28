@@ -11,6 +11,7 @@ def main [] {
 
 	test_generate_runs_all_rules
 	test_generate_force_flag
+	test_generate_flag_value
 	test_config_flags_default_forwards_to_verb
 	test_generate_file_filtering
 	test_generate_output_validation_fails
@@ -18,8 +19,20 @@ def main [] {
 	test_lint_runs_all_rules
 	test_lint_script_override
 	test_multi_cmd_passes_args_as_env
+	test_program_does_not_select_a_terminal
 
 	print "\nAll generate and lint verb tests passed!"
+}
+
+def test_program_does_not_select_a_terminal [] {
+	let root = mktemp -d
+	"package fixture" | save ($root | path join "program.cue")
+	{say: {generate: {rulemap: {"auto-cue": null, "auto-gomplate": null}}}}
+		| to yaml | save ($root | path join ".say.yaml")
+	let result = do { ^$nu.current-exe sayt.nu -d $root generate } | complete
+	assert equal $result.exit_code 0 $result.stderr
+	assert (not ($root | path join "program_terminal.cue" | path exists))
+	rm -rf $root
 }
 
 def test_generate_runs_all_rules [] {
@@ -60,6 +73,25 @@ def test_generate_force_flag [] {
 	assert ($with_force.stdout | str contains "true") $"expected 'true' with --force, got: ($with_force.stdout)"
 	let without_force = (do { nu sayt.nu -d $tmpdir generate } | complete)
 	assert (not ($without_force.stdout | str contains "true")) $"expected FORCE unset without --force, got: ($without_force.stdout)"
+	rm -rf $tmpdir
+}
+
+def test_generate_flag_value [] {
+	print "test generate --flag=value carries the value into SAY_GENERATE_ARGS_FLAG..."
+	# A rule that needs a value, such as the browser release's Pages prefix,
+	# reads it from this variable; a bare flag still reads "true".
+	let tmpdir = (mktemp -d)
+	'say:
+  generate:
+    rulemap:
+      auto-gomplate: null
+      auto-cue: null
+      check-base:
+        cmds:
+          - do: "print $env.SAY_GENERATE_ARGS_BASE?"
+' | save ($tmpdir | path join ".say.yaml")
+	let result = (do { nu sayt.nu -d $tmpdir generate --base=/truco } | complete)
+	assert ($result.stdout | str contains "/truco") $"expected /truco from --base=/truco, got: ($result.stdout) ($result.stderr)"
 	rm -rf $tmpdir
 }
 

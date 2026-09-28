@@ -12,6 +12,9 @@
 **/.turbo
 **/.pnpm-store
 **/.aider.*
+**/.next
+**/.zig-cache
+**/.omc
 .worktrees/
 .claude/worktrees/
 .playwright-mcp/

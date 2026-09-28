@@ -2,6 +2,11 @@ say:
   generate:
     rulemap: { "auto-cue": null }
 
+  integrate:
+    # act reaches the host daemon from a build RUN through dind.sh, which
+    # finds it only in the host.env the dind bridge writes.
+    args: "--with-host-env"
+
   lint:
     # omnishell's playwright helpers are imported by both guis/iris and
     # guis/snapcards, so every consumer plus the base image whose chromium they
@@ -45,3 +50,29 @@ say:
           - plugins/devserver/stubs/nu_plugin_polars.toml
           - plugins/devserver/stubs/nu_plugin_query.toml
           - plugins/devserver/stubs/nu_plugin_stress_internals.toml
+
+    rulemap:
+      # Compose derives its project from a directory basename, which every
+      # checkout shares, so a worktree joins the main checkout's stack and
+      # `down -v` takes it down. Each project with a stack publishes the name
+      # sayt resolves from `[env]` in its `.mise.toml`, which is scaffold-owned,
+      # so no generator writes it. This parses each file rather than matching a
+      # line, because a key outside `[env]` publishes nothing and a line pattern
+      # can't see which table it sits in. Found rather than listed, so a new
+      # project is checked without being named here.
+      # A project with no `.mise.toml` is outside mise and has nowhere to publish
+      # the name.
+      compose-project:
+        cmds:
+          - do: |
+              let found = (ls apps/*/compose.yaml services/*/compose.yaml | get name
+                | each { |c| $c | path dirname }
+                | where { |d| ($d | path join .mise.toml) | path exists }
+                | each { |d| { project: $d, value: (open ($d | path join .mise.toml) | get -o env.COMPOSE_PROJECT_NAME) } })
+              let missing = ($found | where value == null | get project)
+              if ($missing | is-not-empty) {
+                error make {msg: $"COMPOSE_PROJECT_NAME is not under [env] in: ($missing | str join ', ')"}
+              }
+              if ($found | get value | uniq | length) > 1 {
+                error make {msg: "COMPOSE_PROJECT_NAME is spelled differently across projects"}
+              }

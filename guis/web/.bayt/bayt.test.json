@@ -16,6 +16,9 @@
       ".nuxt/**",
       ".output/**",
       "dist/**",
+      "out/**",
+      "*.tsbuildinfo",
+      "**/*.tsbuildinfo",
       "coverage/**"
     ]
   },
@@ -29,9 +32,11 @@
   "state": {
     "globs": []
   },
-  "env": {},
+  "env": {
+    "CI": "true"
+  },
   "taskfile": {
-    "run": "when_changed",
+    "run": "once",
     "incremental": true,
     "preconditions": []
   },
@@ -107,6 +112,9 @@
           ".nuxt/**",
           ".output/**",
           "dist/**",
+          "out/**",
+          "*.tsbuildinfo",
+          "**/*.tsbuildinfo",
           "coverage/**"
         ],
         "defaultGlobs": null,

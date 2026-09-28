@@ -3,7 +3,7 @@ const builtin = @import("builtin");
 const build_options = @import("build_options");
 
 const DEFAULT_VERSION = if (@hasDecl(build_options, "version")) build_options.version else "v0.3.2";
-const MISE_VERSION = "v2026.3.17";
+const MISE_VERSION = "v2026.5.2";
 const MISE_URL_BASE = "https://github.com/jdx/mise/releases/download/" ++ MISE_VERSION ++ "/mise-" ++ MISE_VERSION ++ "-";
 const CA_CERTS_FILE = "ca-certificates.crt";
 const EMBEDDED_CA_CERTS = @embedFile(CA_CERTS_FILE);
@@ -14,6 +14,16 @@ const EnvMap = std.process.Environ.Map;
 fn getEnvVar(alloc: std.mem.Allocator, env: *const EnvMap, key: []const u8) ?[]const u8 {
     const value = env.get(key) orelse return null;
     return alloc.dupe(u8, value) catch null;
+}
+
+/// A real copy of `env`: `EnvMap` is a handle onto storage the runtime owns, so
+/// mutating a shallow copy reaches the original — `put` frees the value under a
+/// key already present, and a rehash moves the backing array.
+fn cloneEnv(alloc: std.mem.Allocator, env: *const EnvMap) !EnvMap {
+    var out = EnvMap.init(alloc);
+    errdefer out.deinit();
+    for (env.keys(), env.values()) |k, v| try out.put(k, v);
+    return out;
 }
 
 fn getCacheDir(alloc: std.mem.Allocator, env: *const EnvMap) ![]const u8 {
@@ -457,7 +467,8 @@ pub fn main(init: std.process.Init) !void {
 
     for (args[1..]) |a| try child_args.append(alloc, a);
 
-    var env_map = env.*;
+    var env_map = try cloneEnv(alloc, env);
+    defer env_map.deinit();
     const trusted_key = "MISE_TRUSTED_CONFIG_PATHS";
     const path_sep: u8 = if (builtin.os.tag == .windows) ';' else ':';
     const mise_config = try std.fs.path.join(alloc, &.{ install_dir, ".mise.toml" });
@@ -483,6 +494,10 @@ pub fn main(init: std.process.Init) !void {
     }
     // A consumer repo pinning locked=true would otherwise fail the stub run.
     try env_map.put("MISE_LOCKED", "0");
+    try env_map.put("SAYT_MISE_BIN", mise_bin);
+    const child_path = try std.fmt.allocPrint(alloc, "{s}{c}{s}", .{ mise_dir, path_sep, env_map.get("PATH") orelse "" });
+    defer alloc.free(child_path);
+    try env_map.put("PATH", child_path);
 
     var child = try std.process.spawn(io, .{
         .argv = child_args.items,

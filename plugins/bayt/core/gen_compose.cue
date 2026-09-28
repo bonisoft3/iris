@@ -1399,7 +1399,21 @@ _copyLine: {
 				if r.env_file != _|_ {env_file: r.env_file}
 				if len(r.ports) > 0 {ports: r.ports}
 				if len(r.volumes) > 0 {volumes: r.volumes}
-				if len(r.depends_on) > 0 {depends_on: r.depends_on}
+				// A dependency waited on for health is one the dependent is bound to:
+				// recreated inside the `up` that recreates it, so `--wait` waits on
+				// the dependent's new health rather than the health it had. An
+				// explicit `restart` on the entry wins.
+				if len(r.depends_on) > 0 {
+					depends_on: {
+						for k, v in r.depends_on {
+							// Nested guards, not `&&` (CUE doesn't short-circuit).
+							(k): [
+								if v.condition != _|_ if v.condition == "service_healthy" if v.restart == _|_ {v & {restart: true}},
+								v,
+							][0]
+						}
+					}
+				}
 				if r.network_mode != _|_ {network_mode: r.network_mode}
 				if r.networks != _|_ {networks: r.networks}
 				if r.extra_hosts != _|_ {extra_hosts: r.extra_hosts}
@@ -1420,7 +1434,10 @@ _copyLine: {
 			}
 
 			if t.compose != _|_ && t.compose.develop != _|_ {
-				develop: t.compose.develop
+				let _hasWatch = t.compose.develop.watch != _|_
+				if !_hasWatch || len(t.compose.develop.watch) > 0 {
+					develop: t.compose.develop
+				}
 			}
 
 			// HMR: derive compose.develop.watch entries from
@@ -1447,14 +1464,16 @@ _copyLine: {
 			// .bayt/ — wrong both standalone and when an outer
 			// compose.yaml extends this service. `../<glob>` resolves
 			// to the project root in both cases (build context is the
-			// same `..`).
 			if t.hmr != _|_ {
-				develop: watch: list.Concat([
+				let _hmrWatch = list.Concat([
 					[for g in t.hmr.code    {let b = (_hmrBase & {"g": g}).out, {action: "sync",         path: "../\(b)", target: "\(_hmrWorkdir)/\(b)"}}],
 					[for g in t.hmr.configs {let b = (_hmrBase & {"g": g}).out, {action: "sync",         path: "../\(b)", target: "\(_hmrWorkdir)/\(b)"}}],
 					[for g in t.hmr.assets  {let b = (_hmrBase & {"g": g}).out, {action: "sync+restart", path: "../\(b)", target: "\(_hmrWorkdir)/\(b)"}}],
 					[for g in t.hmr.tools   {let b = (_hmrBase & {"g": g}).out, {action: "rebuild",      path: "../\(b)"}}],
 				])
+				if len(_hmrWatch) > 0 {
+					develop: watch: _hmrWatch
+				}
 			}
 		}
 	}

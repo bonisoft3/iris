@@ -45,21 +45,25 @@ import (
 		for verb in ["lint", "test", "integrate"] {
 			(verb): {
 				for name, c in L.surface.checks if c.verb == verb {
-					(name): cmds: [for d in c.cmds {do: d}]
+					(name): {
+						priority?: int
+						if c.priority != _|_ {priority: c.priority}
+						cmds: [for d in c.cmds {do: d}]
+					}
 				}
 			}
 		}
 	}
 
 	surface: {
+		sources: [string]: string
+		sources: {}
 		// argv-shaped commands (see doctrine above).
 		buildCmd: string
 		testCmd:  string
 
 		// Validator surfaces for the lint rulemap.
 		pipelineFiles: [...string] // docker/<app>-<name>.yaml, all kinds; empty = no rule
-		factsCheck:                 *"../../plugins/pronto/check-facts.ts" | string
-		deriveCheck:                *"../../plugins/pronto/derive.ts" | string
 
 		// What the virtual cluster and terminal declare about their own
 		// surfaces; emit.cue merges both runtimes' sets in here.
@@ -68,37 +72,52 @@ import (
 		// kind: one acts, one judges. The verb is what the work needs, so a
 		// battery that measures a rendered page cannot land at lint however
 		// cheap it looks.
-		verbs: [Name=string]: {verb: "setup" | "generate" | "build" | "launch" | "release", cmds: [...string], note: string}
+		// A release verb names the platform its rule answers for, builds its
+		// artifact in `cmds`, and makes it live in `publish`: the ceremony,
+		// release.nu's version and tag, runs between the two, and `publish` is
+		// skipped under --snapshot, which is what "build only" means.
+		verbs: [Name=string]: {verb: "setup" | "generate" | "build" | "launch" | "release", cmds: [...string], note: string, platform?: string, publish: *[] | [...string]}
 		verbs: {}
-		checks: [Name=string]: {verb: "lint" | "test" | "integrate", cmds: [...string], note: string}
+		checks: [Name=string]: {verb: "lint" | "test" | "integrate", cmds: [...string], note: string, priority?: int}
 		checks: {}
 
 		sayYaml: {
 			say: {
+				...
+				if len([for _, c in L.surface.verbs if c.verb == "generate" {c}]) > 0 {
+					generate: rulemap: {
+						...
+						for name, c in L.surface.verbs if c.verb == "generate" {
+							(name): {priority: 0, cmds: [for d in c.cmds {do: d}]}
+						}
+					}
+				}
+				if len([for _, c in L.surface.verbs if c.verb == "release" {c}]) > 0 {
+					release: rulemap: {
+						...
+						for name, c in L.surface.verbs if c.verb == "release" {
+							(name): {
+								if c.platform != _|_ {platform: c.platform}
+								// A rule of several commands gets the verb's flags as
+								// environment, not on each command's line, and a flag
+								// is only a flag to nushell when it is spelled in the
+								// call, so the ceremony spells --snapshot itself where
+								// the verb was given it. goreleaser's git-state
+								// validation refuses the prefixed monorepo tag, and
+								// --clean wipes its dist between runs.
+								cmds: list.Concat([
+									[for d in c.cmds {do: d}],
+									[{do: "if ($env.SAY_RELEASE_ARGS_SNAPSHOT? | is-empty) { release --skip=validate --clean } else { release --snapshot --skip=validate --clean }", use: "./release.nu"}],
+									[for p in c.publish {do: "if ($env.SAY_RELEASE_ARGS_SNAPSHOT? | is-empty) { \(p) }"}],
+								])
+							}
+						}
+					}
+				}
 				lint: rulemap: {
 					L._rulesFor.lint
 					...
 					"cue": cmds: [{do: "mise exec -- cue vet ./..."}]
-					// The derivation's own transform. It reads no app file; it rides
-					// the app rulemap because that is the only verb a pronto plugin
-					// file lands in.
-					"derive": cmds: [{do: "deno run --allow-read=. \(L.surface.deriveCheck) --self-test"}]
-					// Rides here for the same reason. It earns its place because the
-					// derivation reads entity fields by name across two plugins, so a
-					// rename leaves reads that compile to `undefined` and fail open
-					// rather than erroring — which the self-test above cannot see.
-					// Each check runs from its own plugin, because `deno check`
-					// resolves npm types against the deno.json it starts in, and the
-					// app's does not carry them.
-					// Run from the app directory and reach out, rather than `cd`:
-					// `deno` is a mise shim resolved against the .mise.toml of the
-					// directory it runs in, and only the app's declares it.
-					// `--config` is what the cd was for -- pronto's deno.json
-					// carries npm types the app's toolchain does not.
-					"types": cmds: [
-						{do: "deno check --config ../../plugins/pronto/deno.json ../../plugins/pronto/*.ts"},
-						{do: "deno check ../../plugins/omnishell/interpreter/lint.ts"},
-					]
 					// Guarded like handlers and screens below: with no pipeline
 					// files the command lints its own empty argument list, which
 					// passes without reading anything.
@@ -106,16 +125,6 @@ import (
 						"rpk": cmds: [{
 							do: "mise exec -- redpanda-connect lint --skip-env-var-check " +
 								strings.Join(L.surface.pipelineFiles, " ")
-						}]
-					}
-
-					// Prioritised for bijection's reason at one remove: it reads the
-					// derived facts rather than the program, so cue vet diagnoses a
-					// malformed program before this rule reports on stale rows.
-					"facts": {
-						priority: 1
-						cmds: [{
-							do: "deno run --allow-read=.,../../plugins/pronto --allow-run=mise \(L.surface.factsCheck) ."
 						}]
 					}
 				}
@@ -130,9 +139,10 @@ import (
 				// same pattern). test keeps its builtin: `./test.nu` runs
 				// tasks.json's `cue vet -c ./...`, the concreteness gate the
 				// declared batteries assume. integrate re-declares nothing on
-				// purpose: its builtin drives `docker compose up integrate`, a
-				// service this emitter never writes, so the verb would fail
-				// before reaching the checks it emitted.
+				// purpose: its builtin would `down -v` and `up integrate` on its
+				// own, and the runtime a declared check brought up in front of
+				// itself would go down with it, so the declared checks are the
+				// whole verb.
 				if len(L._rulesFor.test) > 0 {
 					test: rulemap: {
 						L._rulesFor.test

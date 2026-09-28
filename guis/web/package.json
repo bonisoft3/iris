@@ -26,7 +26,7 @@
     "generate-pwa-assets": "pwa-assets-generator"
   },
   "dependencies": {
-    "@electric-sql/client": "1.5.1",
+    "@electric-sql/client": "1.5.27",
     "@google-cloud/functions-framework": "^5.0.0",
     "@maruware/blob-to-base64": "^0.0.8",
     "@mdi/font": "^7.4.47",

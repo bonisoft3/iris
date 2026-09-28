@@ -27,7 +27,7 @@
       "COPY --from=bonitao/lazybox:0.8.3@sha256:c896a6836673d8fd217f6021a2522351fd82d580ed985159feb2f10373018e73 /lazybox/ /root/.local/share/lazybox/",
       "ENV PATH=/root/.local/bin:/root/.local/share/lazybox/bin:$PATH",
       "ENV MISE_TRUSTED_CONFIG_PATHS=/monorepo",
-      "RUN --mount=type=cache,target=/zypper-store,id=/zypper-store,sharing=shared --mount=type=cache,target=/var/cache/zypp,id=services_tracker-launch:/var/cache/zypp,sharing=locked s=/zypper-store; d=/var/cache/zypp/packages; mkdir -p \"$s\" \"$d\"; cp -r \"$s\"/. \"$d\"/ 2>/dev/null || true; zypper -n modifyservice --no-refresh --all && sed -i 's|http://|https://|g' /etc/zypp/repos.d/*.repo || exit; zypper -n modifyrepo --keep-packages --all && zypper -n install findutils=4.10.0-160000.2.2 which=2.23-160000.2.2 || exit; cd \"$d\" && for f in */*.rpm */*/*.rpm; do [ -f \"$f\" ] || continue; o=\"$s/$f\"; [ -e \"$o\" ] && continue; mkdir -p \"$(dirname \"$o\")\"; t=\"$(mktemp \"$(dirname \"$o\")/.pXXXXXX\")\" && cp \"$f\" \"$t\" && mv -f \"$t\" \"$o\"; done; zypper -n modifyrepo --no-keep-packages --all || true"
+      "RUN --mount=type=cache,target=/zypper-store,id=/zypper-store,sharing=shared --mount=type=cache,target=/var/cache/zypp,id=services_tracker-launch:/var/cache/zypp,sharing=locked s=/zypper-store; d=/var/cache/zypp/packages; mkdir -p \"$s\" \"$d\"; cp -r \"$s\"/. \"$d\"/ 2>/dev/null || true; zypper -n modifyservice --no-refresh --all && sed -i 's|http://|https://|g' /etc/zypp/repos.d/*.repo || exit; zypper -n modifyrepo --keep-packages --all && zypper -n install findutils=4.10.0-160000.2.2 which=2.23-160000.2.2 git-core=2.51.0-160000.1.2 || exit; cd \"$d\" && for f in */*.rpm */*/*.rpm; do [ -f \"$f\" ] || continue; o=\"$s/$f\"; [ -e \"$o\" ] && continue; mkdir -p \"$(dirname \"$o\")\"; t=\"$(mktemp \"$(dirname \"$o\")/.pXXXXXX\")\" && cp \"$f\" \"$t\" && mv -f \"$t\" \"$o\"; done; zypper -n modifyrepo --no-keep-packages --all || true"
     ],
     "preambleCopyContexts": [],
     "from": {
@@ -226,7 +226,8 @@
           "gradle/wrapper/gradle-wrapper.properties",
           "[m]ise.toml",
           "[.]mise.toml",
-          "[m]ise.lock"
+          "[m]ise.lock",
+          "[.]tool-versions"
         ],
         "exclude": []
       },
@@ -260,7 +261,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -286,7 +288,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -322,7 +325,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -348,7 +352,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -374,7 +379,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -400,7 +406,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -414,6 +421,7 @@
               "[m]ise.toml",
               "[.]mise.toml",
               "[m]ise.lock",
+              "[.]tool-versions",
               "gradle/libs.versions.toml",
               "plugins/devserver/dind.sh"
             ],
@@ -429,7 +437,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -443,7 +452,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -457,7 +467,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -471,7 +482,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -485,7 +497,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -499,7 +512,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -553,7 +567,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -615,7 +630,9 @@
           "gradle/wrapper/**/*",
           "gradle/lib[s].versions.toml"
         ],
-        "exclude": []
+        "exclude": [
+          "build/distributions/**"
+        ]
       }
     },
     {
@@ -633,7 +650,9 @@
           "gradle/wrapper/**/*",
           "gradle/lib[s].versions.toml"
         ],
-        "exclude": []
+        "exclude": [
+          "build/distributions/**"
+        ]
       }
     },
     {
@@ -651,7 +670,9 @@
           "gradle/wrapper/**/*",
           "gradle/lib[s].versions.toml"
         ],
-        "exclude": []
+        "exclude": [
+          "build/distributions/**"
+        ]
       }
     },
     {
@@ -669,7 +690,9 @@
           "gradle/wrapper/**/*",
           "gradle/lib[s].versions.toml"
         ],
-        "exclude": []
+        "exclude": [
+          "build/distributions/**"
+        ]
       }
     },
     {
@@ -687,7 +710,9 @@
           "gradle/wrapper/**/*",
           "gradle/lib[s].versions.toml"
         ],
-        "exclude": []
+        "exclude": [
+          "build/distributions/**"
+        ]
       }
     },
     {
@@ -705,7 +730,9 @@
           "gradle/wrapper/**/*",
           "gradle/lib[s].versions.toml"
         ],
-        "exclude": []
+        "exclude": [
+          "build/distributions/**"
+        ]
       }
     },
     {
@@ -717,6 +744,7 @@
           "[m]ise.toml",
           "[.]mise.toml",
           "[m]ise.lock",
+          "[.]tool-versions",
           "gradle/libs.versions.toml",
           "plugins/devserver/dind.sh",
           ".task/bayt/setup.hash"
@@ -760,7 +788,9 @@
           "gradle/wrapper/**/*",
           "gradle/lib[s].versions.toml"
         ],
-        "exclude": []
+        "exclude": [
+          "build/distributions/**"
+        ]
       }
     },
     {
@@ -782,6 +812,7 @@
           "[m]ise.toml",
           "[.]mise.toml",
           "[m]ise.lock",
+          "[.]tool-versions",
           ".task/bayt/setup.hash"
         ],
         "exclude": []

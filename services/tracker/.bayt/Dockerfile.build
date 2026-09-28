@@ -28,7 +28,7 @@ COPY --from=build_ctxs /monorepo /monorepo
 
 FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223 AS build_outs_ctxs
 WORKDIR /monorepo/services/tracker
-COPY --from=services_tracker-build --parents /monorepo/services/tracker/build/**/* /monorepo/services/tracker/.gradle/**/* /monorepo/services/tracker/build.gradle.kts /monorepo/services/tracker/settings.gradle.kts /monorepo/services/tracker/gradle.properties /monorepo/services/tracker/gradlew /monorepo/services/tracker/gradle/wrapper/**/* /monorepo/services/tracker/gradle/lib[s].versions.toml /
+COPY --from=services_tracker-build --exclude=build/distributions/** --parents /monorepo/services/tracker/build/**/* /monorepo/services/tracker/.gradle/**/* /monorepo/services/tracker/build.gradle.kts /monorepo/services/tracker/settings.gradle.kts /monorepo/services/tracker/gradle.properties /monorepo/services/tracker/gradlew /monorepo/services/tracker/gradle/wrapper/**/* /monorepo/services/tracker/gradle/lib[s].versions.toml /
 ARG SOURCE_DATE_EPOCH
 ARG BAYT_CLAMP=1
 RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/services/tracker -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/services; fi

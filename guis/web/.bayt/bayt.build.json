@@ -40,6 +40,9 @@
       ".nuxt/**",
       ".output/**",
       "dist/**",
+      "out/**",
+      "*.tsbuildinfo",
+      "**/*.tsbuildinfo",
       "coverage/**",
       ".bayt/**",
       ".task/**",
@@ -149,6 +152,9 @@
           ".nuxt/**",
           ".output/**",
           "dist/**",
+          "out/**",
+          "*.tsbuildinfo",
+          "**/*.tsbuildinfo",
           "coverage/**",
           ".bayt/**",
           ".task/**",
@@ -178,6 +184,7 @@
               "[m]ise.toml",
               "[.]mise.toml",
               "[m]ise.lock",
+              "[.]tool-versions",
               "gradle/libs.versions.toml",
               "plugins/devserver/dind.sh"
             ],
@@ -193,6 +200,7 @@
               "[m]ise.toml",
               "[.]mise.toml",
               "[m]ise.lock",
+              "[.]tool-versions",
               "gradle/libs.versions.toml",
               "plugins/devserver/dind.sh"
             ],
@@ -215,7 +223,7 @@
     }
   },
   "taskfile": {
-    "run": "when_changed",
+    "run": "once",
     "incremental": true,
     "preconditions": []
   },
@@ -276,6 +284,9 @@
           ".nuxt/**",
           ".output/**",
           "dist/**",
+          "out/**",
+          "*.tsbuildinfo",
+          "**/*.tsbuildinfo",
           "coverage/**",
           ".bayt/**",
           ".task/**",

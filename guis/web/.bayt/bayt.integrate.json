@@ -52,6 +52,9 @@
       ".nuxt/**",
       ".output/**",
       "dist/**",
+      "out/**",
+      "*.tsbuildinfo",
+      "**/*.tsbuildinfo",
       "coverage/**"
     ]
   },
@@ -62,7 +65,9 @@
   "state": {
     "globs": []
   },
-  "env": {},
+  "env": {
+    "CI": "true"
+  },
   "synthetics": {
     "bayt": {
       "name": "integrate_bayt",
@@ -159,6 +164,9 @@
           ".nuxt/**",
           ".output/**",
           "dist/**",
+          "out/**",
+          "*.tsbuildinfo",
+          "**/*.tsbuildinfo",
           "coverage/**"
         ]
       },
@@ -183,6 +191,7 @@
               "[m]ise.toml",
               "[.]mise.toml",
               "[m]ise.lock",
+              "[.]tool-versions",
               "gradle/libs.versions.toml",
               "plugins/devserver/dind.sh"
             ],
@@ -198,6 +207,7 @@
               "[m]ise.toml",
               "[.]mise.toml",
               "[m]ise.lock",
+              "[.]tool-versions",
               "gradle/libs.versions.toml",
               "plugins/devserver/dind.sh"
             ],
@@ -217,6 +227,9 @@
               ".nuxt/**",
               ".output/**",
               "dist/**",
+              "out/**",
+              "*.tsbuildinfo",
+              "**/*.tsbuildinfo",
               "coverage/**",
               ".bayt/**",
               ".task/**",
@@ -244,7 +257,7 @@
     }
   },
   "taskfile": {
-    "run": "when_changed",
+    "run": "once",
     "incremental": true,
     "preconditions": []
   },
@@ -322,6 +335,9 @@
           ".nuxt/**",
           ".output/**",
           "dist/**",
+          "out/**",
+          "*.tsbuildinfo",
+          "**/*.tsbuildinfo",
           "coverage/**"
         ],
         "defaultGlobs": null,

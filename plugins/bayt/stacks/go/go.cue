@@ -51,7 +51,7 @@ _twoPhase: T={
 // Persists the project-local GOMODCACHE into the stage (go requires an
 // absolute path; $PWD is the WORKDIR at preamble time).
 _goEnvPreamble: "go-modcache": {
-	line: "RUN mise x -- go env -w GOMODCACHE=$PWD/\(depsDir)"
+	line: "RUN mkdir -p /root/.config/go && echo \"GOMODCACHE=$PWD/\(depsDir)\" >> /root/.config/go/env"
 }
 
 // modDownload — the root module's closure as a real image layer (the
@@ -63,8 +63,8 @@ modDownload: _twoPhase & {
 	_dir:  ""
 	_prio: -1
 	srcs: defaultGlobs: {
-		"go-mod": {glob: "go.mod"}
-		"go-sum": {glob: "go.sum"}
+		"go-mod": *{glob: "go.mod"} | null
+		"go-sum": *{glob: "go.sum"} | null
 	}
 	dockerfile: defaultPreamble: _goEnvPreamble
 	outs: globs: ["\(depsDir)/**/*"]
@@ -77,10 +77,17 @@ modDownload: _twoPhase & {
 // srcs excludes earn their keep. Leaves outs to the leaf (the
 // artifact name is the module's).
 build: {
+	// go compiles more than .go: a package can implement a go declaration in
+	// assembly, and a cgo package carries c and h beside it. Leaving them out
+	// builds on a host that has them on disk while keying the target without
+	// them, so the miss only surfaces in a container.
 	srcs: defaultGlobs: {
-		"go-src": {glob: "**/*.go"}
-		"go-mod": {glob: "go.mod"}
-		"go-sum": {glob: "go.sum"}
+		"go-src": *{glob: "**/*.go"} | null
+		"go-asm": *{glob: "**/*.[sS]"} | null
+		"go-c":   *{glob: "**/*.c"} | null
+		"go-h":   *{glob: "**/*.h"} | null
+		"go-mod": *{glob: "go.mod"} | null
+		"go-sum": *{glob: "go.sum"} | null
 	}
 	cmd: "builtin": {
 		do: *"go build" | string
@@ -92,8 +99,13 @@ build: {
 // test — `go test ./...`. it/ is its own module, so the walk never
 // descends into it.
 test: {
+	// `**/testdata/**`: a project is a module and its fixtures sit beside
+	// each package, not at the module root. The shallow glob staged none of
+	// them, and only a container notices — on a host the files are there
+	// whether or not the target declares them.
 	srcs: defaultGlobs: {
-		"go-test": {glob: "**/*_test.go"}
+		"go-test":     *{glob: "**/*_test.go"} | null
+		"go-testdata": *{glob: "**/testdata/**"} | null
 	}
 	cmd: "builtin": {
 		do: *"go test ./..." | string
@@ -110,7 +122,7 @@ integrationTest: _twoPhase & {
 	_dir:  "it"
 	_prio: -2
 	srcs: defaultGlobs: {
-		"go-it": {glob: "it/**/*"}
+		"go-it": *{glob: "it/**/*"} | null
 	}
 	cmd: "builtin": {
 		do: *"go -C it test ./..." | string

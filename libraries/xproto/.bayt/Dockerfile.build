@@ -24,7 +24,7 @@ COPY --from=build_ctxs /monorepo /monorepo
 
 FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223 AS build_outs_ctxs
 WORKDIR /monorepo/libraries/xproto
-COPY --from=libraries_xproto-build --parents /monorepo/libraries/xproto/build/**/* /monorepo/libraries/xproto/.gradle/**/* /monorepo/libraries/xproto/build.gradle.kts /monorepo/libraries/xproto/settings.gradle.kts /monorepo/libraries/xproto/gradle.properties /monorepo/libraries/xproto/gradlew /monorepo/libraries/xproto/gradle/wrapper/**/* /monorepo/libraries/xproto/gradle/lib[s].versions.toml /
+COPY --from=libraries_xproto-build --exclude=build/distributions/** --parents /monorepo/libraries/xproto/build/**/* /monorepo/libraries/xproto/.gradle/**/* /monorepo/libraries/xproto/build.gradle.kts /monorepo/libraries/xproto/settings.gradle.kts /monorepo/libraries/xproto/gradle.properties /monorepo/libraries/xproto/gradlew /monorepo/libraries/xproto/gradle/wrapper/**/* /monorepo/libraries/xproto/gradle/lib[s].versions.toml /
 ARG SOURCE_DATE_EPOCH
 ARG BAYT_CLAMP=1
 RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/libraries/xproto -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/libraries; fi

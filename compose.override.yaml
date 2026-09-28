@@ -1,9 +1,9 @@
-# Bayt-emitted compose fragments (services/tracker, guis/web, etc.)
-# declare host.env as `file: ${BAYT_HOST_ENV_FILE}`. Compose merges
-# all top-level secrets blocks across includes, so hand-maintained
-# parents must use the same form — see plugins/bayt/core/gen_compose.cue.
-# Callers (sayt locally, the sayt-integrate action in CI) materialize
-# HOST_ENV into the file BAYT_HOST_ENV_FILE before invoking bake/up.
+# The dind session's projection, as every other consumer takes it
+# (guis/flashcards, guis/web, products/iris, plugins/devserver): sayt exports
+# HOST_ENV and compose's environment-backed secret reads it straight out. A
+# path-backed form needs a caller to write the file first, and an unwritten one
+# resolves to the context directory — which buildkit refuses with
+# "read <dir>: is a directory" rather than an empty secret.
 secrets:
   host.env:
-    file: ${BAYT_HOST_ENV_FILE}
+    environment: HOST_ENV

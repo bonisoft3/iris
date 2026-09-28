@@ -24,3 +24,10 @@ url = 'https://storage.googleapis.com/skaffold/releases/v{{ version }}/skaffold-
 
 [tools."http:skaffold".platforms]
 windows-x64 = { url = 'https://storage.googleapis.com/skaffold/releases/v{{ version }}/skaffold-windows-amd64.exe' }
+
+[env]
+# `.say.yaml` holds every project to this and says why it differs per checkout.
+# The activated branch must not read the variable back: mise renders before it
+# drops its previous injection, so `get_env` there carries the last directory's
+# name across a cd. Unactivated, there is no hook and nothing stale to read.
+COMPOSE_PROJECT_NAME = '''{% if get_env(name='MISE_SHELL', default='') != '' %}{{ exec(command='mise tool-stub ../../plugins/sayt/nu.toml ../../plugins/sayt/compose.nu compose-project') }}{% else %}{{ get_env(name='COMPOSE_PROJECT_NAME', default='') }}{% endif %}'''

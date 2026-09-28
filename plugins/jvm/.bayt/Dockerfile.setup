@@ -1,14 +1,14 @@
 # generated from bayt.cue — do not edit
 FROM workspaceroot-setup AS setup
 WORKDIR /monorepo/plugins/jvm
-COPY --parents gradle/wrapper/gradle-wrapper.properties [m]ise.toml [.]mise.toml [m]ise.lock ./
+COPY --parents gradle/wrapper/gradle-wrapper.properties [m]ise.toml [.]mise.toml [m]ise.lock [.]tool-versions ./
 ENV MISE_ALWAYS_KEEP_DOWNLOAD=1
 RUN --mount=type=cache,target=/root/.local/share/mise/downloads,id=plugins_jvm:/root/.local/share/mise/downloads,sharing=locked --mount=type=cache,target=/mise-tarball-store,id=/mise-tarball-store,sharing=shared d=/root/.local/share/mise/downloads; s=/mise-tarball-store; mkdir -p "$d" "$s"; cp -r "$s"/. "$d"/ 2>/dev/null || true; mise install || exit; cd "$d" && for f in */*/*; do [ -f "$f" ] || continue; o="$s/$f"; [ -e "$o" ] && continue; mkdir -p "$(dirname "$o")"; t="$(mktemp "$(dirname "$o")/.pXXXXXX")" && cp "$f" "$t" && mv -f "$t" "$o"; done; :
 COPY .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/Taskfile.setup.yaml .bayt/bayt.setup.json .bayt/init.gradle.kts ./.bayt/
 
 FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223 AS setup_ctxs
 WORKDIR /monorepo/plugins/jvm
-COPY --parents gradle/wrapper/gradle-wrapper.properties [m]ise.toml [.]mise.toml [m]ise.lock ./
+COPY --parents gradle/wrapper/gradle-wrapper.properties [m]ise.toml [.]mise.toml [m]ise.lock [.]tool-versions ./
 COPY --from=workspaceroot-setup_srcs /monorepo /monorepo
 ARG SOURCE_DATE_EPOCH
 ARG BAYT_CLAMP=1
@@ -18,7 +18,7 @@ COPY --from=setup_ctxs /monorepo /monorepo
 
 FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223 AS setup_outs_ctxs
 WORKDIR /monorepo/plugins/jvm
-COPY --from=plugins_jvm-setup --parents /monorepo/plugins/jvm/gradle/wrapper/gradle-wrapper.properties /monorepo/plugins/jvm/[m]ise.toml /monorepo/plugins/jvm/[.]mise.toml /monorepo/plugins/jvm/[m]ise.lock /monorepo/plugins/jvm/.task/bayt/setup.hash /
+COPY --from=plugins_jvm-setup --parents /monorepo/plugins/jvm/gradle/wrapper/gradle-wrapper.properties /monorepo/plugins/jvm/[m]ise.toml /monorepo/plugins/jvm/[.]mise.toml /monorepo/plugins/jvm/[m]ise.lock /monorepo/plugins/jvm/[.]tool-versions /monorepo/plugins/jvm/.task/bayt/setup.hash /
 ARG SOURCE_DATE_EPOCH
 ARG BAYT_CLAMP=1
 RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/plugins/jvm -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/plugins; fi

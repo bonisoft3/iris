@@ -269,5 +269,7 @@ services/shelfie/shelfie
 plugins/omnishell/test-results/
 .gstack/
 
-# mkcert pair issued per machine by `just setup` (see mecha cluster checks.certs)
+# mkcert pair issued per machine by `just setup` (see mecha cluster checks.certs);
+# mecha's own stack mounts the same path, and compose creates it empty.
 apps/*/.certs/
+libraries/mecha/.certs/

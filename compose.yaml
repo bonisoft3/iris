@@ -47,14 +47,21 @@ services:
   # The `integrate` name was previously freed for iris's playwright
   # alias, but iris is no longer in the root cascade (see comment at
   # the top of this file) so the name is available again. This service
-  # builds the root Dockerfile's `integrate` target — the image
-  # `ci-advanced` bakes for bulk non-iris integration coverage.
+  # builds the root Dockerfile's `integrate` target: act replaying this
+  # repo's CI workflow. `sayt integrate` here is the whole point of it —
+  # GitHub keeps the `ci-act` job that once baked it switched off,
+  # since inside GitHub the replay has nothing to say.
   integrate:
     build:
       context: .
       network: host
       dockerfile: ./Dockerfile
       target: integrate
+      # Valueless: compose forwards the host's ACT_JOBS only when it is set,
+      # so narrowing the replay to one job is `ACT_JOBS=ci-tail sayt integrate`
+      # and the Dockerfile keeps the full list otherwise.
+      args:
+        - ACT_JOBS
       secrets:
         - host.env
 
@@ -97,7 +104,6 @@ services:
       args:
         BASE_IMG: mcr.microsoft.com/devcontainers/base:ubuntu24.04@sha256:4bcb1b466771b1ba1ea110e2a27daea2f6093f9527fb75ee59703ec89b5561cb
 
-# host.env is declared by the bayt-emitted compose.integrate.yaml
-# fragments (file: ${BAYT_HOST_ENV_FILE}). CI/local callers must
-# materialize HOST_ENV to that file before invoking bake (see
-# plugins/sayt/integrate.nu for the canonical pattern).
+# host.env is declared in compose.override.yaml as `environment: HOST_ENV`,
+# the form every other consumer uses; sayt exports that variable from the
+# dind session and compose's environment-backed secret reads it directly.

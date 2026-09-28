@@ -13,7 +13,7 @@
 # sandbox via dind.nu's bridge.
 
 use tools.nu [run-docker run-docker-compose run-live run-mise-live mise-bin compose-stub]
-use compose.nu [compose-vrun compose-vup]
+use compose.nu [compose-vrun compose-vup compose-slug project-dir]
 use dind.nu
 
 # Pure (so integrate_test.nu covers it without docker): axis flags → plan.
@@ -81,12 +81,35 @@ def env-or [name: string, fallback: string]: nothing -> string {
 	if ($v | is-empty) { $fallback } else { $v }
 }
 
-# Down stacks left by failed runs in ANY compose project — the clean
-# slate in `main` is per-project. The compose-stamped `integrate`
-# service label marks a stack as sayt's.
+# Down the stack a previous run of THIS project left behind. The
+# compose-stamped `integrate` service label marks a stack as sayt's; the
+# project name scopes it to this checkout: a sibling worktree's run carries
+# the same label under a name of its own, and `down -v` takes volumes, which
+# a stopped stack holds exactly as a running one does — a failed run leaves
+# its containers for inspection. An unreapable leftover costs a named
+# command; reaping someone else's costs their data.
 def reap-integrate-stacks [] {
 	let names = (do { ^docker ps -a --filter label=com.docker.compose.service=integrate --format '{{.Label "com.docker.compose.project"}}' } | complete)
-	for n in ($names.stdout | lines | uniq) {
+	# The name compose will actually use here: an explicit override, or the
+	# basename of the project directory it derives by default. Not the name this
+	# checkout could publish — a worktree that has not published one shares the
+	# main checkout's, and the reap must scope to the stack this run will touch.
+	let override = ($env.COMPOSE_PROJECT_NAME? | default "" | str trim)
+	# docker reports the label in compose's normalized form, so an override
+	# compared verbatim — uppercase, say — matches nothing.
+	let mine = if ($override | is-empty) { compose-slug (project-dir | path basename) } else { compose-slug $override }
+	# An empty name matches nothing, so every stack would read as another run's —
+	# this one's included, which is the stack the reap exists to clear.
+	if ($mine | is-empty) {
+		error make {msg: $"no compose project name for (project-dir): its basename normalizes to nothing"}
+	}
+	# A container carrying the label with no project label yields an empty name,
+	# and `-p ''` is not a project.
+	for n in ($names.stdout | lines | each { |l| $l | str trim } | where { |l| $l | is-not-empty } | uniq) {
+		if $n != $mine {
+			print -e $"sayt: leaving compose project '($n)' alone — not this run's; `docker compose -p ($n) down -v` clears it"
+			continue
+		}
 		print -e $"sayt: tearing down leftover compose project '($n)'"
 		do { ^(mise-bin) tool-stub (compose-stub) -p $n down -v --timeout 0 --remove-orphans } | complete | ignore
 	}
@@ -194,10 +217,6 @@ export def --wrapped main [
 		# compose-path only, never a bake input.
 		let session_env = $session.env
 
-		# `--allow=fs.read=<worktree-root>` (passed into bake below) silences bake's
-		# fs-entitlement warning for contexts outside the bake file's dir. `git
-		# rev-parse --show-toplevel` is load-bearing for git worktrees.
-		let worktree_root = (^git rev-parse --show-toplevel | str trim)
 		let tmpdir = (^mktemp -d | str trim)
 		let flat_compose = $"($tmpdir)/compose.yaml"
 
@@ -216,7 +235,8 @@ export def --wrapped main [
 			BUILDX_NO_DEFAULT_ATTESTATIONS: "1",
 			# SOURCE_DATE_EPOCH pins manifest timestamps (stable digests);
 			# BUILDX_BAKE_ENTITLEMENTS_FS clears the fs-read block for the /tmp flat
-			# compose's out-of-dir contexts.
+			# compose's out-of-dir contexts. It is the whole grant, so the bake
+			# needs no git checkout to name a root; an act replay's context has none.
 			SOURCE_DATE_EPOCH: "0",
 			BUILDX_BAKE_ENTITLEMENTS_FS: "0",
 		}
@@ -260,7 +280,6 @@ export def --wrapped main [
 				# is the envelope — the test is the bake RUN itself, so cacheonly.
 				let output_set = if $plan.up { ["--set", "*.output=type=docker"] } else { ["--set", "*.output=type=cacheonly"] }
 				let bake_args = ($builder_args ++ $syntax_args ++ [
-					$"--allow=fs.read=($worktree_root)",
 					"-f", $flat_compose,
 					"--progress", $progress
 				] ++ $output_set ++ $no_cache_args ++ $no_cache_from_args ++ $no_cache_to_args) ++ $raw_args ++ $targets

@@ -1,4 +1,4 @@
-# Secrets must never reach stdout/CI logs. vrun's export echo is purely
+# Secrets must never reach stdout/stderr/CI logs. vrun's export echo is purely
 # diagnostic (the real env is applied via `with-env`, not these lines), so
 # redacting the value here has no functional effect — it only stops the
 # HOST_ENV projection (DOCKER_AUTH_CONFIG registry creds, KUBECONFIG_DATA
@@ -53,6 +53,7 @@ export def --wrapped vrun-live [--envs: record = {}, cmd, ...args] {
 	try { vrun --envs $envs $cmd ...$args; 0 } catch { |err| $err.exit_code }
 }
 
+# Diagnostics go to stderr: callers capture stdout for the command's output alone.
 export def --wrapped vrun [--trail="\n", --envs: record = {}, cmd, ...args] {
   let quoted_args = $args | each { |arg|
     if ($arg | into string | str contains ' ') { $arg | to nuon } else { $arg } }
@@ -60,11 +61,11 @@ export def --wrapped vrun [--trail="\n", --envs: record = {}, cmd, ...args] {
   if ($env_pairs | is-not-empty) {
     $env_pairs | each { |row|
       let shown = if (is-secret-key $row.name) { "***redacted***" } else { $row.value }
-      print (format-export $row.name $shown)
+      print -e (format-export $row.name $shown)
     }
   }
   with-env $envs {
-    print -n $"($cmd) ($quoted_args | str join ' ')($trail)"
+    print -e -n $"($cmd) ($quoted_args | str join ' ')($trail)"
     $in | ^$cmd ...$args
   }
 }
@@ -83,6 +84,11 @@ def stub-path [name: string] {
 }
 
 export def mise-bin [] {
+  let bootstrapped = $env.SAYT_MISE_BIN? | default ""
+  if ($bootstrapped | is-not-empty) {
+    if not ($bootstrapped | path exists) { error make {msg: $"Sayt's Mise executable is missing: ($bootstrapped)"} }
+    return $bootstrapped
+  }
   let is_windows = $nu.os-info.name == 'windows'
   let exe = if $is_windows { "mise.exe" } else { "mise" }
   let base = $path_self | path dirname
@@ -105,20 +111,44 @@ export def mise-bin [] {
     if ($cache_dirs | is-not-empty) { return ($cache_dirs | last | path join $exe) }
   }
   # 4. Fall back to PATH
-  "mise"
+  let found = which mise
+  if ($found | is-empty) { error make {msg: "Mise is unavailable; start Sayt through saytw or sayt.sh"} }
+  $found | first | get path
+}
+
+export def mise-env []: nothing -> record {
+  let mise = mise-bin
+  let searched = [($mise | path dirname)] ++ $env.PATH
+  let paths = if $nu.os-info.name == "windows" {
+    {Path: ($searched | str join (char esep))}
+  } else {
+    {PATH: $searched}
+  }
+  {SAYT_MISE_BIN: $mise} | merge $paths
 }
 
 export def --wrapped run-mise [...args] {
-  let mise = mise-bin
-  mise-trust $mise
-  vrun $mise ...$args
+  with-env (mise-env) {
+    hide-env -i MISE_LOCKED
+    mise-trust $env.SAYT_MISE_BIN
+    # Bootstrap stubs and explicit lock updates precede a usable project lock.
+    let unlocked = ($args.0? in ["tool-stub" "lock"])
+    with-env (if $unlocked { {MISE_LOCKED: "0"} } else { {} }) {
+      vrun $env.SAYT_MISE_BIN ...$args
+    }
+  }
 }
 
 # run-mise's trust handling with vrun-live's contract, plus an env overlay.
 export def --wrapped run-mise-live [--envs: record = {}, ...args] {
-  let mise = mise-bin
-  mise-trust $mise
-  vrun-live --envs $envs $mise ...$args
+  with-env (mise-env) {
+    hide-env -i MISE_LOCKED
+    mise-trust $env.SAYT_MISE_BIN
+    let unlocked = ($args.0? in ["tool-stub" "lock"])
+    with-env (if $unlocked { {MISE_LOCKED: "0"} } else { {} }) {
+      vrun-live --envs $envs $env.SAYT_MISE_BIN ...$args
+    }
+  }
 }
 
 # mise reads the cwd's config, so an untrusted .mise.toml blocks any
@@ -132,12 +162,12 @@ def mise-trust [mise: string] {
 
 export def --wrapped run-cue [...args] {
   let stub = stub-path "cue"
-  with-env { MISE_LOCKED: "0" } { run-mise tool-stub $stub ...$args }
+  run-mise tool-stub $stub ...$args
 }
 
 export def --wrapped run-docker [...args] {
   let stub = stub-path "docker"
-  with-env { MISE_LOCKED: "0" } { run-mise tool-stub $stub ...$args }
+  run-mise tool-stub $stub ...$args
 }
 
 # See compose.toml for why compose is pinned rather than reached through
@@ -149,21 +179,33 @@ export def compose-stub []: nothing -> string {
 export def --wrapped run-docker-compose [...args] {
   # COMPOSE_BAKE=true → compose builds via `buildx bake`: parallel
   # cross-service builds + better cache sharing.
-  with-env { MISE_LOCKED: "0", COMPOSE_BAKE: "true" } { run-mise tool-stub (compose-stub) ...$args }
+  with-env { COMPOSE_BAKE: "true" } { run-mise tool-stub (compose-stub) ...$args }
 }
 
 export def --wrapped run-git-cliff [...args] {
   let stub = stub-path "git-cliff"
-  with-env { MISE_LOCKED: "0" } { run-mise tool-stub $stub ...$args }
+  run-mise tool-stub $stub ...$args
 }
 
 export def --wrapped run-goreleaser [...args] {
   let stub = stub-path "goreleaser"
-  with-env { MISE_LOCKED: "0" } { run-mise tool-stub $stub ...$args }
+  run-mise tool-stub $stub ...$args
 }
 
 export def --wrapped run-nu [...args] {
-  let stub = stub-path "nu"
-  with-env { MISE_LOCKED: "0" } { run-mise tool-stub $stub ...$args }
+	let stub = stub-path "nu"
+	run-mise tool-stub $stub ...$args
 }
 
+export def --wrapped main [tool: string, ...args] {
+	match $tool {
+		"cue" => { run-cue ...$args }
+		"docker" => { run-docker ...$args }
+		"compose" => { run-docker-compose ...$args }
+		"git-cliff" => { run-git-cliff ...$args }
+		"goreleaser" => { run-goreleaser ...$args }
+		"nu" => { run-nu ...$args }
+		"mise" => { run-mise ...$args }
+		_ => { error make {msg: $"sayt tools: unsupported tool ($tool)"} }
+	}
+}

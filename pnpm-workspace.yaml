@@ -1,3 +1,29 @@
+# These repeat `pnpm.overrides` and `pnpm.peerDependencyRules` in package.json,
+# and the two must stay identical. pnpm 10 reads them here and ignores the
+# package.json copy; keeping both identical ensures lockfiles and external
+# readers agree.
+#
+# @tanstack/db 0.8.1 made an update to a localStorage-backed collection under a
+# live query throw `Query contributors with the same row key are not congruent`,
+# and 0.8.7 is the newest release that still does. The device tier is built on
+# that collection, so apps/truco and apps/chess cannot leave 0.8.0 until it is
+# fixed upstream. electric-db-collection and offline-transactions each take
+# @tanstack/db as an exact direct dependency, so nothing but an override keeps
+# a second copy out of the tree.
+overrides:
+  "@tanstack/db": "0.8.0"
+  nuxt: "^4.3.0"
+  "@nuxt/kit": "^4.3.0"
+  prisma: "5.18.0"
+  "@prisma/client": "5.18.0"
+  "@types/react": "^19.1.0"
+  "@types/react-dom": "^19.1.0"
+
+peerDependencyRules:
+  allowedVersions:
+    "@tensorflow/tfjs-core": "4.15.0"
+    "@tensorflow/tfjs-backend-webgl": "4.15.0"
+
 packages:
   - libraries/xproto/
   - libraries/mecha/packages/

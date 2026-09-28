@@ -1,19 +1,23 @@
 # bayt
 
-Bayt gives you Bazel-quality incremental invalidation on top of the build tools you already use — gradle, pnpm, go, cargo, make, whatever. One CUE declaration per target generates every file your existing tools expect: `Taskfile.yml`, per-target `Dockerfile`s, `compose.yaml`, `skaffold.yaml`, `docker-bake.hcl`, `.vscode/tasks.json`, plus a canonical per-target JSON manifest.
+Bayt gives you cryptographic, content-addressed incremental invalidation on top of the build tools you already use — gradle, pnpm, go, cargo, make, whatever. One CUE declaration per target generates every file your existing tools expect: `Taskfile.yml`, per-target `Dockerfile`s, `compose.yaml`, `skaffold.yaml`, `docker-bake.hcl`, `.vscode/tasks.json`, plus a canonical per-target JSON manifest.
 
 You don't migrate away from your build tool. You just stop hand-maintaining seven files that all describe the same target in slightly different ways.
 
-Bayt is an opinionated build-config generator: you describe targets in CUE, bayt emits the toolchain-specific files. It pairs naturally with [sayt](https://github.com/bonisoft3/sayt) (sayt's `generate` verb invokes bayt as one of its rulemap steps) but bayt is standalone — you can run `bayt` directly from any project containing a `bayt.cue`. If you're happy with `.vscode/tasks.json` you don't need bayt. If you're tired of your build graph disagreeing with your compose graph which disagrees with your CI graph, bayt is the DSL that makes one source of truth for all of them.
+Bayt is an opinionated build-config generator: you describe targets in CUE, it emits the toolchain-specific files. It pairs naturally with [sayt](https://github.com/bonisoft3/sayt) (sayt's `generate` verb invokes bayt as one of its rulemap steps) but bayt is standalone — you can run `bayt` directly from any project containing a `bayt.cue`. If you're happy with `.vscode/tasks.json` you don't need bayt. If you're tired of your build graph disagreeing with your compose graph which disagrees with your CI graph, bayt is the DSL that makes one source of truth for all of them.
+
+Bayt also keeps operational concerns next to the asset that needs them: portable entrypoints, health checks, and configuration injection. The same declaration can drive local development, CI, and remote builders, making validation repeatable wherever code is produced.
 
 ## Why bayt?
 
 - **One target, every format.** `srcs`, `deps`, `outs`, `cmd` — declared once in CUE, emitted into Taskfile, Dockerfile, compose, skaffold, bake, and vscode. No drift, no copy-paste.
-- **Merkle-chain fingerprinting.** Every target hashes its own manifest + srcs + each direct dep's stamp file. A change anywhere in the DAG cascades exactly once per layer. Same correctness guarantee Bazel gives you, with no sandbox, no Starlark, no rule ecosystem to learn.
+- **Merkle-chain fingerprinting.** Every target hashes its own manifest + srcs + each direct dep's stamp file. A change anywhere in the DAG cascades exactly once per layer. Fast, cryptographic correctness without cumbersome rule DSLs or bespoke build wrappers.
 - **Works with what you have.** Your gradle/pnpm/go commands keep running them. Bayt doesn't replace `./gradlew` or `pnpm install`; it just makes sure they run exactly when they need to.
-- **Shared stack definitions.** Concept libraries (`gradle`, `pnpm`, `mise`) capture per-toolchain primitives; the `sayt` umbrella maps them onto the canonical 10-verb shape. A new gradle service is five lines of CUE: `_proj: sayt.gradle & { dir: "..." }`.
-- **Content-addressable caching, two layers.** `cache.nu` wraps every Taskfile cmd with content-addressed restore-and-run. Stack-side, gradle/cargo/go/etc. get their own native build cache pointed at the same `$BAYT_CACHE_DIR` directory — gradle's per-task cache for example is ~15× finer than bayt's per-target cache. The two layers compose: bayt skips the whole cmd when the target hasn't changed; the tool skips most of its work when only some inputs changed. Backends for the bayt layer: local-FS (default, XDG-compliant), `BAYT_CACHE_URL` for buchgr/bazel-remote, `BAYT_CACHE_REGISTRY` for ORAS OCI. Per-target `bayt.cache.full` skips cmd entirely on exact hit (the gradle daemon cold-start escape hatch).
+- **Shared stack definitions.** Concept libraries (`gradle`, `pnpm`, `mise`) capture per-toolchain primitives. A new gradle service is five lines of CUE: `_proj: sayt.gradle & { dir: "..." }`.
+- **Composed caching.** Bayt's content-addressed cache avoids unnecessary target work while Gradle, pnpm, Go, and other tools retain their native incremental caches. Use local disk by default, or attach a remote cache for ephemeral runners and remote builders.
 - **Gradual adoption.** Start with one target. Add more when the hand-maintained files get painful. No all-in moment.
+
+Every document about bayt, with its type and status, is listed in [docs/index.md](docs/index.md).
 
 ## Install
 
@@ -21,24 +25,24 @@ Pin the release in your project's `.mise.toml`:
 
 ```toml
 [tools]
-"github:bonisoft3/bayt" = "0.52.0"
+"github:bonisoft3/bayt" = "0.53.0"
 ```
 
-`bayt` is then on PATH and the cue/nu tree lives next to it. Run from any directory containing a `bayt.cue`:
+`bayt` is then on PATH. Run from any directory containing a `bayt.cue` to get the `.bayt` generated dir with all configuration your build needs:
 
 ```bash
 bayt generate --recursive
 ```
 
-In a workspace with many projects, `bayt generate --all` regenerates every project in dependency order in a single process — much faster than per-project invocations. The CLI also exposes the supporting tools: `bayt fingerprint`, `bayt cache gc|status|clear` for the content-addressed cache, and `bayt where root|runtime` to print bayt's own install location.
+In a workspace with many projects, `bayt generate --all` regenerates every project in dependency order with maximum parallelism — much faster than per-project invocations. The CLI also exposes the supporting tools: `bayt fingerprint`, `bayt cache gc|status|clear` for the content-addressed cache, and `bayt where root|runtime` to print bayt's own install location.
 
-**Sayt pairing (optional).** If the project uses sayt, add bayt to the generate rulemap so `sayt generate` re-emits bayt's outputs alongside the rest of the pipeline:
+**Sayt pairing (optional).** If the project uses sayt, its built-in `auto-bayt` generate rule already makes `sayt generate` re-emit bayt's outputs alongside the rest of the pipeline; to opt out:
 
 ```yaml
 say:
   generate:
     rulemap:
-      bayt: null
+      auto-bayt: null
 ```
 
 ## Getting started
@@ -49,22 +53,17 @@ Start with one target. Here's a gradle service:
 // services/my-service/bayt.cue
 package my_service
 
-import (
-    bayt "bonisoft.org/plugins/bayt/core:bayt"
-    sayt "bonisoft.org/plugins/bayt/stacks/sayt"
-)
+import sayt "bonisoft.org/plugins/bayt/stacks/sayt"
 
 _proj: sayt.gradle & {
     dir: "services/my-service"
     targets: {
-        "release": skaffold: image: "gcr.io/proj/my-service"
+        "launch": dockerfile: from: ref: ":build"
+        "release": bake: image: "gcr.io/proj/my-service"
     }
 }
 
 project: _proj
-
-depManifestsIn: {[string]: _}
-_render: (bayt.#render & {project: _proj, depManifests: depManifestsIn})
 ```
 
 From the project dir:
@@ -73,34 +72,32 @@ From the project dir:
 bayt generate
 ```
 
-This emits the per-target files under `.bayt/` — `.bayt/bayt.<verb>.json` (the manifest), `.bayt/Taskfile.<verb>.yaml`, `.bayt/Dockerfile.<verb>`, `.bayt/compose.<verb>.yaml`, `.bayt/skaffold.<verb>.yaml`, `.bayt/bake.<verb>.hcl`, `.bayt/vscode.<verb>.json` — plus the `.bayt/` aggregate roots (`Taskfile.yml` launch shim, `Taskfile.bayt.yml`, `compose.yaml`) that your user-authored `Taskfile.yml`/`compose.yaml`/`skaffold.yaml` include. You hand-author the tool roots once; the `.bayt/` tree is committed and lint enforces "don't hand-edit" there.
+This emits target-scoped files under `.bayt/`: `.bayt/bayt.<target>.json` (the manifest), `.bayt/Taskfile.<target>.yaml`, `.bayt/Dockerfile.<target>`, `.bayt/compose.<target>.yaml`, `.bayt/skaffold.<target>.yaml`, `.bayt/bake.<target>.hcl`, and `.bayt/vscode.<target>.json`. It also emits aggregate roots such as `Taskfile.yml`, `Taskfile.bayt.yml`, and `compose.yaml`. You hand-author the tool roots once; the generated `.bayt/` tree is committed and lint enforces that it is not edited by hand.
 
-Now `task build:build` runs `./gradlew assemble` only when sources changed. `task test:test` runs only when build or test sources changed. Touching any upstream file cascades through the chain automatically. If you run the same target twice with no changes, nothing happens.
+Now `task bayt:build` runs `./gradlew assemble` only when sources changed. `task bayt:test` runs only when build or test sources changed. Touching any upstream file cascades through the chain automatically. If you run the same target twice with no changes, nothing happens.
 
 Adding a second service takes five more lines of CUE. Cross-project dependencies are first-class — `services/api` depending on `libraries/proto` gets proto's build stamp folded into api's fingerprint, so api rebuilds when proto's srcs change.
 
 ## The fields
 
-Every `#target` is described by a small, fixed set of fields. Declare them once, emit everywhere.
+Each directory with a `bayt.cue` is a project. A target is one buildable asset in that project: a setup layer, binary, test suite, runtime service, or release image. Declare its top-level fields once; Bayt derives the tool-specific nested configuration.
 
-| Field            | Meaning                                                             | Matches Bazel       |
-|------------------|---------------------------------------------------------------------|---------------------|
-| `srcs.globs`     | Files whose content change invalidates this target.                 | `srcs`              |
-| `srcs.exclude`   | Glob patterns pruned from srcs walks (`node_modules/**`, etc.).     | `glob(exclude=)`    |
-| `outs.globs`     | Files this target exposes to consumers. Missing outs force re-run.  | `outs`              |
-| `outs.exclude`   | Glob patterns pruned from outs.                                     | —                   |
-| `deps`           | Other targets to build first. Strings (same-project: `:target`, cross-project: `project:target`). | `deps`              |
-| `visibility`     | `"internal"` (default) or `"public"`. Public targets are consumable cross-project. | `visibility` |
-| `bake.image`     | Registry ref of a release image; its presence emits the bake build recipe. Push vs load is the `$PUSH_IMAGE` env at bake time. The `release` verb takes it. | — |
-| `compose.up` / `compose.manual` | Runtime role: `up` is a load-by-name entry (launch, integrate); `manual` keeps a harness off the bare-`up` stack at `scale: 0` (reached by targeting it). | — |
-| `cmd`            | The action to run. Shorthand `do: "cmd"` or the full rulemap.       | `cmd` / `exec`      |
-| `env`            | Environment variables passed to cmd.                                | `env` (via `--action_env`) |
-| `activate`       | Toolchain prefix (usually `mise x --`). Defaults from `#project`.   | `toolchains`        |
-| `dockerfile.from`| FROM source for this target's Dockerfile stage. Either a fresh image (`from: name: ...`, typically via an image preset like `bayt.nubox`) or a chain to another target (`from: ref: ":<target>"` for same-project, `"<project>:<target>"` for cross-project). Cross-project `from: ref:` automatically wires federation (compose include + additional_contexts + visibility check) — no separate `deps:` entry needed for the from-ref alone. Default: scratch (when no preset). | — |
-| `cache.full`     | When true, on EXACT cache hit restore outs and skip cmd entirely. Default false (restore + run cmd, letting its own incremental engine no-op on warm outputs). Use `bayt.cache.full` capability to set. | — |
-| `cache.similar`  | When true, on EXACT-match miss look for the closest cached entry (weighted intersection over inputs + user/branch/day) and restore as warm starting state. Default false. Use `bayt.cache.similar` capability to set. | — |
+| Field            | Meaning                                                             |
+|------------------|---------------------------------------------------------------------|
+| `srcs`           | Files whose content change invalidates this target. `globs` and `exclude` refine the source walk. |
+| `outs`           | Files this target exposes to consumers. `globs` and `exclude` define the artifact boundary. |
+| `deps`           | Other targets to build first. Strings (same-project: `:target`, cross-project: `project:target`). |
+| `visibility`     | `"internal"` (default) or `"public"`. Public targets are consumable cross-project. |
+| `bake.image`     | Registry ref of a release image; its presence emits the bake build recipe. Push vs load is the `$PUSH_IMAGE` env at bake time. The `release` verb takes it. |
+| `compose.up` / `compose.manual` | Runtime role: `up` is a load-by-name entry (launch, integrate); `manual` keeps a harness off the bare-`up` stack at `scale: 0` (reached by targeting it). |
+| `cmd`            | The action to run. Shorthand `do: "cmd"` or the full rulemap.       |
+| `env`            | Environment variables passed to cmd.                                |
+| `activate`       | Toolchain prefix (usually `mise x --`). Defaults from `#project`.   |
+| `dockerfile.from`| FROM source for this target's Dockerfile stage. Either a fresh image (`from: name: ...`, typically via an image preset like `bayt.nubox`) or a chain to another target (`from: ref: ":<target>"` for same-project, `"<project>:<target>"` for cross-project). Cross-project `from: ref:` automatically wires federation (compose include + additional_contexts + visibility check) — no separate `deps:` entry needed for the from-ref alone. Default: scratch (when no preset). |
+| `cache.full`     | When true, on EXACT cache hit restore outs and skip cmd entirely. Default false (restore + run cmd, letting its own incremental engine no-op on warm outputs). Use `bayt.cache.full` capability to set. |
+| `cache.similar`  | When true, on EXACT-match miss look for the closest cached entry (weighted intersection over inputs + user/branch/day) and restore as warm starting state. Default false. Use `bayt.cache.similar` capability to set. |
 
-### Which block? The concern split
+### Where configuration belongs
 
 Output blocks partition by an invariant, not by tool syntax:
 
@@ -139,10 +136,19 @@ For the 20% of targets that need OS variants (`windows`/`linux`/`darwin`, lowere
 
 ### Producer-controlled exposure: `outs` and `visibility`
 
-What flows from a producer to its consumers is declared by the producer, never by framework heuristic:
+Choose the producer's public surface deliberately:
 
-- **`outs.globs/exclude`** — the producer's public interface. Cross-project consumers (`deps: ["foo:build"]`) get exactly these files via per-glob `COPY --from=<producer>` in the consumer's Dockerfile. If the producer wants `.task/stamps/<target>.hash` to flow (so the consumer's task chain short-circuits the cross-project dep), they include it in outs. If not, they exclude it. No framework `--exclude=.task` magic.
+- **`outs.globs/exclude`** — the producer's public interface. Cross-project consumers (`deps: ["foo:build"]`) get exactly these files via per-glob `COPY --from=<producer>` in the consumer's Dockerfile. Include a stamp only when the consumer needs to reuse it; otherwise omit it.
 - **`visibility`** — `"internal"` (default) means same-project consumers only. `"public"` means cross-project consumers can `deps:` or `from:` reference this target. Generation fails at CUE-evaluation time if a cross-project dep targets an internal target.
+
+Use `deps` when the consumer needs a producer's declared artifacts. Use `dockerfile.from.ref` when it extends the producer's image filesystem. Runtime services join a stack through `compose`; they do not become build dependencies merely because they run together.
+
+```cue
+_proto: sayt.gradle & {
+    dir: "libraries/proto"
+    targets: "build": visibility: "public" // api can deps: ["libraries_proto:build"]
+}
+```
 
 ### Synthetic views: `:srcs`, `:outs`, `:foo:bayt`
 
@@ -154,13 +160,11 @@ Every target with a Dockerfile auto-emits three sibling synthetics consumers can
 | `:foo:outs` | scratch image holding the target's `outs.globs` — the artifact view. Declared even when `outs` is empty, where it emits no image: that is how a consumer deps an image-only target (launch/release), federating its compose fragments without copying its tree |
 | `:foo:bayt` | scratch image holding the target's scaffolding fileset (fragment, Dockerfile, taskfile, manifest, the go-task roots, up closure) plus its deps' chained scaffolding — nothing from sibling targets, so a sibling's definition churn never invalidates a consumer layer |
 
-`:srcs` is the typical source-closure dep for dindbox-cascade flows — the outer `ci` stage stays COPY-only while the inner bake reconstructs the chain. Transitive walking is implicit: a dep `:integrate:srcs` rolls in the upstream `:build:srcs` and each project's `:setup:srcs` (toolchain config files like `.mise.toml`, `mise.lock`, wrapper.properties), so consumers don't enumerate each upstream. The synthetic's manifest exposes the same-project chain as cross-project entries on its `transitiveCrossDeps`, letting internal upstreams ride along the public dep's surface.
-
-For `sayt.ci` / `sayt.ciRun` these deps are required, not conventional — a source-free RUN layer cache-hits and reports a suite it never ran. Generation fails on a deps list with no `:srcs` view, and on any `:X:bayt` whose `:X:srcs` sibling is missing.
+Use `:srcs` when a consumer needs the source closure, `:outs` when it needs built artifacts, and `:foo:bayt` when it needs the target's generated build definition. Bayt resolves each view transitively, so consumers name the immediate dependency rather than its entire upstream chain.
 
 ### `dockerfile.from`: chain or fresh image
 
-Each emitted Dockerfile stage's FROM is the producer's choice. Bazel-style refs: `:target` (same project) or `project:target` (cross):
+Each emitted Dockerfile stage's FROM is the producer's choice. Target refs: `:target` (same project) or `project:target` (cross):
 
 ```cue
 // Leaf: FROM an image. Use a base preset (sets stage + preamble too).
@@ -180,14 +184,16 @@ The chain form means the build stage *is* the setup stage extended — no `mise 
 
 **Cross-project from-refs federate automatically.** A `from: ref: "X:Y"` is enough — bayt wires the compose include for X, the `additional_contexts` entry for the FROM alias, and the visibility check on Y in one go. You only add `deps: ["X:Y", ...]` when you also need the dep's `outs` COPY'd in (the explicit-data path), separate from the FROM-chain inheritance.
 
-## Stacks: toolchain knowledge, reusable
+## Stacks and distros
+
+Stacks and distros package repeatable toolchain and operating-system conventions as composable CUE fragments. They provide sensible defaults without hiding the generated Dockerfile, Taskfile, Compose, and Bake configuration; projects can inspect or override the emitted result when their environment differs.
 
 A *stack* captures what a language toolchain needs. Bayt ships toolchain stacks for go, gradle, pnpm, bun, uv and mise, plus the `sayt` umbrella:
 
 - **`stacks/go`** — go concept fragments: `modDownload` (the module closure as a `deps` layer), `build`, `test`, `integrationTest` (a nested `it/` module keeps daemon-needing testcontainers off the service graph), `vet`, `run`. A stage preamble points `GOMODCACHE` at a project-local closure in-container; the host keeps go's shared modcache.
 - **`stacks/gradle`** — kotlin/java/gradle concept fragments: `depsResolve` (the dependency closure as a read-only dep-cache layer), `assemble`, `test`, `integrationTest`, `jibBuildTar`, `check`, `run`. Default srcs scoped to `src/main/` for `assemble` (so test edits don't invalidate build); `bayt.cache.full` on `assemble` and `integrationTest` (gradle's daemon cold-start is too costly to pay on every cache hit). Emits `.bayt/init.gradle.kts` per project pointing gradle's local build cache at `$BAYT_CACHE_DIR/gradle` — gradle's per-task cache and bayt's per-target cache share the same on-disk store and complement each other (per-task hits when only some inputs changed, per-target full skips when nothing changed).
 - **`stacks/pnpm`** — pnpm/node/vite/vitest concept fragments: `install` (the dependency closure as a layer), `build`, `test`, `dev`, `testInt`, `testE2E`, `lint`. Test srcs split between `srcsTest` (`*.test.ts(x)`) and `srcsIntegrate` (`*.spec.ts(x)`) matching the repo's vitest convention. pnpm store cache mount.
-- **`stacks/bun`** — bun/Node.js concept fragments: `install` (the dependency closure as a layer), `dev`, and the `srcsBuild`/`srcsTest`/`srcsIntegrate` source sets. `installFlags` pins `--frozen-lockfile --ignore-scripts`: the lockfile stays authoritative, and lifecycle scripts defer downstream because they need source the deps layer does not carry. bun store cache mount.
+- **`stacks/bun`** — bun/Node.js concept fragments: `install` (the dependency closure as a layer), `build`, `test`, `testInt`, `testE2E`, `dev`, and the `srcsBuild`/`srcsTest`/`srcsIntegrate` source sets. `installFlags` pins `--frozen-lockfile --ignore-scripts`: the lockfile stays authoritative, and lifecycle scripts defer downstream because they need source the deps layer does not carry. bun store cache mount.
 - **`stacks/uv`** — python/uv concept fragments: `sync` (the locked environment as a `deps` layer), `build` (`compileall`, python's nearest thing to a link step), `test`, `integrationTest`, and an opt-in `bytecode`. uv owns the environment and mise owns the interpreter, so every fragment carries `toolEnv`. The venv is presence-gated through `state` rather than declared as `outs` — it is not relocatable in either direction, and the host CAS drops the interpreter symlinks — so stages reach it by FROM-chaining the `deps` stage. Layout is a parameter, not a pair of overrides: `(sayt.#uv & {srcDir: "app", unitDir: "tests"}).out` reaches both the source globs and the commands that walk them, so a project on a different tree states each directory once. Source globs sit in the framework-side `defaultGlobs` and are `| null`, so a project with no such tree deletes the key outright.
 - **`stacks/mise`** — toolchain installer. `install` (provisions the project's `.mise.toml`), `exec` (sets `activate: "mise x --"` so cmds resolve through mise's shim layer), `doctor`. Used as a building block by other stacks.
 - **`stacks/sayt`** — umbrella that maps the 10 sayt verbs (setup/build/test/launch/integrate/release/verify/generate/lint/doctor) onto stack fragments. `sayt.go`, `sayt.gradle`, `sayt.pnpm`, `sayt.pnpmWorkspace`, `sayt.uv` are the standard mappings projects compose against. `sayt.pnpmWorkspace`'s setup provisions the shared toolchain layer: it runs the workspace root's `mise install`, so consumer setups FROM-chaining it install only their project's tool delta. `sayt.inject` adds the dind plumbing for ci-cascade flows; `sayt.ci` is a one-line recipe combining inject + the standard bake-and-up-the-integrate-closure RUN body + FROM `:dindbox`; `sayt.dindbox` is the matching dindbox-target preset.
@@ -217,14 +223,6 @@ _api: sayt.gradle & {
 }
 ```
 
-A consumed library declares `visibility: "public"` on the verbs it exposes:
-
-```cue
-_proto: sayt.gradle & {
-    dir: "libraries/proto"
-    targets: "build": visibility: "public"   // api can deps: ["libraries_proto:build"]
-}
-```
 
 ## Healthcheck templates
 
@@ -241,10 +239,10 @@ one declaration. Five templates ship today:
 | `bayt.healthcheck.redis`    | `redis-cli ping` PONG  | bundled in redis image |
 | `bayt.healthcheck.ollama`   | model listed via `ollama list` | bundled in ollama image |
 
+
 Defaults follow "probe aggressively, fail leniently" (1s interval,
-30 retries, 200ms start_interval, 30s start_period). Override per-target
-inline only when needed — postgres/ollama typically bump `start_period`
-for slow cold-starts.
+30 retries, 200ms start interval, and a 30s start period. The templates carry
+service-specific defaults where they are needed.
 
 ```cue
 "release-proxy": sayt.release & bayt.healthcheck.http & {
@@ -261,27 +259,17 @@ for slow cold-starts.
 }
 ```
 
-The mixin's tool COPY rides `dockerfile.defaultCopy`, so a target can add
-its own `dockerfile.copy: [...]` (a model file, an asset) and keep the
-mixin — the two lists concatenate rather than conflict.
-
-`compose.healthcheck` carries the compose-spec extension `start_interval`
-(probe rapidly during the start_period window) which Dockerfile
-HEALTHCHECK doesn't model.
-
 Beyond healthchecks, `compose` passes through `networks`, `env_file`,
 `pull_policy`, and `extra_hosts` for targets that need compose-level
 decoration.
 
 ## depot.dev builds
 
-Set `depot: true` on a `#project` to emit `.bayt/depot.yaml` (the compose graph
-pre-flattened, with tag/cache/output vars left late-bound) and `.bayt/depot.hcl`
-(a bake `group` naming the images an integration run needs, derived from the
-model). CI bakes the pair to build and push exactly that set on depot's remote
-builders with no dind daemon — see sayt's `sayt/depot` action for the wiring.
-Pre-flattening keeps the compose walk out of CI; the docker CLI it needs is why
-this is opt-in.
+Set `depot: true` on a `#project` to emit `.bayt/depot.yaml` and
+`.bayt/depot.hcl`. The YAML is the project's Compose graph flattened for
+Depot; the HCL group names the runtime-image closure it must build. This gives
+`sayt/depot` a generated input tailored to Depot's Bake interface, with
+tags, cache settings, and outputs left for CI to supply.
 
 ## Merkle-chain invalidation, in one diagram
 
@@ -302,47 +290,80 @@ Each task's stamp = `hash(platform-key + srcs + each direct-dep stamp file)`. Be
 
 That's the same key recipe the remote cache (bazel-remote / ORAS) uses, so a L0 miss can become a L1/L2 fetch instead of a rebuild whenever someone else has already built the same content.
 
-## Comparing to Bazel: an opinionated take
+## Architectural comparison: Bazel and Bayt
 
-Bazel is a great system — a lot of bayt's design is explicitly borrowed from it (`srcs`, `deps`, `outs` as attribute names; Merkle hashing for correctness; content-addressable remote caching; composable rules/stacks). The comparison below is about fit, not quality.
+Bazel is a foundational engineering achievement — much of Bayt's core model is directly inspired by it: content-addressed Merkle invalidation, declarative `srcs`/`deps`/`outs`, and remote cache federation. The difference lies in architectural strategy and trade-offs, not quality:
 
-**Where Bazel is more effective:**
+### 1. Toolchain subsumption vs. toolchain inversion
+- **Bazel inverts the toolchain**: Bazel decomposes compilation into tens of thousands of fine-grained micro-actions, executing each within an ephemeral user-space sandbox. While principled, this bypasses the native in-memory caching and persistent daemons of modern language toolchains (`GOCACHE`, `pnpm`'s hardlink store, `vitest`'s module graph). Sandboxing every micro-action can generate thousands of short-lived processes and heavy VFS metadata contention on macOS and Linux filesystems.
+- **Bayt subsumes the toolchain**: Bayt establishes boundaries at natural package and target nodes. It verifies inputs in milliseconds via cryptographic Merkle hashes memoized by `(mtime, size)`, skipping clean targets immediately (`exit 10`). When work is needed, it hands off directly to the native toolchain's multi-threaded compiler, preserving its internal caching and worker optimizations intact.
 
-- **In-process action sandboxing.** Bazel sandboxes every action so it can only see the inputs you declared. That gives reproducibility guarantees bayt's default mode doesn't match — your `./gradlew` invocation has access to `$HOME`, the network, and whatever else gradle decides to poke. Bayt has a different answer (docker-based, see below) but at the per-action level Bazel's sandbox is tighter.
-- **Action-level granularity.** Bazel splits a compile into per-source actions that can be cached, replayed, and distributed individually. Bayt's unit is the task (one gradle invocation, one pnpm build). For a monorepo with thousands of Go packages where you want to rebuild three of them, Bazel's model wins — bayt re-runs the whole gradle subproject on any invalidation inside it. For teams whose bottleneck is cross-package incrementality, that's a real gap.
-- **Mature rule ecosystem.** `rules_go`, `rules_nodejs`, `rules_cc`, `rules_python`, `rules_kotlin`, `rules_proto` — Bazel has battle-tested rules for virtually every language, often maintained by the language vendors. Bayt ships four stacks (gradle, pnpm, mise, sayt) and expects new stacks to be authored per monorepo.
-- **Query and analysis.** `bazel query`, `bazel cquery`, `bazel aquery` are unmatched for introspecting the build graph. Bayt's graph lives in the `.bayt/bayt.<verb>.json` manifests — readable, but no query CLI yet.
+### 2. The isolation spectrum: host inner-loops and OCI containers
+- **Bazel's sandbox**: Operates per action via macOS Seatbelt (`sandbox-exec`) or Linux user/mount namespaces. It carries process and VFS setup costs while still sharing the host OS kernel and potentially reading host-installed dependencies if toolchains are not fully static.
+- **Bayt's two distinct tiers**:
+  - *Native host execution*: Zero-overhead, sub-second turnaround for local inner-loop iteration. Developers get immediate feedback without fighting sandbox permissions or IDE wrappers.
+  - *OCI container isolation (`bayt.nubox` / BuildKit)*: Full Linux kernel namespace, cgroup, network (`network: "none"`), and rootfs isolation for CI and integration testing. This provides strictly stronger isolation than user-space sandboxing, paired with BuildKit cache mounts (`/root/.cache/bayt`, `/root/.cache/go-build`, pnpm store) for fast warm builds.
 
-**Where bayt has its own answer:**
+### 3. Measured on a Bazel-native codebase
+Sourcegraph's public snapshot was ported to Bayt the way Gazelle ports a repo to
+Bazel: a generator reads `go list -deps -json` and emits one project per package
+group. Consecutive upstream commits were then replayed through both tools on one
+laptop, running the **whole Go unit-test suite** at each — the 286 packages whose
+tests need neither postgres nor the network, chosen from Sourcegraph's own Bazel
+tags so both tools run the same set. Bazel ran with Sourcegraph's CI remote-cache
+settings and the host module cache; the shared remote cache is
+[depot](https://depot.dev).
 
-- **Docker-based hermeticity.** Bayt's hermeticity story runs through Docker, not a per-action sandbox. A target with `bayt.incremental` runs inside a Dockerfile stage the emitter generates — the environment is defined by the base image + declared srcs + cache mounts, which is arguably *more* hermetic than Bazel's sandbox because you control the entire OS layer, not just the filesystem inputs. `launch` and `integrate` verbs extend this: your app runs in docker with testcontainers or compose-managed dependencies, so "hermetic run" is a first-class concept alongside "hermetic build." This is the path google3 takes for many services internally, and it's what Docker/BuildKit was designed for.
+| | Bazel | Bayt (host) | Bayt (container) |
+|---|---|---|---|
+| cold — nothing cached anywhere | 776s | **161s** | 336s |
+| fresh runner, warm remote cache — nothing to re-run | 227s | **2.2s** | — |
+| fresh runner, warm remote cache — tests to re-run | 1651s | **159s** | — |
+| incremental — nothing to re-run | **0.8s** | 1.1s | 27.5s |
+| incremental — tests to re-run | 263s | **14.1s** | 22.2s |
 
-- **Remote execution via BuildKit.** For docker-centric flows, [depot.dev](https://depot.dev) and similar services already provide remote BuildKit execution — your Dockerfile builds run on managed infrastructure, outputs come back cached. For bayt targets that use `bayt.incremental`, this gives you Bazel's remote-execution value (run the action elsewhere, ship artifacts back) without standing up a Bazel RE cluster. Testcontainers, Kubernetes jobs, or Cloud Run can play the same role for short-lived execution of integration tests.
+Incremental rows are medians over 20 replayed commits (12 that change nothing for
+the suite, 7 that re-run tests); remote rows over 5. Bazel's cold figure keeps its
+repository cache, so dependency downloads are free and only actions are cold. The
+container tier has no remote row: its remote story is a registry-backed BuildKit
+cache, a different mechanism from Bayt's own, and a number from it would not
+compare like with like.
 
-- **Two-layer cache, composed.** `cache.nu` provides per-target content-addressed cache (full skip on exact hit via `bayt.cache.full`; warm-start on miss via `bayt.cache.similar`). Stack-side, each language stack configures its own native build cache at the same `$BAYT_CACHE_DIR` directory — gradle's per-task cache via init.gradle.kts, planned go GOCACHE, cargo sccache, etc. The two layers compose: bayt skips the whole cmd when nothing changed; the tool skips most of its own work when only some inputs changed. Same Merkle hash key as the local L0 stamp. Backends for the bayt layer: local-FS (default, XDG-compliant), `BAYT_CACHE_URL` for buchgr/bazel-remote (which itself can chain to S3/GCS/Azure or proxy to depot.dev / BuildBuddy), `BAYT_CACHE_REGISTRY` for ORAS OCI. Stable BuildKit cache mount (`id=bayt-cache`) means hits work inside Dockerfile RUNs across stage rebuilds.
+Two shapes produce this. One `go test` invocation covering every package lets the
+toolchain's own result cache supply per-package granularity, where Bazel drives a
+sandboxed action per test target; and a target's inputs are proved unchanged by one
+enumeration per directory against a stat memo, not by a graph held in a resident
+daemon — which is why a no-op commit costs a stateless CLI about what it costs a
+server. The fresh-runner rows are that argument carried over a network: with every
+result already cached, Bazel still spends 227s reconstructing its graph and
+materialising 322 test results and their inputs, while Bayt asks one question about
+one target.
 
-- **Onboarding cost.** A team can adopt bayt on a single service in an afternoon. The common mode is "add a `bayt.cue` next to an existing `build.gradle.kts`, run the generator, check the Taskfile in." A Bazel migration is typically measured in quarters — most are successful, but the up-front commitment is real, and partial migrations are painful because coexistence with native tools isn't Bazel's strength. Bayt is designed for incremental adoption; one target at a time is a normal path.
+Bazel keeps the no-op commit on a warm machine, and it is unmatched where a build
+really is a graph of a hundred thousand fine-grained actions. What the table shows
+is that a test suite is not that graph, and paying per action to treat it as one
+costs more than it returns.
 
-- **Integration with existing tools.** Your IDE already understands `./gradlew`, your CI already runs `docker compose`, your ops team already deploys via skaffold. Bayt emits files those tools natively consume. No Bazel build wrapper, no `ibazel`, no "why doesn't VSCode see my imports." For teams whose day-to-day already runs on those tools, bayt is essentially transparent.
+The container tier is the same suite in a hermetic stage, ~1.5x the host tier on an
+incremental commit. It is also the only tier that fails when a declaration is
+incomplete: porting Sourcegraph it caught assembly and cgo sources missing from
+`stacks/go`, fixtures the tests read, a package reached only from a test file, and
+a `git` the suite shells out to — each of which the host tier built green with a
+cache key that was quietly wrong.
 
-- **Tools keep their internal caching.** gradle's incremental compile still works *inside* bayt's task boundary. pnpm's store cache still works. You benefit from both the tool's internal caching AND bayt's task-level cache. Bazel replaces the tool's own caching with Bazel's, which is great when the replacement is solid and painful when there's a mismatch (gradle's worker daemon behavior, for instance, is notoriously hard to preserve under Bazel).
+### 4. Pragmatic fit
+- **Where Bazel is unmatched**: Giant homogeneous monorepos (hundreds of thousands of targets), massive C++/Java codebases requiring cross-package action granularity, and organizations with dedicated build-infrastructure teams to maintain custom Starlark rules and remote execution farms.
+- **Where Bayt fits best**: Teams maintaining mixed modern stacks (Go, TypeScript/pnpm, Kotlin/Gradle, Rust) who want instant single-afternoon onboarding, transparent IDE support, and sub-second developer inner loops without replacing their existing tools.
 
-- **CUE vs. Starlark.** CUE's unification catches a lot at evaluation time. CUE stacks compose by structural unification; Starlark rules compose by function call. Both are valid; CUE's flavor is the one bayt chose.
-
-- **Heterogeneous stacks.** A monorepo with one gradle service, two pnpm apps, and a Go tool is bayt's happy path — three stack definitions, each scoped to its language. Bazel can handle this but the ruleset upkeep and cross-rule interop effort is non-trivial.
-
-- **Operations cost.** Bayt's remote cache is a single `bazel-remote` container or an OCI registry. Bazel's remote *execution* needs a worker pool, a scheduler, a disk farm, a rollout story — great when a company has a build infrastructure squad to own it. For teams that don't, bayt + depot.dev (or similar) reaches a similar outcome without the operational surface.
-
-**Where the comparison lands:**
-
-Bayt is in many ways a Bazel subset implemented under different constraints. It keeps Bazel's correctness guarantees (Merkle-tree invalidation, content-addressable cache keys) and borrows Bazel's core vocabulary (srcs/deps/outs). It trades Bazel's per-action sandboxing and rule ecosystem for easier interop with native tools and a dramatically lower onboarding cost. For monorepos with mixed stacks, moderate size, and a team that would rather extend their existing tooling than migrate to a new build system, bayt is the better fit. For monorepos with thousands of same-language packages, heavy cross-package incrementality needs, or companies with a dedicated build-infra team already invested in Bazel, Bazel remains the right answer.
-
-Worth noting: the two aren't mutually exclusive. `.bayt/bayt.<verb>.json` is a machine-readable description of every target's action; a team that grows into needing Bazel can feed that into a rule-gen layer rather than starting from scratch. Bayt is useful scaffolding whether you stop there or eventually move beyond.
+Worth noting: the two are not mutually exclusive. `.bayt/bayt.<verb>.json` is a machine-readable description of every target's action; a team that grows into needing Bazel can feed that into a rule-gen layer rather than starting from scratch. Bayt is useful scaffolding whether you stop there or eventually move beyond.
 
 ## Emitted files
 
-All bayt-generated files use the `<tool>.<verb>.<ext>` convention under
-`.bayt/`. The tool roots (`Taskfile.yml`, `compose.yaml`, `skaffold.yaml`)
+Bayt emits target-scoped files as `<tool>.<target>.<ext>` under `.bayt/`.
+There is no monolithic per-tool output: a project can materialize precisely the
+subset of the graph its target needs, allowing generated definitions to take
+part in dependency and cache boundaries. The tool roots (`Taskfile.yml`,
+`compose.yaml`, `skaffold.yaml`)
 are **user-authored**: you write them once and point their includes at the
 `.bayt/` aggregates below.
 
@@ -416,19 +437,7 @@ release-proxy) to targets. Overlays must not define `bayt`.
 5. **Fragments via unification, not inheritance.** Verbs (`setup`, `build`, …) and base presets (`nubox`, `busybox`, …) are plain structs, not closed `#`-prefixed definitions — CUE's closed conjunction rejects cross-def fields. See the closedness note in `core/bayt.cue`.
 6. **Version intent vs. version lock.** Base image tags go in `bayt.cue`; digests live in `images.lock.cue`, bumped as ordinary dependency changes.
 7. **Pin what the archive can honor.** OS-package installs go through `distros/*` (`(zypper.#install & {pkgs: ["findutils=4.10.0-160000.2.2"]}).out`). The policy follows archive retention rather than being uniform: zypper requires a `name=version` pin and rejects a bare name at evaluation, because leap retains versions for the life of a release; apt and apk take bare names, because Debian/Ubuntu keep one revision per package in `-updates` and Alpine prunes, so a hard pin there encodes a dated build failure rather than reproducibility. Where a build genuinely needs reproducible packages, prefer a leap base, or point apt at `snapshot.ubuntu.com`/`snapshot.debian.org`, which fixes resolution at a timestamp and makes the pin redundant. The base image is always digest-pinned, so reproducibility holds across registry-side base updates regardless — but the pin and the archive are two clocks, and they drift: a digest-pinned base eventually meets packages rebuilt against a libc it does not ship. Refresh the base pin when that happens. Nothing catches it until something forces a cold build, so a layer can stay broken for as long as its cache key holds.
-8. **Never swallow errors.** fingerprint.nu and cache.nu fail fast on missing inputs, malformed manifests, git-hash-object errors. A misconfigured target surfaces immediately instead of poisoning the cache with silent defaults.
-
-## Claude Code plugin
-
-Bayt ships as a [Claude Code plugin](https://docs.anthropic.com/en/docs/claude-code/plugins) with skills that teach Claude how to write and edit `bayt.cue`, add new stacks, and debug the generated output.
-
-| Skill | What Claude learns |
-|-------|--------------------|
-| **bayt-target** | How to write a `bayt.cue` — the seven `#target` fields, cmd rulemap, dep references, skaffold/bake blocks. Auto-invoked when editing `bayt.cue`. |
-| **bayt-stack** | How to author a new language stack — workspace prefix, verb defaults, cache mounts, what belongs in the stack vs. the consumer. |
-| **bayt-debug** | How to diagnose fingerprint mismatches, missing-src errors, cross-project stamp resolution. |
-
-The **bayt-dev-loop** agent can drive the generate → build → verify cycle for a new service end-to-end.
+8. **Never swallow errors.** fingerprint.nu fails fast on a malformed manifest, a missing dep manifest or srcs that match no file, and cache.nu on a failed PUT. A misconfigured target surfaces immediately instead of poisoning the cache with silent defaults.
 
 ## Layout
 
@@ -468,6 +477,10 @@ plugins/bayt/
 │   ├── gradle/gradle.cue   (gradle concept fragments: depsResolve, assemble,
 │   │                        test, integrationTest, jibBuildTar, check, run)
 │   ├── pnpm/pnpm.cue       (pnpm concept fragments + pnpmWorkspace)
+│   ├── bun/bun.cue         (bun concept fragments: install, build,
+│   │                        test, testInt, testE2E, dev)
+│   ├── uv/uv.cue           (uv concept fragments: sync, build, test,
+│   │                        integrationTest, bytecode)
 │   ├── mise/mise.cue       (install / exec / doctor — used by other stacks)
 │   └── sayt/               (umbrella — maps 10 sayt verbs onto stack
 │       ├── sayt.cue         fragments; sayt.gradle, sayt.pnpm, …
@@ -481,7 +494,7 @@ plugins/bayt/
 │   ├── where.nu / tools.nu  (bayt install-path lookup `root|runtime` +
 │   │                         tool invocation helpers)
 │   ├── bayt / bayt.ps1      (slim in-container launchers)
-│   ├── nu.toml / cue.toml / oras.toml  (mise tool stubs pinning the runtime)
+│   ├── nu.toml / cue.toml / oras.toml / curl.toml  (mise tool stubs pinning the runtime)
 │   └── *_test.nu            (cache + fingerprint nu test suites)
 └── tests/
     ├── bayt_test.nu         (positive + negative suite runner)

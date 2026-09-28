@@ -17,9 +17,11 @@
   "state": {
     "globs": []
   },
-  "env": {},
+  "env": {
+    "CI": "true"
+  },
   "taskfile": {
-    "run": "when_changed",
+    "run": "once",
     "incremental": true,
     "preconditions": []
   },

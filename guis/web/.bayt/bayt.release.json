@@ -216,6 +216,7 @@
               "[m]ise.toml",
               "[.]mise.toml",
               "[m]ise.lock",
+              "[.]tool-versions",
               "gradle/libs.versions.toml",
               "plugins/devserver/dind.sh"
             ],
@@ -231,6 +232,7 @@
               "[m]ise.toml",
               "[.]mise.toml",
               "[m]ise.lock",
+              "[.]tool-versions",
               "gradle/libs.versions.toml",
               "plugins/devserver/dind.sh"
             ],
@@ -250,6 +252,9 @@
               ".nuxt/**",
               ".output/**",
               "dist/**",
+              "out/**",
+              "*.tsbuildinfo",
+              "**/*.tsbuildinfo",
               "coverage/**",
               ".bayt/**",
               ".task/**",

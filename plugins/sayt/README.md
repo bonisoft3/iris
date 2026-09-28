@@ -1,19 +1,43 @@
 # SAYT CLI
 
-Sayt is a small tool that covers a large part of the concerns that arise during modern software development. It codifies the learnings from multiple journeys of simple mvps to unicorn companies, with a special eye towards making it up-scalable and down-scalable so you can do go through that whole journey as well.
+Sayt is a small tool to manage your software development lifecycle (SLDC). It
+codifies the learnings from multiple journeys of simple mvps to unicorn
+companies, with a special eye towards making it up-scalable and down-scalable
+so you can do go through that whole journey as well.
 
-It can be used by both ai agentics and human beings, in either scenario it will give you consistent and efficient flows that will speed up both your internal development cycle and the larger product iteration loops, spawning from small microservices to large monorepos.
+It can be used by both ai agentics and human beings, in either scenario it will
+give you consistent and efficient flows that will speed up both your internal
+development cycle and the larger product iteration loops, spawning from small
+microservices to large monorepos. Sayt excels in brownfield development,
+providing you the methodoly to keep growing without being eaten by the
+complexity of modern software products.
 
-Sayt overlaps with several tools with more narrow scopes, such as bazel, docker, garden, tilt or skaffold.
+
+Sayt overlaps with several tools with more narrow scopes, such as bazel,
+docker, garden, tilt or skaffold. In fact, it will often interoperate with
+these tools, providing a uniform semantics layer on top of them while steering
+your codebase towards scalable practices with little upfront cost. With sayt
+you keep your tools, but your build, tests and releases do not rot, they
+blossom.
+
+Once you adopt sayt and codifies your SLDC you will get not only a robust and
+efficient CI/CD on your provider of choice, but you will also get the same
+uniform host tooling that can be driven by LLMs to profusely write code in a
+tight loop that where the knowledge from skill files that rot and eat your
+context are now part of your codebase itself.
 
 ## Why SAYT?
 
-- **Batteries included**: sayt is highly configurable, but it comes with powerful defaults that can cover your whole software development lifecycle.
+- **Batteries included**: sayt is highly configurable, but it comes with
+powerful defaults that can cover your whole software development lifecycle.
 - **Zero drift**: tasks re-use configuration you already use, from your vscode
 setup to your docker compose files.
 - **Portable**: works anywhere nushell and docker are available - macOS,
 Linux, Windows (native or WSL), dev containers, CI runners.
-- **Developer-first**: sayt shows what it is doing and you can take over control at any time.
+- **Developer-first**: sayt shows what it is doing and you can take over
+control at any time.
+
+Every document about sayt, with its type and status, is listed in [docs/index.md](docs/index.md).
 
 ## Install
 
@@ -142,6 +166,35 @@ curl -fsSL https://raw.githubusercontent.com/bonisoft3/sayt/refs/heads/main/sayt
 
 This downloads and runs sayt via the wrapper, which then commits the wrapper scripts to your repo - no global installation needed.
 
+### Bootstrap tools
+
+Sayt exposes its pinned tool stubs before a project has a `.mise.toml`:
+
+```sh
+./saytw --script tools.nu cue version
+./saytw --script tools.nu cue mod init example.com/my-app@v0
+```
+
+The selectors are `cue`, `docker`, `compose`, `git-cliff`, `goreleaser`, and `nu`.
+They retain the distribution's pins and tool-specific environment. The `mise`
+selector runs Sayt's private Mise; after generating the project configuration,
+inspect and trust it, create its lockfile, then install and check the toolchain:
+
+```sh
+./saytw --script tools.nu mise trust .mise.toml
+./saytw --script tools.nu mise lock
+./saytw setup
+./saytw doctor
+./saytw generate
+./saytw lint
+```
+
+Sayt places its private Mise on descendant processes' PATH. Project operations
+honor `.mise.toml` locking; `lock` and tool stubs explicitly run unlocked.
+Custom `--script` engines execute in the tool-stub environment and should import
+`run-mise` from `tools.nu` for project operations. This requires no global Mise
+installation or shell activation.
+
 ### Using with a command runner
 
 Options that don't add `sayt` to your PATH — such as the wrapper scripts or an
@@ -189,7 +242,7 @@ The commands, or verbs, in sayt, come in pairs, with a verb that does something 
 | `setup` | Install toolchains and environment, leverages mise by default, works in tandem with `doctor`. |
 | `generate` | Generates code, powered by cue by default, complemented by `lint` for validation. |
 | `build`| Compile your code, kept in lockstep with vscode config by default, can be followed by `test` for extra code validation. |
-| `launch` | Bring up a containerized version of the code, and coupled with `integrate` assures correct behavior, relies on docker compose by default. |
+| `launch` | Bring up containerized version of the code, and coupled with `integrate` assures correct behavior, relies on docker compose by default. |
 | `release` | Let others use your product and relies on `verify` to check what is out there, powered by goreleaser by default. |
 
 These verbs often can work out of the box due to the fact that sayt by default uses popular tools that may already be configured. When that is not the case, you can use any code assistant to wire up those popular tools for you, or install the Claude Code plugin below — its per-verb skills teach the assistant how to write the right config for each verb.
@@ -211,7 +264,7 @@ A repository can also pin the sayt version it expects under the `self` block:
 ```yaml
 say:
   self:
-    version: "v0.21.2"
+    version: "v0.39.3"
 ```
 
 When the invoked sayt's version differs from the pin, it re-execs itself through the colocated `saytw` wrapper with `SAYT_VERSION` set to the pinned version, so every contributor and CI run uses the same sayt regardless of what's installed. The `sayt/install` GitHub action treats this pin as the version authority.
@@ -245,6 +298,17 @@ say:
 
 When `stop: true`, dispatch halts after the rule executes. When `stop` is absent or `false`, dispatch continues to the next rule. Built-in rules for verbs like `build`, `test`, and `setup` default to `stop: true`. Code generation and lint rules default to run-all, so multiple generators and linters compose naturally.
 
+By default the first failing rule ends the verb. Set `keep_going: true` on a verb whose rules are independent batteries (say, a visual suite and a window suite under `integrate`): every rule runs, each failure is reported by rule name, and the verb exits 1 after the last rule if any failed. The commands within one rule still stop at the first failure, so a rule's test never runs after its stack failed to boot. `stop` keeps its meaning: no rules run after a rule with `stop: true`, whether that rule passed or failed.
+
+```yaml
+say:
+  integrate:
+    keep_going: true
+    rulemap:
+      visual: { cmds: [{ do: "..." }] }
+      window: { cmds: [{ do: "..." }] }
+```
+
 Rules are evaluated in `priority` order (lower first, default 0). You can override, extend, or remove built-in rules by referencing their key in the rulemap:
 
 ```yaml
@@ -268,7 +332,7 @@ Sayt has a fixed vocabulary of verbs, but three orthogonal ways to change what t
 | Flag | Dimension | What changes |
 | ---- | --------- | ------------ |
 | `--directory` | Directory | Which configuration files are active |
-| `--platform` | Target | Where the verb generates its effects |
+| `--platform` | Platform | Where the verb generates its effects |
 | `--verb` | Vocabulary | What the action means |
 
 The positional syntax you normally use is sugar over these flags. These three invocations are equivalent:
@@ -353,7 +417,7 @@ There is no single right dimension for a given customization. All three have eno
 - **Platform** says "this is the same operation, targeting a different environment"
 - **Vocabulary** says "this is a different operation with its own meaning"
 
-A database migration could live as `sayt --directory db build`, as `sayt build@migrate`, or as `sayt migrate`. The first splits files, the second treats it as a build variant, the third names it. Most teams will find that `sayt migrate` communicates intent most clearly, but the other forms are not wrong — they just emphasize different things.
+A database migration could live as `sayt --directory db build`, as `sayt build@postgres`, or as `sayt migrate`. The first splits files, the second treats it as a build variant, the third names it. Most teams will find that `sayt migrate` communicates intent most clearly, but the other forms are not wrong — they just emphasize different things.
 
 </details>
 
@@ -403,7 +467,7 @@ Each skill corresponds to a verb pair and is named after the environment where t
 | Skill | Verb pair | What Claude learns |
 | ----- | --------- | ------------------ |
 | **sayt-lifecycle** | overview | The seven-environment model, the real verb list, how sayt reuses existing config, and when to customize vs fall back to a direct command. |
-| **sayt-tdd** | all | The ping-pong-then-cascade TDD loop, how to pick the right layer for the current problem, platform tiering (`verb@platform`), and bug-report anchoring. |
+| **sayt-tdd** | all | The ping-pong-then-cascade TDD loop, how to pick the right layer for the current problem, platforms (`verb@platform`), and bug-report anchoring. |
 | **sayt-cli** | `setup` / `doctor` | How to write `.mise.toml` files with correct tool versions, settings, and platform stubs. |
 | **sayt-code** | `generate` / `lint` | How to write `.say.cue` / `.say.yaml` — the ordered-map rule pattern, built-in generators (`auto-gomplate`, `auto-cue`, `auto-bayt`), built-in lint rules (`#copy`, `#shared`, `#vet`), CUE basics. |
 | **sayt-ide** | `build` / `test` | How to write `.vscode/tasks.json` — build/test task schema, `dependsOn` chains, per-language examples (Node/pnpm, Gradle, Go, Python, Rust, plus adapters for Scala, Elixir, Ruby, .NET, Zig, C). |
@@ -479,7 +543,7 @@ steps:
   - run: docker compose run integrate
 ```
 
-This idiom is packaged as the `sayt/integrate` action with several other goodies. You can read the detailed instructions on how to to configure the action in advanced mode where it will leverage a powerful docker-out-of-docker idiom and docker bake to cache even the run step itself as a docker layer.
+This idiom is packaged as the `sayt/integrate` action with several other goodies. You can read the detailed instructions on how to to configure the action in `bake` mode where it will leverage a powerful docker-out-of-docker idiom and docker bake to cache even the run step itself as a docker layer.
 
 Two sibling actions round out the CI family:
 
@@ -489,7 +553,7 @@ Two sibling actions round out the CI family:
 <details>
 <summary><strong>Advanced CI: docker-out-of-docker</strong></summary>
 
-The advanced mode of `sayt/integrate` loads `docker-bake.override.hcl` and
+The `bake` mode of `sayt/integrate` loads `docker-bake.override.hcl` and
 enables sayt's powerful docker-out-of-docker idioms. This lets you run the full integration flow inside a CI Dockerfile target.
 
 ```hcl
@@ -535,12 +599,12 @@ target "integrate" {
 
 The `dind.sh` helper starts a scoped Docker daemon inside the container, so
 `docker compose` and `docker buildx` work without privileged mode or host
-socket mounting. Use the action with `mode: advanced`:
+socket mounting. Use the action with `mode: bake`:
 
 ```yaml
 - uses: bonisoft3/sayt/.github/actions/sayt/integrate@main
   with:
-    mode: advanced
+    mode: bake
 ```
 
 This gives you a fully hermetic CI where the build, test, and integration
@@ -725,9 +789,19 @@ The monorepo remains the source of truth, and the public repos are derived views
 
 </details>
 
-### Distinguished
+### Generated CI with Bayt
 
-We will now fully optimize the tdd loop on all levels by introducing advanced code generation.
+Bayt turns the target graph that Sayt already drives into the Dockerfile,
+Compose, and Bake inputs that CI needs. `sayt/ci` runs that graph in the same
+containerized shape locally and in GitHub Actions, so a developer or coding
+agent can reproduce the CI path with `sayt integrate --bake --target ci` and
+iterate against the same generated closure.
+
+For larger builds, `sayt/depot` sends that closure to Depot's remote builders.
+Bayt emits the Depot-specific Bake inputs from the project graph, while Sayt
+keeps the invocation, secrets, and result verification in the same verb pair.
+The local and remote paths therefore share the target definitions and their
+acceptance flow rather than maintaining a second CI-only build description.
 
 ## Contributing
 
@@ -745,13 +819,11 @@ level roots, as those demanded by cuelang and golang imports. Everything must
 be expressible through relative paths.
 - SAYT aims to be small and readable, with its core logic clocking under <1k
 loc. It leverages mise as a gateway to other powerful tools to make this possible.
+- SAYT can bootstrap itself on the most spartan environments and keeps its
+dependencies on a very tight leash.
 
 ### Releasing
 
-Sayt is developed in the [worldsense/trash](https://github.com/worldsense/trash) monorepo under `plugins/sayt/` and synced to this repo via copybara. To cut a release:
+`sayt release --dry-run` previews the version computed from conventional commits. Before publishing, update `VERSION` and its pinned copies, verify with `sayt lint`, and merge the changes.
 
-1. **Determine version** — run `sayt release --dry-run` to see what git-cliff computes from conventional commits (e.g. `v0.1.0`).
-2. **Update version files** — edit `VERSION` and all copies to match, verify with `sayt lint`.
-3. **Merge** — open a PR and merge. Wait for copybara to sync to `bonisoft3/sayt`.
-4. **Tag** — create and push the version tag on `bonisoft3/sayt`. The `cd.yml` workflow triggers on the tag push, runs goreleaser, and publishes the GitHub release with binaries.
-
+Release automation publishes the CUE module, binaries, source archives, and container images for the tagged version.

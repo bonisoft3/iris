@@ -74,7 +74,9 @@
       "gradle/wrapper/**/*",
       "gradle/lib[s].versions.toml"
     ],
-    "exclude": []
+    "exclude": [
+      "build/distributions/**"
+    ]
   },
   "state": {
     "globs": []
@@ -152,7 +154,9 @@
           "gradle/wrapper/**/*",
           "gradle/lib[s].versions.toml"
         ],
-        "exclude": []
+        "exclude": [
+          "build/distributions/**"
+        ]
       },
       "env": {},
       "visibility": "internal",
@@ -213,7 +217,8 @@
           "gradle/wrapper/gradle-wrapper.properties",
           "[m]ise.toml",
           "[.]mise.toml",
-          "[m]ise.lock"
+          "[m]ise.lock",
+          "[.]tool-versions"
         ],
         "exclude": []
       },
@@ -246,7 +251,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -272,7 +278,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -308,7 +315,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -334,7 +342,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -360,7 +369,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -386,7 +396,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -400,6 +411,7 @@
               "[m]ise.toml",
               "[.]mise.toml",
               "[m]ise.lock",
+              "[.]tool-versions",
               "gradle/libs.versions.toml",
               "plugins/devserver/dind.sh"
             ],
@@ -415,7 +427,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -429,7 +442,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -443,7 +457,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -457,7 +472,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -471,7 +487,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -485,7 +502,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -516,7 +534,8 @@
               "gradle/wrapper/gradle-wrapper.properties",
               "[m]ise.toml",
               "[.]mise.toml",
-              "[m]ise.lock"
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }
@@ -549,7 +568,7 @@
     }
   },
   "taskfile": {
-    "run": "when_changed",
+    "run": "once",
     "incremental": true,
     "preconditions": []
   },
@@ -587,7 +606,9 @@
           "gradle/wrapper/**/*",
           "gradle/lib[s].versions.toml"
         ],
-        "exclude": []
+        "exclude": [
+          "build/distributions/**"
+        ]
       }
     },
     {
@@ -605,7 +626,9 @@
           "gradle/wrapper/**/*",
           "gradle/lib[s].versions.toml"
         ],
-        "exclude": []
+        "exclude": [
+          "build/distributions/**"
+        ]
       }
     },
     {
@@ -623,7 +646,9 @@
           "gradle/wrapper/**/*",
           "gradle/lib[s].versions.toml"
         ],
-        "exclude": []
+        "exclude": [
+          "build/distributions/**"
+        ]
       }
     },
     {
@@ -641,7 +666,9 @@
           "gradle/wrapper/**/*",
           "gradle/lib[s].versions.toml"
         ],
-        "exclude": []
+        "exclude": [
+          "build/distributions/**"
+        ]
       }
     },
     {
@@ -659,7 +686,9 @@
           "gradle/wrapper/**/*",
           "gradle/lib[s].versions.toml"
         ],
-        "exclude": []
+        "exclude": [
+          "build/distributions/**"
+        ]
       }
     },
     {
@@ -677,7 +706,9 @@
           "gradle/wrapper/**/*",
           "gradle/lib[s].versions.toml"
         ],
-        "exclude": []
+        "exclude": [
+          "build/distributions/**"
+        ]
       }
     },
     {
@@ -689,6 +720,7 @@
           "[m]ise.toml",
           "[.]mise.toml",
           "[m]ise.lock",
+          "[.]tool-versions",
           "gradle/libs.versions.toml",
           "plugins/devserver/dind.sh",
           ".task/bayt/setup.hash"
@@ -740,7 +772,9 @@
           "gradle/wrapper/**/*",
           "gradle/lib[s].versions.toml"
         ],
-        "exclude": []
+        "exclude": [
+          "build/distributions/**"
+        ]
       }
     },
     {
@@ -758,7 +792,9 @@
           "gradle/wrapper/**/*",
           "gradle/lib[s].versions.toml"
         ],
-        "exclude": []
+        "exclude": [
+          "build/distributions/**"
+        ]
       }
     },
     {
@@ -776,7 +812,9 @@
           "gradle/wrapper/**/*",
           "gradle/lib[s].versions.toml"
         ],
-        "exclude": []
+        "exclude": [
+          "build/distributions/**"
+        ]
       }
     },
     {
@@ -794,7 +832,9 @@
           "gradle/wrapper/**/*",
           "gradle/lib[s].versions.toml"
         ],
-        "exclude": []
+        "exclude": [
+          "build/distributions/**"
+        ]
       }
     },
     {
@@ -812,7 +852,9 @@
           "gradle/wrapper/**/*",
           "gradle/lib[s].versions.toml"
         ],
-        "exclude": []
+        "exclude": [
+          "build/distributions/**"
+        ]
       }
     },
     {
@@ -830,7 +872,9 @@
           "gradle/wrapper/**/*",
           "gradle/lib[s].versions.toml"
         ],
-        "exclude": []
+        "exclude": [
+          "build/distributions/**"
+        ]
       }
     },
     {
@@ -843,6 +887,7 @@
           "[m]ise.toml",
           "[.]mise.toml",
           "[m]ise.lock",
+          "[.]tool-versions",
           ".task/bayt/setup.hash"
         ],
         "exclude": []

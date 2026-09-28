@@ -23,6 +23,17 @@ def scoped_message_transform(scope):
 # the mirror needs them absolute and self-pinned. ITERATIVE replay reads VERSION
 # per commit, so each synced commit pins the release it represents.
 SAYT_COMPOSITES = ["ci", "depot", "install", "integrate", "summary"]
+REFERENCE_APP_RUNTIME = [
+    ".mise.toml",
+    "bootstrap",
+    "bootstrap.ps1",
+    "cue.mod/**",
+    "libraries/mecha/**",
+    "plugins/bayt/**",
+    "plugins/omnishell/**",
+    "plugins/pronto/**",
+    "plugins/sayt/**",
+]
 
 def _sayt_pin_siblings(ctx):
     version_path = ctx.new_path("VERSION")
@@ -38,6 +49,27 @@ def _sayt_pin_siblings(ctx):
             )],
             noop_behavior = "IGNORE_NOOP",
         ))
+
+# A reference app travels with its runtime, its README at the root, and its
+# release workflow at the root .github/, the one place GitHub reads one from:
+# inert in the monorepo, active in the mirror.
+def reference_app(name):
+    return struct(
+        name = name,
+        destination = "git@github.com:bonisoft3/" + name + ".git",
+        origin_files = REFERENCE_APP_RUNTIME + ["apps/" + name + "/**"],
+        origin_excludes = [],
+        transformations = [
+            core.copy("apps/" + name + "/README.md", "", paths = glob(["README.md"])),
+            core.transform(
+                [core.move("apps/" + name + "/.github", ".github")],
+                noop_behavior = "IGNORE_NOOP",
+            ),
+        ],
+        submodules = "",
+        mode = "SQUASH",
+        scope = "",
+    )
 
 WORKFLOWS = [
     struct(
@@ -99,14 +131,6 @@ WORKFLOWS = [
             # correctness: in ITERATIVE mode each replay reads its own
             # VERSION, so the pin matches the commit's release.
             core.dynamic_transform(impl = _sayt_pin_siblings),
-            core.transform(
-                [core.replace(
-                    before = "Sayt is developed in the [worldsense/trash](https://github.com/worldsense/trash) monorepo under `plugins/sayt/` and synced to this repo via copybara. To cut a release:\n\n1. **Determine version** — run `sayt release --dry-run` to see what git-cliff computes from conventional commits (e.g. `v0.1.0`).\n2. **Update version files** — edit `VERSION` and all copies to match, verify with `sayt lint`.\n3. **Merge** — open a PR and merge. Wait for copybara to sync to `bonisoft3/sayt`.\n4. **Tag** — create and push the version tag on `bonisoft3/sayt`. The `cd.yml` workflow triggers on the tag push, runs goreleaser, and publishes the GitHub release with binaries.",
-                    after = "To cut a release:\n\n1. **Determine version** — run `sayt release --dry-run` to see what git-cliff computes from conventional commits (e.g. `v0.1.0`).\n2. **Update version files** — edit `VERSION` and all copies to match, verify with `sayt lint`.\n3. **Merge** — open a PR and merge.\n4. **Tag** — create and push the version tag. The `cd.yml` workflow triggers on the tag push, runs goreleaser, and publishes the GitHub release with binaries.",
-                    paths = glob(["README.md"]),
-                )],
-                noop_behavior = "IGNORE_NOOP",
-            ),
             # cue.mod staging + import-identity rewrite, as in the bayt
             # stanza below (loop.cue imports its own :say package).
             core.transform(
@@ -166,7 +190,7 @@ WORKFLOWS = [
             # wait. Guarded by developing_scrub_test.nu.
             core.transform(
                 [core.replace(
-                    before = "Tags are prefixed per component: `plugins/bayt/vX.Y.Z`,\n`plugins/bayt/runtime/vX.Y.Z`. Tag the merge commit, and only once its SHA\nappears downstream as a `GitOrigin-RevId:` trailer — CI going green is not the\nsignal.",
+                    before = "Tags are prefixed per component: `plugins/bayt/vX.Y.Z`,\n`plugins/bayt/runtime/vX.Y.Z`. Tag the merge commit; nothing has to be synced\nfirst, because `propagate-tag` publishes the component to its mirror before\nlooking the commit up there. Copybara replays a bounded batch per run, so a\nmirror far behind may not reach the tagged commit in one — the lookup is what\nreports it, and `sync.yml` run again closes the gap.",
                     after = "Tags are `vX.Y.Z` and `runtime/vX.Y.Z`. Tag the merge commit.",
                     paths = glob(["CONTRIBUTING.md"]),
                 )],
@@ -216,10 +240,31 @@ WORKFLOWS = [
                 [core.move(".mirror/cue.mod", "cue.mod")],
                 noop_behavior = "IGNORE_NOOP",
             ),
+            # bayt.cue states where the project lives in one literal; at
+            # the mirror's root that is `.`, named `mecha`.
+            core.transform(
+                [core.replace(
+                    before = '_where: {dir: "libraries/mecha"}',
+                    after = '_where: {dir: ".", name: "mecha"}',
+                    paths = glob(["bayt.cue"]),
+                )],
+                noop_behavior = "IGNORE_NOOP",
+            ),
             core.transform(
                 [core.replace(
                     before = "bonisoft.org/libraries/mecha",
                     after = "github.com/bonisoft3/mecha",
+                    paths = glob(["**.cue"]),
+                )],
+                noop_behavior = "IGNORE_NOOP",
+            ),
+            # bayt.cue and the .bayt/ it generates import the build
+            # vocabulary; the mirror resolves it from the Central
+            # Registry, where bayt publishes under its own identity.
+            core.transform(
+                [core.replace(
+                    before = "bonisoft.org/plugins/bayt",
+                    after = "github.com/bonisoft3/bayt",
                     paths = glob(["**.cue"]),
                 )],
                 noop_behavior = "IGNORE_NOOP",
@@ -253,10 +298,102 @@ WORKFLOWS = [
                 )],
                 noop_behavior = "IGNORE_NOOP",
             ),
+            # bayt.cue and the .bayt/ it generates import the build
+            # vocabulary; the mirror resolves it from the Central
+            # Registry, where bayt publishes under its own identity.
+            core.transform(
+                [core.replace(
+                    before = "bonisoft.org/plugins/bayt",
+                    after = "github.com/bonisoft3/bayt",
+                    paths = glob(["**.cue"]),
+                )],
+                noop_behavior = "IGNORE_NOOP",
+            ),
         ],
         submodules = "",
         mode = "ITERATIVE",
         scope = "omnishell",
+    ),
+    struct(
+        name = "pronto",
+        destination = "git@github.com:bonisoft3/pronto.git",
+        origin_files = [
+            "plugins/pronto/**",
+        ],
+        origin_excludes = [],
+        transformations = [
+            core.transform(
+                [core.move("plugins/pronto", "")],
+                noop_behavior = "IGNORE_NOOP",
+            ),
+            core.transform(
+                [
+                    core.replace(
+                        before = "https://github.com/worldsense/trash",
+                        after = "https://github.com/bonisoft3/pronto",
+                        paths = glob(["**.md", "**.json"]),
+                    ),
+                    core.replace(
+                        before = "worldsense/trash",
+                        after = "bonisoft3/pronto",
+                        paths = glob(["**.md", "**.json"]),
+                    ),
+                ],
+                noop_behavior = "IGNORE_NOOP",
+            ),
+            core.transform(
+                [core.move(".mirror/cue.mod", "cue.mod")],
+                noop_behavior = "IGNORE_NOOP",
+            ),
+            core.transform(
+                [core.replace(
+                    before = "bonisoft.org/plugins/pronto",
+                    after = "github.com/bonisoft3/pronto",
+                    paths = glob(["**.cue"]),
+                )],
+                noop_behavior = "IGNORE_NOOP",
+            ),
+            # pronto's adapters import the siblings they adapt, so the mirror
+            # also carries their published identities. Those imports resolve
+            # only once each module is published to the Central Registry:
+            # omnishell and mecha are mirrored but not published, so `cue mod
+            # tidy` on the mirror fails on them until they are.
+            core.transform(
+                [core.replace(
+                    before = "bonisoft.org/plugins/omnishell",
+                    after = "github.com/bonisoft3/omnishell",
+                    paths = glob(["**.cue"]),
+                )],
+                noop_behavior = "IGNORE_NOOP",
+            ),
+            core.transform(
+                [core.replace(
+                    before = "bonisoft.org/plugins/sayt",
+                    after = "github.com/bonisoft3/sayt",
+                    paths = glob(["**.cue"]),
+                )],
+                noop_behavior = "IGNORE_NOOP",
+            ),
+            core.transform(
+                [core.replace(
+                    before = "bonisoft.org/plugins/bayt",
+                    after = "github.com/bonisoft3/bayt",
+                    paths = glob(["**.cue"]),
+                )],
+                noop_behavior = "IGNORE_NOOP",
+            ),
+            core.transform(
+                [core.replace(
+                    before = "bonisoft.org/libraries/mecha",
+                    after = "github.com/bonisoft3/mecha",
+                    paths = glob(["**.cue"]),
+                )],
+                noop_behavior = "IGNORE_NOOP",
+            ),
+        ],
+        submodules = "",
+        mode = "ITERATIVE",
+        scope = "pronto",
     ),
     struct(
         name = "lazybox",
@@ -272,7 +409,7 @@ WORKFLOWS = [
         mode = "ITERATIVE",
         scope = "lazybox",
     ),
-]
+] + [reference_app(name) for name in ["truco", "chess", "realworld", "shadcnui", "jsfb", "plausible", "ponto", "primer", "thenote", "w3caria", "xpense"]]
 
 def register_workflows(origin_url, name_suffix):
     for workflow in WORKFLOWS:

@@ -2,7 +2,6 @@
 locked = true
 lockfile = true
 experimental = true
-paranoid = false
 github_attestations = false
 slsa = false
 github.slsa = false
@@ -14,5 +13,5 @@ aqua.minisign = false
 
 [tools]
 node = "22.14.0"
-"github:pnpm/pnpm" = "9.15.2"
+"github:pnpm/pnpm" = "10.32.1"
 "github:getsops/sops" = "3.12.2"

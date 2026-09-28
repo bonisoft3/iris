@@ -66,6 +66,11 @@ import "list"
 	flags?: string   // default flags for the sayt verb command itself (--platform, --force); always applied
 	args?:  string   // default args for the verb's leaf command; applied only when the CLI passes none
 
+	// Run every rule even when an earlier one fails, then exit 1 naming the
+	// failed rules. For verbs whose rules are independent tools; the cmds
+	// within one rule still stop at their first failure.
+	keep_going: bool | *false
+
 	// Simple form: a single command replaces the builtin
 	do?:  string
 	use?: string
@@ -98,7 +103,7 @@ import "list"
 
 say: {
 	self: {
-		version: *"v0.36.0" | string & =~"^v[0-9]+\\.[0-9]+\\.[0-9]+.*$"
+		version: *"v0.39.3" | string & =~"^v[0-9]+\\.[0-9]+\\.[0-9]+.*$"
 		flags?:  string
 		verbs?: [...string]
 	}
@@ -114,8 +119,7 @@ say: {
 		}
 		#gomplate: #rule & { cmds: [{ use: "./generate-gomplate.nu", do: "generate-gomplate" }] }
 		#cue:      #rule & { cmds: [{ use: "./generate-cue.nu",      do: "generate-cue" }] }
-		// Layout detection (monorepo sibling checkout vs PATH-installed
-		// bayt CLI) lives in auto-bayt.nu; override the rule to customize.
+		// Layout detection lives in auto-bayt.nu; override the rule to customize.
 		#bayt:     #rule & { cmds: [{ use: "./auto-bayt.nu", do: "auto-bayt" }] }
 		// Do a bit of gymnastics to allow merging with cue but also hiding the intermediate
 		// rulemap. If I use a _rulemap it wont merge with the quoted "_rulemap" in yaml

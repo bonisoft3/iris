@@ -22,7 +22,7 @@ COPY --from=build_ctxs /monorepo /monorepo
 
 FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223 AS build_outs_ctxs
 WORKDIR /monorepo/libraries/logs
-COPY --from=libraries_logs-build --parents /monorepo/libraries/logs/build/**/* /monorepo/libraries/logs/.gradle/**/* /monorepo/libraries/logs/build.gradle.kts /monorepo/libraries/logs/settings.gradle.kts /monorepo/libraries/logs/gradle.properties /monorepo/libraries/logs/gradlew /monorepo/libraries/logs/gradle/wrapper/**/* /monorepo/libraries/logs/gradle/lib[s].versions.toml /
+COPY --from=libraries_logs-build --exclude=build/distributions/** --parents /monorepo/libraries/logs/build/**/* /monorepo/libraries/logs/.gradle/**/* /monorepo/libraries/logs/build.gradle.kts /monorepo/libraries/logs/settings.gradle.kts /monorepo/libraries/logs/gradle.properties /monorepo/libraries/logs/gradlew /monorepo/libraries/logs/gradle/wrapper/**/* /monorepo/libraries/logs/gradle/lib[s].versions.toml /
 ARG SOURCE_DATE_EPOCH
 ARG BAYT_CLAMP=1
 RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/libraries/logs -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && touch -hd @${SOURCE_DATE_EPOCH:-0} /monorepo /monorepo/libraries; fi

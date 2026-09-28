@@ -11,7 +11,10 @@
       "label": "test",
       "type": "shell",
       "options": {
-        "cwd": "${workspaceFolder}/guis/web"
+        "cwd": "${workspaceFolder}/guis/web",
+        "env": {
+          "CI": "true"
+        }
       }
     }
   ]

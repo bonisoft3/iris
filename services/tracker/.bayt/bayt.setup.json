@@ -42,7 +42,8 @@
       "gradle/wrapper/gradle-wrapper.properties",
       "[m]ise.toml",
       "[.]mise.toml",
-      "[m]ise.lock"
+      "[m]ise.lock",
+      "[.]tool-versions"
     ],
     "exclude": []
   },
@@ -52,6 +53,7 @@
       "[m]ise.toml",
       "[.]mise.toml",
       "[m]ise.lock",
+      "[.]tool-versions",
       ".task/bayt/setup.hash"
     ],
     "exclude": []
@@ -115,6 +117,7 @@
           "[m]ise.toml",
           "[.]mise.toml",
           "[m]ise.lock",
+          "[.]tool-versions",
           ".task/bayt/setup.hash"
         ],
         "exclude": []
@@ -149,7 +152,8 @@
           "gradle/wrapper/gradle-wrapper.properties",
           "[m]ise.toml",
           "[.]mise.toml",
-          "[m]ise.lock"
+          "[m]ise.lock",
+          "[.]tool-versions"
         ],
         "exclude": []
       },
@@ -167,6 +171,7 @@
               "[m]ise.toml",
               "[.]mise.toml",
               "[m]ise.lock",
+              "[.]tool-versions",
               "gradle/libs.versions.toml",
               "plugins/devserver/dind.sh"
             ],
@@ -206,6 +211,7 @@
           "[m]ise.toml",
           "[.]mise.toml",
           "[m]ise.lock",
+          "[.]tool-versions",
           "gradle/libs.versions.toml",
           "plugins/devserver/dind.sh",
           ".task/bayt/setup.hash"
@@ -228,6 +234,7 @@
           "[m]ise.toml",
           "[.]mise.toml",
           "[m]ise.lock",
+          "[.]tool-versions",
           "gradle/libs.versions.toml",
           "plugins/devserver/dind.sh",
           ".task/bayt/setup.hash"
@@ -244,9 +251,11 @@
           "[m]ise.toml",
           "[.]mise.toml",
           "[m]ise.lock",
+          "[.]tool-versions",
           "[m]ise.toml",
           "[.]mise.toml",
-          "[m]ise.lock"
+          "[m]ise.lock",
+          "[.]tool-versions"
         ],
         "exclude": [],
         "defaultGlobs": null,
