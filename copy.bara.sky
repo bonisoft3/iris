@@ -60,7 +60,11 @@ def reference_app(name):
         origin_files = REFERENCE_APP_RUNTIME + ["apps/" + name + "/**"],
         origin_excludes = [],
         transformations = [
-            core.copy("apps/" + name + "/README.md", "README.md"),
+            core.transform(
+                [core.copy("apps/" + name, "", paths = glob(["README.md"]))],
+                reversal = [core.remove(glob(["README.md"]))],
+                noop_behavior = "IGNORE_NOOP",
+            ),
             core.transform(
                 [core.move("apps/" + name + "/.github", ".github")],
                 noop_behavior = "IGNORE_NOOP",
