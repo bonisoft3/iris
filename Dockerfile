@@ -8,30 +8,19 @@ RUN apk add --no-cache socat curl \
  && ARCH=$(case "$TARGETARCH" in amd64) echo x86_64;; arm64) echo arm64;; *) echo "$TARGETARCH";; esac) \
  && curl -sL "https://github.com/nektos/act/releases/download/v0.2.89/act_Linux_${ARCH}.tar.gz" \
     | tar xz -C /usr/local/bin act
-# Event JSON lets job-level if conditions detect act (env context is
-# unavailable at job level, but github.event.act works) — `skaffold` gates on
-# `github.event.act` to run here without being on main.
-RUN printf '{"act":true}\n' > /tmp/act-event.json
-
-# The jobs act replays: one `act` run per job, because `-j` takes exactly one.
-# The list is explicit rather than "every job", and every absence is one of
-# these four — none of them a quiet trim:
+# The jobs act replays: one `act` run per job, because `-j` takes exactly one,
+# and act brings each job's `needs` along. Off the pull_request event, the
+# `changes` job selects every project, so this replays a full run's shape
+# less what a laptop cannot host:
 #
-#   tests, ci-apps, all   act cannot plan them. Their matrix is
-#                         `fromJSON(needs.changes.outputs.*)`, which act fails
-#                         to decode as a matrix at all ("cannot unmarshal
-#                         !!str `${{ fro...`"), and the failure belongs to the
-#                         whole plan, not to that one job — so naming any of
-#                         them, or passing no `-j`, replays nothing at all.
-#                         Checked against act 0.2.84 and 0.2.89.
-#   ci-act                it is this image. It is the job that invokes act, so
-#                         naming it here is the replay replaying itself.
-#   cross                 a windows-latest matrix; act has no such host.
-#   ci-guis-iris-*, cd,   they reach services a laptop has no account with —
-#   skaffold              depot's remote builder, the release registries, a
-#                         cluster. `skaffold` is also downstream of
-#                         `ci-act`, so act skips it regardless.
-ARG ACT_JOBS="changes devserver ci-services-tracker ci-services-hello ci-services-boxer ci-services-news ci-services-esocial-rpa ci-plugins-pronto ci-guis-flashcards ci-tail"
+#   iris-build, iris-run,  they reach services a laptop has no account with —
+#   skaffold               depot's remote builder and registry, a cluster.
+#   cross                  a windows-latest matrix; act has no such host.
+#   apps                   every app's stack publishes caddy on host port 8443,
+#                          which a developer's own running app already holds.
+#   all                    a verdict over GitHub's job results, which act's
+#                          per-job runs do not share.
+ARG ACT_JOBS="toys iris-ladder flashcards old-iris bonisoft3"
 
 # Bind mount keeps the repo out of image layers (COPY would work too, but
 # this image is never pushed so there is no reason to bake the repo in).
@@ -49,13 +38,12 @@ RUN --mount=type=bind,target=/monorepo \
       --container-options "--user root" \
       --use-gitignore=false \
       --pull=false \
-      --matrix os:ubuntu-latest \
       -P ubuntu-latest=catthehacker/ubuntu:full-22.04@sha256:a3cd72269e94ee20831927221beb02bad57c67bebbbc632d936985bb48a3ce86 \
       -P ubuntu-22.04=catthehacker/ubuntu:full-22.04@sha256:a3cd72269e94ee20831927221beb02bad57c67bebbbc632d936985bb48a3ce86 \
       -P ubuntu-24.04=catthehacker/ubuntu:full-22.04@sha256:a3cd72269e94ee20831927221beb02bad57c67bebbbc632d936985bb48a3ce86 \
       -P depot-ubuntu-24.04=catthehacker/ubuntu:full-22.04@sha256:a3cd72269e94ee20831927221beb02bad57c67bebbbc632d936985bb48a3ce86 \
       -P depot-ubuntu-24.04-8=catthehacker/ubuntu:full-22.04@sha256:a3cd72269e94ee20831927221beb02bad57c67bebbbc632d936985bb48a3ce86 \
-      -e /tmp/act-event.json || exit 1; \
+      || exit 1; \
     done
 ENTRYPOINT []
 CMD ["true"]

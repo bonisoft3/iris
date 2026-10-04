@@ -34,8 +34,8 @@
   },
   "devDependencies": {
     "@anthropic-ai/sdk": "^0.90.0",
-    "@playwright/test": "1.59.1",
-    "playwright": "1.59.1",
+    "@playwright/test": "1.61.1",
+    "playwright": "1.61.1",
     "re2": "1.23.2"
   },
   "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be"

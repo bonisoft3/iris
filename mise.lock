@@ -194,3 +194,225 @@ url_api = "https://api.github.com/repos/nushell/nushell/releases/assets/52601541
 checksum = "sha256:b83009cbc88021f4dc293c49320118886b78363f9a4bb14933d33c8803241f46"
 url = "https://github.com/nushell/nushell/releases/download/0.115.1/nu-0.115.1-x86_64-pc-windows-msvc.zip"
 url_api = "https://api.github.com/repos/nushell/nushell/releases/assets/526030176"
+
+[[tools."http:cue.toml"]]
+version = "0.16.1"
+backend = "http:cue.toml"
+
+[tools."http:cue.toml"."platforms.linux-arm64"]
+checksum = "blake3:6e042cbfd4b5a298424dfdc22d25ea8f735a0bcc7982f7c2333d8c7ddbfb67fd"
+url = "https://github.com/cue-lang/cue/releases/download/v0.16.1/cue_v0.16.1_linux_arm64.tar.gz"
+
+[tools."http:cue.toml"."platforms.linux-arm64-musl"]
+checksum = "blake3:6e042cbfd4b5a298424dfdc22d25ea8f735a0bcc7982f7c2333d8c7ddbfb67fd"
+url = "https://github.com/cue-lang/cue/releases/download/v0.16.1/cue_v0.16.1_linux_arm64.tar.gz"
+
+[tools."http:cue.toml"."platforms.linux-x64"]
+checksum = "blake3:77b53047de2b6fa1be826fd16929312b9ea85d916a9dfe0db55575d7a10460b3"
+url = "https://github.com/cue-lang/cue/releases/download/v0.16.1/cue_v0.16.1_linux_amd64.tar.gz"
+
+[tools."http:cue.toml"."platforms.linux-x64-musl"]
+checksum = "blake3:77b53047de2b6fa1be826fd16929312b9ea85d916a9dfe0db55575d7a10460b3"
+url = "https://github.com/cue-lang/cue/releases/download/v0.16.1/cue_v0.16.1_linux_amd64.tar.gz"
+
+[tools."http:cue.toml"."platforms.macos-arm64"]
+checksum = "blake3:2b6f5f61ca1520da8210cdff50bebf8ca49c160bb5374b53e7f50900349594bb"
+url = "https://github.com/cue-lang/cue/releases/download/v0.16.1/cue_v0.16.1_darwin_arm64.tar.gz"
+
+[tools."http:cue.toml"."platforms.macos-x64"]
+checksum = "blake3:9875a11616f208732afff23b6f7808b5b0fb07dd4c77d507ec4c4d9f5685db64"
+url = "https://github.com/cue-lang/cue/releases/download/v0.16.1/cue_v0.16.1_darwin_amd64.tar.gz"
+
+[tools."http:cue.toml"."platforms.windows-x64"]
+checksum = "blake3:4243c99802d6fdb58c60d572f26d77fa7ef4980cf290001a84558e50f605e3b4"
+url = "https://github.com/cue-lang/cue/releases/download/v0.16.1/cue_v0.16.1_windows_amd64.zip"
+
+[[tools."http:curl.toml"]]
+version = "8.22.0"
+backend = "http:curl.toml"
+
+[tools."http:curl.toml"."platforms.linux-arm64"]
+checksum = "sha256:cf94cbeaae1b3c1944a4a761ef04478f8f0b23e93a324b5ed009b2082eda11f3"
+url = "https://github.com/stunnel/static-curl/releases/download/8.22.0/curl-linux-aarch64-musl-8.22.0.tar.xz"
+
+[tools."http:curl.toml"."platforms.linux-arm64-musl"]
+checksum = "sha256:cf94cbeaae1b3c1944a4a761ef04478f8f0b23e93a324b5ed009b2082eda11f3"
+url = "https://github.com/stunnel/static-curl/releases/download/8.22.0/curl-linux-aarch64-musl-8.22.0.tar.xz"
+
+[tools."http:curl.toml"."platforms.linux-x64"]
+checksum = "sha256:dfb02460ba2abe513087538f12a3cf79b74b64a5ea3787ce8ac0cdb11251f884"
+url = "https://github.com/stunnel/static-curl/releases/download/8.22.0/curl-linux-x86_64-musl-8.22.0.tar.xz"
+
+[tools."http:curl.toml"."platforms.linux-x64-musl"]
+checksum = "sha256:dfb02460ba2abe513087538f12a3cf79b74b64a5ea3787ce8ac0cdb11251f884"
+url = "https://github.com/stunnel/static-curl/releases/download/8.22.0/curl-linux-x86_64-musl-8.22.0.tar.xz"
+
+[tools."http:curl.toml"."platforms.macos-arm64"]
+checksum = "blake3:68336720527b1cbf72d3d02eebe5108dfbfb2ee7a040f5a1fc09c24db6118232"
+url = "https://github.com/stunnel/static-curl/releases/download/8.22.0/curl-macos-arm64-8.22.0.tar.xz"
+
+[tools."http:curl.toml"."platforms.macos-x64"]
+checksum = "sha256:a48bfd016757830fd1ddb96909d9d4db497c9452629f3140d850380ed596762e"
+url = "https://github.com/stunnel/static-curl/releases/download/8.22.0/curl-macos-x86_64-8.22.0.tar.xz"
+
+[tools."http:curl.toml"."platforms.windows-x64"]
+checksum = "sha256:8a57d1a52ea246f50be9e3f24a1d539d4fd23884405efbe18c6eb44eaf8ca524"
+url = "https://github.com/stunnel/static-curl/releases/download/8.22.0/curl-windows-x86_64-8.22.0.tar.xz"
+
+[[tools."http:httpcheck.toml"]]
+version = "1.4.0"
+backend = "http:httpcheck.toml"
+
+[tools."http:httpcheck.toml"."platforms.linux-arm64"]
+checksum = "sha256:5994f3e13c9b0a5be72587efd4649b5c90fcd90a3ae1b35ff8e5549222ba3e85"
+url = "https://github.com/tarampampam/microcheck/releases/download/v1.4.0/linux-arm64-v8.tar.gz"
+
+[tools."http:httpcheck.toml"."platforms.linux-arm64-musl"]
+checksum = "sha256:5994f3e13c9b0a5be72587efd4649b5c90fcd90a3ae1b35ff8e5549222ba3e85"
+url = "https://github.com/tarampampam/microcheck/releases/download/v1.4.0/linux-arm64-v8.tar.gz"
+
+[tools."http:httpcheck.toml"."platforms.linux-x64"]
+checksum = "sha256:f94dc1606045a8992bae774cc94f81ba7c704032f9b960007f5d796b872a63eb"
+url = "https://github.com/tarampampam/microcheck/releases/download/v1.4.0/linux-amd64.tar.gz"
+
+[tools."http:httpcheck.toml"."platforms.linux-x64-musl"]
+checksum = "sha256:f94dc1606045a8992bae774cc94f81ba7c704032f9b960007f5d796b872a63eb"
+url = "https://github.com/tarampampam/microcheck/releases/download/v1.4.0/linux-amd64.tar.gz"
+
+[tools."http:httpcheck.toml"."platforms.macos-arm64"]
+checksum = "blake3:c63cb468bad56fd3efbf5efd00a7aef20033b7e7565019523ee27ac3b6eabd21"
+url = "https://github.com/tarampampam/microcheck/releases/download/v1.4.0/macos-arm64.tar.gz"
+
+[tools."http:httpcheck.toml"."platforms.macos-x64"]
+checksum = "sha256:941e4aca58de95848358a0f75624ee673e8180453aff083b3aea24013a5ed630"
+url = "https://github.com/tarampampam/microcheck/releases/download/v1.4.0/macos-x86-64.tar.gz"
+
+[[tools."http:nu.musl.toml"]]
+version = "0.115.1"
+backend = "http:nu.musl.toml"
+
+[tools."http:nu.musl.toml".options]
+strip_components = "1"
+
+[tools."http:nu.musl.toml"."platforms.linux-arm64"]
+checksum = "sha256:86a869f44c2abd37f4a4c215af78c8da058812b76fa131476d28e62fc0262a91"
+url = "https://github.com/nushell/nushell/releases/download/0.115.1/nu-0.115.1-aarch64-unknown-linux-musl.tar.gz"
+
+[tools."http:nu.musl.toml"."platforms.linux-arm64-musl"]
+checksum = "sha256:86a869f44c2abd37f4a4c215af78c8da058812b76fa131476d28e62fc0262a91"
+url = "https://github.com/nushell/nushell/releases/download/0.115.1/nu-0.115.1-aarch64-unknown-linux-musl.tar.gz"
+
+[tools."http:nu.musl.toml"."platforms.linux-x64"]
+checksum = "sha256:8a9722177ddd421eba927b4baae4ae341a4d1c3434504be7b1b17d998bafdd87"
+url = "https://github.com/nushell/nushell/releases/download/0.115.1/nu-0.115.1-x86_64-unknown-linux-musl.tar.gz"
+
+[tools."http:nu.musl.toml"."platforms.linux-x64-musl"]
+checksum = "sha256:8a9722177ddd421eba927b4baae4ae341a4d1c3434504be7b1b17d998bafdd87"
+url = "https://github.com/nushell/nushell/releases/download/0.115.1/nu-0.115.1-x86_64-unknown-linux-musl.tar.gz"
+
+[tools."http:nu.musl.toml"."platforms.macos-arm64"]
+checksum = "blake3:621b9f9adcf3ac1877446cca88b55f785b145ae9f85868073f1b51cc656f2ead"
+url = "https://github.com/nushell/nushell/releases/download/0.115.1/nu-0.115.1-aarch64-apple-darwin.tar.gz"
+
+[tools."http:nu.musl.toml"."platforms.macos-x64"]
+checksum = "sha256:0292f4b92af29cfe5d9c4b2ec06eeb325b705d1d6c19536a8bec2b75859b3485"
+url = "https://github.com/nushell/nushell/releases/download/0.115.1/nu-0.115.1-x86_64-apple-darwin.tar.gz"
+
+[tools."http:nu.musl.toml"."platforms.windows-x64"]
+checksum = "sha256:b83009cbc88021f4dc293c49320118886b78363f9a4bb14933d33c8803241f46"
+url = "https://github.com/nushell/nushell/releases/download/0.115.1/nu-0.115.1-x86_64-pc-windows-msvc.zip"
+
+[[tools."http:nu.toml"]]
+version = "0.115.1"
+backend = "http:nu.toml"
+
+[tools."http:nu.toml".options]
+strip_components = "1"
+
+[tools."http:nu.toml"."platforms.linux-arm64"]
+checksum = "sha256:5c4a5bca0af5b070e903a68fa014cc24e6419d0ac9cec03a2948494b2d310e08"
+url = "https://github.com/nushell/nushell/releases/download/0.115.1/nu-0.115.1-aarch64-unknown-linux-gnu.tar.gz"
+
+[tools."http:nu.toml"."platforms.linux-arm64-musl"]
+checksum = "sha256:5c4a5bca0af5b070e903a68fa014cc24e6419d0ac9cec03a2948494b2d310e08"
+url = "https://github.com/nushell/nushell/releases/download/0.115.1/nu-0.115.1-aarch64-unknown-linux-gnu.tar.gz"
+
+[tools."http:nu.toml"."platforms.linux-x64"]
+checksum = "sha256:d11d825241f6504a3617c535fa725a9dd6d009c86d7b19fb3168b47635b9d8b0"
+url = "https://github.com/nushell/nushell/releases/download/0.115.1/nu-0.115.1-x86_64-unknown-linux-gnu.tar.gz"
+
+[tools."http:nu.toml"."platforms.linux-x64-musl"]
+checksum = "sha256:d11d825241f6504a3617c535fa725a9dd6d009c86d7b19fb3168b47635b9d8b0"
+url = "https://github.com/nushell/nushell/releases/download/0.115.1/nu-0.115.1-x86_64-unknown-linux-gnu.tar.gz"
+
+[tools."http:nu.toml"."platforms.macos-arm64"]
+checksum = "blake3:621b9f9adcf3ac1877446cca88b55f785b145ae9f85868073f1b51cc656f2ead"
+url = "https://github.com/nushell/nushell/releases/download/0.115.1/nu-0.115.1-aarch64-apple-darwin.tar.gz"
+
+[tools."http:nu.toml"."platforms.macos-x64"]
+checksum = "sha256:0292f4b92af29cfe5d9c4b2ec06eeb325b705d1d6c19536a8bec2b75859b3485"
+url = "https://github.com/nushell/nushell/releases/download/0.115.1/nu-0.115.1-x86_64-apple-darwin.tar.gz"
+
+[tools."http:nu.toml"."platforms.windows-x64"]
+checksum = "sha256:b83009cbc88021f4dc293c49320118886b78363f9a4bb14933d33c8803241f46"
+url = "https://github.com/nushell/nushell/releases/download/0.115.1/nu-0.115.1-x86_64-pc-windows-msvc.zip"
+
+[[tools."http:oras.toml"]]
+version = "1.2.2"
+backend = "http:oras.toml"
+
+[tools."http:oras.toml"."platforms.linux-arm64"]
+checksum = "sha256:edd7195cbb8ba56c29ede413eefa10c8026201d63326017cd315841b4063aa56"
+url = "https://github.com/oras-project/oras/releases/download/v1.2.2/oras_1.2.2_linux_arm64.tar.gz"
+
+[tools."http:oras.toml"."platforms.linux-arm64-musl"]
+checksum = "sha256:edd7195cbb8ba56c29ede413eefa10c8026201d63326017cd315841b4063aa56"
+url = "https://github.com/oras-project/oras/releases/download/v1.2.2/oras_1.2.2_linux_arm64.tar.gz"
+
+[tools."http:oras.toml"."platforms.linux-x64"]
+checksum = "sha256:bff970346470e5ef888e9f2c0bf7f8ee47283f5a45207d6e7a037da1fb0eae0d"
+url = "https://github.com/oras-project/oras/releases/download/v1.2.2/oras_1.2.2_linux_amd64.tar.gz"
+
+[tools."http:oras.toml"."platforms.linux-x64-musl"]
+checksum = "sha256:bff970346470e5ef888e9f2c0bf7f8ee47283f5a45207d6e7a037da1fb0eae0d"
+url = "https://github.com/oras-project/oras/releases/download/v1.2.2/oras_1.2.2_linux_amd64.tar.gz"
+
+[tools."http:oras.toml"."platforms.macos-arm64"]
+checksum = "blake3:2c1927aff6b1202f9cb8f5c13eb669f56e4202a6ebc1bc1390e8ebca6de99300"
+url = "https://github.com/oras-project/oras/releases/download/v1.2.2/oras_1.2.2_darwin_arm64.tar.gz"
+
+[tools."http:oras.toml"."platforms.macos-x64"]
+checksum = "sha256:e953c3c5580a317ba30871ee77f39a37e5bcb030edf01c5e9a83ebddcec7cf8a"
+url = "https://github.com/oras-project/oras/releases/download/v1.2.2/oras_1.2.2_darwin_amd64.tar.gz"
+
+[tools."http:oras.toml"."platforms.windows-x64"]
+checksum = "sha256:25110d69d220bf55469a14c243f759305737dac6672fb47b4af4e43b000f55f5"
+url = "https://github.com/oras-project/oras/releases/download/v1.2.2/oras_1.2.2_windows_amd64.zip"
+
+[[tools."http:portcheck.toml"]]
+version = "1.4.0"
+backend = "http:portcheck.toml"
+
+[tools."http:portcheck.toml"."platforms.linux-arm64"]
+checksum = "sha256:5994f3e13c9b0a5be72587efd4649b5c90fcd90a3ae1b35ff8e5549222ba3e85"
+url = "https://github.com/tarampampam/microcheck/releases/download/v1.4.0/linux-arm64-v8.tar.gz"
+
+[tools."http:portcheck.toml"."platforms.linux-arm64-musl"]
+checksum = "sha256:5994f3e13c9b0a5be72587efd4649b5c90fcd90a3ae1b35ff8e5549222ba3e85"
+url = "https://github.com/tarampampam/microcheck/releases/download/v1.4.0/linux-arm64-v8.tar.gz"
+
+[tools."http:portcheck.toml"."platforms.linux-x64"]
+checksum = "sha256:f94dc1606045a8992bae774cc94f81ba7c704032f9b960007f5d796b872a63eb"
+url = "https://github.com/tarampampam/microcheck/releases/download/v1.4.0/linux-amd64.tar.gz"
+
+[tools."http:portcheck.toml"."platforms.linux-x64-musl"]
+checksum = "sha256:f94dc1606045a8992bae774cc94f81ba7c704032f9b960007f5d796b872a63eb"
+url = "https://github.com/tarampampam/microcheck/releases/download/v1.4.0/linux-amd64.tar.gz"
+
+[tools."http:portcheck.toml"."platforms.macos-arm64"]
+checksum = "blake3:c63cb468bad56fd3efbf5efd00a7aef20033b7e7565019523ee27ac3b6eabd21"
+url = "https://github.com/tarampampam/microcheck/releases/download/v1.4.0/macos-arm64.tar.gz"
+
+[tools."http:portcheck.toml"."platforms.macos-x64"]
+checksum = "sha256:941e4aca58de95848358a0f75624ee673e8180453aff083b3aea24013a5ed630"
+url = "https://github.com/tarampampam/microcheck/releases/download/v1.4.0/macos-x86-64.tar.gz"

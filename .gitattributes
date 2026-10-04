@@ -6,7 +6,12 @@
 *.bat           text eol=crlf
 *.tflite binary
 *.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
 *.bin binary
+*.gz binary
 *.webp binary
 *.jar binary
 *.ico binary

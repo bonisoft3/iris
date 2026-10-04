@@ -1,6 +1,5 @@
 package sayt
 
-import "tool/exec"
 import "tool/cli"
 import "tool/file"
 

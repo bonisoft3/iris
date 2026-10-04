@@ -28,6 +28,10 @@ includes:
     taskfile: ./Taskfile.lint.yaml
     dir: ../
     optional: true
+  plugins_libstoml:
+    taskfile: ../../../plugins/libstoml/Taskfile.yml
+    dir: ../../../plugins/libstoml/
+    optional: true
   plugins_jvm:
     taskfile: ../../../plugins/jvm/Taskfile.yml
     dir: ../../../plugins/jvm/
@@ -35,10 +39,6 @@ includes:
   workspaceroot:
     taskfile: ../../../Taskfile.yml
     dir: ../../../
-    optional: true
-  plugins_libstoml:
-    taskfile: ../../../plugins/libstoml/Taskfile.yml
-    dir: ../../../plugins/libstoml/
     optional: true
 tasks:
   cross_plugins_jvm_build:

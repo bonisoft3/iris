@@ -8,19 +8,56 @@ say:
     args: "--with-host-env"
 
   lint:
-    # omnishell's playwright helpers are imported by both guis/iris and
-    # guis/snapcards, so every consumer plus the base image whose chromium they
-    # drive must carry one version. Bumping it means editing this literal too —
-    # a partial bump fails here as "pattern not found".
+    # Playwright's client refuses a browser of another version, so every pin
+    # moves together: omnishell's helpers and their consumers, the checks that
+    # drive a browser, the visual battery's image, and the browser CI installs.
+    # Bumping it means editing this literal too — a partial bump fails here as
+    # "pattern not found". Lockfiles and generated trees follow these.
     shared:
-      - pattern: '1\.59\.1'
+      - pattern: '1\.61\.1'
         files:
           - package.json
           - guis/snapcards/package.json
           - guis/iris/package.json
           - guis/iris/tests/playwright/package.json
+          - guis/iris/tests/playwright/Dockerfile
           - guis/iris/bayt.cue
           - plugins/omnishell/package.json
+          - .github/workflows/ci.yml
+          - plugins/bayt/core/images.lock.cue
+          - plugins/omnishell/check-visual.ts
+          - plugins/omnishell/playwright-tests/deno.json
+          - plugins/omnishell/playwright-tests/harness.ts
+          - plugins/omnishell/test/deno.json
+          - apps/chess/tests/window.test.ts
+          - apps/golaberto/tests/acceptance.ts
+          - apps/jsfb/bench/h2h.ts
+          - apps/plausible/tests/appearance.ts
+          - apps/primer/tests/paint.ts
+          - apps/truco/tests/acceptance.ts
+          - apps/truco/tests/bench-lobby-latency.ts
+          - apps/truco/tests/bench-runtime.ts
+          - apps/truco/tests/fit.ts
+          - apps/truco/tests/spike-cards.ts
+          - apps/truco/tests/verify-full-multiplayer-match.ts
+          - apps/truco/tests/verify-hand-sync.ts
+          - apps/truco/tests/verify-lobby-incognito.ts
+          - apps/truco/tests/verify-lobby.ts
+          - apps/truco/tests/verify-resign-online.ts
+          - apps/truco/tests/verify-visual-multiplayer.ts
+          - apps/truco/tests/window.test.ts
+
+      # The door answers Electric's 5xx with its status and headers and none
+      # of its text (libraries/mecha/services/proxy/Caddyfile says why), in
+      # mecha's proxy and in the Caddyfile pronto emits for every app.
+      - pattern: 'exclude Content-Type Content-Length Content-Encoding Server'
+        files:
+          - libraries/mecha/services/proxy/Caddyfile
+          - plugins/pronto/assets/Caddyfile
+      - pattern: 'respond .\{"message":"electric failed"\}. \{rp\.status_code\}'
+        files:
+          - libraries/mecha/services/proxy/Caddyfile
+          - plugins/pronto/assets/Caddyfile
 
       # nushell's version is restated in every mise config and tool stub that
       # needs it, and none can import it from another. A partial bump puts two
@@ -75,4 +112,11 @@ say:
               }
               if ($found | get value | uniq | length) > 1 {
                 error make {msg: "COMPOSE_PROJECT_NAME is spelled differently across projects"}
+              }
+              # A tool stub with a cold cache resolves this `[env]` too, so the
+              # exec's child must not see MISE_SHELL, or it execs again without
+              # bound (plugins/sayt/compose_test.nu checks both prefixes work).
+              let reentrant = ($found | where { |f| not (($f.value | str contains 'MISE_SHELL= mise tool-stub') and ($f.value | str contains '(set MISE_SHELL=) && mise tool-stub')) } | get project)
+              if ($reentrant | is-not-empty) {
+                error make {msg: $"COMPOSE_PROJECT_NAME's exec keeps MISE_SHELL in: ($reentrant | str join ', ')"}
               }

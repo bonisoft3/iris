@@ -75,6 +75,45 @@ def reference_app(name):
         scope = "",
     )
 
+def _rewrite(before, after, paths, regex_groups = {}, exclude = []):
+    return core.replace(
+        before = before,
+        after = after,
+        regex_groups = regex_groups,
+        paths = glob(paths, exclude = exclude),
+        multiline = True,
+    )
+
+# An app built as its own repository (pronto's installed layout): its files
+# alone, at the root, with nothing of the runtime. It pins the runtime's
+# releases itself, and the mirror regenerates what the monorepo generated
+# (.github/mirror_test.sh). Two files say where the monorepo keeps the runtime,
+# and stay behind: mise.local.toml and .bayt/.env.
+def installed_app(name):
+    app = "apps/" + name
+    return struct(
+        name = name,
+        destination = "git@github.com:bonisoft3/" + name + ".git",
+        origin_files = [app + "/**"],
+        origin_excludes = [app + "/mise.local.toml", app + "/mise.local.lock", app + "/.bayt/.env"],
+        transformations = [
+            core.move(app, ""),
+            # The mirror's module, staged as the runtime's mirrors stage theirs.
+            core.move(".mirror/cue.mod", "cue.mod"),
+            # The runtime's packages by their published modules, until CUE's
+            # import resolution config lets the monorepo name them so.
+            _rewrite(
+                "bonisoft.org/${part}/${module}",
+                "github.com/bonisoft3/${module}",
+                ["**.cue"],
+                {"part": "plugins|libraries", "module": "bayt|mecha|omnishell|pronto|sayt"},
+            ),
+        ],
+        submodules = "",
+        mode = "SQUASH",
+        scope = "",
+    )
+
 WORKFLOWS = [
     struct(
         name = "iris",
@@ -413,7 +452,7 @@ WORKFLOWS = [
         mode = "ITERATIVE",
         scope = "lazybox",
     ),
-] + [reference_app(name) for name in ["truco", "chess", "realworld", "shadcnui", "jsfb", "plausible", "ponto", "primer", "thenote", "w3caria", "xpense"]]
+] + [reference_app(name) for name in ["truco", "chess", "realworld", "shadcnui"]] + [installed_app("golaberto")]
 
 def register_workflows(origin_url, name_suffix):
     for workflow in WORKFLOWS:
