@@ -1,6 +1,5 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
-tool = "github:lsd-rs/lsd"
 version = "1.2.0"
 bin = "lsd"
 strip_components = 1

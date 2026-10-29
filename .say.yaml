@@ -3,11 +3,17 @@ say:
     rulemap: { "auto-cue": null }
 
   integrate:
-    # act reaches the host daemon from a build RUN through dind.sh, which
-    # finds it only in the host.env the dind bridge writes.
+    # act reaches the host daemon from a build RUN through docker-bridge.sh, which
+    # finds it only in the host.env the docker bridge writes.
     args: "--with-host-env"
 
   lint:
+    # devserver's image runs lazybox's mise launcher, whose attestation
+    # switches keep every build off GitHub's unauthenticated API; a copy that
+    # drifted from it rate-limited the builds that share one address.
+    copy:
+      - plugins/lazybox/lazy-mise
+      - plugins/devserver/lazy-mise
     # Playwright's client refuses a browser of another version, so every pin
     # moves together: omnishell's helpers and their consumers, the checks that
     # drive a browser, the visual battery's image, and the browser CI installs.
@@ -29,23 +35,12 @@ say:
           - plugins/omnishell/playwright-tests/deno.json
           - plugins/omnishell/playwright-tests/harness.ts
           - plugins/omnishell/test/deno.json
-          - apps/chess/tests/window.test.ts
           - apps/golaberto/tests/acceptance.ts
           - apps/jsfb/bench/h2h.ts
           - apps/plausible/tests/appearance.ts
           - apps/primer/tests/paint.ts
+          - apps/snapcards/tests/acceptance.ts
           - apps/truco/tests/acceptance.ts
-          - apps/truco/tests/bench-lobby-latency.ts
-          - apps/truco/tests/bench-runtime.ts
-          - apps/truco/tests/fit.ts
-          - apps/truco/tests/spike-cards.ts
-          - apps/truco/tests/verify-full-multiplayer-match.ts
-          - apps/truco/tests/verify-hand-sync.ts
-          - apps/truco/tests/verify-lobby-incognito.ts
-          - apps/truco/tests/verify-lobby.ts
-          - apps/truco/tests/verify-resign-online.ts
-          - apps/truco/tests/verify-visual-multiplayer.ts
-          - apps/truco/tests/window.test.ts
 
       # The door answers Electric's 5xx with its status and headers and none
       # of its text (libraries/mecha/services/proxy/Caddyfile says why), in
@@ -69,7 +64,7 @@ say:
       # nushell from the wolfi index, which prunes old versions, so a pin
       # there is a build failure with a date on it. Its container runs only
       # shall.test.nu and writes nothing generated.
-      - pattern: '0\.115\.1'
+      - pattern: '0\.116\.1'
         files:
           - .mise.toml
           - plugins/shall/.mise.toml
@@ -105,7 +100,12 @@ say:
               let found = (ls apps/*/compose.yaml services/*/compose.yaml | get name
                 | each { |c| $c | path dirname }
                 | where { |d| ($d | path join .mise.toml) | path exists }
-                | each { |d| { project: $d, value: (open ($d | path join .mise.toml) | get -o env.COMPOSE_PROJECT_NAME) } })
+                # mise.local.toml layers over .mise.toml, as mise reads them: an
+                # app built as its own repository names the monorepo's sayt only
+                # in the monorepo-only file.
+                | each { |d| { project: $d, value: ([.mise.toml mise.local.toml]
+                    | each { |f| $d | path join $f } | where { path exists }
+                    | each { |f| open $f | get -o env.COMPOSE_PROJECT_NAME } | compact | last) } })
               let missing = ($found | where value == null | get project)
               if ($missing | is-not-empty) {
                 error make {msg: $"COMPOSE_PROJECT_NAME is not under [env] in: ($missing | str join ', ')"}

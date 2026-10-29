@@ -1,0 +1,3180 @@
+# generated from bayt.cue — do not edit
+name: iris
+networks:
+  default:
+    name: iris_default
+secrets:
+  actions_results_url:
+    environment: ACTIONS_RESULTS_URL
+    name: iris_actions_results_url
+  actions_runtime_token:
+    environment: ACTIONS_RUNTIME_TOKEN
+    name: iris_actions_runtime_token
+  bayt_image_tag:
+    environment: BAYT_IMAGE_TAG
+    name: iris_bayt_image_tag
+  bayt_pull_policy:
+    environment: BAYT_PULL_POLICY
+    name: iris_bayt_pull_policy
+  bkid_project:
+    environment: BKID_PROJECT
+    name: iris_bkid_project
+  buildx_builder:
+    environment: BUILDX_BUILDER
+    name: iris_buildx_builder
+  buildx_instance:
+    environment: BUILDX_INSTANCE
+    name: iris_buildx_instance
+  cache_scope:
+    environment: CACHE_SCOPE
+    name: iris_cache_scope
+  cache_scope_fallback:
+    environment: CACHE_SCOPE_FALLBACK
+    name: iris_cache_scope_fallback
+  depot_disable_otel:
+    environment: DEPOT_DISABLE_OTEL
+    name: iris_depot_disable_otel
+  depot_org_id:
+    environment: DEPOT_ORG_ID
+    name: iris_depot_org_id
+  depot_project_id:
+    environment: DEPOT_PROJECT_ID
+    name: iris_depot_project_id
+  depot_token:
+    environment: DEPOT_TOKEN
+    name: iris_depot_token
+  docker_config:
+    environment: DOCKER_AUTH_CONFIG
+    name: iris_docker_config
+  docker_host:
+    environment: DOCKER_HOST_TCP
+    name: iris_docker_host
+  sayt_buildkit_syntax:
+    environment: BUILDKIT_SYNTAX
+    name: iris_sayt_buildkit_syntax
+  sayt_no_cache:
+    environment: SAYT_NO_CACHE
+    name: iris_sayt_no_cache
+  sayt_no_cache_from:
+    environment: SAYT_NO_CACHE_FROM
+    name: iris_sayt_no_cache_from
+  sayt_no_cache_to:
+    environment: SAYT_NO_CACHE_TO
+    name: iris_sayt_no_cache_to
+  testcontainers_host:
+    environment: TESTCONTAINERS_HOST_OVERRIDE
+    name: iris_testcontainers_host
+services:
+  guis_web-build:
+    build:
+      additional_contexts:
+        bayt: plugins/bayt/runtime
+        guis_web-setup: target:guis_web-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: guis/web
+      dockerfile: .bayt/Dockerfile.build
+      tags:
+        - bayt-guis_web-build:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-guis_web-build:latest
+      target: build
+    image: bayt-guis_web-build:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  guis_web-build_bayt:
+    build:
+      additional_contexts:
+        guis_web-setup_bayt: target:guis_web-setup_bayt
+        workspaceroot-setup-js_bayt: target:workspaceroot-setup-js_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: guis/web
+      dockerfile: .bayt/Dockerfile.build
+      target: build_bayt
+    image: bayt-guis_web-build_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  guis_web-build_outs:
+    build:
+      additional_contexts:
+        guis_web-build: target:guis_web-build
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: guis/web
+      dockerfile: .bayt/Dockerfile.build
+      target: build_outs
+    image: bayt-guis_web-build_outs:latest
+    networks:
+      default: null
+    scale: 0
+  guis_web-build_srcs:
+    build:
+      additional_contexts:
+        guis_web-setup_srcs: target:guis_web-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: guis/web
+      dockerfile: .bayt/Dockerfile.build
+      target: build_srcs
+    image: bayt-guis_web-build_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  guis_web-integrate:
+    build:
+      additional_contexts:
+        bayt: plugins/bayt/runtime
+        guis_web-build: target:guis_web-build
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: guis/web
+      dockerfile: .bayt/Dockerfile.integrate
+      tags:
+        - bayt-guis_web-integrate:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-guis_web-integrate:latest
+      target: integrate
+    image: bayt-guis_web-integrate:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  guis_web-integrate_bayt:
+    build:
+      additional_contexts:
+        guis_web-build_bayt: target:guis_web-build_bayt
+        guis_web-setup_bayt: target:guis_web-setup_bayt
+        workspaceroot-setup-js_bayt: target:workspaceroot-setup-js_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: guis/web
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate_bayt
+    image: bayt-guis_web-integrate_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  guis_web-integrate_srcs:
+    build:
+      additional_contexts:
+        guis_web-build_srcs: target:guis_web-build_srcs
+        guis_web-setup_srcs: target:guis_web-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: guis/web
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate_srcs
+    image: bayt-guis_web-integrate_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  guis_web-launch:
+    build:
+      additional_contexts:
+        guis_web-build: target:guis_web-build
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: guis/web
+      dockerfile: .bayt/Dockerfile.launch
+      tags:
+        - bayt-guis_web-launch:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-guis_web-launch:latest
+      target: launch
+    develop:
+      watch:
+        - action: sync
+          path: guis/web
+          target: /monorepo/guis/web/./
+        - action: rebuild
+          path: guis/web/package.json
+        - action: rebuild
+          path: guis/web/pnpm-lock.yaml
+    image: bayt-guis_web-launch:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+  guis_web-launch_bayt:
+    build:
+      additional_contexts:
+        guis_web-build_bayt: target:guis_web-build_bayt
+        guis_web-setup_bayt: target:guis_web-setup_bayt
+        workspaceroot-setup-js_bayt: target:workspaceroot-setup-js_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: guis/web
+      dockerfile: .bayt/Dockerfile.launch
+      target: launch_bayt
+    image: bayt-guis_web-launch_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  guis_web-launch_srcs:
+    build:
+      additional_contexts:
+        guis_web-build_srcs: target:guis_web-build_srcs
+        guis_web-setup_srcs: target:guis_web-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: guis/web
+      dockerfile: .bayt/Dockerfile.launch
+      target: launch_srcs
+    image: bayt-guis_web-launch_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  guis_web-release:
+    build:
+      additional_contexts:
+        guis_web-build: target:guis_web-build
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: guis/web
+      dockerfile: .bayt/Dockerfile.release
+      tags:
+        - bayt-guis_web-release:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-guis_web-release:latest
+      target: release
+      x-bake:
+        platforms:
+          - linux/amd64
+    image: bayt-guis_web-release:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  guis_web-release_bayt:
+    build:
+      additional_contexts:
+        guis_web-build_bayt: target:guis_web-build_bayt
+        guis_web-setup_bayt: target:guis_web-setup_bayt
+        workspaceroot-setup-js_bayt: target:workspaceroot-setup-js_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: guis/web
+      dockerfile: .bayt/Dockerfile.release
+      target: release_bayt
+    image: bayt-guis_web-release_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  guis_web-release_srcs:
+    build:
+      additional_contexts:
+        guis_web-build_srcs: target:guis_web-build_srcs
+        guis_web-setup_srcs: target:guis_web-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: guis/web
+      dockerfile: .bayt/Dockerfile.release
+      target: release_srcs
+    image: bayt-guis_web-release_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  guis_web-setup:
+    build:
+      additional_contexts:
+        workspaceroot-setup-js: target:workspaceroot-setup-js
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: guis/web
+      dockerfile: .bayt/Dockerfile.setup
+      tags:
+        - bayt-guis_web-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-guis_web-setup:latest
+      target: setup
+    image: bayt-guis_web-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  guis_web-setup_bayt:
+    build:
+      additional_contexts:
+        workspaceroot-setup-js_bayt: target:workspaceroot-setup-js_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: guis/web
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_bayt
+    image: bayt-guis_web-setup_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  guis_web-setup_srcs:
+    build:
+      additional_contexts:
+        workspaceroot-setup-js_srcs: target:workspaceroot-setup-js_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: guis/web
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_srcs
+    image: bayt-guis_web-setup_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  integrate:
+    build:
+      additional_contexts:
+        guis_web-integrate: target:guis_web-integrate
+        libraries_logs-build_srcs: target:libraries_logs-build_srcs
+        libraries_logs-setup_srcs: target:libraries_logs-setup_srcs
+        libraries_pbtables-build_srcs: target:libraries_pbtables-build_srcs
+        libraries_pbtables-setup_srcs: target:libraries_pbtables-setup_srcs
+        libraries_xproto-build_srcs: target:libraries_xproto-build_srcs
+        libraries_xproto-setup_srcs: target:libraries_xproto-setup_srcs
+        plugins_jvm-build_srcs: target:plugins_jvm-build_srcs
+        plugins_jvm-setup_srcs: target:plugins_jvm-setup_srcs
+        plugins_libstoml-build_srcs: target:plugins_libstoml-build_srcs
+        plugins_libstoml-setup_srcs: target:plugins_libstoml-setup_srcs
+        plugins_micronaut-build_srcs: target:plugins_micronaut-build_srcs
+        plugins_micronaut-setup_srcs: target:plugins_micronaut-setup_srcs
+        products_iris-setup: target:products_iris-setup
+        services_tracker-ci: target:services_tracker-ci
+        services_tracker-tx-integrate: target:services_tracker-tx-integrate
+        workspaceroot-setup-js: target:workspaceroot-setup-js
+        workspaceroot-setup_srcs: target:workspaceroot-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: products/iris
+      dockerfile: .bayt/Dockerfile.integrate
+      tags:
+        - bayt-products_iris-integrate:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-products_iris-integrate:latest
+      target: integrate
+    depends_on:
+      guis_web-integrate:
+        condition: service_started
+        required: true
+      services_tracker-ci:
+        condition: service_started
+        required: true
+      services_tracker-tx-integrate:
+        condition: service_started
+        required: true
+    image: bayt-products_iris-integrate:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    profiles:
+      - integrate
+    scale: 1
+  libraries_logs-build:
+    build:
+      additional_contexts:
+        bayt: plugins/bayt/runtime
+        libraries_logs-setup: target:libraries_logs-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/logs
+      dockerfile: .bayt/Dockerfile.build
+      tags:
+        - bayt-libraries_logs-build:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-libraries_logs-build:latest
+      target: build
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-build
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-build
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-build,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_logs-build:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  libraries_logs-build_bayt:
+    build:
+      additional_contexts:
+        libraries_logs-setup_bayt: target:libraries_logs-setup_bayt
+        plugins_jvm-build_bayt: target:plugins_jvm-build_bayt
+        plugins_libstoml-build_bayt: target:plugins_libstoml-build_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/logs
+      dockerfile: .bayt/Dockerfile.build
+      target: build_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_logs-build_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_logs-build_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_logs-build_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_logs-build_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_logs-build_outs:
+    build:
+      additional_contexts:
+        libraries_logs-build: target:libraries_logs-build
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/logs
+      dockerfile: .bayt/Dockerfile.build
+      target: build_outs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_logs-build_outs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_logs-build_outs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_logs-build_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_logs-build_outs:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_logs-build_srcs:
+    build:
+      additional_contexts:
+        libraries_logs-setup_srcs: target:libraries_logs-setup_srcs
+        plugins_jvm-build_srcs: target:plugins_jvm-build_srcs
+        plugins_libstoml-build_srcs: target:plugins_libstoml-build_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/logs
+      dockerfile: .bayt/Dockerfile.build
+      target: build_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_logs-build_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_logs-build_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_logs-build_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_logs-build_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_logs-integrate:
+    build:
+      additional_contexts:
+        libraries_logs-build: target:libraries_logs-build
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/logs
+      dockerfile: .bayt/Dockerfile.integrate
+      tags:
+        - bayt-libraries_logs-integrate:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-libraries_logs-integrate:latest
+      target: integrate
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-integrate
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-integrate
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-integrate,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+        output:
+          - type=${BAYT_COMPOSE_OUTPUT:-docker}
+    environment:
+      GRADLE_USER_HOME: /opt/gradle-home
+    image: bayt-libraries_logs-integrate:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  libraries_logs-integrate_bayt:
+    build:
+      additional_contexts:
+        libraries_logs-build_bayt: target:libraries_logs-build_bayt
+        libraries_logs-setup_bayt: target:libraries_logs-setup_bayt
+        plugins_jvm-build_bayt: target:plugins_jvm-build_bayt
+        plugins_libstoml-build_bayt: target:plugins_libstoml-build_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/logs
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_logs-integrate_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_logs-integrate_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_logs-integrate_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_logs-integrate_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_logs-integrate_outs:
+    build:
+      additional_contexts:
+        libraries_logs-integrate: target:libraries_logs-integrate
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/logs
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate_outs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_logs-integrate_outs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_logs-integrate_outs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_logs-integrate_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_logs-integrate_outs:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_logs-integrate_srcs:
+    build:
+      additional_contexts:
+        libraries_logs-build_srcs: target:libraries_logs-build_srcs
+        libraries_logs-setup_srcs: target:libraries_logs-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/logs
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_logs-integrate_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_logs-integrate_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_logs-integrate_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_logs-integrate_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_logs-setup:
+    build:
+      additional_contexts:
+        plugins_jvm-build: target:plugins_jvm-build
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/logs
+      dockerfile: .bayt/Dockerfile.setup
+      tags:
+        - bayt-libraries_logs-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-libraries_logs-setup:latest
+      target: setup
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-setup
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-setup
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-setup,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_logs-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  libraries_logs-setup_bayt:
+    build:
+      additional_contexts:
+        plugins_jvm-build_bayt: target:plugins_jvm-build_bayt
+        plugins_libstoml-build_bayt: target:plugins_libstoml-build_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/logs
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_logs-setup_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_logs-setup_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_logs-setup_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_logs-setup_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_logs-setup_outs:
+    build:
+      additional_contexts:
+        libraries_logs-setup: target:libraries_logs-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/logs
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_outs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_logs-setup_outs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_logs-setup_outs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_logs-setup_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_logs-setup_outs:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_logs-setup_srcs:
+    build:
+      additional_contexts:
+        plugins_jvm-build_srcs: target:plugins_jvm-build_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/logs
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_logs-setup_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_logs-setup_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_logs-setup_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_logs-setup_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_pbtables-build:
+    build:
+      additional_contexts:
+        bayt: plugins/bayt/runtime
+        libraries_logs-build: target:libraries_logs-build
+        libraries_pbtables-setup: target:libraries_pbtables-setup
+        libraries_xproto-build: target:libraries_xproto-build
+        plugins_micronaut-build: target:plugins_micronaut-build
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/pbtables
+      dockerfile: .bayt/Dockerfile.build
+      tags:
+        - bayt-libraries_pbtables-build:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-libraries_pbtables-build:latest
+      target: build
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-build
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-build
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-build,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_pbtables-build:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  libraries_pbtables-build_bayt:
+    build:
+      additional_contexts:
+        libraries_logs-build_bayt: target:libraries_logs-build_bayt
+        libraries_pbtables-setup_bayt: target:libraries_pbtables-setup_bayt
+        libraries_xproto-build_bayt: target:libraries_xproto-build_bayt
+        plugins_jvm-build_bayt: target:plugins_jvm-build_bayt
+        plugins_libstoml-build_bayt: target:plugins_libstoml-build_bayt
+        plugins_micronaut-build_bayt: target:plugins_micronaut-build_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/pbtables
+      dockerfile: .bayt/Dockerfile.build
+      target: build_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-build_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_pbtables-build_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-build_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_pbtables-build_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_pbtables-build_outs:
+    build:
+      additional_contexts:
+        libraries_pbtables-build: target:libraries_pbtables-build
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/pbtables
+      dockerfile: .bayt/Dockerfile.build
+      target: build_outs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-build_outs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_pbtables-build_outs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-build_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_pbtables-build_outs:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_pbtables-build_srcs:
+    build:
+      additional_contexts:
+        libraries_logs-build_srcs: target:libraries_logs-build_srcs
+        libraries_pbtables-setup_srcs: target:libraries_pbtables-setup_srcs
+        libraries_xproto-build_srcs: target:libraries_xproto-build_srcs
+        plugins_jvm-build_srcs: target:plugins_jvm-build_srcs
+        plugins_libstoml-build_srcs: target:plugins_libstoml-build_srcs
+        plugins_micronaut-build_srcs: target:plugins_micronaut-build_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/pbtables
+      dockerfile: .bayt/Dockerfile.build
+      target: build_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-build_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_pbtables-build_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-build_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_pbtables-build_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_pbtables-integrate:
+    build:
+      additional_contexts:
+        libraries_pbtables-build: target:libraries_pbtables-build
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/pbtables
+      dockerfile: .bayt/Dockerfile.integrate
+      tags:
+        - bayt-libraries_pbtables-integrate:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-libraries_pbtables-integrate:latest
+      target: integrate
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-integrate
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-integrate
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-integrate,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+        output:
+          - type=${BAYT_COMPOSE_OUTPUT:-docker}
+    environment:
+      GRADLE_USER_HOME: /opt/gradle-home
+    image: bayt-libraries_pbtables-integrate:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  libraries_pbtables-integrate_bayt:
+    build:
+      additional_contexts:
+        libraries_logs-build_bayt: target:libraries_logs-build_bayt
+        libraries_pbtables-build_bayt: target:libraries_pbtables-build_bayt
+        libraries_pbtables-setup_bayt: target:libraries_pbtables-setup_bayt
+        libraries_xproto-build_bayt: target:libraries_xproto-build_bayt
+        plugins_jvm-build_bayt: target:plugins_jvm-build_bayt
+        plugins_libstoml-build_bayt: target:plugins_libstoml-build_bayt
+        plugins_micronaut-build_bayt: target:plugins_micronaut-build_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/pbtables
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-integrate_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_pbtables-integrate_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-integrate_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_pbtables-integrate_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_pbtables-integrate_outs:
+    build:
+      additional_contexts:
+        libraries_pbtables-integrate: target:libraries_pbtables-integrate
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/pbtables
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate_outs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-integrate_outs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_pbtables-integrate_outs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-integrate_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_pbtables-integrate_outs:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_pbtables-integrate_srcs:
+    build:
+      additional_contexts:
+        libraries_pbtables-build_srcs: target:libraries_pbtables-build_srcs
+        libraries_pbtables-setup_srcs: target:libraries_pbtables-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/pbtables
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-integrate_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_pbtables-integrate_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-integrate_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_pbtables-integrate_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_pbtables-setup:
+    build:
+      additional_contexts:
+        plugins_jvm-build: target:plugins_jvm-build
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/pbtables
+      dockerfile: .bayt/Dockerfile.setup
+      tags:
+        - bayt-libraries_pbtables-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-libraries_pbtables-setup:latest
+      target: setup
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-setup
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-setup
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-setup,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_pbtables-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  libraries_pbtables-setup_bayt:
+    build:
+      additional_contexts:
+        plugins_jvm-build_bayt: target:plugins_jvm-build_bayt
+        plugins_libstoml-build_bayt: target:plugins_libstoml-build_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/pbtables
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-setup_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_pbtables-setup_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-setup_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_pbtables-setup_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_pbtables-setup_outs:
+    build:
+      additional_contexts:
+        libraries_pbtables-setup: target:libraries_pbtables-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/pbtables
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_outs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-setup_outs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_pbtables-setup_outs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-setup_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_pbtables-setup_outs:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_pbtables-setup_srcs:
+    build:
+      additional_contexts:
+        plugins_jvm-build_srcs: target:plugins_jvm-build_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/pbtables
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-setup_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_pbtables-setup_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_pbtables-setup_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_pbtables-setup_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_xproto-build:
+    build:
+      additional_contexts:
+        bayt: plugins/bayt/runtime
+        libraries_logs-build: target:libraries_logs-build
+        libraries_xproto-setup: target:libraries_xproto-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/xproto
+      dockerfile: .bayt/Dockerfile.build
+      tags:
+        - bayt-libraries_xproto-build:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-libraries_xproto-build:latest
+      target: build
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-build
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-build
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-build,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_xproto-build:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  libraries_xproto-build_bayt:
+    build:
+      additional_contexts:
+        libraries_logs-build_bayt: target:libraries_logs-build_bayt
+        libraries_xproto-setup_bayt: target:libraries_xproto-setup_bayt
+        plugins_jvm-build_bayt: target:plugins_jvm-build_bayt
+        plugins_libstoml-build_bayt: target:plugins_libstoml-build_bayt
+        workspaceroot-setup_bayt: target:workspaceroot-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/xproto
+      dockerfile: .bayt/Dockerfile.build
+      target: build_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-build_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_xproto-build_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-build_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_xproto-build_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_xproto-build_outs:
+    build:
+      additional_contexts:
+        libraries_xproto-build: target:libraries_xproto-build
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/xproto
+      dockerfile: .bayt/Dockerfile.build
+      target: build_outs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-build_outs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_xproto-build_outs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-build_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_xproto-build_outs:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_xproto-build_srcs:
+    build:
+      additional_contexts:
+        libraries_logs-build_srcs: target:libraries_logs-build_srcs
+        libraries_xproto-setup_srcs: target:libraries_xproto-setup_srcs
+        plugins_jvm-build_srcs: target:plugins_jvm-build_srcs
+        plugins_libstoml-build_srcs: target:plugins_libstoml-build_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/xproto
+      dockerfile: .bayt/Dockerfile.build
+      target: build_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-build_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_xproto-build_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-build_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_xproto-build_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_xproto-descriptor:
+    build:
+      additional_contexts:
+        workspaceroot-setup: target:workspaceroot-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/xproto
+      dockerfile: .bayt/Dockerfile.descriptor
+      tags:
+        - bayt-libraries_xproto-descriptor:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-libraries_xproto-descriptor:latest
+      target: descriptor
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-descriptor
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-descriptor
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-descriptor,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_xproto-descriptor:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  libraries_xproto-descriptor_bayt:
+    build:
+      additional_contexts:
+        workspaceroot-setup_bayt: target:workspaceroot-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/xproto
+      dockerfile: .bayt/Dockerfile.descriptor
+      target: descriptor_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-descriptor_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_xproto-descriptor_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-descriptor_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_xproto-descriptor_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_xproto-descriptor_outs:
+    build:
+      additional_contexts:
+        libraries_xproto-descriptor: target:libraries_xproto-descriptor
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/xproto
+      dockerfile: .bayt/Dockerfile.descriptor
+      target: descriptor_outs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-descriptor_outs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_xproto-descriptor_outs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-descriptor_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_xproto-descriptor_outs:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_xproto-descriptor_srcs:
+    build:
+      additional_contexts:
+        workspaceroot-setup_srcs: target:workspaceroot-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/xproto
+      dockerfile: .bayt/Dockerfile.descriptor
+      target: descriptor_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-descriptor_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_xproto-descriptor_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-descriptor_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_xproto-descriptor_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_xproto-gen-go:
+    build:
+      additional_contexts:
+        workspaceroot-setup: target:workspaceroot-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/xproto
+      dockerfile: .bayt/Dockerfile.gen-go
+      tags:
+        - bayt-libraries_xproto-gen-go:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-libraries_xproto-gen-go:latest
+      target: gen-go
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-gen-go
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-gen-go
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-gen-go,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_xproto-gen-go:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  libraries_xproto-gen-go_bayt:
+    build:
+      additional_contexts:
+        workspaceroot-setup_bayt: target:workspaceroot-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/xproto
+      dockerfile: .bayt/Dockerfile.gen-go
+      target: gen-go_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-gen-go_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_xproto-gen-go_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-gen-go_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_xproto-gen-go_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_xproto-gen-go_outs:
+    build:
+      additional_contexts:
+        libraries_xproto-gen-go: target:libraries_xproto-gen-go
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/xproto
+      dockerfile: .bayt/Dockerfile.gen-go
+      target: gen-go_outs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-gen-go_outs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_xproto-gen-go_outs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-gen-go_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_xproto-gen-go_outs:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_xproto-gen-go_srcs:
+    build:
+      additional_contexts:
+        workspaceroot-setup_srcs: target:workspaceroot-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/xproto
+      dockerfile: .bayt/Dockerfile.gen-go
+      target: gen-go_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-gen-go_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_xproto-gen-go_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-gen-go_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_xproto-gen-go_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_xproto-integrate:
+    build:
+      additional_contexts:
+        libraries_xproto-build: target:libraries_xproto-build
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/xproto
+      dockerfile: .bayt/Dockerfile.integrate
+      tags:
+        - bayt-libraries_xproto-integrate:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-libraries_xproto-integrate:latest
+      target: integrate
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-integrate
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-integrate
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-integrate,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+        output:
+          - type=${BAYT_COMPOSE_OUTPUT:-docker}
+    environment:
+      GRADLE_USER_HOME: /opt/gradle-home
+    image: bayt-libraries_xproto-integrate:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  libraries_xproto-integrate_bayt:
+    build:
+      additional_contexts:
+        libraries_logs-build_bayt: target:libraries_logs-build_bayt
+        libraries_xproto-build_bayt: target:libraries_xproto-build_bayt
+        libraries_xproto-setup_bayt: target:libraries_xproto-setup_bayt
+        plugins_jvm-build_bayt: target:plugins_jvm-build_bayt
+        plugins_libstoml-build_bayt: target:plugins_libstoml-build_bayt
+        workspaceroot-setup_bayt: target:workspaceroot-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/xproto
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-integrate_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_xproto-integrate_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-integrate_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_xproto-integrate_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_xproto-integrate_outs:
+    build:
+      additional_contexts:
+        libraries_xproto-integrate: target:libraries_xproto-integrate
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/xproto
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate_outs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-integrate_outs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_xproto-integrate_outs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-integrate_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_xproto-integrate_outs:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_xproto-integrate_srcs:
+    build:
+      additional_contexts:
+        libraries_xproto-build_srcs: target:libraries_xproto-build_srcs
+        libraries_xproto-setup_srcs: target:libraries_xproto-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/xproto
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-integrate_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_xproto-integrate_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-integrate_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_xproto-integrate_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_xproto-setup:
+    build:
+      additional_contexts:
+        plugins_jvm-build: target:plugins_jvm-build
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/xproto
+      dockerfile: .bayt/Dockerfile.setup
+      tags:
+        - bayt-libraries_xproto-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-libraries_xproto-setup:latest
+      target: setup
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-setup
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-setup
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-setup,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_xproto-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  libraries_xproto-setup_bayt:
+    build:
+      additional_contexts:
+        plugins_jvm-build_bayt: target:plugins_jvm-build_bayt
+        plugins_libstoml-build_bayt: target:plugins_libstoml-build_bayt
+        workspaceroot-setup_bayt: target:workspaceroot-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/xproto
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-setup_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_xproto-setup_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-setup_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_xproto-setup_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_xproto-setup_outs:
+    build:
+      additional_contexts:
+        libraries_xproto-setup: target:libraries_xproto-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/xproto
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_outs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-setup_outs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_xproto-setup_outs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-setup_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_xproto-setup_outs:latest
+    networks:
+      default: null
+    scale: 0
+  libraries_xproto-setup_srcs:
+    build:
+      additional_contexts:
+        plugins_jvm-build_srcs: target:plugins_jvm-build_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: libraries/xproto
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-setup_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-libraries_xproto-setup_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-libraries_xproto-setup_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-libraries_xproto-setup_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  plugins_jvm-build:
+    build:
+      additional_contexts:
+        bayt: plugins/bayt/runtime
+        plugins_jvm-setup: target:plugins_jvm-setup
+        plugins_libstoml-build: target:plugins_libstoml-build
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: plugins/jvm
+      dockerfile: .bayt/Dockerfile.build
+      tags:
+        - bayt-plugins_jvm-build:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-plugins_jvm-build:latest
+      target: build
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-build
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-build
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-build,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-plugins_jvm-build:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  plugins_jvm-build_bayt:
+    build:
+      additional_contexts:
+        plugins_jvm-setup_bayt: target:plugins_jvm-setup_bayt
+        plugins_libstoml-build_bayt: target:plugins_libstoml-build_bayt
+        workspaceroot-setup_bayt: target:workspaceroot-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: plugins/jvm
+      dockerfile: .bayt/Dockerfile.build
+      target: build_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_jvm-build_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_jvm-build_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_jvm-build_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-plugins_jvm-build_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  plugins_jvm-build_outs:
+    build:
+      additional_contexts:
+        plugins_jvm-build: target:plugins_jvm-build
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: plugins/jvm
+      dockerfile: .bayt/Dockerfile.build
+      target: build_outs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_jvm-build_outs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_jvm-build_outs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_jvm-build_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-plugins_jvm-build_outs:latest
+    networks:
+      default: null
+    scale: 0
+  plugins_jvm-build_srcs:
+    build:
+      additional_contexts:
+        plugins_jvm-setup_srcs: target:plugins_jvm-setup_srcs
+        plugins_libstoml-build_srcs: target:plugins_libstoml-build_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: plugins/jvm
+      dockerfile: .bayt/Dockerfile.build
+      target: build_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_jvm-build_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_jvm-build_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_jvm-build_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-plugins_jvm-build_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  plugins_jvm-setup:
+    build:
+      additional_contexts:
+        workspaceroot-setup: target:workspaceroot-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: plugins/jvm
+      dockerfile: .bayt/Dockerfile.setup
+      tags:
+        - bayt-plugins_jvm-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-plugins_jvm-setup:latest
+      target: setup
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-setup
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-setup
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-setup,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-plugins_jvm-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  plugins_jvm-setup_bayt:
+    build:
+      additional_contexts:
+        workspaceroot-setup_bayt: target:workspaceroot-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: plugins/jvm
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_jvm-setup_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_jvm-setup_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_jvm-setup_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-plugins_jvm-setup_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  plugins_jvm-setup_outs:
+    build:
+      additional_contexts:
+        plugins_jvm-setup: target:plugins_jvm-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: plugins/jvm
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_outs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_jvm-setup_outs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_jvm-setup_outs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_jvm-setup_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-plugins_jvm-setup_outs:latest
+    networks:
+      default: null
+    scale: 0
+  plugins_jvm-setup_srcs:
+    build:
+      additional_contexts:
+        workspaceroot-setup_srcs: target:workspaceroot-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: plugins/jvm
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_jvm-setup_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_jvm-setup_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_jvm-setup_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-plugins_jvm-setup_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  plugins_libstoml-build:
+    build:
+      additional_contexts:
+        bayt: plugins/bayt/runtime
+        plugins_libstoml-setup: target:plugins_libstoml-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: plugins/libstoml
+      dockerfile: .bayt/Dockerfile.build
+      tags:
+        - bayt-plugins_libstoml-build:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-plugins_libstoml-build:latest
+      target: build
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-build
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-build
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-build,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-plugins_libstoml-build:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  plugins_libstoml-build_bayt:
+    build:
+      additional_contexts:
+        plugins_libstoml-setup_bayt: target:plugins_libstoml-setup_bayt
+        workspaceroot-setup_bayt: target:workspaceroot-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: plugins/libstoml
+      dockerfile: .bayt/Dockerfile.build
+      target: build_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_libstoml-build_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_libstoml-build_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_libstoml-build_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-plugins_libstoml-build_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  plugins_libstoml-build_outs:
+    build:
+      additional_contexts:
+        plugins_libstoml-build: target:plugins_libstoml-build
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: plugins/libstoml
+      dockerfile: .bayt/Dockerfile.build
+      target: build_outs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_libstoml-build_outs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_libstoml-build_outs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_libstoml-build_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-plugins_libstoml-build_outs:latest
+    networks:
+      default: null
+    scale: 0
+  plugins_libstoml-build_srcs:
+    build:
+      additional_contexts:
+        plugins_libstoml-setup_srcs: target:plugins_libstoml-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: plugins/libstoml
+      dockerfile: .bayt/Dockerfile.build
+      target: build_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_libstoml-build_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_libstoml-build_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_libstoml-build_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-plugins_libstoml-build_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  plugins_libstoml-setup:
+    build:
+      additional_contexts:
+        workspaceroot-setup: target:workspaceroot-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: plugins/libstoml
+      dockerfile: .bayt/Dockerfile.setup
+      tags:
+        - bayt-plugins_libstoml-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-plugins_libstoml-setup:latest
+      target: setup
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-setup
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-setup
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-setup,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-plugins_libstoml-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  plugins_libstoml-setup_bayt:
+    build:
+      additional_contexts:
+        workspaceroot-setup_bayt: target:workspaceroot-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: plugins/libstoml
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_libstoml-setup_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_libstoml-setup_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_libstoml-setup_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-plugins_libstoml-setup_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  plugins_libstoml-setup_outs:
+    build:
+      additional_contexts:
+        plugins_libstoml-setup: target:plugins_libstoml-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: plugins/libstoml
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_outs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_libstoml-setup_outs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_libstoml-setup_outs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_libstoml-setup_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-plugins_libstoml-setup_outs:latest
+    networks:
+      default: null
+    scale: 0
+  plugins_libstoml-setup_srcs:
+    build:
+      additional_contexts:
+        workspaceroot-setup_srcs: target:workspaceroot-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: plugins/libstoml
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_libstoml-setup_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_libstoml-setup_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_libstoml-setup_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-plugins_libstoml-setup_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  plugins_micronaut-build:
+    build:
+      additional_contexts:
+        bayt: plugins/bayt/runtime
+        plugins_micronaut-setup: target:plugins_micronaut-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: plugins/micronaut
+      dockerfile: .bayt/Dockerfile.build
+      tags:
+        - bayt-plugins_micronaut-build:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-plugins_micronaut-build:latest
+      target: build
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-build
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-build
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-build,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-plugins_micronaut-build:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  plugins_micronaut-build_bayt:
+    build:
+      additional_contexts:
+        plugins_jvm-build_bayt: target:plugins_jvm-build_bayt
+        plugins_libstoml-build_bayt: target:plugins_libstoml-build_bayt
+        plugins_micronaut-setup_bayt: target:plugins_micronaut-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: plugins/micronaut
+      dockerfile: .bayt/Dockerfile.build
+      target: build_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_micronaut-build_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_micronaut-build_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_micronaut-build_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-plugins_micronaut-build_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  plugins_micronaut-build_outs:
+    build:
+      additional_contexts:
+        plugins_micronaut-build: target:plugins_micronaut-build
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: plugins/micronaut
+      dockerfile: .bayt/Dockerfile.build
+      target: build_outs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_micronaut-build_outs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_micronaut-build_outs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_micronaut-build_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-plugins_micronaut-build_outs:latest
+    networks:
+      default: null
+    scale: 0
+  plugins_micronaut-build_srcs:
+    build:
+      additional_contexts:
+        plugins_jvm-build_srcs: target:plugins_jvm-build_srcs
+        plugins_libstoml-build_srcs: target:plugins_libstoml-build_srcs
+        plugins_micronaut-setup_srcs: target:plugins_micronaut-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: plugins/micronaut
+      dockerfile: .bayt/Dockerfile.build
+      target: build_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_micronaut-build_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_micronaut-build_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_micronaut-build_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-plugins_micronaut-build_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  plugins_micronaut-setup:
+    build:
+      additional_contexts:
+        plugins_jvm-build: target:plugins_jvm-build
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: plugins/micronaut
+      dockerfile: .bayt/Dockerfile.setup
+      tags:
+        - bayt-plugins_micronaut-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-plugins_micronaut-setup:latest
+      target: setup
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-setup
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-setup
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-setup,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-plugins_micronaut-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  plugins_micronaut-setup_bayt:
+    build:
+      additional_contexts:
+        plugins_jvm-build_bayt: target:plugins_jvm-build_bayt
+        plugins_libstoml-build_bayt: target:plugins_libstoml-build_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: plugins/micronaut
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_micronaut-setup_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_micronaut-setup_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_micronaut-setup_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-plugins_micronaut-setup_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  plugins_micronaut-setup_outs:
+    build:
+      additional_contexts:
+        plugins_micronaut-setup: target:plugins_micronaut-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: plugins/micronaut
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_outs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_micronaut-setup_outs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_micronaut-setup_outs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_micronaut-setup_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-plugins_micronaut-setup_outs:latest
+    networks:
+      default: null
+    scale: 0
+  plugins_micronaut-setup_srcs:
+    build:
+      additional_contexts:
+        plugins_jvm-build_srcs: target:plugins_jvm-build_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: plugins/micronaut
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_micronaut-setup_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-plugins_micronaut-setup_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-plugins_micronaut-setup_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-plugins_micronaut-setup_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  products_iris-integrate:
+    build:
+      additional_contexts:
+        guis_web-integrate: target:guis_web-integrate
+        libraries_logs-build_srcs: target:libraries_logs-build_srcs
+        libraries_logs-setup_srcs: target:libraries_logs-setup_srcs
+        libraries_pbtables-build_srcs: target:libraries_pbtables-build_srcs
+        libraries_pbtables-setup_srcs: target:libraries_pbtables-setup_srcs
+        libraries_xproto-build_srcs: target:libraries_xproto-build_srcs
+        libraries_xproto-setup_srcs: target:libraries_xproto-setup_srcs
+        plugins_jvm-build_srcs: target:plugins_jvm-build_srcs
+        plugins_jvm-setup_srcs: target:plugins_jvm-setup_srcs
+        plugins_libstoml-build_srcs: target:plugins_libstoml-build_srcs
+        plugins_libstoml-setup_srcs: target:plugins_libstoml-setup_srcs
+        plugins_micronaut-build_srcs: target:plugins_micronaut-build_srcs
+        plugins_micronaut-setup_srcs: target:plugins_micronaut-setup_srcs
+        products_iris-setup: target:products_iris-setup
+        services_tracker-ci: target:services_tracker-ci
+        services_tracker-tx-integrate: target:services_tracker-tx-integrate
+        workspaceroot-setup-js: target:workspaceroot-setup-js
+        workspaceroot-setup_srcs: target:workspaceroot-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: products/iris
+      dockerfile: .bayt/Dockerfile.integrate
+      tags:
+        - bayt-products_iris-integrate:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-products_iris-integrate:latest
+      target: integrate
+    depends_on:
+      guis_web-integrate:
+        condition: service_started
+        required: true
+      services_tracker-ci:
+        condition: service_started
+        required: true
+      services_tracker-tx-integrate:
+        condition: service_started
+        required: true
+    image: bayt-products_iris-integrate:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  products_iris-integrate_bayt:
+    build:
+      additional_contexts:
+        guis_web-integrate_bayt: target:guis_web-integrate_bayt
+        libraries_logs-build_bayt: target:libraries_logs-build_bayt
+        libraries_logs-setup_bayt: target:libraries_logs-setup_bayt
+        libraries_pbtables-build_bayt: target:libraries_pbtables-build_bayt
+        libraries_pbtables-setup_bayt: target:libraries_pbtables-setup_bayt
+        libraries_xproto-build_bayt: target:libraries_xproto-build_bayt
+        libraries_xproto-setup_bayt: target:libraries_xproto-setup_bayt
+        plugins_jvm-build_bayt: target:plugins_jvm-build_bayt
+        plugins_jvm-setup_bayt: target:plugins_jvm-setup_bayt
+        plugins_libstoml-build_bayt: target:plugins_libstoml-build_bayt
+        plugins_libstoml-setup_bayt: target:plugins_libstoml-setup_bayt
+        plugins_micronaut-build_bayt: target:plugins_micronaut-build_bayt
+        plugins_micronaut-setup_bayt: target:plugins_micronaut-setup_bayt
+        products_iris-setup_bayt: target:products_iris-setup_bayt
+        services_tracker-ci_bayt: target:services_tracker-ci_bayt
+        services_tracker-tx-integrate_bayt: target:services_tracker-tx-integrate_bayt
+        workspaceroot-setup_bayt: target:workspaceroot-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: products/iris
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate_bayt
+    image: bayt-products_iris-integrate_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  products_iris-setup:
+    build:
+      additional_contexts:
+        workspaceroot-setup: target:workspaceroot-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: products/iris
+      dockerfile: .bayt/Dockerfile.setup
+      tags:
+        - bayt-products_iris-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-products_iris-setup:latest
+      target: setup
+    image: bayt-products_iris-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  products_iris-setup_bayt:
+    build:
+      additional_contexts:
+        workspaceroot-setup_bayt: target:workspaceroot-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: products/iris
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_bayt
+    image: bayt-products_iris-setup_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-build:
+    build:
+      additional_contexts:
+        bayt: plugins/bayt/runtime
+        services_tracker-deps: target:services_tracker-deps
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.build
+      tags:
+        - bayt-services_tracker-build:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-services_tracker-build:latest
+      target: build
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-build
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-build
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-build,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-build:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  services_tracker-build_bayt:
+    build:
+      additional_contexts:
+        libraries_logs-build_bayt: target:libraries_logs-build_bayt
+        libraries_pbtables-build_bayt: target:libraries_pbtables-build_bayt
+        libraries_xproto-build_bayt: target:libraries_xproto-build_bayt
+        plugins_jvm-build_bayt: target:plugins_jvm-build_bayt
+        plugins_libstoml-build_bayt: target:plugins_libstoml-build_bayt
+        plugins_micronaut-build_bayt: target:plugins_micronaut-build_bayt
+        services_tracker-deps_bayt: target:services_tracker-deps_bayt
+        services_tracker-setup_bayt: target:services_tracker-setup_bayt
+        workspaceroot-setup_bayt: target:workspaceroot-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.build
+      target: build_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-build_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-build_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-build_outs:
+    build:
+      additional_contexts:
+        services_tracker-build: target:services_tracker-build
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.build
+      target: build_outs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build_outs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-build_outs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-build_outs:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-build_srcs:
+    build:
+      additional_contexts:
+        libraries_logs-build_srcs: target:libraries_logs-build_srcs
+        libraries_pbtables-build_srcs: target:libraries_pbtables-build_srcs
+        libraries_xproto-build_srcs: target:libraries_xproto-build_srcs
+        plugins_jvm-build_srcs: target:plugins_jvm-build_srcs
+        plugins_libstoml-build_srcs: target:plugins_libstoml-build_srcs
+        plugins_micronaut-build_srcs: target:plugins_micronaut-build_srcs
+        services_tracker-deps_srcs: target:services_tracker-deps_srcs
+        services_tracker-setup_srcs: target:services_tracker-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.build
+      target: build_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-build_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-build_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-build_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-ci:
+    build:
+      additional_contexts:
+        bayt: plugins/bayt/runtime
+        libraries_logs-build_srcs: target:libraries_logs-build_srcs
+        libraries_logs-setup_srcs: target:libraries_logs-setup_srcs
+        libraries_pbtables-build_srcs: target:libraries_pbtables-build_srcs
+        libraries_pbtables-setup_srcs: target:libraries_pbtables-setup_srcs
+        libraries_xproto-build_srcs: target:libraries_xproto-build_srcs
+        libraries_xproto-setup_srcs: target:libraries_xproto-setup_srcs
+        plugins_jvm-build_srcs: target:plugins_jvm-build_srcs
+        plugins_jvm-setup_srcs: target:plugins_jvm-setup_srcs
+        plugins_libstoml-build_srcs: target:plugins_libstoml-build_srcs
+        plugins_libstoml-setup_srcs: target:plugins_libstoml-setup_srcs
+        plugins_micronaut-build_srcs: target:plugins_micronaut-build_srcs
+        plugins_micronaut-setup_srcs: target:plugins_micronaut-setup_srcs
+        services_tracker-build_srcs: target:services_tracker-build_srcs
+        services_tracker-deps_srcs: target:services_tracker-deps_srcs
+        services_tracker-integrate_bayt: target:services_tracker-integrate_bayt
+        services_tracker-integrate_srcs: target:services_tracker-integrate_srcs
+        services_tracker-setup_srcs: target:services_tracker-setup_srcs
+        workspaceroot-setup_srcs: target:workspaceroot-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.ci
+      secrets:
+        - source: docker_host
+        - source: buildx_builder
+        - source: buildx_instance
+        - source: docker_config
+        - source: testcontainers_host
+        - source: cache_scope
+        - source: cache_scope_fallback
+        - source: sayt_buildkit_syntax
+        - source: sayt_no_cache
+        - source: bayt_image_tag
+        - source: bayt_pull_policy
+        - source: sayt_no_cache_from
+        - source: sayt_no_cache_to
+        - source: depot_token
+        - source: depot_project_id
+        - source: depot_org_id
+        - source: depot_disable_otel
+        - source: actions_results_url
+        - source: actions_runtime_token
+        - source: bkid_project
+      tags:
+        - bayt-services_tracker-ci:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-services_tracker-ci:latest
+      target: ci
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-ci
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-ci
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-ci,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-ci:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+    secrets:
+      - source: docker_host
+        target: /run/secrets/docker_host
+      - source: buildx_builder
+        target: /run/secrets/buildx_builder
+      - source: buildx_instance
+        target: /run/secrets/buildx_instance
+      - source: docker_config
+        target: /run/secrets/docker_config
+      - source: testcontainers_host
+        target: /run/secrets/testcontainers_host
+      - source: cache_scope
+        target: /run/secrets/cache_scope
+      - source: cache_scope_fallback
+        target: /run/secrets/cache_scope_fallback
+      - source: sayt_buildkit_syntax
+        target: /run/secrets/sayt_buildkit_syntax
+      - source: sayt_no_cache
+        target: /run/secrets/sayt_no_cache
+      - source: bayt_image_tag
+        target: /run/secrets/bayt_image_tag
+      - source: bayt_pull_policy
+        target: /run/secrets/bayt_pull_policy
+      - source: sayt_no_cache_from
+        target: /run/secrets/sayt_no_cache_from
+      - source: sayt_no_cache_to
+        target: /run/secrets/sayt_no_cache_to
+      - source: depot_token
+        target: /run/secrets/depot_token
+      - source: depot_project_id
+        target: /run/secrets/depot_project_id
+      - source: depot_org_id
+        target: /run/secrets/depot_org_id
+      - source: depot_disable_otel
+        target: /run/secrets/depot_disable_otel
+      - source: actions_results_url
+        target: /run/secrets/actions_results_url
+      - source: actions_runtime_token
+        target: /run/secrets/actions_runtime_token
+      - source: bkid_project
+        target: /run/secrets/bkid_project
+  services_tracker-ci_bayt:
+    build:
+      additional_contexts:
+        libraries_logs-build_bayt: target:libraries_logs-build_bayt
+        libraries_logs-setup_bayt: target:libraries_logs-setup_bayt
+        libraries_pbtables-build_bayt: target:libraries_pbtables-build_bayt
+        libraries_pbtables-setup_bayt: target:libraries_pbtables-setup_bayt
+        libraries_xproto-build_bayt: target:libraries_xproto-build_bayt
+        libraries_xproto-setup_bayt: target:libraries_xproto-setup_bayt
+        plugins_jvm-build_bayt: target:plugins_jvm-build_bayt
+        plugins_jvm-setup_bayt: target:plugins_jvm-setup_bayt
+        plugins_libstoml-build_bayt: target:plugins_libstoml-build_bayt
+        plugins_libstoml-setup_bayt: target:plugins_libstoml-setup_bayt
+        plugins_micronaut-build_bayt: target:plugins_micronaut-build_bayt
+        plugins_micronaut-setup_bayt: target:plugins_micronaut-setup_bayt
+        services_tracker-build_bayt: target:services_tracker-build_bayt
+        services_tracker-deps_bayt: target:services_tracker-deps_bayt
+        services_tracker-integrate_bayt: target:services_tracker-integrate_bayt
+        services_tracker-setup_bayt: target:services_tracker-setup_bayt
+        workspaceroot-setup_bayt: target:workspaceroot-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.ci
+      target: ci_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-ci_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-ci_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-ci_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-ci_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-deps:
+    build:
+      additional_contexts:
+        libraries_logs-build: target:libraries_logs-build
+        libraries_pbtables-build: target:libraries_pbtables-build
+        libraries_xproto-build: target:libraries_xproto-build
+        plugins_jvm-build: target:plugins_jvm-build
+        plugins_libstoml-build: target:plugins_libstoml-build
+        plugins_micronaut-build: target:plugins_micronaut-build
+        services_tracker-setup: target:services_tracker-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.deps
+      tags:
+        - bayt-services_tracker-deps:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-services_tracker-deps:latest
+      target: deps
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-deps
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-deps
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-deps,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-deps:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  services_tracker-deps_bayt:
+    build:
+      additional_contexts:
+        libraries_logs-build_bayt: target:libraries_logs-build_bayt
+        libraries_pbtables-build_bayt: target:libraries_pbtables-build_bayt
+        libraries_xproto-build_bayt: target:libraries_xproto-build_bayt
+        plugins_jvm-build_bayt: target:plugins_jvm-build_bayt
+        plugins_libstoml-build_bayt: target:plugins_libstoml-build_bayt
+        plugins_micronaut-build_bayt: target:plugins_micronaut-build_bayt
+        services_tracker-setup_bayt: target:services_tracker-setup_bayt
+        workspaceroot-setup_bayt: target:workspaceroot-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.deps
+      target: deps_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-deps_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-deps_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-deps_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-deps_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-deps_srcs:
+    build:
+      additional_contexts:
+        libraries_logs-build_srcs: target:libraries_logs-build_srcs
+        libraries_pbtables-build_srcs: target:libraries_pbtables-build_srcs
+        libraries_xproto-build_srcs: target:libraries_xproto-build_srcs
+        plugins_jvm-build_srcs: target:plugins_jvm-build_srcs
+        plugins_libstoml-build_srcs: target:plugins_libstoml-build_srcs
+        plugins_micronaut-build_srcs: target:plugins_micronaut-build_srcs
+        services_tracker-setup_srcs: target:services_tracker-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.deps
+      target: deps_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-deps_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-deps_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-deps_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-deps_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-integrate:
+    build:
+      additional_contexts:
+        services_tracker-build: target:services_tracker-build
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.integrate
+      tags:
+        - bayt-services_tracker-integrate:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-services_tracker-integrate:latest
+      target: integrate
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-integrate
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-integrate
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-integrate,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+        output:
+          - type=${BAYT_COMPOSE_OUTPUT:-docker}
+    command:
+      - mise
+      - x
+      - --
+      - ./gradlew
+      - --init-script
+      - .bayt/init.gradle.kts
+      - integrationTest
+      - --rerun
+    environment:
+      GRADLE_USER_HOME: /opt/gradle-home
+      TESTCONTAINERS_HOST_OVERRIDE: host.docker.internal
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    image: bayt-services_tracker-integrate:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+    volumes:
+      - bind:
+          create_host_path: true
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        type: bind
+  services_tracker-integrate_bayt:
+    build:
+      additional_contexts:
+        libraries_logs-build_bayt: target:libraries_logs-build_bayt
+        libraries_pbtables-build_bayt: target:libraries_pbtables-build_bayt
+        libraries_xproto-build_bayt: target:libraries_xproto-build_bayt
+        plugins_jvm-build_bayt: target:plugins_jvm-build_bayt
+        plugins_libstoml-build_bayt: target:plugins_libstoml-build_bayt
+        plugins_micronaut-build_bayt: target:plugins_micronaut-build_bayt
+        services_tracker-build_bayt: target:services_tracker-build_bayt
+        services_tracker-deps_bayt: target:services_tracker-deps_bayt
+        services_tracker-setup_bayt: target:services_tracker-setup_bayt
+        workspaceroot-setup_bayt: target:workspaceroot-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-integrate_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-integrate_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-integrate_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-integrate_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-integrate_outs:
+    build:
+      additional_contexts:
+        services_tracker-integrate: target:services_tracker-integrate
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate_outs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-integrate_outs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-integrate_outs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-integrate_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-integrate_outs:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-integrate_srcs:
+    build:
+      additional_contexts:
+        services_tracker-build_srcs: target:services_tracker-build_srcs
+        services_tracker-deps_srcs: target:services_tracker-deps_srcs
+        services_tracker-setup_srcs: target:services_tracker-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-integrate_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-integrate_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-integrate_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-integrate_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-launch:
+    build:
+      additional_contexts:
+        libraries_logs-build: target:libraries_logs-build
+        libraries_pbtables-build: target:libraries_pbtables-build
+        libraries_xproto-build: target:libraries_xproto-build
+        plugins_jvm-build: target:plugins_jvm-build
+        plugins_libstoml-build: target:plugins_libstoml-build
+        plugins_micronaut-build: target:plugins_micronaut-build
+        services_tracker-build: target:services_tracker-build
+        services_tracker-deps: target:services_tracker-deps
+        services_tracker-setup: target:services_tracker-setup
+        workspaceroot-setup: target:workspaceroot-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.launch
+      tags:
+        - bayt-services_tracker-launch:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-services_tracker-launch:latest
+      target: launch
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-launch
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-launch
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-launch,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+        output:
+          - type=${BAYT_COMPOSE_OUTPUT:-docker}
+    image: bayt-services_tracker-launch:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+  services_tracker-launch_bayt:
+    build:
+      additional_contexts:
+        libraries_logs-build_bayt: target:libraries_logs-build_bayt
+        libraries_pbtables-build_bayt: target:libraries_pbtables-build_bayt
+        libraries_xproto-build_bayt: target:libraries_xproto-build_bayt
+        plugins_jvm-build_bayt: target:plugins_jvm-build_bayt
+        plugins_libstoml-build_bayt: target:plugins_libstoml-build_bayt
+        plugins_micronaut-build_bayt: target:plugins_micronaut-build_bayt
+        services_tracker-build_bayt: target:services_tracker-build_bayt
+        services_tracker-deps_bayt: target:services_tracker-deps_bayt
+        services_tracker-setup_bayt: target:services_tracker-setup_bayt
+        workspaceroot-setup_bayt: target:workspaceroot-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.launch
+      target: launch_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-launch_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-launch_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-launch_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-launch_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-launch_srcs:
+    build:
+      additional_contexts:
+        services_tracker-build_srcs: target:services_tracker-build_srcs
+        services_tracker-deps_srcs: target:services_tracker-deps_srcs
+        services_tracker-setup_srcs: target:services_tracker-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.launch
+      target: launch_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-launch_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-launch_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-launch_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-launch_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-release:
+    build:
+      additional_contexts:
+        libraries_logs-build: target:libraries_logs-build
+        libraries_pbtables-build: target:libraries_pbtables-build
+        libraries_xproto-build: target:libraries_xproto-build
+        plugins_jvm-build: target:plugins_jvm-build
+        plugins_libstoml-build: target:plugins_libstoml-build
+        plugins_micronaut-build: target:plugins_micronaut-build
+        services_tracker-build: target:services_tracker-build
+        services_tracker-deps: target:services_tracker-deps
+        services_tracker-release-artifact: target:services_tracker-release-artifact
+        services_tracker-release-layers: target:services_tracker-release-layers
+        services_tracker-setup: target:services_tracker-setup
+        workspaceroot-setup: target:workspaceroot-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.release
+      tags:
+        - bayt-services_tracker-release:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-services_tracker-release:latest
+      target: release
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-release
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-release
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-release,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+        platforms:
+          - linux/amd64
+    image: bayt-services_tracker-release:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  services_tracker-release-artifact:
+    build:
+      additional_contexts:
+        services_tracker-build: target:services_tracker-build
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.release-artifact
+      tags:
+        - bayt-services_tracker-release-artifact:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-services_tracker-release-artifact:latest
+      target: release-artifact
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-release-artifact
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-release-artifact
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-release-artifact,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-release-artifact:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  services_tracker-release-artifact_bayt:
+    build:
+      additional_contexts:
+        libraries_logs-build_bayt: target:libraries_logs-build_bayt
+        libraries_pbtables-build_bayt: target:libraries_pbtables-build_bayt
+        libraries_xproto-build_bayt: target:libraries_xproto-build_bayt
+        plugins_jvm-build_bayt: target:plugins_jvm-build_bayt
+        plugins_libstoml-build_bayt: target:plugins_libstoml-build_bayt
+        plugins_micronaut-build_bayt: target:plugins_micronaut-build_bayt
+        services_tracker-build_bayt: target:services_tracker-build_bayt
+        services_tracker-deps_bayt: target:services_tracker-deps_bayt
+        services_tracker-setup_bayt: target:services_tracker-setup_bayt
+        workspaceroot-setup_bayt: target:workspaceroot-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.release-artifact
+      target: release-artifact_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-release-artifact_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-release-artifact_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-release-artifact_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-release-artifact_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-release-artifact_outs:
+    build:
+      additional_contexts:
+        services_tracker-release-artifact: target:services_tracker-release-artifact
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.release-artifact
+      target: release-artifact_outs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-release-artifact_outs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-release-artifact_outs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-release-artifact_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-release-artifact_outs:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-release-artifact_srcs:
+    build:
+      additional_contexts:
+        services_tracker-build_srcs: target:services_tracker-build_srcs
+        services_tracker-deps_srcs: target:services_tracker-deps_srcs
+        services_tracker-setup_srcs: target:services_tracker-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.release-artifact
+      target: release-artifact_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-release-artifact_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-release-artifact_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-release-artifact_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-release-artifact_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-release-layers:
+    build:
+      additional_contexts:
+        services_tracker-release-artifact: target:services_tracker-release-artifact
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.release-layers
+      tags:
+        - bayt-services_tracker-release-layers:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-services_tracker-release-layers:latest
+      target: release-layers
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-release-layers
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-release-layers
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-release-layers,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-release-layers:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  services_tracker-release-layers_bayt:
+    build:
+      additional_contexts:
+        libraries_logs-build_bayt: target:libraries_logs-build_bayt
+        libraries_pbtables-build_bayt: target:libraries_pbtables-build_bayt
+        libraries_xproto-build_bayt: target:libraries_xproto-build_bayt
+        plugins_jvm-build_bayt: target:plugins_jvm-build_bayt
+        plugins_libstoml-build_bayt: target:plugins_libstoml-build_bayt
+        plugins_micronaut-build_bayt: target:plugins_micronaut-build_bayt
+        services_tracker-build_bayt: target:services_tracker-build_bayt
+        services_tracker-deps_bayt: target:services_tracker-deps_bayt
+        services_tracker-release-artifact_bayt: target:services_tracker-release-artifact_bayt
+        services_tracker-setup_bayt: target:services_tracker-setup_bayt
+        workspaceroot-setup_bayt: target:workspaceroot-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.release-layers
+      target: release-layers_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-release-layers_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-release-layers_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-release-layers_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-release-layers_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-release-layers_srcs:
+    build:
+      additional_contexts:
+        services_tracker-build_srcs: target:services_tracker-build_srcs
+        services_tracker-deps_srcs: target:services_tracker-deps_srcs
+        services_tracker-release-artifact_srcs: target:services_tracker-release-artifact_srcs
+        services_tracker-setup_srcs: target:services_tracker-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.release-layers
+      target: release-layers_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-release-layers_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-release-layers_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-release-layers_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-release-layers_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-release_bayt:
+    build:
+      additional_contexts:
+        libraries_logs-build_bayt: target:libraries_logs-build_bayt
+        libraries_pbtables-build_bayt: target:libraries_pbtables-build_bayt
+        libraries_xproto-build_bayt: target:libraries_xproto-build_bayt
+        plugins_jvm-build_bayt: target:plugins_jvm-build_bayt
+        plugins_libstoml-build_bayt: target:plugins_libstoml-build_bayt
+        plugins_micronaut-build_bayt: target:plugins_micronaut-build_bayt
+        services_tracker-build_bayt: target:services_tracker-build_bayt
+        services_tracker-deps_bayt: target:services_tracker-deps_bayt
+        services_tracker-release-artifact_bayt: target:services_tracker-release-artifact_bayt
+        services_tracker-release-layers_bayt: target:services_tracker-release-layers_bayt
+        services_tracker-setup_bayt: target:services_tracker-setup_bayt
+        workspaceroot-setup_bayt: target:workspaceroot-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.release
+      target: release_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-release_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-release_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-release_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-release_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-release_srcs:
+    build:
+      additional_contexts:
+        services_tracker-build_srcs: target:services_tracker-build_srcs
+        services_tracker-deps_srcs: target:services_tracker-deps_srcs
+        services_tracker-release-artifact_srcs: target:services_tracker-release-artifact_srcs
+        services_tracker-release-layers_srcs: target:services_tracker-release-layers_srcs
+        services_tracker-setup_srcs: target:services_tracker-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.release
+      target: release_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-release_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-release_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-release_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-release_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-setup:
+    build:
+      additional_contexts:
+        workspaceroot-setup: target:workspaceroot-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.setup
+      tags:
+        - bayt-services_tracker-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-services_tracker-setup:latest
+      target: setup
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-setup
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-setup
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-setup,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  services_tracker-setup_bayt:
+    build:
+      additional_contexts:
+        workspaceroot-setup_bayt: target:workspaceroot-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-setup_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-setup_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-setup_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-setup_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-setup_outs:
+    build:
+      additional_contexts:
+        services_tracker-setup: target:services_tracker-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_outs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-setup_outs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-setup_outs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-setup_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-setup_outs:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-setup_srcs:
+    build:
+      additional_contexts:
+        workspaceroot-setup_srcs: target:workspaceroot-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-setup_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE_FALLBACK:-unscoped}-services_tracker-setup_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-services_tracker-setup_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-services_tracker-setup_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-tx-build:
+    build:
+      additional_contexts:
+        services_tracker-tx-setup: target:services_tracker-tx-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker-tx
+      dockerfile: .bayt/Dockerfile.build
+      tags:
+        - bayt-services_tracker-tx-build:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-services_tracker-tx-build:latest
+      target: build
+    image: bayt-services_tracker-tx-build:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  services_tracker-tx-build_bayt:
+    build:
+      additional_contexts:
+        services_tracker-tx-setup_bayt: target:services_tracker-tx-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker-tx
+      dockerfile: .bayt/Dockerfile.build
+      target: build_bayt
+    image: bayt-services_tracker-tx-build_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-tx-build_outs:
+    build:
+      additional_contexts:
+        services_tracker-tx-build: target:services_tracker-tx-build
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker-tx
+      dockerfile: .bayt/Dockerfile.build
+      target: build_outs
+    image: bayt-services_tracker-tx-build_outs:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-tx-build_srcs:
+    build:
+      additional_contexts:
+        services_tracker-tx-setup_srcs: target:services_tracker-tx-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker-tx
+      dockerfile: .bayt/Dockerfile.build
+      target: build_srcs
+    image: bayt-services_tracker-tx-build_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-tx-integrate:
+    build:
+      additional_contexts:
+        services_tracker-tx-build: target:services_tracker-tx-build
+        services_tracker-tx-setup: target:services_tracker-tx-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker-tx
+      dockerfile: .bayt/Dockerfile.integrate
+      tags:
+        - bayt-services_tracker-tx-integrate:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-services_tracker-tx-integrate:latest
+      target: integrate
+    image: bayt-services_tracker-tx-integrate:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  services_tracker-tx-integrate_bayt:
+    build:
+      additional_contexts:
+        services_tracker-tx-build_bayt: target:services_tracker-tx-build_bayt
+        services_tracker-tx-setup_bayt: target:services_tracker-tx-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker-tx
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate_bayt
+    image: bayt-services_tracker-tx-integrate_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-tx-integrate_outs:
+    build:
+      additional_contexts:
+        services_tracker-tx-integrate: target:services_tracker-tx-integrate
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker-tx
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate_outs
+    image: bayt-services_tracker-tx-integrate_outs:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-tx-integrate_srcs:
+    build:
+      additional_contexts:
+        services_tracker-tx-build_srcs: target:services_tracker-tx-build_srcs
+        services_tracker-tx-setup_srcs: target:services_tracker-tx-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker-tx
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate_srcs
+    image: bayt-services_tracker-tx-integrate_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-tx-launch:
+    build:
+      additional_contexts:
+        libraries_xproto-descriptor_outs: target:libraries_xproto-descriptor_outs
+        services_tracker-tx-build: target:services_tracker-tx-build
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker-tx
+      dockerfile: .bayt/Dockerfile.launch
+      tags:
+        - bayt-services_tracker-tx-launch:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-services_tracker-tx-launch:latest
+      target: launch
+    command:
+      - bash
+      - -c
+      - envoy -c <(envsubst < transcoding.yaml | yq -o json)
+    healthcheck:
+      interval: 40s
+      retries: 3
+      start_period: 60s
+      test: curl http://localhost:18080/
+      timeout: 30s
+    image: bayt-services_tracker-tx-launch:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        protocol: tcp
+        target: 8080
+    volumes:
+      - bind:
+          create_host_path: true
+        source: //var/run/docker.sock
+        target: /var/run/docker.sock
+        type: bind
+  services_tracker-tx-launch_bayt:
+    build:
+      additional_contexts:
+        libraries_xproto-descriptor_bayt: target:libraries_xproto-descriptor_bayt
+        services_tracker-tx-build_bayt: target:services_tracker-tx-build_bayt
+        services_tracker-tx-setup_bayt: target:services_tracker-tx-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker-tx
+      dockerfile: .bayt/Dockerfile.launch
+      target: launch_bayt
+    image: bayt-services_tracker-tx-launch_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-tx-launch_srcs:
+    build:
+      additional_contexts:
+        services_tracker-tx-build_srcs: target:services_tracker-tx-build_srcs
+        services_tracker-tx-setup_srcs: target:services_tracker-tx-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker-tx
+      dockerfile: .bayt/Dockerfile.launch
+      target: launch_srcs
+    image: bayt-services_tracker-tx-launch_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-tx-release:
+    build:
+      additional_contexts:
+        services_tracker-tx-build_outs: target:services_tracker-tx-build_outs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker-tx
+      dockerfile: .bayt/Dockerfile.release
+      tags:
+        - bayt-services_tracker-tx-release:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-services_tracker-tx-release:latest
+      target: release
+      x-bake:
+        platforms:
+          - linux/amd64
+    image: bayt-services_tracker-tx-release:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  services_tracker-tx-release_bayt:
+    build:
+      additional_contexts:
+        services_tracker-tx-build_bayt: target:services_tracker-tx-build_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker-tx
+      dockerfile: .bayt/Dockerfile.release
+      target: release_bayt
+    image: bayt-services_tracker-tx-release_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-tx-setup:
+    build:
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker-tx
+      dockerfile: .bayt/Dockerfile.setup
+      tags:
+        - bayt-services_tracker-tx-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-services_tracker-tx-setup:latest
+      target: setup
+    image: bayt-services_tracker-tx-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  services_tracker-tx-setup_bayt:
+    build:
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker-tx
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_bayt
+    image: bayt-services_tracker-tx-setup_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  services_tracker-tx-setup_srcs:
+    build:
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: services/tracker-tx
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_srcs
+    image: bayt-services_tracker-tx-setup_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  setup:
+    build:
+      additional_contexts:
+        workspaceroot-setup: target:workspaceroot-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: products/iris
+      dockerfile: .bayt/Dockerfile.setup
+      tags:
+        - bayt-products_iris-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-products_iris-setup:latest
+      target: setup
+    image: bayt-products_iris-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    profiles:
+      - setup
+    scale: 0
+  workspaceroot-pronto-sources:
+    build:
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: .
+      dockerfile: .bayt/Dockerfile.pronto-sources
+      tags:
+        - bayt-workspaceroot-pronto-sources:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-workspaceroot-pronto-sources:latest
+      target: pronto-sources
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-pronto-sources
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-pronto-sources
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-pronto-sources,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-workspaceroot-pronto-sources:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  workspaceroot-pronto-sources_bayt:
+    build:
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: .
+      dockerfile: .bayt/Dockerfile.pronto-sources
+      target: pronto-sources_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-workspaceroot-pronto-sources_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-workspaceroot-pronto-sources_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-workspaceroot-pronto-sources_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-workspaceroot-pronto-sources_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  workspaceroot-pronto-sources_srcs:
+    build:
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: .
+      dockerfile: .bayt/Dockerfile.pronto-sources
+      target: pronto-sources_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-workspaceroot-pronto-sources_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-workspaceroot-pronto-sources_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-workspaceroot-pronto-sources_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-workspaceroot-pronto-sources_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  workspaceroot-setup:
+    build:
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: .
+      dockerfile: .bayt/Dockerfile.setup
+      tags:
+        - bayt-workspaceroot-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-workspaceroot-setup:latest
+      target: setup
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-setup
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-setup
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-setup,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-workspaceroot-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  workspaceroot-setup-js:
+    build:
+      additional_contexts:
+        workspaceroot-setup: target:workspaceroot-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: .
+      dockerfile: .bayt/Dockerfile.setup-js
+      tags:
+        - bayt-workspaceroot-setup-js:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+        - bayt-workspaceroot-setup-js:latest
+      target: setup-js
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-setup-js
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-setup-js
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-setup-js,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-workspaceroot-setup-js:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default: null
+    scale: 0
+  workspaceroot-setup-js_bayt:
+    build:
+      additional_contexts:
+        workspaceroot-setup_bayt: target:workspaceroot-setup_bayt
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: .
+      dockerfile: .bayt/Dockerfile.setup-js
+      target: setup-js_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-workspaceroot-setup-js_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-workspaceroot-setup-js_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-workspaceroot-setup-js_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-workspaceroot-setup-js_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  workspaceroot-setup-js_outs:
+    build:
+      additional_contexts:
+        workspaceroot-setup-js: target:workspaceroot-setup-js
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: .
+      dockerfile: .bayt/Dockerfile.setup-js
+      target: setup-js_outs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-workspaceroot-setup-js_outs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-workspaceroot-setup-js_outs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-workspaceroot-setup-js_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-workspaceroot-setup-js_outs:latest
+    networks:
+      default: null
+    scale: 0
+  workspaceroot-setup-js_srcs:
+    build:
+      additional_contexts:
+        workspaceroot-setup_srcs: target:workspaceroot-setup_srcs
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: .
+      dockerfile: .bayt/Dockerfile.setup-js
+      target: setup-js_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-workspaceroot-setup-js_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-workspaceroot-setup-js_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-workspaceroot-setup-js_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-workspaceroot-setup-js_srcs:latest
+    networks:
+      default: null
+    scale: 0
+  workspaceroot-setup_bayt:
+    build:
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: .
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_bayt
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-workspaceroot-setup_bayt
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-workspaceroot-setup_bayt
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-workspaceroot-setup_bayt,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-workspaceroot-setup_bayt:latest
+    networks:
+      default: null
+    scale: 0
+  workspaceroot-setup_outs:
+    build:
+      additional_contexts:
+        workspaceroot-setup: target:workspaceroot-setup
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: .
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_outs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-workspaceroot-setup_outs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-workspaceroot-setup_outs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-workspaceroot-setup_outs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-workspaceroot-setup_outs:latest
+    networks:
+      default: null
+    scale: 0
+  workspaceroot-setup_srcs:
+    build:
+      args:
+        BUILDKIT_SYNTAX: docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+      context: .
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_srcs
+      x-bake:
+        cache-from:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-workspaceroot-setup_srcs
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE_FALLBACK:-unscoped}-workspaceroot-setup_srcs
+        cache-to:
+          - type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:monorepo-bake-cache-v2-${CACHE_SCOPE:-unscoped}-workspaceroot-setup_srcs,mode=max,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
+    image: bayt-workspaceroot-setup_srcs:latest
+    networks:
+      default: null
+    scale: 0

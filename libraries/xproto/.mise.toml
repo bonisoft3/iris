@@ -13,5 +13,5 @@ aqua.minisign = false
 
 [tools]
 java = "openjdk-25.0"
-"github:go-task/task" = "v3.49.1"
-"github:bufbuild/buf" = "1.66.1"
+"github:go-task/task" = "v3.54.0"
+"github:bufbuild/buf" = "1.74.0"

@@ -91,7 +91,7 @@
         "exclude": []
       },
       "env": {},
-      "visibility": "internal",
+      "visibility": "public",
       "deps": [],
       "transitiveDeps": [],
       "transitiveCrossDeps": [],
@@ -123,7 +123,7 @@
         "exclude": []
       },
       "env": {},
-      "visibility": "internal",
+      "visibility": "public",
       "deps": [],
       "transitiveDeps": [],
       "transitiveCrossDeps": [],
@@ -157,7 +157,13 @@
           "tests/**/*",
           "vitest.config.*",
           "vitest.integration.config.*",
-          "**/*"
+          "**/*",
+          "package.json",
+          "[p]npm-lock.yaml",
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock",
+          "[.]tool-versions"
         ],
         "exclude": [
           "node_modules/**",
@@ -171,7 +177,7 @@
         ]
       },
       "env": {},
-      "visibility": "internal",
+      "visibility": "public",
       "deps": [],
       "transitiveDeps": [
         "build_srcs",
@@ -193,7 +199,7 @@
               "[m]ise.lock",
               "[.]tool-versions",
               "gradle/libs.versions.toml",
-              "plugins/devserver/dind.sh"
+              "plugins/devserver/docker-bridge.sh"
             ],
             "exclude": []
           }
@@ -209,7 +215,7 @@
               "[m]ise.lock",
               "[.]tool-versions",
               "gradle/libs.versions.toml",
-              "plugins/devserver/dind.sh"
+              "plugins/devserver/docker-bridge.sh"
             ],
             "exclude": []
           }
@@ -239,6 +245,22 @@
               "tests/**"
             ]
           }
+        },
+        {
+          "project": "guis_web",
+          "name": "setup_srcs",
+          "dir": "guis/web",
+          "outs": {
+            "globs": [
+              "package.json",
+              "[p]npm-lock.yaml",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock",
+              "[.]tool-versions"
+            ],
+            "exclude": []
+          }
         }
       ],
       "chainedDeps": [],
@@ -261,7 +283,7 @@
     "incremental": true,
     "preconditions": []
   },
-  "visibility": "internal",
+  "visibility": "public",
   "emitsSrcs": true,
   "deps": [
     "build"

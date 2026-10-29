@@ -1,4 +1,4 @@
-# The dind session's projection, as every other consumer takes it
+# The docker bridge session's projection, as every other consumer takes it
 # (guis/flashcards, guis/web, products/iris, plugins/devserver): sayt exports
 # HOST_ENV and compose's environment-backed secret reads it straight out. A
 # path-backed form needs a caller to write the file first, and an unwritten one

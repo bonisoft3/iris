@@ -24,10 +24,10 @@ import "bonisoft.org/plugins/sayt:docker"
 		{ stmt: ["ARG TARGETOS", "ARG TARGETARCH"] },
 		{ stmt: ["COPY --from=tonistiigi/xx:1.5.0@sha256:0c6a569797744e45955f39d4f7538ac344bfb7ebf0a54006a0a4297b153ccf0f / /"] },
 		{ cmd: "mkdir -p /var/run /usr/local/bin /root/.local/bin ${XDG_CONFIG_HOME}/mise" },
-		{ cmd: "xx-apk add curl libgcc libstdc++ coreutils xz bash just socat nmap" },
+		{ cmd: "xx-apk add curl libgcc libstdc++ libatomic=16.2.0-r1 coreutils xz bash just socat nmap" },
 		{ cmd: "./mise-install.sh /root/.local/bin", scripts: [ "mise-install.sh" ] },
 		{ cmd: "cp ./stubs/* $HOME/.local/bin/ && mkdir -p $HOME/.local/libexec && cp ./lazy-mise $HOME/.local/libexec/lazy-mise && chmod +x $HOME/.local/libexec/lazy-mise", dirs: [ "stubs" ], files: [ "lazy-mise" ] },
    	{ cmd: "curl -fsSL https://github.com/ko1nksm/shdotenv/releases/download/v0.14.0/shdotenv -o $HOME/.local/bin/shdotenv && chmod 755 $HOME/.local/bin/shdotenv" },
-   	{ cmd: "cp dind.sh $HOME/.local/bin/", files: [ "dind.sh" ] }
+   	{ cmd: "cp docker-bridge.sh $HOME/.local/bin/", files: [ "docker-bridge.sh" ] }
 	]
 }

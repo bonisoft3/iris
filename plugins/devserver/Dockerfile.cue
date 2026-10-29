@@ -12,8 +12,8 @@ import "bonisoft.org:root"
 	mount:   devserver.#devserver.mount
 	workdir: devserver.#devserver.workdir
 	run: [{
-		cmd: "cp dind.sh /usr/local/bin/"
-		scripts: ["dind.sh"], from: [root.#sources.as]
+		cmd: "cp docker-bridge.sh /usr/local/bin/"
+		scripts: ["docker-bridge.sh"], from: [root.#sources.as]
 	}]
 }
 
@@ -30,9 +30,9 @@ import "bonisoft.org:root"
 	workdir: devserver.#devserver.workdir
 	run: [
 	  { "cmd": "--mount=type=secret,id=host.env,required set -a && . /run/secrets/host.env && docker compose build develop", files: ["Dockerfile", "compose.yaml"] },
-  	{ "cmd": "--mount=type=secret,id=host.env,required dind.sh docker compose build develop" },
+  	{ "cmd": "--mount=type=secret,id=host.env,required docker-bridge.sh docker compose build develop" },
 		// This fails sometimes
-  	// { "cmd": "--mount=type=secret,id=host.env,required dind.sh docker -H unix://var/run/docker.sock compose build develop" }
+  	// { "cmd": "--mount=type=secret,id=host.env,required docker-bridge.sh docker -H unix://var/run/docker.sock compose build develop" }
 	]
 }
 

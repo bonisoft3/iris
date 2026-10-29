@@ -1,6 +1,5 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
-tool = "github:jqlang/jq"
 version = "jq-1.8.1"
 bin = "jq"
 

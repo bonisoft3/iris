@@ -1,6 +1,5 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
-tool = "github:ajeetdsouza/zoxide"
 version = "0.9.9"
 bin = "zoxide"
 strip_components = 1

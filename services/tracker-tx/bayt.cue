@@ -135,15 +135,16 @@ _tx: bayt.#project & {
 			}
 		}
 		"integrate": sayt.integrate & mise.exec & {
+			visibility: "public"
 			// Smoke-test the rendered envoy configs parse as valid
 			// YAML (both per-environment templates) and the edge
 			// config too. Cheap, no docker — the fuller "boot envoy
-			// in dind and curl the health endpoint" version lives in
+			// under bkid and curl the health endpoint" version lives in
 			// the hand-maintained Dockerfile and will move here once
-			// the dind-as-plugin mechanism lands.
+			// the bkid mechanism lands.
 			//
 			// No host.env secret (yq doesn't need auth) and no
-			// `dind.sh` wrap (no docker-in-docker), overriding the
+			// `docker-bridge.sh` wrap (no docker-in-docker), overriding the
 			// sayt.integrate defaults.
 			srcs: globs: ["transcoding.yaml", "cloud_run_tls.yaml", "edge.yaml"]
 			outs: globs: ["build/test-results-int/**/*.xml"]

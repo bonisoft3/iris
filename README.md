@@ -2,6 +2,7 @@
 
 > We see through the waste
 
+For AI agents and automated coding assistants, see the canonical specification at [`llms.txt`](llms.txt).
 
 ## How to use it
 

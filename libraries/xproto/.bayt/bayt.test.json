@@ -127,7 +127,7 @@
           "[m]ise.lock",
           "[.]tool-versions",
           "gradle/libs.versions.toml",
-          "plugins/devserver/dind.sh",
+          "plugins/devserver/docker-bridge.sh",
           ".task/bayt/setup.hash"
         ],
         "exclude": []
@@ -206,7 +206,7 @@
           {
             "type": "cache",
             "target": "/root/.gradle",
-            "scope": "global",
+            "scope": "project",
             "required": false
           },
           {

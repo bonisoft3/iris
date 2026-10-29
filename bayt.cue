@@ -21,12 +21,13 @@ package root
 import (
 	sayt "bonisoft.org/plugins/bayt/stacks/sayt"
 	Bake "bonisoft.org/bake"
+	pronto "bonisoft.org/plugins/pronto/builders:bayt"
 )
 
 _wsroot: sayt.pnpmWorkspace & {
 	dir: ""
 
-	// Per-target cache scope so transitive consumers (iris's dindbox
+	// Per-target cache scope so transitive consumers (iris's bkid
 	// cascade, hello's probe, etc.) get cache-hits on the
 	// workspaceroot-setup / workspaceroot-ops layers instead of
 	// rebuilding zypper+mise install fresh every run.
@@ -38,13 +39,18 @@ _wsroot: sayt.pnpmWorkspace & {
 	// (pnpm state + every member's package.json) so JVM warm floors
 	// survive JS dep churn. Public so cross-project consumers may
 	// reference them. workspaceroot:setup's srcs/outs already carry
-	// `plugins/devserver/dind.sh` (per sayt.pnpmWorkspace), so dind.sh
+	// `plugins/devserver/docker-bridge.sh` (per sayt.pnpmWorkspace), so docker-bridge.sh
 	// flows to consumers via the setup FROM chain — no separate
 	// scaffolding target needed. Bake-graph scaffolding (.bayt/**,
 	// Taskfile.yml, compose.yaml) flows via the auto-emitted `:bayt`
 	// synthetic, transitive across cross-project deps.
 	targets: "setup": visibility:    "public"
 	targets: "setup-js": visibility: "public"
+	targets: "pronto-sources": {
+		visibility: "public"
+		srcs: {globs: pronto.#CompilerSources.paths, exclude: pronto.#CompilerSources.exclude}
+		dockerfile: from: null
+	}
 }
 
 project: _wsroot

@@ -813,6 +813,9 @@ importers:
         specifier: 1.0.46
         version: 1.0.46(typescript@5.9.3)
     devDependencies:
+      fake-indexeddb:
+        specifier: 6.2.5
+        version: 6.2.5
       typescript:
         specifier: 5.9.3
         version: 5.9.3
@@ -868,8 +871,11 @@ importers:
   libraries/mecha/packages/mecha-browser:
     dependencies:
       '@electric-sql/pglite':
-        specifier: ^0.5.8
+        specifier: 0.5.8
         version: 0.5.8
+      '@electric-sql/pglite-icu-full':
+        specifier: 0.0.2
+        version: 0.0.2
       '@mecha/bloblang-js':
         specifier: workspace:*
         version: link:../bloblang-js
@@ -1982,6 +1988,9 @@ packages:
   '@electric-sql/client@1.5.27':
     resolution: {integrity: sha512-JXyhdg2CBvTRGK1aEGBkb24HoN4Zk9v5lA9Ibxjmcrgjt1j/NgnXndxmuSxVtAYZsM4no5kHXfTnFplgiI9ztg==}
     hasBin: true
+
+  '@electric-sql/pglite-icu-full@0.0.2':
+    resolution: {integrity: sha512-K/yQbMlODpnwmjIPUkM6dFKVQjdGKVPArdjmlK275KVWDY+AbHCDEuvcDZXneQw8ELYKHnXhPEhJWSFUtpLk4A==}
 
   '@electric-sql/pglite-tools@0.2.20':
     resolution: {integrity: sha512-BK50ZnYa3IG7ztXhtgYf0Q7zijV32Iw1cYS8C+ThdQlwx12V5VZ9KRJ42y82Hyb4PkTxZQklVQA9JHyUlex33A==}
@@ -18997,6 +19006,8 @@ snapshots:
       '@microsoft/fetch-event-source': 2.0.1
     optionalDependencies:
       '@rollup/rollup-darwin-arm64': 4.63.1
+
+  '@electric-sql/pglite-icu-full@0.0.2': {}
 
   '@electric-sql/pglite-tools@0.2.20(@electric-sql/pglite@0.3.15)':
     dependencies:

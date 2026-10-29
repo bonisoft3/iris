@@ -31,18 +31,19 @@ ARG ACT_JOBS="toys iris-ladder flashcards old-iris bonisoft3"
 RUN --mount=type=bind,target=/monorepo \
     --mount=type=secret,id=host.env,required \
     --mount=type=cache,target=/root/.cache,sharing=locked \
-    cp /monorepo/plugins/devserver/dind.sh /usr/local/bin/ && chmod +x /usr/local/bin/dind.sh && \
+    cp /monorepo/plugins/devserver/docker-bridge.sh /usr/local/bin/ && chmod +x /usr/local/bin/docker-bridge.sh && \
     cd /monorepo && for job in $ACT_JOBS; do \
       echo "=== act -j $job ===" && \
-      dind.sh act -j "$job" \
+      docker-bridge.sh act -j "$job" \
       --container-options "--user root" \
       --use-gitignore=false \
       --pull=false \
-      -P ubuntu-latest=catthehacker/ubuntu:full-22.04@sha256:a3cd72269e94ee20831927221beb02bad57c67bebbbc632d936985bb48a3ce86 \
-      -P ubuntu-22.04=catthehacker/ubuntu:full-22.04@sha256:a3cd72269e94ee20831927221beb02bad57c67bebbbc632d936985bb48a3ce86 \
-      -P ubuntu-24.04=catthehacker/ubuntu:full-22.04@sha256:a3cd72269e94ee20831927221beb02bad57c67bebbbc632d936985bb48a3ce86 \
-      -P depot-ubuntu-24.04=catthehacker/ubuntu:full-22.04@sha256:a3cd72269e94ee20831927221beb02bad57c67bebbbc632d936985bb48a3ce86 \
-      -P depot-ubuntu-24.04-8=catthehacker/ubuntu:full-22.04@sha256:a3cd72269e94ee20831927221beb02bad57c67bebbbc632d936985bb48a3ce86 \
+      -P ubuntu-latest=catthehacker/ubuntu:full-24.04@sha256:86f3a5bbfee046bad1be4ea5ad78f2b52cf58ba20d692dd3ab318271d72d9416 \
+      -P ubuntu-22.04=catthehacker/ubuntu:full-24.04@sha256:86f3a5bbfee046bad1be4ea5ad78f2b52cf58ba20d692dd3ab318271d72d9416 \
+      -P ubuntu-24.04=catthehacker/ubuntu:full-24.04@sha256:86f3a5bbfee046bad1be4ea5ad78f2b52cf58ba20d692dd3ab318271d72d9416 \
+      -P depot-ubuntu-24.04=catthehacker/ubuntu:full-24.04@sha256:86f3a5bbfee046bad1be4ea5ad78f2b52cf58ba20d692dd3ab318271d72d9416 \
+      -P depot-ubuntu-24.04-8=catthehacker/ubuntu:full-24.04@sha256:86f3a5bbfee046bad1be4ea5ad78f2b52cf58ba20d692dd3ab318271d72d9416 \
+      -P self-hosted=catthehacker/ubuntu:full-24.04@sha256:86f3a5bbfee046bad1be4ea5ad78f2b52cf58ba20d692dd3ab318271d72d9416 \
       || exit 1; \
     done
 ENTRYPOINT []

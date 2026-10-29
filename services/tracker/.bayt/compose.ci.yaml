@@ -38,6 +38,8 @@ secrets:
     environment: ACTIONS_RESULTS_URL
   actions_runtime_token:
     environment: ACTIONS_RUNTIME_TOKEN
+  bkid_project:
+    environment: BKID_PROJECT
 services:
   services_tracker-ci:
     build:
@@ -61,7 +63,6 @@ services:
         libraries_xproto-setup_srcs: service:libraries_xproto-setup_srcs
         libraries_pbtables-setup_srcs: service:libraries_pbtables-setup_srcs
         bayt: ../../../plugins/bayt/runtime
-        services_tracker-dindbox: service:services_tracker-dindbox
       context: ..
       dockerfile: .bayt/Dockerfile.ci
       secrets:
@@ -84,10 +85,14 @@ services:
       - depot_disable_otel
       - actions_results_url
       - actions_runtime_token
+      - bkid_project
       target: ci
+      tags:
+      - bayt-services_tracker-ci:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+      - bayt-services_tracker-ci:latest
       args:
         BUILDKIT_SYNTAX: >-
-          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
       x-bake:
         cache-from:
         - >-
@@ -97,7 +102,7 @@ services:
         cache-to:
         - >-
           type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-ci,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
-    image: bayt-services_tracker-ci:${BAYT_IMAGE_TAG:-latest}
+    image: bayt-services_tracker-ci:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
     scale: 0
     secrets:
     - docker_host
@@ -119,10 +124,10 @@ services:
     - depot_disable_otel
     - actions_results_url
     - actions_runtime_token
+    - bkid_project
   services_tracker-ci_bayt:
     build:
       additional_contexts:
-        services_tracker-dindbox_bayt: service:services_tracker-dindbox_bayt
         services_tracker-integrate_bayt: service:services_tracker-integrate_bayt
         services_tracker-build_bayt: service:services_tracker-build_bayt
         services_tracker-deps_bayt: service:services_tracker-deps_bayt
@@ -145,7 +150,7 @@ services:
       target: ci_bayt
       args:
         BUILDKIT_SYNTAX: >-
-          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
       x-bake:
         cache-from:
         - >-

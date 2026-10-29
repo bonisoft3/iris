@@ -1,5 +1,5 @@
-# Hand-maintained root for the `develop` service (legacy dind-based
-# dev container). All other targets (setup/build/test/launch/integrate/
+# Hand-maintained root for the `develop` service (legacy dev container on the
+# host daemon). All other targets (setup/build/test/launch/integrate/
 # release) are bayt-emitted via the included graph.
 include:
   - path: ./.bayt/compose.yaml
@@ -23,7 +23,7 @@ services:
       - //var/run/docker.sock:/var/run/docker.sock
       - ${HOME:-~}/.skaffold/cache:/root/.skaffold/cache
     entrypoint:
-      - /monorepo/plugins/devserver/dind.sh
+      - /monorepo/plugins/devserver/docker-bridge.sh
     secrets:
       - host.env
     network_mode: host

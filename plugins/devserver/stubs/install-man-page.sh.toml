@@ -1,6 +1,5 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
-tool = "github:mikefarah/yq"
 version = "4.52.5"
 bin = "install-man-page.sh"
 strip_components = 1

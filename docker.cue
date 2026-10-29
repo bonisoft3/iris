@@ -10,7 +10,7 @@ import "bonisoft.org/plugins/sayt:docker"
 #sayt: docker.#image & {
 	as: *"sayt" | string
 	workdir: "./"
-	run: [ { files: [ ".justfile" ], dirs: [ "plugins/sayt" ] } ]
+	run: [ { files: [ ".justfile" ], dirs: [ "plugins/sayt" ] }, { files: [ ".mise.toml", "mise.lock" ] } ]
 }
 
 #buf: docker.#image & {

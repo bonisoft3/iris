@@ -1,6 +1,5 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
-tool = "github:lvillis/tcping-rs"
 version = "1.2.24"
 bin = "tcping"
 strip_components = 1

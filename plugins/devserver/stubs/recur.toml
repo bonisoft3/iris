@@ -1,6 +1,5 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
-tool = "github:dbohdan/recur"
 version = "3.2.0"
 bin = "recur"
 

@@ -107,6 +107,80 @@
         ".bayt/compose.setup-js.yaml",
         ".bayt/compose.setup.yaml"
       ]
+    },
+    "srcs": {
+      "name": "setup_srcs",
+      "project": "guis_web",
+      "dir": "guis/web",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          "package.json",
+          "[p]npm-lock.yaml",
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock",
+          "[.]tool-versions"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [
+        {
+          "name": "setup-js_srcs",
+          "project": "workspaceroot",
+          "dir": "",
+          "outs": {
+            "globs": [
+              "pnpm-lock.yaml",
+              "pnpm-workspace.yaml",
+              "package.json",
+              "**/package.json",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock",
+              "[.]tool-versions",
+              "gradle/libs.versions.toml",
+              "plugins/devserver/docker-bridge.sh"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "workspaceroot",
+          "name": "setup_srcs",
+          "dir": "",
+          "outs": {
+            "globs": [
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock",
+              "[.]tool-versions",
+              "gradle/libs.versions.toml",
+              "plugins/devserver/docker-bridge.sh"
+            ],
+            "exclude": []
+          }
+        }
+      ],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "guis/web/.bayt/compose.setup.yaml",
+        ".bayt/compose.setup-js.yaml",
+        ".bayt/compose.setup.yaml"
+      ]
     }
   },
   "taskfile": {
@@ -115,7 +189,7 @@
     "preconditions": []
   },
   "visibility": "internal",
-  "emitsSrcs": false,
+  "emitsSrcs": true,
   "deps": [],
   "sameProjectDeps": [],
   "transitiveDeps": [],

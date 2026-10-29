@@ -1,6 +1,5 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
-tool = "aqua:Byron/dua-cli"
 version = "2.34.0"
 bin = "dua"
 strip_components = 1

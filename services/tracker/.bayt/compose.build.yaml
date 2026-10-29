@@ -8,9 +8,12 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.build
       target: build
+      tags:
+      - bayt-services_tracker-build:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+      - bayt-services_tracker-build:latest
       args:
         BUILDKIT_SYNTAX: >-
-          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
       x-bake:
         cache-from:
         - >-
@@ -20,7 +23,7 @@ services:
         cache-to:
         - >-
           type=registry,ref=registry.depot.dev/${DEPOT_PROJECT_ID:-f5k5087x1b}:tracker-bake-cache-v1-${CACHE_SCOPE:-unscoped}-build,mode=min,image-manifest=true,oci-mediatypes=true,compression=zstd,compression-level=3
-    image: bayt-services_tracker-build:${BAYT_IMAGE_TAG:-latest}
+    image: bayt-services_tracker-build:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
     scale: 0
   services_tracker-build_bayt:
     build:
@@ -39,7 +42,7 @@ services:
       target: build_bayt
       args:
         BUILDKIT_SYNTAX: >-
-          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
       x-bake:
         cache-from:
         - >-
@@ -67,7 +70,7 @@ services:
       target: build_srcs
       args:
         BUILDKIT_SYNTAX: >-
-          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
       x-bake:
         cache-from:
         - >-
@@ -86,7 +89,7 @@ services:
       target: build_outs
       args:
         BUILDKIT_SYNTAX: >-
-          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
       additional_contexts:
         services_tracker-build: service:services_tracker-build
       x-bake:

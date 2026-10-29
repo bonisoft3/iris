@@ -15,12 +15,12 @@ target "release" {
   output    = PUSH_IMAGE == "true" ? ["type=registry"] : ["type=docker"]
   platforms = ["linux/amd64"]
   cache-from = CACHE_SCOPE != "" ? [
-    "type=gha,scope=main-services-tracker-tx",
-    "type=gha,scope=main-services-tracker-tx-release",
-    "type=gha,scope=${CACHE_SCOPE}-services-tracker-tx",
-    "type=gha,scope=${CACHE_SCOPE}-services-tracker-tx-release",
+    "type=gha,version=2,scope=main-services-tracker-tx",
+    "type=gha,version=2,scope=main-services-tracker-tx-release",
+    "type=gha,version=2,scope=${CACHE_SCOPE}-services-tracker-tx",
+    "type=gha,version=2,scope=${CACHE_SCOPE}-services-tracker-tx-release",
   ] : []
   cache-to = CACHE_SCOPE != "" ? [
-    "type=gha,mode=max,scope=${CACHE_SCOPE}-services-tracker-tx-release"
+    "type=gha,version=2,mode=max,scope=${CACHE_SCOPE}-services-tracker-tx-release"
   ] : []
 }

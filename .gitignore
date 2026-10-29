@@ -263,6 +263,7 @@ service-account.json
 
 # go-task's per-project checksum cache (status:/sources: fingerprints)
 **/.task/
+**/.pronto/proto-baseline.json
 
 services/shelfie/shelfie
 **/.omc/
@@ -273,3 +274,10 @@ plugins/omnishell/test-results/
 # mecha's own stack mounts the same path, and compose creates it empty.
 apps/*/.certs/
 libraries/mecha/.certs/
+
+# mise writes it beside pronto's generated mise.local.toml, with that checkout's
+# absolute paths; snapcards' own mise.local.toml is hand-written and locked.
+**/mise.local.lock
+!guis/snapcards/mise.local.lock
+# Large 3D engine vendor bundles
+**/vendor/babylon*.js

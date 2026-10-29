@@ -1,6 +1,5 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
-tool = "github:chmln/sd"
 version = "1.1.0"
 bin = "sd"
 strip_components = 1

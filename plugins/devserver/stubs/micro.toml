@@ -1,6 +1,5 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
-tool = "github:micro-editor/micro"
 version = "2.0.15"
 bin = "micro"
 strip_components = 1

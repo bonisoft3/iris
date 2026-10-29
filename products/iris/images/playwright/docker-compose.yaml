@@ -5,6 +5,6 @@ services:
       # note when outside gha, the statements get ignored
       # alternatively, we can condition with ${SOME_GHA:+type=gha}
       cache_from:
-        - type=gha,mode=max
+        - type=gha,version=2,mode=max
       cache_to:
-        - type=gha,mode=max
+        - type=gha,version=2,mode=max

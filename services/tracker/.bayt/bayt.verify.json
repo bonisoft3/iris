@@ -185,7 +185,7 @@
           "[m]ise.lock",
           "[.]tool-versions",
           "gradle/libs.versions.toml",
-          "plugins/devserver/dind.sh",
+          "plugins/devserver/docker-bridge.sh",
           ".task/bayt/setup.hash"
         ],
         "exclude": []

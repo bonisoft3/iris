@@ -6,7 +6,7 @@
 # @tanstack/db 0.8.1 made an update to a localStorage-backed collection under a
 # live query throw `Query contributors with the same row key are not congruent`,
 # and 0.8.7 is the newest release that still does. The device tier is built on
-# that collection, so apps/truco and apps/chess cannot leave 0.8.0 until it is
+# that collection, so apps/truco cannot leave 0.8.0 until it is
 # fixed upstream. electric-db-collection and offline-transactions each take
 # @tanstack/db as an exact direct dependency, so nothing but an override keeps
 # a second copy out of the tree.

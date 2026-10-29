@@ -1,6 +1,5 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
-tool = "github:ducaale/xh"
 version = "0.25.3"
 bin = "xh"
 strip_components = 1

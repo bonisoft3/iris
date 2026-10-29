@@ -15,12 +15,12 @@ target "release" {
   output    = PUSH_IMAGE == "true" ? ["type=registry"] : ["type=docker"]
   platforms = ["linux/amd64"]
   cache-from = CACHE_SCOPE != "" ? [
-    "type=gha,scope=main-guis-web",
-    "type=gha,scope=main-guis-web-release",
-    "type=gha,scope=${CACHE_SCOPE}-guis-web",
-    "type=gha,scope=${CACHE_SCOPE}-guis-web-release",
+    "type=gha,version=2,scope=main-guis-web",
+    "type=gha,version=2,scope=main-guis-web-release",
+    "type=gha,version=2,scope=${CACHE_SCOPE}-guis-web",
+    "type=gha,version=2,scope=${CACHE_SCOPE}-guis-web-release",
   ] : []
   cache-to = CACHE_SCOPE != "" ? [
-    "type=gha,mode=max,scope=${CACHE_SCOPE}-guis-web-release"
+    "type=gha,version=2,mode=max,scope=${CACHE_SCOPE}-guis-web-release"
   ] : []
 }

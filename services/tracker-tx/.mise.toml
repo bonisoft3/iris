@@ -13,8 +13,8 @@ aqua.slsa = false
 aqua.minisign = false
 
 [tools]
-"github:bufbuild/buf" = "1.66.1"
-"github:go-task/task" = "v3.49.1"
+"github:bufbuild/buf" = "1.74.0"
+"github:go-task/task" = "v3.54.0"
 
 # http: backend — URL template works for macOS/Linux; Windows override below.
 [tools."http:yq"]

@@ -5,16 +5,16 @@ variable "CACHE_SCOPE" {
 function "cache_from" {
   params = [name]
   result = CACHE_SCOPE != "" ? [
-    "type=gha,scope=main-${name}",
-    "type=gha,scope=main-${name}-release",
-    "type=gha,scope=${CACHE_SCOPE}-${name}",
-    "type=gha,scope=${CACHE_SCOPE}-${name}-release",
+    "type=gha,version=2,scope=main-${name}",
+    "type=gha,version=2,scope=main-${name}-release",
+    "type=gha,version=2,scope=${CACHE_SCOPE}-${name}",
+    "type=gha,version=2,scope=${CACHE_SCOPE}-${name}-release",
   ] : []
 }
 
 function "cache_to" {
   params = [name]
-  result = CACHE_SCOPE != "" ? ["type=gha,mode=max,scope=${CACHE_SCOPE}-${name}"] : []
+  result = CACHE_SCOPE != "" ? ["type=gha,version=2,mode=max,scope=${CACHE_SCOPE}-${name}"] : []
 }
 
 group "ci" {
@@ -39,7 +39,7 @@ group "ci" {
 target "ci-defaults" {
   secret = [
     "id=host.env,env=HOST_ENV",
-    # docker_host is the per-secret form used by the dindbox cascade
+    # docker_host is the per-secret form used by the bkid cascade
     # (bayt's compose-spec map shape: `secrets.docker_host.environment:
     # BAYT_DOCKER_HOST`). The env var is intentionally BAYT-prefixed so
     # it doesn't override docker CLI's own DOCKER_HOST — that would

@@ -13,15 +13,15 @@ ARG TARGETOS
 ARG TARGETARCH
 COPY --from=tonistiigi/xx:1.5.0@sha256:0c6a569797744e45955f39d4f7538ac344bfb7ebf0a54006a0a4297b153ccf0f / /
 RUN  mkdir -p /var/run /usr/local/bin /root/.local/bin ${XDG_CONFIG_HOME}/mise
-RUN  xx-apk add curl libgcc libstdc++ coreutils xz bash just socat nmap
+RUN  xx-apk add curl libgcc libstdc++ libatomic=16.2.0-r1 coreutils xz bash just socat nmap
 COPY --chmod=0755 ./plugins/devserver/mise-install.sh ./
 RUN  ./mise-install.sh /root/.local/bin
 COPY ./plugins/devserver/stubs stubs
 COPY ./plugins/devserver/lazy-mise ./
 RUN  cp ./stubs/* $HOME/.local/bin/ && mkdir -p $HOME/.local/libexec && cp ./lazy-mise $HOME/.local/libexec/lazy-mise && chmod +x $HOME/.local/libexec/lazy-mise
 RUN  curl -fsSL https://github.com/ko1nksm/shdotenv/releases/download/v0.14.0/shdotenv -o $HOME/.local/bin/shdotenv && chmod 755 $HOME/.local/bin/shdotenv
-COPY ./plugins/devserver/dind.sh ./
-RUN  cp dind.sh $HOME/.local/bin/
+COPY ./plugins/devserver/docker-bridge.sh ./
+RUN  cp docker-bridge.sh $HOME/.local/bin/
 
 FROM scratch AS sources
 WORKDIR /monorepo/./
@@ -30,8 +30,8 @@ COPY ./. .
 FROM devserver AS release
 WORKDIR /monorepo/./plugins/devserver/
 COPY --from=sources /monorepo /monorepo
-COPY --chmod=0755 ./plugins/devserver/dind.sh ./
-RUN  cp dind.sh /usr/local/bin/
+COPY --chmod=0755 ./plugins/devserver/docker-bridge.sh ./
+RUN  cp docker-bridge.sh /usr/local/bin/
 
 FROM release AS debug
 WORKDIR /monorepo/.
@@ -40,4 +40,4 @@ FROM release AS integrate
 WORKDIR /monorepo/./plugins/devserver/
 COPY ./plugins/devserver/Dockerfile ./plugins/devserver/compose.yaml ./
 RUN  --mount=type=secret,id=host.env,required set -a && . /run/secrets/host.env && docker compose build develop
-RUN  --mount=type=secret,id=host.env,required dind.sh docker compose build develop
+RUN  --mount=type=secret,id=host.env,required docker-bridge.sh docker compose build develop

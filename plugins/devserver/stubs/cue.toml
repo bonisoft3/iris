@@ -1,6 +1,5 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
-tool = "github:cue-lang/cue"
 version = "0.16.1"
 bin = "cue"
 strip_components = 1

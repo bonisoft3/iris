@@ -18,8 +18,6 @@ include:
   required: false
 - path: ./compose.ci.yaml
   required: false
-- path: ./compose.dindbox.yaml
-  required: false
 - path: ../../../.bayt/compose.bayt.yaml
   required: false
 - path: ../../../libraries/logs/.bayt/compose.bayt.yaml

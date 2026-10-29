@@ -1,37 +1,35 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
-tool = "github:bufbuild/buf"
-version = "1.66.1"
+version = "1.74.0"
 bin = "buf"
 strip_components = 1
 
 # Platform configurations
 [platforms.linux-arm64]
-url = "https://github.com/bufbuild/buf/releases/download/v1.66.1/buf-Linux-aarch64.tar.gz"
-checksum = "sha256:157806788e82216d4ea6010a9d21e61130225d0d61c37904a4fad675fe446d94"
+url = "https://github.com/bufbuild/buf/releases/download/v1.74.0/buf-Linux-aarch64.tar.gz"
+checksum = "sha256:54a5d5500992deb3239bfee61c9f0ef7646b6f6b231d2c255fdfc16eeb50564c"
 
 [platforms.linux-arm64-musl]
-url = "https://github.com/bufbuild/buf/releases/download/v1.66.1/buf-Linux-aarch64.tar.gz"
-checksum = "sha256:157806788e82216d4ea6010a9d21e61130225d0d61c37904a4fad675fe446d94"
+url = "https://github.com/bufbuild/buf/releases/download/v1.74.0/buf-Linux-aarch64.tar.gz"
+checksum = "sha256:54a5d5500992deb3239bfee61c9f0ef7646b6f6b231d2c255fdfc16eeb50564c"
 
 [platforms.linux-x64]
-url = "https://github.com/bufbuild/buf/releases/download/v1.66.1/buf-Linux-x86_64.tar.gz"
-checksum = "sha256:9ad6fcfb208646476f020ee84eaea0563fe94debe9337763d404f267b6d85d03"
+url = "https://github.com/bufbuild/buf/releases/download/v1.74.0/buf-Linux-x86_64.tar.gz"
+checksum = "sha256:cc482285b2c388c93f8bed0a972330695c1c8dd121d5ece460d25ceed93f21ac"
 
 [platforms.linux-x64-musl]
-url = "https://github.com/bufbuild/buf/releases/download/v1.66.1/buf-Linux-x86_64.tar.gz"
-checksum = "sha256:9ad6fcfb208646476f020ee84eaea0563fe94debe9337763d404f267b6d85d03"
+url = "https://github.com/bufbuild/buf/releases/download/v1.74.0/buf-Linux-x86_64.tar.gz"
+checksum = "sha256:cc482285b2c388c93f8bed0a972330695c1c8dd121d5ece460d25ceed93f21ac"
 
 [platforms.macos-arm64]
-url = "https://github.com/bufbuild/buf/releases/download/v1.66.1/buf-Darwin-arm64.tar.gz"
-checksum = "sha256:e5e3a80dc1bc3dd374ecfcbc250c731a05dbb01d382117d3d420bca7875d9977"
+url = "https://github.com/bufbuild/buf/releases/download/v1.74.0/buf-Darwin-arm64.tar.gz"
+checksum = "sha256:4bc72e8d823e3b0e27df1715dec2c0c7a1a533bc07b67f98f8fdfbc4007a82ca"
 
 [platforms.macos-x64]
-url = "https://github.com/bufbuild/buf/releases/download/v1.66.1/buf-Darwin-x86_64.tar.gz"
-checksum = "sha256:fd055cd83595039b9d05cf587b5460281b4a7ff0b86f7584cccba17ec1860e88"
+url = "https://github.com/bufbuild/buf/releases/download/v1.74.0/buf-Darwin-x86_64.tar.gz"
+checksum = "sha256:1a8d6778176f8d6dfc9182342109a44a8dfafb73f91f5d297276f25960589483"
 
 [platforms.windows-x64]
-url = "https://github.com/bufbuild/buf/releases/download/v1.66.1/buf-Windows-x86_64.zip"
-checksum = "sha256:b4671213dd37e17fb574ccca7c82bef2b84f9df2c1bc933be0ce14aacf56d435"
+url = "https://github.com/bufbuild/buf/releases/download/v1.74.0/buf-Windows-x86_64.zip"
+checksum = "sha256:b0e26af2a4bef62724f6a58114a6027e3a19bdf98033b2107995bc243d7c8c97"
 bin = "buf.exe"
-

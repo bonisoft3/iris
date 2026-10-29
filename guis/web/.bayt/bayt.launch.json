@@ -183,7 +183,13 @@
       },
       "outs": {
         "globs": [
-          "**/*"
+          "**/*",
+          "package.json",
+          "[p]npm-lock.yaml",
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock",
+          "[.]tool-versions"
         ],
         "exclude": []
       },
@@ -210,7 +216,7 @@
               "[m]ise.lock",
               "[.]tool-versions",
               "gradle/libs.versions.toml",
-              "plugins/devserver/dind.sh"
+              "plugins/devserver/docker-bridge.sh"
             ],
             "exclude": []
           }
@@ -226,7 +232,7 @@
               "[m]ise.lock",
               "[.]tool-versions",
               "gradle/libs.versions.toml",
-              "plugins/devserver/dind.sh"
+              "plugins/devserver/docker-bridge.sh"
             ],
             "exclude": []
           }
@@ -255,6 +261,22 @@
               "**/*.spec.*",
               "tests/**"
             ]
+          }
+        },
+        {
+          "project": "guis_web",
+          "name": "setup_srcs",
+          "dir": "guis/web",
+          "outs": {
+            "globs": [
+              "package.json",
+              "[p]npm-lock.yaml",
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock",
+              "[.]tool-versions"
+            ],
+            "exclude": []
           }
         }
       ],

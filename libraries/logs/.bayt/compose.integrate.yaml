@@ -7,9 +7,12 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.integrate
       target: integrate
+      tags:
+      - bayt-libraries_logs-integrate:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+      - bayt-libraries_logs-integrate:latest
       args:
         BUILDKIT_SYNTAX: >-
-          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
       x-bake:
         cache-from:
         - >-
@@ -23,7 +26,7 @@ services:
         - type=${BAYT_COMPOSE_OUTPUT:-docker}
     environment:
       GRADLE_USER_HOME: /opt/gradle-home
-    image: bayt-libraries_logs-integrate:${BAYT_IMAGE_TAG:-latest}
+    image: bayt-libraries_logs-integrate:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
     scale: 0
   libraries_logs-integrate_bayt:
     build:
@@ -37,7 +40,7 @@ services:
       target: integrate_bayt
       args:
         BUILDKIT_SYNTAX: >-
-          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
       x-bake:
         cache-from:
         - >-
@@ -59,7 +62,7 @@ services:
       target: integrate_srcs
       args:
         BUILDKIT_SYNTAX: >-
-          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
       x-bake:
         cache-from:
         - >-
@@ -78,7 +81,7 @@ services:
       target: integrate_outs
       args:
         BUILDKIT_SYNTAX: >-
-          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
       additional_contexts:
         libraries_logs-integrate: service:libraries_logs-integrate
       x-bake:

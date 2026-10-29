@@ -1,6 +1,5 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
-tool = "github:kubernetes-sigs/kind"
 version = "0.31.0"
 bin = "kind"
 

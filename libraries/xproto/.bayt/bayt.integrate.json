@@ -35,7 +35,7 @@
       {
         "type": "cache",
         "target": "/root/.gradle",
-        "scope": "global",
+        "scope": "project",
         "required": false
       },
       {
@@ -310,7 +310,7 @@
               "[m]ise.lock",
               "[.]tool-versions",
               "gradle/libs.versions.toml",
-              "plugins/devserver/dind.sh"
+              "plugins/devserver/docker-bridge.sh"
             ],
             "exclude": []
           }
@@ -384,11 +384,6 @@
               "src/**/*.sql",
               "src/**/*.sq",
               "src/**/*.sqm",
-              "build.gradle.kts",
-              "settings.gradle.kts",
-              "gradle.properties",
-              "gradlew",
-              "gradle/wrapper/gradle-wrapper.jar",
               "trash/**/*.proto",
               "buf.gradle.gen.yaml",
               "buf.yaml",
@@ -522,7 +517,7 @@
           "[m]ise.lock",
           "[.]tool-versions",
           "gradle/libs.versions.toml",
-          "plugins/devserver/dind.sh",
+          "plugins/devserver/docker-bridge.sh",
           ".task/bayt/setup.hash"
         ],
         "exclude": []

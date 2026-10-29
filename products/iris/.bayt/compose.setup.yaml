@@ -1,0 +1,29 @@
+# generated from bayt.cue — do not edit
+services:
+  products_iris-setup:
+    build:
+      additional_contexts:
+        workspaceroot-setup: service:workspaceroot-setup
+      context: ..
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup
+      tags:
+      - bayt-products_iris-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+      - bayt-products_iris-setup:latest
+      args:
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+    image: bayt-products_iris-setup:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    scale: 0
+  products_iris-setup_bayt:
+    build:
+      additional_contexts:
+        workspaceroot-setup_bayt: service:workspaceroot-setup_bayt
+      context: ..
+      dockerfile: .bayt/Dockerfile.setup
+      target: setup_bayt
+      args:
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+    image: bayt-products_iris-setup_bayt:latest
+    scale: 0

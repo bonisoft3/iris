@@ -198,7 +198,11 @@
         "globs": [
           "transcoding.yaml",
           "cloud_run_tls.yaml",
-          "edge.yaml"
+          "edge.yaml",
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock",
+          "[.]tool-versions"
         ],
         "exclude": []
       },
@@ -219,6 +223,20 @@
               "transcoding.yaml",
               "cloud_run_tls.yaml",
               "edge.yaml"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "services_tracker-tx",
+          "name": "setup_srcs",
+          "dir": "services/tracker-tx",
+          "outs": {
+            "globs": [
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock",
+              "[.]tool-versions"
             ],
             "exclude": []
           }

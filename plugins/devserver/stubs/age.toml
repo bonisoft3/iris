@@ -1,6 +1,5 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
-tool = "github:FiloSottile/age"
 version = "1.3.1"
 bin = "age"
 strip_components = 1

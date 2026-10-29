@@ -59,9 +59,3 @@ services:
       service: services_tracker-ci
     profiles:
     - ci
-  dindbox:
-    extends:
-      file: ./compose.dindbox.yaml
-      service: services_tracker-dindbox
-    profiles:
-    - dindbox

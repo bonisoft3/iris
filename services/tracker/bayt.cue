@@ -39,8 +39,8 @@ _tracker: sayt.gradle & {
 
 	targets: {
 		// setup chains off workspaceroot:setup (base image + mise
-		// toolchain). dind deps (socat) for the integrate-with-dind path
-		// are injected by bayt's dind modifier, not installed here.
+		// toolchain). bkid deps (socat) for the integrate-under-bkid path
+		// are injected by bayt's bkid preset, not installed here.
 		"setup": dockerfile: from: ref: "workspaceroot:setup"
 
 		// RO dep cache layer (Gradle.depsResolve via the sayt.gradle
@@ -248,6 +248,7 @@ _tracker: sayt.gradle & {
 		// classpath reads). Don't add src/test/**/*.kt — integrationTest
 		// only compiles src/it/*; the rest bloats the COPY chain.
 		"ci": sayt.ci & {
+			visibility: "public"
 			// Source-closure for the outer ci stage. `:integrate:srcs`
 			// transitively rolls in the upstream `:build:srcs` closures
 			// (libraries + plugins) via the synthetic `:srcs` transitive
@@ -255,8 +256,6 @@ _tracker: sayt.gradle & {
 			// mise + workspace files.
 			deps: [":integrate:srcs", ":integrate:bayt"]
 		}
-
-		"dindbox": sayt.dindbox
 	}
 }
 

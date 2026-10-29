@@ -1,6 +1,5 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
-tool = "github:getsops/sops"
 version = "3.12.2"
 bin = "sops-v3.12.2.darwin.arm64"
 

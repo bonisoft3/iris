@@ -109,10 +109,25 @@ def "main buildx-instance-rewritten" [builder?: string, --docker-host: string = 
 # bake RUN sandbox, so this rewrite is what makes the inner bake see
 # the same builder identity as the host.
 export def buildx-instance-rewritten [builder?: string, --docker-host: string = ""] {
-	let raw = (buildx-instance $builder)
+	instance-for-sandbox (buildx-instance $builder) $docker_host
+}
+
+# A docker-container builder's endpoint is the daemon hosting its container,
+# which the sandbox reaches only through the bridge. A remote builder's is
+# BuildKit itself, already dialed over the network: pointed at the bridge, its
+# gRPC would wait on the Docker API for a handshake that never comes.
+export def instance-for-sandbox [raw: string, docker_host: string]: nothing -> string {
 	if ($raw | is-empty) { return "" }
-	if ($docker_host | is-empty) { return $raw }
+	if ($docker_host | is-empty) or (($raw | from json | get Driver) == "remote") { return $raw }
 	$raw | str replace -ar '"Endpoint":"[^"]*"' $"\"Endpoint\":\"($docker_host)\""
+}
+
+# The builder name a sandbox may select. A docker-driver builder (Docker
+# Desktop's `desktop-linux`) has no instance file: it is the daemon itself,
+# which the bridge already reaches as the sandbox's default builder, while its
+# name resolves to nothing there and buildx refuses to run.
+export def transported-builder [builder: string, instance: string]: nothing -> string {
+	if ($instance | is-empty) { "" } else { $builder }
 }
 
 def "main kubeconfig" [] { kubeconfig }
@@ -144,25 +159,41 @@ export def loopback-addr [ip: string]: nothing -> bool {
 	($ip == "::1") or ($ip | str starts-with "127.")
 }
 
+# Materialize `ref` in the local daemon via BuildKit (which honours buildkitd's
+# registry mirror) so `docker run` never pulls from Docker Hub directly.
+def load-image [ref: string, --builder: string = ""]: nothing -> string {
+	let parts = ($ref | split row "@sha256:")
+	let tag = if ($parts | length) > 1 {
+		let sep = if (($parts.0 | split row "/" | last) | str contains ":") { "-" } else { ":" }
+		$"($parts.0)($sep)($parts.1 | str substring 0..<12)"
+	} else { $ref }
+	if ((do { ^docker image inspect $tag } | complete).exit_code != 0) {
+		let b = if ($builder | is-empty) { [] } else { ["--builder" $builder] }
+		$"FROM ($ref)\n" | ^docker buildx build ...$b --quiet --load -t $tag - | ignore
+	}
+	$tag
+}
+
 # The probe container reads the --add-host mapping docker itself resolved —
 # the in-container view of the host gateway. --rm so repeated bridge opens
 # don't accumulate exited containers. Fail loud when it can't run: this
 # address is what a build RUN dials to reach the host daemon, and a
 # plausible-but-wrong one (the bridge IPAM gateway, right only on stock
 # topologies) surfaces much later as an unreachable daemon.
-export def gateway-ip [] {
-	let probe = (do { docker run --rm --add-host=gateway.docker.internal:host-gateway mirror.gcr.io/library/busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223 cat /etc/hosts } | complete)
+export def gateway-ip [--builder: string = ""] {
+	let img = (load-image --builder=$builder "busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223")
+	let probe = (do { docker run --rm --pull=never --add-host=gateway.docker.internal:host-gateway $img cat /etc/hosts } | complete)
 	if $probe.exit_code != 0 {
-		error make {msg: $"dind: host-gateway probe failed — cannot resolve the in-container host address.\n($probe.stderr | str trim)"}
+		error make {msg: $"docker-bridge: host-gateway probe failed — cannot resolve the in-container host address.\n($probe.stderr | str trim)"}
 	}
 	let ip = (parse-gateway-ip $probe.stdout)
 	if ($ip | is-empty) {
-		error make {msg: $"dind: no gateway.docker.internal entry in the probe's /etc/hosts: ($probe.stdout | to nuon)"}
+		error make {msg: $"docker-bridge: no gateway.docker.internal entry in the probe's /etc/hosts: ($probe.stdout | to nuon)"}
 	}
 	# Reject at the probe: downstream this only surfaces inside a build, where
 	# a cached RUN can replay green over it.
 	if (loopback-addr $ip) {
-		error make {msg: $"dind: host-gateway resolved to ($ip) — a sandbox dialing its own loopback cannot reach the host daemon."}
+		error make {msg: $"docker-bridge: host-gateway resolved to ($ip) — a sandbox dialing its own loopback cannot reach the host daemon."}
 	}
 	$ip
 }
@@ -227,7 +258,7 @@ export def depot-cache-scope [project: string]: nothing -> record {
 def "main buildx-fingerprint" [builder?: string] { buildx-fingerprint $builder }
 # "bk<version>-<frontend>-<os>-<arch>" identity of a LOCAL buildx
 # builder — every dimension feeds chain-ID computation. Pure nushell:
-# dind.nu also runs on native Windows, so no POSIX sh on the host
+# docker-bridge.nu also runs on native Windows, so no POSIX sh on the host
 # path. Probing via `buildx inspect` is sound only for builders the
 # repo controls (CI pins the buildkit image digest); depot's fleet
 # versions drift mid-rollout, so depot flows get a declared scope from
@@ -306,18 +337,19 @@ export def resolve-bridge-ip [gateway: string, os: string]: nothing -> string {
 	}
 }
 
-export def bridge-ip []: nothing -> string {
-	resolve-bridge-ip (gateway-ip) (uname | get kernel-name)
+export def bridge-ip [--builder: string = ""]: nothing -> string {
+	resolve-bridge-ip (gateway-ip --builder=$builder) (uname | get kernel-name)
 }
 
-# Open a dind bridge, collecting only the explicitly requested facilities — one
-# boolean flag per capability, no inference (dind is the mechanism layer; policy
-# lives in the caller). The one implication is `builder ⇒ socat`: the
+# Open a docker bridge, collecting only the explicitly requested facilities —
+# one boolean flag per capability, no inference (this is the mechanism layer;
+# policy lives in the caller). The one implication is `builder ⇒ socat`: the
 # transported buildx instance is rewritten to the socat tcp endpoint, so a
 # builder without the bridge is dead. `env` is always the complete sandbox ABI,
 # unrequested facilities empty, so Bayt's secret + RUN shape stay cache-stable
-# across capability sets. Pair with `bridge close`.
-export def "bridge open" [
+# across capability sets. Pair with `down`. Not `open`/`close`: a command of
+# that name would shadow nushell's `open` in this module.
+export def up [
 	--auth                  # host registry creds          → DOCKER_AUTH_CONFIG
 	--builder: string = ""  # host buildx builder name      → BUILDX_*/CACHE_SCOPE* (implies --socat)
 	--socat                 # bridge host docker sock → tcp  → DOCKER_HOST_TCP
@@ -329,12 +361,20 @@ export def "bridge open" [
 	--depot                 # forward depot creds (+ DEPOT_DISABLE_OTEL) → DEPOT_*
 ]: nothing -> record {
 	let socat_on = ($socat or ($builder | is-not-empty))
+	let caller_tc = if $testcontainers { ($env.TESTCONTAINERS_HOST_OVERRIDE? | default "") } else { "" }
+	let gw = if $socat_on or ($testcontainers and ($caller_tc | is-empty)) {
+		gateway-ip --builder=$builder
+	} else { "" }
 	let bridge = if $socat_on {
 		let bridge_port = if $port == 0 { (port 2375) } else { $port }
-		let id = (docker run -d -v //var/run/docker.sock:/var/run/docker.sock --network=host mirror.gcr.io/alpine/socat:1.8.0.0@sha256:a6be4c0262b339c53ddad723cdd178a1a13271e1137c65e27f90a08c16de02b8 -d0 $"TCP-LISTEN:($bridge_port),fork,backlog=1024,reuseaddr" UNIX-CONNECT:/var/run/docker.sock)
+		let socat_img = (load-image --builder=$builder "alpine/socat:1.8.0.0@sha256:a6be4c0262b339c53ddad723cdd178a1a13271e1137c65e27f90a08c16de02b8")
+		# -t: a hijacked exec stream half-closes while its other half still
+		# carries buildx's session; socat's 0.5s default would cut it.
+		let id = (docker run -d --pull=never -v //var/run/docker.sock:/var/run/docker.sock --network=host $socat_img -d0 -t 86400 $"TCP-LISTEN:($bridge_port),fork,backlog=1024,reuseaddr" UNIX-CONNECT:/var/run/docker.sock)
 		# The consumer is a build RUN, dialing from its own netns: only the
 		# gateway routes there. The host's own address need not.
-		{id: $id, docker_host: $"tcp://(bridge-ip):($bridge_port)"}
+		let b_ip = (resolve-bridge-ip $gw (uname | get kernel-name))
+		{id: $id, docker_host: $"tcp://($b_ip):($bridge_port)"}
 	} else {
 		{id: "", docker_host: "unix:///var/run/docker.sock"}
 	}
@@ -343,8 +383,7 @@ export def "bridge open" [
 	# the bridge host may not loop back, and bridged builders, where loopback
 	# is wrong). Mirrors the runtime services' extra_hosts: host-gateway.
 	let tc_host = if $testcontainers {
-		let caller = ($env.TESTCONTAINERS_HOST_OVERRIDE? | default "")
-		if ($caller | is-not-empty) { $caller } else { gateway-ip }
+		if ($caller_tc | is-not-empty) { $caller_tc } else { $gw }
 	} else { "" }
 	# kind's kubeconfig points the API server at 127.0.0.1; from inside the
 	# sandbox that must resolve to the testcontainers host when one is set.
@@ -352,9 +391,10 @@ export def "bridge open" [
 	let kube_data = if ($tc_host | is-not-empty) { $kube_data | str replace -a "127.0.0.1" $tc_host } else { $kube_data }
 	let bx = if ($builder | is-not-empty) {
 		let ns = (cache-scope (buildx-fingerprint $builder) ($env.BRANCH? | default "main"))
+		let instance = (buildx-instance-rewritten $builder --docker-host $bridge.docker_host)
 		{
-			builder: $builder
-			instance: (buildx-instance-rewritten $builder --docker-host $bridge.docker_host)
+			builder: (transported-builder $builder $instance)
+			instance: $instance
 			scope: $ns.scope
 			fallback: $ns.fallback
 		}
@@ -371,9 +411,6 @@ export def "bridge open" [
 			CACHE_SCOPE_FALLBACK: $bx.fallback
 			KUBECONFIG_DATA: $kube_data
 			TESTCONTAINERS_HOST_OVERRIDE: $tc_host
-			# ACTIONS_CACHE_URL serves builds pinned to cache version=1; the
-			# rest read ACTIONS_RESULTS_URL (see sayt/inject.cue).
-			ACTIONS_CACHE_URL: (if $gha { $env.ACTIONS_CACHE_URL? | default "" } else { "" })
 			ACTIONS_RESULTS_URL: (if $gha { $env.ACTIONS_RESULTS_URL? | default "" } else { "" })
 			ACTIONS_RUNTIME_TOKEN: (if $gha { $env.ACTIONS_RUNTIME_TOKEN? | default "" } else { "" })
 			DEPOT_TOKEN: (if $depot { $env.DEPOT_TOKEN? | default "" } else { "" })
@@ -388,10 +425,10 @@ export def "bridge open" [
 	}
 }
 
-# Close a bridge opened by `bridge open`. The ownership token stays out of the
+# Close a bridge opened by `up`. The ownership token stays out of the
 # sandbox environment, so callers never need to parse a dotenv payload.
 # Null-tolerant: plain compose-mode integrate opens no bridge and passes null.
-export def "bridge close" [session: any = null] {
+export def down [session: any = null] {
 	if $session == null { return }
 	let id = ($session.socat_container_id? | default "")
 	if ($id | is-not-empty) {
@@ -400,13 +437,13 @@ export def "bridge close" [session: any = null] {
 }
 
 def "main env-file" [--socat, --builder: string = ""] { env-file --socat=$socat --builder=$builder }
-# Legacy env-file blob for `set -a; . file` consumers. Thin wrapper over `bridge
-# open --host-env`: it leaves the socat bridge open (the caller tears it down via
-# the trailing SOCAT_CONTAINER_ID). gha/frontend auto-forward from host env.
+# Legacy env-file blob for `set -a; . file` consumers. Thin wrapper over `up`: it
+# leaves the socat bridge open (the caller tears it down via the trailing
+# SOCAT_CONTAINER_ID). gha/frontend auto-forward from host env.
 export def env-file [--socat, --builder: string = ""] {
 	let want_gha = (("ACTIONS_RESULTS_URL" in $env) and ("ACTIONS_RUNTIME_TOKEN" in $env))
 	let want_frontend = ($env.BUILDKIT_SYNTAX? | default "" | is-not-empty)
-	let session = (bridge open --socat=$socat --auth --kube --builder=$builder --gha=$want_gha --frontend=$want_frontend)
+	let session = (up --socat=$socat --auth --kube --builder=$builder --gha=$want_gha --frontend=$want_frontend)
 	let socat_line = if ($session.socat_container_id | is-empty) { "" } else { $"SOCAT_CONTAINER_ID='($session.socat_container_id)'\n" }
 	(to-env-file $session.env) + $socat_line
 }

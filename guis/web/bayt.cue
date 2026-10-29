@@ -93,7 +93,7 @@ _web: sayt.pnpm & {
 		// bayt.incremental routes the cmd through the in-container task
 		// chain — setup→build stamps short-circuit reruns inside the
 		// build sandbox. Tests don't touch docker, so no inject needed.
-		"integrate": bayt.incremental
+		"integrate": bayt.incremental & {visibility: "public"}
 	}
 }
 

@@ -1,6 +1,5 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
-tool = "github:junegunn/fzf"
 version = "0.70.0"
 bin = "fzf"
 strip_components = 1

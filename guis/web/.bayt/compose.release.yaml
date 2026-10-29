@@ -7,13 +7,16 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.release
       target: release
+      tags:
+      - bayt-guis_web-release:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+      - bayt-guis_web-release:latest
       args:
         BUILDKIT_SYNTAX: >-
-          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
       x-bake:
         platforms:
         - linux/amd64
-    image: bayt-guis_web-release:${BAYT_IMAGE_TAG:-latest}
+    image: bayt-guis_web-release:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
     scale: 0
   guis_web-release_bayt:
     build:
@@ -26,18 +29,19 @@ services:
       target: release_bayt
       args:
         BUILDKIT_SYNTAX: >-
-          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
     image: bayt-guis_web-release_bayt:latest
     scale: 0
   guis_web-release_srcs:
     build:
       additional_contexts:
         guis_web-build_srcs: service:guis_web-build_srcs
+        guis_web-setup_srcs: service:guis_web-setup_srcs
       context: ..
       dockerfile: .bayt/Dockerfile.release
       target: release_srcs
       args:
         BUILDKIT_SYNTAX: >-
-          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
     image: bayt-guis_web-release_srcs:latest
     scale: 0

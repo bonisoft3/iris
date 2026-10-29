@@ -16,7 +16,7 @@ RUN  ./mise-install.sh /root/.local/bin
 COPY ./plugins/devserver/stubs stubs
 COPY ./plugins/devserver/lazy-mise lazy-mise
 RUN  cp ./stubs/* $HOME/.local/bin/ && mkdir -p $HOME/.local/libexec && cp ./lazy-mise $HOME/.local/libexec/lazy-mise && chmod +x $HOME/.local/libexec/lazy-mise
-COPY ./plugins/devserver/dind.sh ./
+COPY ./plugins/devserver/docker-bridge.sh ./
 RUN  curl -fsSL https://github.com/ko1nksm/shdotenv/releases/download/v0.14.0/shdotenv -o $HOME/.local/bin/shdotenv && chmod 755 $HOME/.local/bin/shdotenv
 RUN which nu 
 RUN yq --help

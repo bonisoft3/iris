@@ -1,0 +1,69 @@
+# generated from bayt.cue — do not edit
+services:
+  products_iris-integrate:
+    build:
+      additional_contexts:
+        guis_web-integrate: service:guis_web-integrate
+        services_tracker-ci: service:services_tracker-ci
+        services_tracker-tx-integrate: service:services_tracker-tx-integrate
+        workspaceroot-setup-js: service:workspaceroot-setup-js
+        libraries_logs-build_srcs: service:libraries_logs-build_srcs
+        libraries_pbtables-build_srcs: service:libraries_pbtables-build_srcs
+        libraries_xproto-build_srcs: service:libraries_xproto-build_srcs
+        plugins_libstoml-build_srcs: service:plugins_libstoml-build_srcs
+        plugins_jvm-build_srcs: service:plugins_jvm-build_srcs
+        plugins_micronaut-build_srcs: service:plugins_micronaut-build_srcs
+        workspaceroot-setup_srcs: service:workspaceroot-setup_srcs
+        plugins_libstoml-setup_srcs: service:plugins_libstoml-setup_srcs
+        plugins_jvm-setup_srcs: service:plugins_jvm-setup_srcs
+        libraries_logs-setup_srcs: service:libraries_logs-setup_srcs
+        plugins_micronaut-setup_srcs: service:plugins_micronaut-setup_srcs
+        libraries_xproto-setup_srcs: service:libraries_xproto-setup_srcs
+        libraries_pbtables-setup_srcs: service:libraries_pbtables-setup_srcs
+        products_iris-setup: service:products_iris-setup
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate
+      tags:
+      - bayt-products_iris-integrate:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+      - bayt-products_iris-integrate:latest
+      args:
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+    depends_on:
+      guis_web-integrate:
+        condition: service_started
+      services_tracker-ci:
+        condition: service_started
+      services_tracker-tx-integrate:
+        condition: service_started
+    image: bayt-products_iris-integrate:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    scale: 0
+  products_iris-integrate_bayt:
+    build:
+      additional_contexts:
+        products_iris-setup_bayt: service:products_iris-setup_bayt
+        guis_web-integrate_bayt: service:guis_web-integrate_bayt
+        services_tracker-ci_bayt: service:services_tracker-ci_bayt
+        services_tracker-tx-integrate_bayt: service:services_tracker-tx-integrate_bayt
+        workspaceroot-setup_bayt: service:workspaceroot-setup_bayt
+        libraries_logs-build_bayt: service:libraries_logs-build_bayt
+        libraries_pbtables-build_bayt: service:libraries_pbtables-build_bayt
+        libraries_xproto-build_bayt: service:libraries_xproto-build_bayt
+        plugins_libstoml-build_bayt: service:plugins_libstoml-build_bayt
+        plugins_jvm-build_bayt: service:plugins_jvm-build_bayt
+        plugins_micronaut-build_bayt: service:plugins_micronaut-build_bayt
+        plugins_libstoml-setup_bayt: service:plugins_libstoml-setup_bayt
+        plugins_jvm-setup_bayt: service:plugins_jvm-setup_bayt
+        libraries_logs-setup_bayt: service:libraries_logs-setup_bayt
+        plugins_micronaut-setup_bayt: service:plugins_micronaut-setup_bayt
+        libraries_xproto-setup_bayt: service:libraries_xproto-setup_bayt
+        libraries_pbtables-setup_bayt: service:libraries_pbtables-setup_bayt
+      context: ..
+      dockerfile: .bayt/Dockerfile.integrate
+      target: integrate_bayt
+      args:
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+    image: bayt-products_iris-integrate_bayt:latest
+    scale: 0

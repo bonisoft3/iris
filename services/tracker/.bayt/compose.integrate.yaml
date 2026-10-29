@@ -7,9 +7,12 @@ services:
       context: ..
       dockerfile: .bayt/Dockerfile.integrate
       target: integrate
+      tags:
+      - bayt-services_tracker-integrate:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+      - bayt-services_tracker-integrate:latest
       args:
         BUILDKIT_SYNTAX: >-
-          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
       x-bake:
         cache-from:
         - >-
@@ -31,11 +34,11 @@ services:
     - integrationTest
     - --rerun
     environment:
-      GRADLE_USER_HOME: /opt/gradle-home
       TESTCONTAINERS_HOST_OVERRIDE: host.docker.internal
+      GRADLE_USER_HOME: /opt/gradle-home
     extra_hosts:
     - host.docker.internal:host-gateway
-    image: bayt-services_tracker-integrate:${BAYT_IMAGE_TAG:-latest}
+    image: bayt-services_tracker-integrate:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
     scale: 0
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
@@ -57,7 +60,7 @@ services:
       target: integrate_bayt
       args:
         BUILDKIT_SYNTAX: >-
-          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
       x-bake:
         cache-from:
         - >-
@@ -80,7 +83,7 @@ services:
       target: integrate_srcs
       args:
         BUILDKIT_SYNTAX: >-
-          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
       x-bake:
         cache-from:
         - >-
@@ -99,7 +102,7 @@ services:
       target: integrate_outs
       args:
         BUILDKIT_SYNTAX: >-
-          docker/dockerfile:1.26@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
       additional_contexts:
         services_tracker-integrate: service:services_tracker-integrate
       x-bake:

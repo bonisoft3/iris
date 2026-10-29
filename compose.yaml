@@ -105,4 +105,4 @@ services:
 
 # host.env is declared in compose.override.yaml as `environment: HOST_ENV`,
 # the form every other consumer uses; sayt exports that variable from the
-# dind session and compose's environment-backed secret reads it directly.
+# docker bridge session and compose's environment-backed secret reads it directly.

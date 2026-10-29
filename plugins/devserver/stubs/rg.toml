@@ -1,6 +1,5 @@
 # Auto-generated stub for ($binary_info.clean_name)
 
-tool = "github:BurntSushi/ripgrep"
 version = "15.1.0"
 bin = "rg"
 strip_components = 1
