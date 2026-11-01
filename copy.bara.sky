@@ -621,7 +621,7 @@ WORKFLOWS = [
         mode = "ITERATIVE",
         scope = "lazybox",
     ),
-] + [reference_app(name) for name in ["doom", "realworld", "shadcnui"]] + [installed_app("golaberto"), installed_app("truco"), installed_app("apexrun")]
+] + [reference_app(name) for name in ["doom", "realworld", "shadcnui"]] + [installed_app("golaberto"), installed_app("truco"), installed_app("apexrun"), installed_app("yogurt")]
 
 def register_workflows(origin_url, name_suffix):
     for workflow in WORKFLOWS:
