@@ -16,7 +16,15 @@
 *.jar binary
 *.ico binary
 *.wasm binary
+*.glb binary
+*.woff2 binary
+*.woff binary
+*.ttf binary
+*.otf binary
 
 
 # Use bd merge for beads JSONL files
 .beads/issues.jsonl merge=beads
+
+# The bundled PDF serializer contains significant spaces in template literals.
+apps/snapcards/shell/hatches/print-checkout.js linguist-generated -whitespace

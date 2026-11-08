@@ -1,7 +1,7 @@
 // products/iris — the old iris product: guis/web over services/tracker and
 // services/tracker-tx. Its integrate builds nothing of its own; it names the
 // three entry targets so bayt emits them as this project's depot-build group
-// (.bayt/depot.json), which ci (old-iris) plans its cache hits against.
+// (.bayt/depot.hcl), which ci (old-iris) plans its cache hits against.
 package iris
 
 import (

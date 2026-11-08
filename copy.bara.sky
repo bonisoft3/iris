@@ -225,9 +225,10 @@ def _rewrite(before, after, paths, regex_groups = {}, exclude = []):
     )
 
 # A pronto app built as its own repository: its files alone, at the root, with
-# nothing of the runtime. It pins the runtime's releases itself, and is
-# published only once it builds and integrates with them
-# (.github/mirror_gate.sh). The one file that says the monorepo keeps the
+# nothing of the runtime. It pins the runtime's releases itself, and sync.yml
+# publishes it only once its pins resolve from those releases
+# (.github/mirror_pins.sh), and with `gate` once it also builds and integrates
+# with them (.github/mirror_gate.sh). The one file that says the monorepo keeps the
 # runtime stays behind: mise.local.toml, which names its trees and turns on
 # the switch that builds the runtime's images from them, the lock mise writes
 # beside it, and monorepo/service.yaml, the compose the switch includes, which
@@ -472,7 +473,7 @@ WORKFLOWS = [
         origin_files = [
             "plugins/omnishell/**",
         ],
-        origin_excludes = [],
+        origin_excludes = ["plugins/omnishell/mise.local.toml", "plugins/omnishell/mise.local.lock"],
         transformations = [
             core.transform(
                 [core.move("plugins/omnishell", "")],

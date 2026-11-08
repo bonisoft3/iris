@@ -1,8 +1,6 @@
 # generated from bayt.cue — do not edit
 tasks:
   default:
-    deps:
-    - "::bayt:release"
     env:
       CI: "true"
     run: once

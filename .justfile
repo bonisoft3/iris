@@ -21,7 +21,7 @@ generate:
 # [no-cd] recipes run in the user's directory, where mise refuses an
 # untrusted .mise.toml and would take `just setup` down with it.
 generate-all:
-  use {{justfile_directory()}}/plugins/sayt/auto-bayt.nu docker-env; with-env (docker-env) { mise x -- nu {{justfile_directory()}}/plugins/bayt/bayt.nu generate --all --runtime plugins/bayt }
+  mise x -- nu {{justfile_directory()}}/plugins/bayt/bayt.nu generate --all --runtime plugins/bayt
   mise x -- nu {{justfile_directory()}}/apps/platform_pins.nu write
 [no-cd]
 lint:
