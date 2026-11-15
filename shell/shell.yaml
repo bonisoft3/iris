@@ -25,6 +25,22 @@ ai:
     - cheap
     - heavy
   targets:
+    cloudflare:
+      text:
+        cheap:
+          provider: google
+          model: gemini-2.5-flash
+          params:
+            generationConfig:
+              thinkingConfig:
+                thinkingBudget: 0
+        heavy:
+          provider: google
+          model: gemini-2.5-flash
+          params:
+            generationConfig:
+              thinkingConfig:
+                thinkingBudget: 0
     local:
       text:
         cheap: 'gemma3:4b'
@@ -42,22 +58,6 @@ ai:
       text:
         cheap: 'gemma3:4b'
         heavy: 'gemma3:12b'
-    cloudflare:
-      text:
-        cheap:
-          provider: google
-          model: gemini-2.5-flash
-          params:
-            generationConfig:
-              thinkingConfig:
-                thinkingBudget: 0
-        heavy:
-          provider: google
-          model: gemini-2.5-flash
-          params:
-            generationConfig:
-              thinkingConfig:
-                thinkingBudget: 0
     gcp:
       text:
         cheap:

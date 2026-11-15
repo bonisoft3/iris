@@ -4,7 +4,7 @@ services:
     build:
       additional_contexts:
         libraries_mecha-airlock-image: >-
-          ${MONOREPO_COMPOSE_MODE:-docker-image://bonitao/mecha-airlock:0.23.2@sha256:52751f02d2f6c3c3fd63568e1d236942052dc64b0f81685e000844168dc1892e}${MONOREPO_COMPOSE_MODE:+:libraries_mecha-airlock-image}
+          ${MONOREPO_COMPOSE_MODE:-docker-image://bonitao/mecha-airlock:0.23.3@sha256:7627a1a65e744c681cd71da99a6c1af91616579fb0d025b4773403e118e0458a}${MONOREPO_COMPOSE_MODE:+:libraries_mecha-airlock-image}
       context: ..
       dockerfile: .bayt/Dockerfile.tsbifrost
       target: tsbifrost
@@ -25,7 +25,7 @@ services:
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      AI_MODELS: "{\"text\":[\"browser\",\"cheap\",\"heavy\"],\"image\":[\"browser\",\"cheap\",\"heavy\"],\"targets\":{\"local\":{\"text\":{\"cheap\":\"gemma3:4b\",\"heavy\":\"gemma3:12b\"},\"image\":{\"cheap\":{\"model\":\"sd-turbo-q8_0\",\"size\":\"256x256\",\"steps\":1},\"heavy\":{\"model\":\"flux1-schnell-q4_k\",\"size\":\"384x384\",\"steps\":2}}},\"docker\":{\"text\":{\"cheap\":\"gemma3:4b\",\"heavy\":\"gemma3:12b\"}},\"cloudflare\":{\"text\":{\"cheap\":{\"provider\":\"google\",\"model\":\"gemini-2.5-flash\",\"params\":{\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":0}}}},\"heavy\":{\"provider\":\"google\",\"model\":\"gemini-2.5-flash\",\"params\":{\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":0}}}}}},\"gcp\":{\"text\":{\"cheap\":{\"provider\":\"google\",\"model\":\"gemini-2.5-flash\",\"params\":{\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":0}}}},\"heavy\":{\"provider\":\"google\",\"model\":\"gemini-2.5-flash\",\"params\":{\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":0}}}}}},\"k8s\":{\"text\":{\"cheap\":{\"provider\":\"google\",\"model\":\"gemini-2.5-flash\",\"params\":{\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":0}}}},\"heavy\":{\"provider\":\"google\",\"model\":\"gemini-2.5-flash\",\"params\":{\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":0}}}}}}}}"
+      AI_MODELS: "{\"text\":[\"browser\",\"cheap\",\"heavy\"],\"image\":[\"browser\",\"cheap\",\"heavy\"],\"targets\":{\"cloudflare\":{\"text\":{\"cheap\":{\"provider\":\"google\",\"model\":\"gemini-2.5-flash\",\"params\":{\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":0}}}},\"heavy\":{\"provider\":\"google\",\"model\":\"gemini-2.5-flash\",\"params\":{\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":0}}}}}},\"local\":{\"text\":{\"cheap\":\"gemma3:4b\",\"heavy\":\"gemma3:12b\"},\"image\":{\"cheap\":{\"model\":\"sd-turbo-q8_0\",\"size\":\"256x256\",\"steps\":1},\"heavy\":{\"model\":\"flux1-schnell-q4_k\",\"size\":\"384x384\",\"steps\":2}}},\"docker\":{\"text\":{\"cheap\":\"gemma3:4b\",\"heavy\":\"gemma3:12b\"}},\"gcp\":{\"text\":{\"cheap\":{\"provider\":\"google\",\"model\":\"gemini-2.5-flash\",\"params\":{\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":0}}}},\"heavy\":{\"provider\":\"google\",\"model\":\"gemini-2.5-flash\",\"params\":{\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":0}}}}}},\"k8s\":{\"text\":{\"cheap\":{\"provider\":\"google\",\"model\":\"gemini-2.5-flash\",\"params\":{\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":0}}}},\"heavy\":{\"provider\":\"google\",\"model\":\"gemini-2.5-flash\",\"params\":{\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":0}}}}}}}}"
     healthcheck:
       test:
       - CMD

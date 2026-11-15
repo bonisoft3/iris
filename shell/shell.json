@@ -35,30 +35,6 @@
       "heavy"
     ],
     "targets": {
-      "local": {
-        "text": {
-          "cheap": "gemma3:4b",
-          "heavy": "gemma3:12b"
-        },
-        "image": {
-          "cheap": {
-            "model": "sd-turbo-q8_0",
-            "size": "256x256",
-            "steps": 1
-          },
-          "heavy": {
-            "model": "flux1-schnell-q4_k",
-            "size": "384x384",
-            "steps": 2
-          }
-        }
-      },
-      "docker": {
-        "text": {
-          "cheap": "gemma3:4b",
-          "heavy": "gemma3:12b"
-        }
-      },
       "cloudflare": {
         "text": {
           "cheap": {
@@ -83,6 +59,30 @@
               }
             }
           }
+        }
+      },
+      "local": {
+        "text": {
+          "cheap": "gemma3:4b",
+          "heavy": "gemma3:12b"
+        },
+        "image": {
+          "cheap": {
+            "model": "sd-turbo-q8_0",
+            "size": "256x256",
+            "steps": 1
+          },
+          "heavy": {
+            "model": "flux1-schnell-q4_k",
+            "size": "384x384",
+            "steps": 2
+          }
+        }
+      },
+      "docker": {
+        "text": {
+          "cheap": "gemma3:4b",
+          "heavy": "gemma3:12b"
         }
       },
       "gcp": {
