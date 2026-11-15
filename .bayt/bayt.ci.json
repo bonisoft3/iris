@@ -1,0 +1,1747 @@
+{
+  "_generated_from": "bayt.cue (do not edit)",
+  "compose": {
+    "up": false,
+    "manual": false,
+    "build": {
+      "additional_contexts": {
+        "workspaceroot-pronto-sources_srcs": "${MONOREPO_COMPOSE_MODE:-docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223}${MONOREPO_COMPOSE_MODE:+:workspaceroot-pronto-sources_srcs}",
+        "libraries_mecha-database-image_bayt": "${MONOREPO_COMPOSE_MODE:-docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223}${MONOREPO_COMPOSE_MODE:+:libraries_mecha-database-image_bayt}",
+        "libraries_mecha-extensions-image_bayt": "${MONOREPO_COMPOSE_MODE:-docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223}${MONOREPO_COMPOSE_MODE:+:libraries_mecha-extensions-image_bayt}",
+        "libraries_mecha-mesh-image_bayt": "${MONOREPO_COMPOSE_MODE:-docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223}${MONOREPO_COMPOSE_MODE:+:libraries_mecha-mesh-image_bayt}",
+        "libraries_mecha-conduit-image_bayt": "${MONOREPO_COMPOSE_MODE:-docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223}${MONOREPO_COMPOSE_MODE:+:libraries_mecha-conduit-image_bayt}",
+        "libraries_mecha-auth-image_bayt": "${MONOREPO_COMPOSE_MODE:-docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223}${MONOREPO_COMPOSE_MODE:+:libraries_mecha-auth-image_bayt}",
+        "libraries_mecha-ticker-image_bayt": "${MONOREPO_COMPOSE_MODE:-docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223}${MONOREPO_COMPOSE_MODE:+:libraries_mecha-ticker-image_bayt}",
+        "libraries_mecha-clock-image_bayt": "${MONOREPO_COMPOSE_MODE:-docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223}${MONOREPO_COMPOSE_MODE:+:libraries_mecha-clock-image_bayt}",
+        "libraries_mecha-compute-image_bayt": "${MONOREPO_COMPOSE_MODE:-docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223}${MONOREPO_COMPOSE_MODE:+:libraries_mecha-compute-image_bayt}",
+        "libraries_mecha-airlock-image_bayt": "${MONOREPO_COMPOSE_MODE:-docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223}${MONOREPO_COMPOSE_MODE:+:libraries_mecha-airlock-image_bayt}",
+        "libraries_mecha-activepieces-image_bayt": "${MONOREPO_COMPOSE_MODE:-docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223}${MONOREPO_COMPOSE_MODE:+:libraries_mecha-activepieces-image_bayt}",
+        "libraries_mecha-database-image_srcs": "${MONOREPO_COMPOSE_MODE:-docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223}${MONOREPO_COMPOSE_MODE:+:libraries_mecha-database-image_srcs}",
+        "libraries_mecha-extensions-image_srcs": "${MONOREPO_COMPOSE_MODE:-docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223}${MONOREPO_COMPOSE_MODE:+:libraries_mecha-extensions-image_srcs}",
+        "libraries_mecha-mesh-image_srcs": "${MONOREPO_COMPOSE_MODE:-docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223}${MONOREPO_COMPOSE_MODE:+:libraries_mecha-mesh-image_srcs}",
+        "libraries_mecha-auth-image_srcs": "${MONOREPO_COMPOSE_MODE:-docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223}${MONOREPO_COMPOSE_MODE:+:libraries_mecha-auth-image_srcs}",
+        "libraries_mecha-ticker-image_srcs": "${MONOREPO_COMPOSE_MODE:-docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223}${MONOREPO_COMPOSE_MODE:+:libraries_mecha-ticker-image_srcs}",
+        "libraries_mecha-clock-image_srcs": "${MONOREPO_COMPOSE_MODE:-docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223}${MONOREPO_COMPOSE_MODE:+:libraries_mecha-clock-image_srcs}",
+        "libraries_mecha-compute-image_srcs": "${MONOREPO_COMPOSE_MODE:-docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223}${MONOREPO_COMPOSE_MODE:+:libraries_mecha-compute-image_srcs}",
+        "libraries_mecha-airlock-image_srcs": "${MONOREPO_COMPOSE_MODE:-docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223}${MONOREPO_COMPOSE_MODE:+:libraries_mecha-airlock-image_srcs}",
+        "libraries_mecha-activepieces-image_srcs": "${MONOREPO_COMPOSE_MODE:-docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223}${MONOREPO_COMPOSE_MODE:+:libraries_mecha-activepieces-image_srcs}",
+        "plugins_omnishell-runtime-image_srcs": "${MONOREPO_COMPOSE_MODE:-docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223}${MONOREPO_COMPOSE_MODE:+:plugins_omnishell-runtime-image_srcs}",
+        "plugins_omnishell-runtime-image_bayt": "${MONOREPO_COMPOSE_MODE:-docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223}${MONOREPO_COMPOSE_MODE:+:plugins_omnishell-runtime-image_bayt}",
+        "workspaceroot-pronto-sources_bayt": "${MONOREPO_COMPOSE_MODE:-docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223}${MONOREPO_COMPOSE_MODE:+:workspaceroot-pronto-sources_bayt}"
+      },
+      "secrets": [],
+      "args": {
+        "MONOREPO_COMPOSE_MODE": "${MONOREPO_COMPOSE_MODE:-}",
+        "BAYT_RUNTIME": "${BAYT_RUNTIME:-}"
+      }
+    },
+    "environment": {},
+    "ports": [],
+    "volumes": [],
+    "depends_on": {}
+  },
+  "dockerfile": {
+    "preamble": [
+      "COPY --from=bonitao/lazybox:0.8.6@sha256:0f30c48513fac757f844f02c864802991dec045f9c4189e3db2ae4ac297544df /lazybox/ /root/.local/share/lazybox/",
+      "COPY --from=alpine/socat:1.8.0.0@sha256:a6be4c0262b339c53ddad723cdd178a1a13271e1137c65e27f90a08c16de02b8 /usr/bin/socat1 /usr/local/bin/socat",
+      "COPY --from=alpine/socat:1.8.0.0@sha256:a6be4c0262b339c53ddad723cdd178a1a13271e1137c65e27f90a08c16de02b8 /usr/lib/libreadline.so.8 /usr/lib/libncursesw.so.6 /usr/lib/",
+      "ENV PATH=$PATH:/root/.local/bin:/root/.local/share/lazybox/bin",
+      "COPY <<'BKID_MISE' /opt/bkid/mise.toml\n[settings]\nexperimental = true\ngithub_attestations = false\nlocked = true\nlockfile = true\nslsa = false\n\n[settings.github]\ngithub_attestations = false\nslsa = false\n\n[tools]\n'github:depot/cli' = '2.102.25'\n'github:go-task/task' = 'v3.54.0'\nBKID_MISE\nCOPY <<'BKID_LOCK' /opt/bkid/mise.lock\n[tools]\n[[tools.'github:depot/cli']]\nbackend = 'github:depot/cli'\nversion = '2.102.25'\n\n[tools.'github:depot/cli'.platforms]\n[tools.'github:depot/cli'.platforms.linux-arm64]\nchecksum = 'sha256:52abe04ef24cd06f2ed37e15dbaa1d52d282db26ead04ff2493faf181347d6eb'\nurl = 'https://github.com/depot/cli/releases/download/v2.102.25/depot_2.102.25_linux_arm64.tar.gz'\nurl_api = 'https://api.github.com/repos/depot/cli/releases/assets/660782767'\n\n[tools.'github:depot/cli'.platforms.linux-arm64-musl]\nchecksum = 'sha256:52abe04ef24cd06f2ed37e15dbaa1d52d282db26ead04ff2493faf181347d6eb'\nurl = 'https://github.com/depot/cli/releases/download/v2.102.25/depot_2.102.25_linux_arm64.tar.gz'\nurl_api = 'https://api.github.com/repos/depot/cli/releases/assets/660782767'\n\n[tools.'github:depot/cli'.platforms.linux-x64]\nchecksum = 'sha256:b62952f5951a0bcd4f48597b59fe29a4b7d84cac4e82710ee19d79262bf271af'\nurl = 'https://github.com/depot/cli/releases/download/v2.102.25/depot_2.102.25_linux_amd64.tar.gz'\nurl_api = 'https://api.github.com/repos/depot/cli/releases/assets/660782770'\n\n[tools.'github:depot/cli'.platforms.linux-x64-musl]\nchecksum = 'sha256:b62952f5951a0bcd4f48597b59fe29a4b7d84cac4e82710ee19d79262bf271af'\nurl = 'https://github.com/depot/cli/releases/download/v2.102.25/depot_2.102.25_linux_amd64.tar.gz'\nurl_api = 'https://api.github.com/repos/depot/cli/releases/assets/660782770'\n\n[[tools.'github:go-task/task']]\nbackend = 'github:go-task/task'\nversion = 'v3.54.0'\n\n[tools.'github:go-task/task'.platforms]\n[tools.'github:go-task/task'.platforms.linux-arm64]\nchecksum = 'sha256:d7189d439d4a6058e39e1b2acd7c8b27acd4856691b408f23b242e4294e1df5b'\nurl = 'https://github.com/go-task/task/releases/download/v3.54.0/task_linux_arm64.tar.gz'\nurl_api = 'https://api.github.com/repos/go-task/task/releases/assets/604090041'\n\n[tools.'github:go-task/task'.platforms.linux-arm64-musl]\nchecksum = 'sha256:d7189d439d4a6058e39e1b2acd7c8b27acd4856691b408f23b242e4294e1df5b'\nurl = 'https://github.com/go-task/task/releases/download/v3.54.0/task_linux_arm64.tar.gz'\nurl_api = 'https://api.github.com/repos/go-task/task/releases/assets/604090041'\n\n[tools.'github:go-task/task'.platforms.linux-x64]\nchecksum = 'sha256:680859dbb4d881a9c72d4d9a8f510825450849af8567deacd7302c01124416fb'\nurl = 'https://github.com/go-task/task/releases/download/v3.54.0/task_linux_amd64.tar.gz'\nurl_api = 'https://api.github.com/repos/go-task/task/releases/assets/604090073'\n\n[tools.'github:go-task/task'.platforms.linux-x64-musl]\nchecksum = 'sha256:680859dbb4d881a9c72d4d9a8f510825450849af8567deacd7302c01124416fb'\nurl = 'https://github.com/go-task/task/releases/download/v3.54.0/task_linux_amd64.tar.gz'\nurl_api = 'https://api.github.com/repos/go-task/task/releases/assets/604090073'\nBKID_LOCK",
+      "COPY --from=bayt . /monorepo/plugins/bayt/runtime",
+      "RUN cd /opt/bkid && mise trust -y && mise install && mise exec -- sh -c 'cp \"$(mise which task)\" /usr/local/bin/task && cp \"$(mise which depot)\" /usr/local/bin/depot'",
+      "ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}",
+      "ARG MONOREPO_COMPOSE_MODE",
+      "ENV MONOREPO_COMPOSE_MODE=$MONOREPO_COMPOSE_MODE",
+      "ARG BAYT_RUNTIME",
+      "ENV BAYT_RUNTIME=$BAYT_RUNTIME",
+      "ENV FELDERA_COMPILATION_PROFILE=unoptimized"
+    ],
+    "preambleCopyContexts": [
+      {
+        "name": "bayt",
+        "image": "bonitao/bayt-runtime:1.5.1@sha256:21e3851bcc32a4e56460ef51724385b2ba80999ad73accbf6ae2af53975d9547"
+      },
+      {
+        "name": "alpine/socat:1.8.0.0@sha256:a6be4c0262b339c53ddad723cdd178a1a13271e1137c65e27f90a08c16de02b8"
+      },
+      {
+        "name": "alpine/socat:1.8.0.0@sha256:a6be4c0262b339c53ddad723cdd178a1a13271e1137c65e27f90a08c16de02b8"
+      }
+    ],
+    "from": {
+      "name": "docker:29.9.1-cli@sha256:6fae2214c3121a28d5aa639d09032f61310b7c9c75ffbad1025f261a1b621800"
+    },
+    "add": [],
+    "mounts": [],
+    "secrets": {
+      "docker_host": {
+        "environment": "DOCKER_HOST_TCP"
+      },
+      "buildx_builder": {
+        "environment": "BUILDX_BUILDER"
+      },
+      "buildx_instance": {
+        "environment": "BUILDX_INSTANCE"
+      },
+      "docker_config": {
+        "environment": "DOCKER_AUTH_CONFIG"
+      },
+      "testcontainers_host": {
+        "environment": "TESTCONTAINERS_HOST_OVERRIDE"
+      },
+      "cache_scope": {
+        "environment": "CACHE_SCOPE"
+      },
+      "cache_scope_fallback": {
+        "environment": "CACHE_SCOPE_FALLBACK"
+      },
+      "sayt_buildkit_syntax": {
+        "environment": "BUILDKIT_SYNTAX"
+      },
+      "sayt_no_cache": {
+        "environment": "SAYT_NO_CACHE"
+      },
+      "bayt_image_tag": {
+        "environment": "BAYT_IMAGE_TAG"
+      },
+      "bayt_pull_policy": {
+        "environment": "BAYT_PULL_POLICY"
+      },
+      "sayt_no_cache_from": {
+        "environment": "SAYT_NO_CACHE_FROM"
+      },
+      "sayt_no_cache_to": {
+        "environment": "SAYT_NO_CACHE_TO"
+      },
+      "depot_token": {
+        "environment": "DEPOT_TOKEN"
+      },
+      "depot_project_id": {
+        "environment": "DEPOT_PROJECT_ID"
+      },
+      "depot_org_id": {
+        "environment": "DEPOT_ORG_ID"
+      },
+      "depot_disable_otel": {
+        "environment": "DEPOT_DISABLE_OTEL"
+      },
+      "actions_results_url": {
+        "environment": "ACTIONS_RESULTS_URL"
+      },
+      "actions_runtime_token": {
+        "environment": "ACTIONS_RUNTIME_TOKEN"
+      },
+      "bkid_project": {
+        "environment": "BKID_PROJECT"
+      }
+    },
+    "extra_hosts": [],
+    "epilogue": [],
+    "copy": [
+      {
+        "from": {
+          "name": "libraries_mecha-activepieces-image_bayt"
+        },
+        "srcs": [
+          "/monorep[o]"
+        ],
+        "dst": "/monorepo/",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      },
+      {
+        "from": {
+          "name": "libraries_mecha-activepieces-image_srcs"
+        },
+        "srcs": [
+          "/monorep[o]"
+        ],
+        "dst": "/monorepo/",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      },
+      {
+        "from": {
+          "name": "libraries_mecha-airlock-image_bayt"
+        },
+        "srcs": [
+          "/monorep[o]"
+        ],
+        "dst": "/monorepo/",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      },
+      {
+        "from": {
+          "name": "libraries_mecha-airlock-image_srcs"
+        },
+        "srcs": [
+          "/monorep[o]"
+        ],
+        "dst": "/monorepo/",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      },
+      {
+        "from": {
+          "name": "libraries_mecha-auth-image_bayt"
+        },
+        "srcs": [
+          "/monorep[o]"
+        ],
+        "dst": "/monorepo/",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      },
+      {
+        "from": {
+          "name": "libraries_mecha-auth-image_srcs"
+        },
+        "srcs": [
+          "/monorep[o]"
+        ],
+        "dst": "/monorepo/",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      },
+      {
+        "from": {
+          "name": "libraries_mecha-clock-image_bayt"
+        },
+        "srcs": [
+          "/monorep[o]"
+        ],
+        "dst": "/monorepo/",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      },
+      {
+        "from": {
+          "name": "libraries_mecha-clock-image_srcs"
+        },
+        "srcs": [
+          "/monorep[o]"
+        ],
+        "dst": "/monorepo/",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      },
+      {
+        "from": {
+          "name": "libraries_mecha-compute-image_bayt"
+        },
+        "srcs": [
+          "/monorep[o]"
+        ],
+        "dst": "/monorepo/",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      },
+      {
+        "from": {
+          "name": "libraries_mecha-compute-image_srcs"
+        },
+        "srcs": [
+          "/monorep[o]"
+        ],
+        "dst": "/monorepo/",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      },
+      {
+        "from": {
+          "name": "libraries_mecha-conduit-image_bayt"
+        },
+        "srcs": [
+          "/monorep[o]"
+        ],
+        "dst": "/monorepo/",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      },
+      {
+        "from": {
+          "name": "libraries_mecha-database-image_bayt"
+        },
+        "srcs": [
+          "/monorep[o]"
+        ],
+        "dst": "/monorepo/",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      },
+      {
+        "from": {
+          "name": "libraries_mecha-database-image_srcs"
+        },
+        "srcs": [
+          "/monorep[o]"
+        ],
+        "dst": "/monorepo/",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      },
+      {
+        "from": {
+          "name": "libraries_mecha-extensions-image_bayt"
+        },
+        "srcs": [
+          "/monorep[o]"
+        ],
+        "dst": "/monorepo/",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      },
+      {
+        "from": {
+          "name": "libraries_mecha-extensions-image_srcs"
+        },
+        "srcs": [
+          "/monorep[o]"
+        ],
+        "dst": "/monorepo/",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      },
+      {
+        "from": {
+          "name": "libraries_mecha-mesh-image_bayt"
+        },
+        "srcs": [
+          "/monorep[o]"
+        ],
+        "dst": "/monorepo/",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      },
+      {
+        "from": {
+          "name": "libraries_mecha-mesh-image_srcs"
+        },
+        "srcs": [
+          "/monorep[o]"
+        ],
+        "dst": "/monorepo/",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      },
+      {
+        "from": {
+          "name": "libraries_mecha-ticker-image_bayt"
+        },
+        "srcs": [
+          "/monorep[o]"
+        ],
+        "dst": "/monorepo/",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      },
+      {
+        "from": {
+          "name": "libraries_mecha-ticker-image_srcs"
+        },
+        "srcs": [
+          "/monorep[o]"
+        ],
+        "dst": "/monorepo/",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      },
+      {
+        "from": {
+          "name": "plugins_omnishell-runtime-image_bayt"
+        },
+        "srcs": [
+          "/monorep[o]"
+        ],
+        "dst": "/monorepo/",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      },
+      {
+        "from": {
+          "name": "plugins_omnishell-runtime-image_srcs"
+        },
+        "srcs": [
+          "/monorep[o]"
+        ],
+        "dst": "/monorepo/",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      },
+      {
+        "from": {
+          "name": "workspaceroot-pronto-sources_bayt"
+        },
+        "srcs": [
+          "/monorep[o]"
+        ],
+        "dst": "/monorepo/",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      },
+      {
+        "from": {
+          "name": "workspaceroot-pronto-sources_srcs"
+        },
+        "srcs": [
+          "/monorep[o]"
+        ],
+        "dst": "/monorepo/",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      },
+      {
+        "from": null,
+        "srcs": [
+          "monorepo/*.yaml"
+        ],
+        "dst": "./",
+        "link": true,
+        "parents": true,
+        "exclude": []
+      }
+    ],
+    "healthcheck": null,
+    "expose": [],
+    "entrypoint": null,
+    "incremental": true,
+    "cmd": null
+  },
+  "name": "ci",
+  "project": "iris",
+  "dir": ".",
+  "activate": "",
+  "srcs": {
+    "globs": [
+      ".bayt/**"
+    ],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [],
+    "exclude": []
+  },
+  "state": {
+    "globs": []
+  },
+  "env": {
+    "BUILDX_BAKE_ENTITLEMENTS_FS": "0",
+    "COMPOSE_BAKE": "true"
+  },
+  "synthetics": {
+    "bayt": {
+      "name": "ci_bayt",
+      "project": "iris",
+      "dir": ".",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          ".bayt/compose.ci.yaml",
+          ".bayt/Dockerfile.ci",
+          ".bayt/bayt.ci.json",
+          ".bayt/Taskfile.yml",
+          ".bayt/Taskfile.bayt.yml",
+          ".bayt/Taskfile.ci.yaml",
+          ".bayt/process-compose.yaml"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "./.bayt/compose.ci.yaml",
+        "./.bayt/compose.ci-visual.yaml",
+        "./.bayt/compose.ci-replay.yaml",
+        "./.bayt/compose.ci-ledger.yaml",
+        "./.bayt/compose.airlock.yaml",
+        "./.bayt/compose.airlock-mesh.yaml",
+        "./.bayt/compose.airlock-upgrade.yaml",
+        "./.bayt/compose.auth.yaml",
+        "./.bayt/compose.build.yaml",
+        "./.bayt/compose.caddy.yaml",
+        "./.bayt/compose.check-ledger.yaml",
+        "./.bayt/compose.clock.yaml",
+        "./.bayt/compose.crud.yaml",
+        "./.bayt/compose.database.yaml",
+        "./.bayt/compose.electric.yaml",
+        "./.bayt/compose.generate.yaml",
+        "./.bayt/compose.identity.yaml",
+        "./.bayt/compose.identity-hydra.yaml",
+        "./.bayt/compose.integrate.yaml",
+        "./.bayt/compose.launch.yaml",
+        "./.bayt/compose.migrate.yaml",
+        "./.bayt/compose.served.yaml",
+        "./.bayt/compose.served-release.yaml",
+        "./.bayt/compose.setup.yaml",
+        "./.bayt/compose.smollm3.yaml",
+        "./.bayt/compose.ticker.yaml",
+        "./.bayt/compose.tsbifrost.yaml"
+      ]
+    },
+    "outs": {
+      "name": "ci_outs",
+      "project": "iris",
+      "dir": ".",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [],
+        "exclude": []
+      },
+      "env": {},
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "./.bayt/compose.ci.yaml",
+        "./.bayt/compose.ci-visual.yaml",
+        "./.bayt/compose.ci-replay.yaml",
+        "./.bayt/compose.ci-ledger.yaml",
+        "./.bayt/compose.airlock.yaml",
+        "./.bayt/compose.airlock-mesh.yaml",
+        "./.bayt/compose.airlock-upgrade.yaml",
+        "./.bayt/compose.auth.yaml",
+        "./.bayt/compose.build.yaml",
+        "./.bayt/compose.caddy.yaml",
+        "./.bayt/compose.check-ledger.yaml",
+        "./.bayt/compose.clock.yaml",
+        "./.bayt/compose.crud.yaml",
+        "./.bayt/compose.database.yaml",
+        "./.bayt/compose.electric.yaml",
+        "./.bayt/compose.generate.yaml",
+        "./.bayt/compose.identity.yaml",
+        "./.bayt/compose.identity-hydra.yaml",
+        "./.bayt/compose.integrate.yaml",
+        "./.bayt/compose.launch.yaml",
+        "./.bayt/compose.migrate.yaml",
+        "./.bayt/compose.served.yaml",
+        "./.bayt/compose.served-release.yaml",
+        "./.bayt/compose.setup.yaml",
+        "./.bayt/compose.smollm3.yaml",
+        "./.bayt/compose.ticker.yaml",
+        "./.bayt/compose.tsbifrost.yaml"
+      ]
+    },
+    "srcs": {
+      "name": "ci_srcs",
+      "project": "iris",
+      "dir": ".",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          ".bayt/**"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [
+        "ci-visual_srcs",
+        "ci-replay_srcs",
+        "ci-ledger_srcs",
+        "integrate_srcs",
+        "caddy_srcs",
+        "served_srcs",
+        "served-release_srcs",
+        "database_srcs",
+        "migrate_srcs",
+        "airlock_srcs",
+        "airlock-mesh_srcs",
+        "setup_srcs",
+        "check-ledger_srcs"
+      ],
+      "transitiveCrossDeps": [
+        {
+          "project": "iris",
+          "name": "ci-replay_srcs",
+          "dir": ".",
+          "outs": {
+            "globs": [
+              ".bayt/process-compose.yaml",
+              ".pronto/cluster.json",
+              "services/database/migrations/**",
+              "tests/[r]eplay.json",
+              "tests/[r]eplay/**"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "iris",
+          "name": "integrate_srcs",
+          "dir": ".",
+          "outs": {
+            "globs": [
+              "shell/shell.yaml",
+              "shell/screens/gallery.html",
+              "shell/screens/gallery.css",
+              "shell/screens/detail.html",
+              "shell/screens/detail.css",
+              "shell/screens/intro.html",
+              "shell/screens/intro.css",
+              "shell/screens/landing.html",
+              "shell/screens/landing.css",
+              "shell/screens/camera.html",
+              "shell/screens/camera.css",
+              "shell/screens/about.html",
+              "shell/screens/about.css"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "iris",
+          "name": "caddy_srcs",
+          "dir": ".",
+          "outs": {
+            "globs": [
+              "docker/Caddyfile"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "iris",
+          "name": "served_srcs",
+          "dir": ".",
+          "outs": {
+            "globs": [
+              "shell/index.html",
+              "shell/shell.css",
+              "shell/boot.js",
+              "offline-first-sw.js",
+              "shell/shell.yaml",
+              "shell/shell.json",
+              "shell/design.css",
+              "shell/screens/gallery.html",
+              "shell/screens/gallery.css",
+              "shell/screens/detail.html",
+              "shell/screens/detail.css",
+              "shell/screens/intro.html",
+              "shell/screens/intro.css",
+              "shell/screens/landing.html",
+              "shell/screens/landing.css",
+              "shell/screens/camera.html",
+              "shell/screens/camera.css",
+              "shell/screens/about.html",
+              "shell/screens/about.css",
+              "shell/handlers/detail_view.js",
+              "shell/handlers/gallery_view.js",
+              "shell/handlers/localize_content.js",
+              "shell/handlers/onboarding_step.js",
+              "shell/handlers/scan_draft.js",
+              "shell/shared/chrome.css",
+              "shell/shared/iris.css",
+              "shell/units/camera-lens/index.html",
+              "messages/en.json",
+              "messages/es.json",
+              "messages/pt.json",
+              "messages/ru.json",
+              "messages/he.json",
+              "messages/kk.json",
+              "pictures/130a7640511f19bfd52459cd9e11775ebbb2a6e19c1e7eec6ef57418827be395.svg",
+              "pictures/eb9dd1c0c59552ec9fa6a11854486bd95b6c4ab60cf09c21cf4a17a4a9d52822.svg",
+              "pictures/25275fc0e139d54350917c4ccecf5999c40df6c1c8df37aa27035bfe7d9a6e09.svg",
+              "pictures/8ce8daf1ad4c745c831b741ebeddeb8002241a87ba48ae6c9f89cd491c6d656d.png",
+              "pictures/895f93a9be99e1164e158ab6172482408ef5aea9436fb162e42b34702a9d272d.png",
+              "pictures/caca4de2e84a6a49a959f2a6952cb1b0abbccd1ae7ee6e3715aebd9e5d03f550.png",
+              "pictures/1823bb89adef9dea6b87d275958c3022e1c6654b0e70b9765229facc5eacfda8.svg",
+              "pictures/8c896aadce8da71dcfbdd565f990c9f60631427b645c041e630947279ff821d7.svg",
+              "pictures/3f7fa1215537885ebf6ffcd4ecd1adcffb99f0bb9ffa34933f9ecbee14ec7be9.svg",
+              "pictures/cc38896ba70806959ce67b349f99f449a4f38735961b26a199c84c9b3e53fcce.svg",
+              "pictures/b6a6d6c318f57e8da8affab5d5d1acde4eec30b8ddd4b32150db9d7ab15cb4c7.svg",
+              "pictures/760bbd58ab4dcc4fe6450beda0596ac278a24e327625fa32887c43207095b9aa.svg",
+              "pictures/99b8998fa2a122ea9f24cb165bf335b3102e1063093c6a9828d88fcb9f033b60.svg",
+              "pictures/35385f8c1318df038e04997a69832b47d4c8a3f5ad5723664fceeb71d1c74a51.svg",
+              "pictures/67bf539672ddb57a74e9bf1899cf30eb104f85e9230b5245753fd918e1f7ac71.svg",
+              "pictures/b122d7ea53874f5cf66c1e806b668599dd8e3373ec5f667b9bcf3c0ee571fbdf.svg",
+              "pictures/189056ba807c2cff981a787f6f1a1c142f469b011b843f85feda8df23da8d77f.svg",
+              "pictures/f94cd0657cc317dbac20a6a4bf685182e9687b13d4ffd5149fd51bfbd8b32e71.svg",
+              "pictures/6386dd14cab4cf5edfb3f63b5211d0591672c4e46c8ac656d1bc9d6f8137eed7.svg",
+              "pictures/25063c2320fd0fff4dc04317a7627418695c9970618a48073bb79cb3e542859c.jpg",
+              "pictures/a614934e492c15e458ff950a50133af5ff2d73f2b53d7a49598b8e0519cdb23f.jpg",
+              "pictures/11e450d820a485f2ef743fff3ab688df6bf10818258c6f6e6e2db8902df8c154.jpg",
+              "pictures/32efd926e244739e97b3ced8bd3b9e2ce01ca101972eb5c7321ce1543db26877.jpg",
+              "pictures/947288224d612f8c7dced73d0ac17ab9608caa6627ef8d5da5628fce3a7a3579.jpg",
+              "pictures/9d97886ee64caf6078e589810ea369ae0649f66ad101d73a905a9f9871306bdd.png",
+              "pictures/02d2fd8bf5530e970dbef1107cee1a731c781a838d61174953a3d171963f5d94.jpg",
+              "pictures/b9f9c914ebdd06f358a2a7fe4e8f625c45665c9d6ae7c64980f9f20ee00f0d3b.jpg",
+              "pictures/cf368766bd221864d1a18cee77ea4c77a63a52b891372023b2b603b4519dd7b4.jpg",
+              "pictures/49a84a86143beab927b8074c2d05855e4221c4e99137d5d17b183e54093871cc.jpg",
+              "pictures/334466b4324a8c80f3204ef4c63cf6892ec20a954880af364b0ad4936aa6093a.jpg",
+              "pictures/084511aff76ddb2668538ed7a25fe803d53e625cd3734f5a5656e00a76fb7a92.jpg",
+              "pictures/f91ca04ef9a09a1bc8b5f17a458c78c3bb8eeec68868c9c4cbea154666bb356b.jpg",
+              "pictures/4271dbcdab4a00c153b897c9f2958d549250e04a468635b80085e64b22d1d19c.jpg",
+              "pictures/aab36d5a8153cdf5533467fffdb0fa843ed0db87f46bbd19f0f634eb2fde11fc.jpg",
+              "pictures/c9e3856e65f887bd3b04edf686e6e1d265a67306a0b3a3c7a05edb83af2447b3.jpg",
+              "pictures/6fc1a126cf07a445ff88c78e3f457f479d7c04d26536b71f0262756623c67176.jpg",
+              "pictures/fdacc68a3ff3306467048482e87e9a30de05a4fb18a46c4d37be86fc387a37f8.svg",
+              "pictures/b6febf0e4469b80a238ff3092c62662d308a6990466dbf66fda7dad1a8a10851.svg",
+              "pictures/6443d24559e0ab154f79a7814e4f2f8fa071c3c8185aa40cbfead31e1ae8cde7.svg",
+              "brief.md",
+              "brief.html",
+              "journal.html",
+              "ir.html",
+              "ir/card.css",
+              "acceptance.md",
+              "DESIGN.md",
+              "ir/neighbourhood-about.svg",
+              "ir/neighbourhood-app.svg",
+              "ir/neighbourhood-camera.svg",
+              "ir/neighbourhood-detail.svg",
+              "ir/neighbourhood-gallery.svg",
+              "ir/neighbourhood-intro.svg",
+              "ir/neighbourhood-landing.svg",
+              "journal/2026-11-10-t1-detail-dark.jpeg",
+              "journal/2026-11-10-t1-gallery.jpeg",
+              "journal/2026-11-10-t10-detail-donate.jpeg",
+              "journal/2026-11-10-t10-places-donate.jpeg",
+              "journal/2026-11-10-t11-profile.jpeg",
+              "journal/2026-11-10-t12-news.jpeg",
+              "journal/2026-11-10-t13-gallery-search.jpeg",
+              "journal/2026-11-10-t14-impact.jpeg",
+              "journal/2026-11-10-t15-moderation.jpeg",
+              "journal/2026-11-10-t16-sync.jpeg",
+              "journal/2026-11-10-t17-responsive.jpeg",
+              "journal/2026-11-10-t18-dark.jpeg",
+              "journal/2026-11-10-t19-rtl-he.jpeg",
+              "journal/2026-11-10-t2-my-items.jpeg",
+              "journal/2026-11-10-t2-preview.jpeg",
+              "journal/2026-11-10-t20-credits.jpeg",
+              "journal/2026-11-10-t3-discard.jpeg",
+              "journal/2026-11-10-t3-nearby.jpeg",
+              "journal/2026-11-10-t4-intro.jpeg",
+              "journal/2026-11-10-t4-landing.jpeg",
+              "journal/2026-11-10-t5-camera.jpeg",
+              "journal/2026-11-10-t5-submitted.jpeg",
+              "journal/2026-11-10-t6-seg-center.jpeg",
+              "journal/2026-11-10-t6-seg-neck.jpeg",
+              "journal/2026-11-10-t7-classified-gallery.jpeg",
+              "journal/2026-11-10-t7-classified-queue.jpeg",
+              "journal/2026-11-10-t8-after-translate.jpeg",
+              "journal/2026-11-10-t8-before-translate.jpeg",
+              "journal/2026-11-10-t9-detail-locale.jpeg",
+              "journal/2026-11-10-t9-gallery-revamp.jpeg",
+              "journal/2026-11-10-t9-places.jpeg",
+              "journal/stitch/specimen-detail-donate-response.json",
+              "journal/stitch/specimen-detail-donate.html",
+              "journal/stitch/specimen-detail-donate.png",
+              "robots.txt",
+              "sitemap.xml"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "iris",
+          "name": "served-release_srcs",
+          "dir": ".",
+          "outs": {
+            "globs": [
+              "shell/index.html",
+              "shell/shell.css",
+              "shell/boot.js",
+              "offline-first-sw.js",
+              "shell/shell.yaml",
+              "shell/shell.json",
+              "shell/design.css",
+              "shell/screens/gallery.html",
+              "shell/screens/gallery.css",
+              "shell/screens/detail.html",
+              "shell/screens/detail.css",
+              "shell/screens/intro.html",
+              "shell/screens/intro.css",
+              "shell/screens/landing.html",
+              "shell/screens/landing.css",
+              "shell/screens/camera.html",
+              "shell/screens/camera.css",
+              "shell/screens/about.html",
+              "shell/screens/about.css",
+              "shell/handlers/detail_view.js",
+              "shell/handlers/gallery_view.js",
+              "shell/handlers/localize_content.js",
+              "shell/handlers/onboarding_step.js",
+              "shell/handlers/scan_draft.js",
+              "shell/shared/chrome.css",
+              "shell/shared/iris.css",
+              "shell/units/camera-lens/index.html",
+              "messages/en.json",
+              "messages/es.json",
+              "messages/pt.json",
+              "messages/ru.json",
+              "messages/he.json",
+              "messages/kk.json",
+              "pictures/130a7640511f19bfd52459cd9e11775ebbb2a6e19c1e7eec6ef57418827be395.svg",
+              "pictures/eb9dd1c0c59552ec9fa6a11854486bd95b6c4ab60cf09c21cf4a17a4a9d52822.svg",
+              "pictures/25275fc0e139d54350917c4ccecf5999c40df6c1c8df37aa27035bfe7d9a6e09.svg",
+              "pictures/8ce8daf1ad4c745c831b741ebeddeb8002241a87ba48ae6c9f89cd491c6d656d.png",
+              "pictures/895f93a9be99e1164e158ab6172482408ef5aea9436fb162e42b34702a9d272d.png",
+              "pictures/caca4de2e84a6a49a959f2a6952cb1b0abbccd1ae7ee6e3715aebd9e5d03f550.png",
+              "pictures/1823bb89adef9dea6b87d275958c3022e1c6654b0e70b9765229facc5eacfda8.svg",
+              "pictures/8c896aadce8da71dcfbdd565f990c9f60631427b645c041e630947279ff821d7.svg",
+              "pictures/3f7fa1215537885ebf6ffcd4ecd1adcffb99f0bb9ffa34933f9ecbee14ec7be9.svg",
+              "pictures/cc38896ba70806959ce67b349f99f449a4f38735961b26a199c84c9b3e53fcce.svg",
+              "pictures/b6a6d6c318f57e8da8affab5d5d1acde4eec30b8ddd4b32150db9d7ab15cb4c7.svg",
+              "pictures/760bbd58ab4dcc4fe6450beda0596ac278a24e327625fa32887c43207095b9aa.svg",
+              "pictures/99b8998fa2a122ea9f24cb165bf335b3102e1063093c6a9828d88fcb9f033b60.svg",
+              "pictures/35385f8c1318df038e04997a69832b47d4c8a3f5ad5723664fceeb71d1c74a51.svg",
+              "pictures/67bf539672ddb57a74e9bf1899cf30eb104f85e9230b5245753fd918e1f7ac71.svg",
+              "pictures/b122d7ea53874f5cf66c1e806b668599dd8e3373ec5f667b9bcf3c0ee571fbdf.svg",
+              "pictures/189056ba807c2cff981a787f6f1a1c142f469b011b843f85feda8df23da8d77f.svg",
+              "pictures/f94cd0657cc317dbac20a6a4bf685182e9687b13d4ffd5149fd51bfbd8b32e71.svg",
+              "pictures/6386dd14cab4cf5edfb3f63b5211d0591672c4e46c8ac656d1bc9d6f8137eed7.svg",
+              "pictures/25063c2320fd0fff4dc04317a7627418695c9970618a48073bb79cb3e542859c.jpg",
+              "pictures/a614934e492c15e458ff950a50133af5ff2d73f2b53d7a49598b8e0519cdb23f.jpg",
+              "pictures/11e450d820a485f2ef743fff3ab688df6bf10818258c6f6e6e2db8902df8c154.jpg",
+              "pictures/32efd926e244739e97b3ced8bd3b9e2ce01ca101972eb5c7321ce1543db26877.jpg",
+              "pictures/947288224d612f8c7dced73d0ac17ab9608caa6627ef8d5da5628fce3a7a3579.jpg",
+              "pictures/9d97886ee64caf6078e589810ea369ae0649f66ad101d73a905a9f9871306bdd.png",
+              "pictures/02d2fd8bf5530e970dbef1107cee1a731c781a838d61174953a3d171963f5d94.jpg",
+              "pictures/b9f9c914ebdd06f358a2a7fe4e8f625c45665c9d6ae7c64980f9f20ee00f0d3b.jpg",
+              "pictures/cf368766bd221864d1a18cee77ea4c77a63a52b891372023b2b603b4519dd7b4.jpg",
+              "pictures/49a84a86143beab927b8074c2d05855e4221c4e99137d5d17b183e54093871cc.jpg",
+              "pictures/334466b4324a8c80f3204ef4c63cf6892ec20a954880af364b0ad4936aa6093a.jpg",
+              "pictures/084511aff76ddb2668538ed7a25fe803d53e625cd3734f5a5656e00a76fb7a92.jpg",
+              "pictures/f91ca04ef9a09a1bc8b5f17a458c78c3bb8eeec68868c9c4cbea154666bb356b.jpg",
+              "pictures/4271dbcdab4a00c153b897c9f2958d549250e04a468635b80085e64b22d1d19c.jpg",
+              "pictures/aab36d5a8153cdf5533467fffdb0fa843ed0db87f46bbd19f0f634eb2fde11fc.jpg",
+              "pictures/c9e3856e65f887bd3b04edf686e6e1d265a67306a0b3a3c7a05edb83af2447b3.jpg",
+              "pictures/6fc1a126cf07a445ff88c78e3f457f479d7c04d26536b71f0262756623c67176.jpg",
+              "pictures/fdacc68a3ff3306467048482e87e9a30de05a4fb18a46c4d37be86fc387a37f8.svg",
+              "pictures/b6febf0e4469b80a238ff3092c62662d308a6990466dbf66fda7dad1a8a10851.svg",
+              "pictures/6443d24559e0ab154f79a7814e4f2f8fa071c3c8185aa40cbfead31e1ae8cde7.svg",
+              "brief.md",
+              "brief.html",
+              "journal.html",
+              "ir.html",
+              "ir/card.css",
+              "acceptance.md",
+              "DESIGN.md",
+              "ir/neighbourhood-about.svg",
+              "ir/neighbourhood-app.svg",
+              "ir/neighbourhood-camera.svg",
+              "ir/neighbourhood-detail.svg",
+              "ir/neighbourhood-gallery.svg",
+              "ir/neighbourhood-intro.svg",
+              "ir/neighbourhood-landing.svg",
+              "journal/2026-11-10-t1-detail-dark.jpeg",
+              "journal/2026-11-10-t1-gallery.jpeg",
+              "journal/2026-11-10-t10-detail-donate.jpeg",
+              "journal/2026-11-10-t10-places-donate.jpeg",
+              "journal/2026-11-10-t11-profile.jpeg",
+              "journal/2026-11-10-t12-news.jpeg",
+              "journal/2026-11-10-t13-gallery-search.jpeg",
+              "journal/2026-11-10-t14-impact.jpeg",
+              "journal/2026-11-10-t15-moderation.jpeg",
+              "journal/2026-11-10-t16-sync.jpeg",
+              "journal/2026-11-10-t17-responsive.jpeg",
+              "journal/2026-11-10-t18-dark.jpeg",
+              "journal/2026-11-10-t19-rtl-he.jpeg",
+              "journal/2026-11-10-t2-my-items.jpeg",
+              "journal/2026-11-10-t2-preview.jpeg",
+              "journal/2026-11-10-t20-credits.jpeg",
+              "journal/2026-11-10-t3-discard.jpeg",
+              "journal/2026-11-10-t3-nearby.jpeg",
+              "journal/2026-11-10-t4-intro.jpeg",
+              "journal/2026-11-10-t4-landing.jpeg",
+              "journal/2026-11-10-t5-camera.jpeg",
+              "journal/2026-11-10-t5-submitted.jpeg",
+              "journal/2026-11-10-t6-seg-center.jpeg",
+              "journal/2026-11-10-t6-seg-neck.jpeg",
+              "journal/2026-11-10-t7-classified-gallery.jpeg",
+              "journal/2026-11-10-t7-classified-queue.jpeg",
+              "journal/2026-11-10-t8-after-translate.jpeg",
+              "journal/2026-11-10-t8-before-translate.jpeg",
+              "journal/2026-11-10-t9-detail-locale.jpeg",
+              "journal/2026-11-10-t9-gallery-revamp.jpeg",
+              "journal/2026-11-10-t9-places.jpeg",
+              "journal/stitch/specimen-detail-donate-response.json",
+              "journal/stitch/specimen-detail-donate.html",
+              "journal/stitch/specimen-detail-donate.png",
+              "robots.txt",
+              "sitemap.xml"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "iris",
+          "name": "database_srcs",
+          "dir": ".",
+          "outs": {
+            "globs": [
+              "services/database/migrations/000_extensions.sql",
+              "services/database/migrations/001_roles.sql",
+              "services/database/migrations/002_grants.sql",
+              "services/database/migrations/004_types.sql",
+              "services/database/migrations/005_create_tables.sql",
+              "services/database/migrations/006_policies.sql",
+              "services/database/migrations/007_txid.sql",
+              "services/database/migrations/008_publication.sql",
+              "services/database/migrations/010_machines.sql",
+              "services/database/migrations/003_rls.sql",
+              "services/database/migrations/013_me_provision.sql",
+              "services/database/migrations/014_default_privileges.sql",
+              "services/database/migrations/015_classify_request.sql",
+              "services/database/migrations/016_translate_item.sql",
+              "services/database/migrations/017_owner_writes.sql",
+              "services/database/migrations/018_me_readonly.sql",
+              "services/database/migrations/020_demo_items.sql"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "iris",
+          "name": "migrate_srcs",
+          "dir": ".",
+          "outs": {
+            "globs": [
+              "services/database/pgroll/20261114_ugc_translation.json"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "iris",
+          "name": "airlock_srcs",
+          "dir": ".",
+          "outs": {
+            "globs": [
+              "services/airlock/effects.json",
+              "effects/classify-waste.js"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "iris",
+          "name": "airlock-mesh_srcs",
+          "dir": ".",
+          "outs": {
+            "globs": [
+              "services/airlock/dapr/classify-waste.yaml"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "iris",
+          "name": "setup_srcs",
+          "dir": ".",
+          "outs": {
+            "globs": [
+              "[m]ise.toml",
+              "[.]mise.toml",
+              "[m]ise.lock",
+              "[.]tool-versions",
+              "[m]ise.local.toml"
+            ],
+            "exclude": []
+          }
+        },
+        {
+          "project": "iris",
+          "name": "check-ledger_srcs",
+          "dir": ".",
+          "outs": {
+            "globs": [
+              "tests/**"
+            ],
+            "exclude": []
+          }
+        }
+      ],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "./.bayt/compose.ci.yaml",
+        "./.bayt/compose.ci-visual.yaml",
+        "./.bayt/compose.ci-replay.yaml",
+        "./.bayt/compose.ci-ledger.yaml",
+        "./.bayt/compose.airlock.yaml",
+        "./.bayt/compose.airlock-mesh.yaml",
+        "./.bayt/compose.airlock-upgrade.yaml",
+        "./.bayt/compose.auth.yaml",
+        "./.bayt/compose.build.yaml",
+        "./.bayt/compose.caddy.yaml",
+        "./.bayt/compose.check-ledger.yaml",
+        "./.bayt/compose.clock.yaml",
+        "./.bayt/compose.crud.yaml",
+        "./.bayt/compose.database.yaml",
+        "./.bayt/compose.electric.yaml",
+        "./.bayt/compose.generate.yaml",
+        "./.bayt/compose.identity.yaml",
+        "./.bayt/compose.identity-hydra.yaml",
+        "./.bayt/compose.integrate.yaml",
+        "./.bayt/compose.launch.yaml",
+        "./.bayt/compose.migrate.yaml",
+        "./.bayt/compose.served.yaml",
+        "./.bayt/compose.served-release.yaml",
+        "./.bayt/compose.setup.yaml",
+        "./.bayt/compose.smollm3.yaml",
+        "./.bayt/compose.ticker.yaml",
+        "./.bayt/compose.tsbifrost.yaml"
+      ]
+    }
+  },
+  "taskfile": {
+    "run": "once",
+    "incremental": false,
+    "preconditions": []
+  },
+  "visibility": "internal",
+  "emitsSrcs": true,
+  "deps": [
+    "ci-visual_srcs",
+    "ci-visual_bayt",
+    "ci-replay_srcs",
+    "ci-replay_bayt",
+    "ci-ledger_srcs",
+    "ci-ledger_bayt"
+  ],
+  "sameProjectDeps": [
+    "ci-visual_srcs",
+    "ci-visual_bayt",
+    "ci-replay_srcs",
+    "ci-replay_bayt",
+    "ci-ledger_srcs",
+    "ci-ledger_bayt"
+  ],
+  "transitiveDeps": [
+    "ci-visual_srcs",
+    "ci-visual_bayt",
+    "ci-replay_srcs",
+    "ci-replay_bayt",
+    "ci-ledger_srcs",
+    "ci-ledger_bayt",
+    "integrate_srcs",
+    "caddy_srcs",
+    "served_srcs",
+    "served-release_srcs",
+    "database_srcs",
+    "migrate_srcs",
+    "airlock_srcs",
+    "airlock-mesh_srcs",
+    "setup_srcs",
+    "check-ledger_srcs"
+  ],
+  "transitiveCrossDeps": [],
+  "upClosure": [
+    "./.bayt/compose.ci.yaml",
+    "./.bayt/compose.ci-visual.yaml",
+    "./.bayt/compose.ci-replay.yaml",
+    "./.bayt/compose.ci-ledger.yaml",
+    "./.bayt/compose.airlock.yaml",
+    "./.bayt/compose.airlock-mesh.yaml",
+    "./.bayt/compose.airlock-upgrade.yaml",
+    "./.bayt/compose.auth.yaml",
+    "./.bayt/compose.build.yaml",
+    "./.bayt/compose.caddy.yaml",
+    "./.bayt/compose.check-ledger.yaml",
+    "./.bayt/compose.clock.yaml",
+    "./.bayt/compose.crud.yaml",
+    "./.bayt/compose.database.yaml",
+    "./.bayt/compose.electric.yaml",
+    "./.bayt/compose.generate.yaml",
+    "./.bayt/compose.identity.yaml",
+    "./.bayt/compose.identity-hydra.yaml",
+    "./.bayt/compose.integrate.yaml",
+    "./.bayt/compose.launch.yaml",
+    "./.bayt/compose.migrate.yaml",
+    "./.bayt/compose.served.yaml",
+    "./.bayt/compose.served-release.yaml",
+    "./.bayt/compose.setup.yaml",
+    "./.bayt/compose.smollm3.yaml",
+    "./.bayt/compose.ticker.yaml",
+    "./.bayt/compose.tsbifrost.yaml"
+  ],
+  "chainedDeps": [
+    {
+      "name": "ci-visual_srcs",
+      "project": "iris",
+      "dir": ".",
+      "outs": {
+        "globs": [],
+        "exclude": []
+      }
+    },
+    {
+      "name": "ci-visual_bayt",
+      "project": "iris",
+      "dir": ".",
+      "outs": {
+        "globs": [
+          ".bayt/compose.ci-visual.yaml",
+          ".bayt/Dockerfile.ci-visual",
+          ".bayt/bayt.ci-visual.json",
+          ".bayt/Taskfile.yml",
+          ".bayt/Taskfile.bayt.yml",
+          ".bayt/Taskfile.ci-visual.yaml",
+          ".bayt/process-compose.yaml"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "ci-replay_srcs",
+      "project": "iris",
+      "dir": ".",
+      "outs": {
+        "globs": [
+          ".bayt/process-compose.yaml",
+          ".pronto/cluster.json",
+          "services/database/migrations/**",
+          "tests/[r]eplay.json",
+          "tests/[r]eplay/**"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "ci-replay_bayt",
+      "project": "iris",
+      "dir": ".",
+      "outs": {
+        "globs": [
+          ".bayt/compose.ci-replay.yaml",
+          ".bayt/Dockerfile.ci-replay",
+          ".bayt/bayt.ci-replay.json",
+          ".bayt/Taskfile.yml",
+          ".bayt/Taskfile.bayt.yml",
+          ".bayt/Taskfile.ci-replay.yaml",
+          ".bayt/process-compose.yaml"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "ci-ledger_srcs",
+      "project": "iris",
+      "dir": ".",
+      "outs": {
+        "globs": [],
+        "exclude": []
+      }
+    },
+    {
+      "name": "ci-ledger_bayt",
+      "project": "iris",
+      "dir": ".",
+      "outs": {
+        "globs": [
+          ".bayt/compose.ci-ledger.yaml",
+          ".bayt/Dockerfile.ci-ledger",
+          ".bayt/bayt.ci-ledger.json",
+          ".bayt/Taskfile.yml",
+          ".bayt/Taskfile.bayt.yml",
+          ".bayt/Taskfile.ci-ledger.yaml",
+          ".bayt/process-compose.yaml"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "integrate_srcs",
+      "project": "iris",
+      "dir": ".",
+      "outs": {
+        "globs": [
+          "shell/shell.yaml",
+          "shell/screens/gallery.html",
+          "shell/screens/gallery.css",
+          "shell/screens/detail.html",
+          "shell/screens/detail.css",
+          "shell/screens/intro.html",
+          "shell/screens/intro.css",
+          "shell/screens/landing.html",
+          "shell/screens/landing.css",
+          "shell/screens/camera.html",
+          "shell/screens/camera.css",
+          "shell/screens/about.html",
+          "shell/screens/about.css"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "caddy_srcs",
+      "project": "iris",
+      "dir": ".",
+      "outs": {
+        "globs": [
+          "docker/Caddyfile"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "served_srcs",
+      "project": "iris",
+      "dir": ".",
+      "outs": {
+        "globs": [
+          "shell/index.html",
+          "shell/shell.css",
+          "shell/boot.js",
+          "offline-first-sw.js",
+          "shell/shell.yaml",
+          "shell/shell.json",
+          "shell/design.css",
+          "shell/screens/gallery.html",
+          "shell/screens/gallery.css",
+          "shell/screens/detail.html",
+          "shell/screens/detail.css",
+          "shell/screens/intro.html",
+          "shell/screens/intro.css",
+          "shell/screens/landing.html",
+          "shell/screens/landing.css",
+          "shell/screens/camera.html",
+          "shell/screens/camera.css",
+          "shell/screens/about.html",
+          "shell/screens/about.css",
+          "shell/handlers/detail_view.js",
+          "shell/handlers/gallery_view.js",
+          "shell/handlers/localize_content.js",
+          "shell/handlers/onboarding_step.js",
+          "shell/handlers/scan_draft.js",
+          "shell/shared/chrome.css",
+          "shell/shared/iris.css",
+          "shell/units/camera-lens/index.html",
+          "messages/en.json",
+          "messages/es.json",
+          "messages/pt.json",
+          "messages/ru.json",
+          "messages/he.json",
+          "messages/kk.json",
+          "pictures/130a7640511f19bfd52459cd9e11775ebbb2a6e19c1e7eec6ef57418827be395.svg",
+          "pictures/eb9dd1c0c59552ec9fa6a11854486bd95b6c4ab60cf09c21cf4a17a4a9d52822.svg",
+          "pictures/25275fc0e139d54350917c4ccecf5999c40df6c1c8df37aa27035bfe7d9a6e09.svg",
+          "pictures/8ce8daf1ad4c745c831b741ebeddeb8002241a87ba48ae6c9f89cd491c6d656d.png",
+          "pictures/895f93a9be99e1164e158ab6172482408ef5aea9436fb162e42b34702a9d272d.png",
+          "pictures/caca4de2e84a6a49a959f2a6952cb1b0abbccd1ae7ee6e3715aebd9e5d03f550.png",
+          "pictures/1823bb89adef9dea6b87d275958c3022e1c6654b0e70b9765229facc5eacfda8.svg",
+          "pictures/8c896aadce8da71dcfbdd565f990c9f60631427b645c041e630947279ff821d7.svg",
+          "pictures/3f7fa1215537885ebf6ffcd4ecd1adcffb99f0bb9ffa34933f9ecbee14ec7be9.svg",
+          "pictures/cc38896ba70806959ce67b349f99f449a4f38735961b26a199c84c9b3e53fcce.svg",
+          "pictures/b6a6d6c318f57e8da8affab5d5d1acde4eec30b8ddd4b32150db9d7ab15cb4c7.svg",
+          "pictures/760bbd58ab4dcc4fe6450beda0596ac278a24e327625fa32887c43207095b9aa.svg",
+          "pictures/99b8998fa2a122ea9f24cb165bf335b3102e1063093c6a9828d88fcb9f033b60.svg",
+          "pictures/35385f8c1318df038e04997a69832b47d4c8a3f5ad5723664fceeb71d1c74a51.svg",
+          "pictures/67bf539672ddb57a74e9bf1899cf30eb104f85e9230b5245753fd918e1f7ac71.svg",
+          "pictures/b122d7ea53874f5cf66c1e806b668599dd8e3373ec5f667b9bcf3c0ee571fbdf.svg",
+          "pictures/189056ba807c2cff981a787f6f1a1c142f469b011b843f85feda8df23da8d77f.svg",
+          "pictures/f94cd0657cc317dbac20a6a4bf685182e9687b13d4ffd5149fd51bfbd8b32e71.svg",
+          "pictures/6386dd14cab4cf5edfb3f63b5211d0591672c4e46c8ac656d1bc9d6f8137eed7.svg",
+          "pictures/25063c2320fd0fff4dc04317a7627418695c9970618a48073bb79cb3e542859c.jpg",
+          "pictures/a614934e492c15e458ff950a50133af5ff2d73f2b53d7a49598b8e0519cdb23f.jpg",
+          "pictures/11e450d820a485f2ef743fff3ab688df6bf10818258c6f6e6e2db8902df8c154.jpg",
+          "pictures/32efd926e244739e97b3ced8bd3b9e2ce01ca101972eb5c7321ce1543db26877.jpg",
+          "pictures/947288224d612f8c7dced73d0ac17ab9608caa6627ef8d5da5628fce3a7a3579.jpg",
+          "pictures/9d97886ee64caf6078e589810ea369ae0649f66ad101d73a905a9f9871306bdd.png",
+          "pictures/02d2fd8bf5530e970dbef1107cee1a731c781a838d61174953a3d171963f5d94.jpg",
+          "pictures/b9f9c914ebdd06f358a2a7fe4e8f625c45665c9d6ae7c64980f9f20ee00f0d3b.jpg",
+          "pictures/cf368766bd221864d1a18cee77ea4c77a63a52b891372023b2b603b4519dd7b4.jpg",
+          "pictures/49a84a86143beab927b8074c2d05855e4221c4e99137d5d17b183e54093871cc.jpg",
+          "pictures/334466b4324a8c80f3204ef4c63cf6892ec20a954880af364b0ad4936aa6093a.jpg",
+          "pictures/084511aff76ddb2668538ed7a25fe803d53e625cd3734f5a5656e00a76fb7a92.jpg",
+          "pictures/f91ca04ef9a09a1bc8b5f17a458c78c3bb8eeec68868c9c4cbea154666bb356b.jpg",
+          "pictures/4271dbcdab4a00c153b897c9f2958d549250e04a468635b80085e64b22d1d19c.jpg",
+          "pictures/aab36d5a8153cdf5533467fffdb0fa843ed0db87f46bbd19f0f634eb2fde11fc.jpg",
+          "pictures/c9e3856e65f887bd3b04edf686e6e1d265a67306a0b3a3c7a05edb83af2447b3.jpg",
+          "pictures/6fc1a126cf07a445ff88c78e3f457f479d7c04d26536b71f0262756623c67176.jpg",
+          "pictures/fdacc68a3ff3306467048482e87e9a30de05a4fb18a46c4d37be86fc387a37f8.svg",
+          "pictures/b6febf0e4469b80a238ff3092c62662d308a6990466dbf66fda7dad1a8a10851.svg",
+          "pictures/6443d24559e0ab154f79a7814e4f2f8fa071c3c8185aa40cbfead31e1ae8cde7.svg",
+          "brief.md",
+          "brief.html",
+          "journal.html",
+          "ir.html",
+          "ir/card.css",
+          "acceptance.md",
+          "DESIGN.md",
+          "ir/neighbourhood-about.svg",
+          "ir/neighbourhood-app.svg",
+          "ir/neighbourhood-camera.svg",
+          "ir/neighbourhood-detail.svg",
+          "ir/neighbourhood-gallery.svg",
+          "ir/neighbourhood-intro.svg",
+          "ir/neighbourhood-landing.svg",
+          "journal/2026-11-10-t1-detail-dark.jpeg",
+          "journal/2026-11-10-t1-gallery.jpeg",
+          "journal/2026-11-10-t10-detail-donate.jpeg",
+          "journal/2026-11-10-t10-places-donate.jpeg",
+          "journal/2026-11-10-t11-profile.jpeg",
+          "journal/2026-11-10-t12-news.jpeg",
+          "journal/2026-11-10-t13-gallery-search.jpeg",
+          "journal/2026-11-10-t14-impact.jpeg",
+          "journal/2026-11-10-t15-moderation.jpeg",
+          "journal/2026-11-10-t16-sync.jpeg",
+          "journal/2026-11-10-t17-responsive.jpeg",
+          "journal/2026-11-10-t18-dark.jpeg",
+          "journal/2026-11-10-t19-rtl-he.jpeg",
+          "journal/2026-11-10-t2-my-items.jpeg",
+          "journal/2026-11-10-t2-preview.jpeg",
+          "journal/2026-11-10-t20-credits.jpeg",
+          "journal/2026-11-10-t3-discard.jpeg",
+          "journal/2026-11-10-t3-nearby.jpeg",
+          "journal/2026-11-10-t4-intro.jpeg",
+          "journal/2026-11-10-t4-landing.jpeg",
+          "journal/2026-11-10-t5-camera.jpeg",
+          "journal/2026-11-10-t5-submitted.jpeg",
+          "journal/2026-11-10-t6-seg-center.jpeg",
+          "journal/2026-11-10-t6-seg-neck.jpeg",
+          "journal/2026-11-10-t7-classified-gallery.jpeg",
+          "journal/2026-11-10-t7-classified-queue.jpeg",
+          "journal/2026-11-10-t8-after-translate.jpeg",
+          "journal/2026-11-10-t8-before-translate.jpeg",
+          "journal/2026-11-10-t9-detail-locale.jpeg",
+          "journal/2026-11-10-t9-gallery-revamp.jpeg",
+          "journal/2026-11-10-t9-places.jpeg",
+          "journal/stitch/specimen-detail-donate-response.json",
+          "journal/stitch/specimen-detail-donate.html",
+          "journal/stitch/specimen-detail-donate.png",
+          "robots.txt",
+          "sitemap.xml"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "served-release_srcs",
+      "project": "iris",
+      "dir": ".",
+      "outs": {
+        "globs": [
+          "shell/index.html",
+          "shell/shell.css",
+          "shell/boot.js",
+          "offline-first-sw.js",
+          "shell/shell.yaml",
+          "shell/shell.json",
+          "shell/design.css",
+          "shell/screens/gallery.html",
+          "shell/screens/gallery.css",
+          "shell/screens/detail.html",
+          "shell/screens/detail.css",
+          "shell/screens/intro.html",
+          "shell/screens/intro.css",
+          "shell/screens/landing.html",
+          "shell/screens/landing.css",
+          "shell/screens/camera.html",
+          "shell/screens/camera.css",
+          "shell/screens/about.html",
+          "shell/screens/about.css",
+          "shell/handlers/detail_view.js",
+          "shell/handlers/gallery_view.js",
+          "shell/handlers/localize_content.js",
+          "shell/handlers/onboarding_step.js",
+          "shell/handlers/scan_draft.js",
+          "shell/shared/chrome.css",
+          "shell/shared/iris.css",
+          "shell/units/camera-lens/index.html",
+          "messages/en.json",
+          "messages/es.json",
+          "messages/pt.json",
+          "messages/ru.json",
+          "messages/he.json",
+          "messages/kk.json",
+          "pictures/130a7640511f19bfd52459cd9e11775ebbb2a6e19c1e7eec6ef57418827be395.svg",
+          "pictures/eb9dd1c0c59552ec9fa6a11854486bd95b6c4ab60cf09c21cf4a17a4a9d52822.svg",
+          "pictures/25275fc0e139d54350917c4ccecf5999c40df6c1c8df37aa27035bfe7d9a6e09.svg",
+          "pictures/8ce8daf1ad4c745c831b741ebeddeb8002241a87ba48ae6c9f89cd491c6d656d.png",
+          "pictures/895f93a9be99e1164e158ab6172482408ef5aea9436fb162e42b34702a9d272d.png",
+          "pictures/caca4de2e84a6a49a959f2a6952cb1b0abbccd1ae7ee6e3715aebd9e5d03f550.png",
+          "pictures/1823bb89adef9dea6b87d275958c3022e1c6654b0e70b9765229facc5eacfda8.svg",
+          "pictures/8c896aadce8da71dcfbdd565f990c9f60631427b645c041e630947279ff821d7.svg",
+          "pictures/3f7fa1215537885ebf6ffcd4ecd1adcffb99f0bb9ffa34933f9ecbee14ec7be9.svg",
+          "pictures/cc38896ba70806959ce67b349f99f449a4f38735961b26a199c84c9b3e53fcce.svg",
+          "pictures/b6a6d6c318f57e8da8affab5d5d1acde4eec30b8ddd4b32150db9d7ab15cb4c7.svg",
+          "pictures/760bbd58ab4dcc4fe6450beda0596ac278a24e327625fa32887c43207095b9aa.svg",
+          "pictures/99b8998fa2a122ea9f24cb165bf335b3102e1063093c6a9828d88fcb9f033b60.svg",
+          "pictures/35385f8c1318df038e04997a69832b47d4c8a3f5ad5723664fceeb71d1c74a51.svg",
+          "pictures/67bf539672ddb57a74e9bf1899cf30eb104f85e9230b5245753fd918e1f7ac71.svg",
+          "pictures/b122d7ea53874f5cf66c1e806b668599dd8e3373ec5f667b9bcf3c0ee571fbdf.svg",
+          "pictures/189056ba807c2cff981a787f6f1a1c142f469b011b843f85feda8df23da8d77f.svg",
+          "pictures/f94cd0657cc317dbac20a6a4bf685182e9687b13d4ffd5149fd51bfbd8b32e71.svg",
+          "pictures/6386dd14cab4cf5edfb3f63b5211d0591672c4e46c8ac656d1bc9d6f8137eed7.svg",
+          "pictures/25063c2320fd0fff4dc04317a7627418695c9970618a48073bb79cb3e542859c.jpg",
+          "pictures/a614934e492c15e458ff950a50133af5ff2d73f2b53d7a49598b8e0519cdb23f.jpg",
+          "pictures/11e450d820a485f2ef743fff3ab688df6bf10818258c6f6e6e2db8902df8c154.jpg",
+          "pictures/32efd926e244739e97b3ced8bd3b9e2ce01ca101972eb5c7321ce1543db26877.jpg",
+          "pictures/947288224d612f8c7dced73d0ac17ab9608caa6627ef8d5da5628fce3a7a3579.jpg",
+          "pictures/9d97886ee64caf6078e589810ea369ae0649f66ad101d73a905a9f9871306bdd.png",
+          "pictures/02d2fd8bf5530e970dbef1107cee1a731c781a838d61174953a3d171963f5d94.jpg",
+          "pictures/b9f9c914ebdd06f358a2a7fe4e8f625c45665c9d6ae7c64980f9f20ee00f0d3b.jpg",
+          "pictures/cf368766bd221864d1a18cee77ea4c77a63a52b891372023b2b603b4519dd7b4.jpg",
+          "pictures/49a84a86143beab927b8074c2d05855e4221c4e99137d5d17b183e54093871cc.jpg",
+          "pictures/334466b4324a8c80f3204ef4c63cf6892ec20a954880af364b0ad4936aa6093a.jpg",
+          "pictures/084511aff76ddb2668538ed7a25fe803d53e625cd3734f5a5656e00a76fb7a92.jpg",
+          "pictures/f91ca04ef9a09a1bc8b5f17a458c78c3bb8eeec68868c9c4cbea154666bb356b.jpg",
+          "pictures/4271dbcdab4a00c153b897c9f2958d549250e04a468635b80085e64b22d1d19c.jpg",
+          "pictures/aab36d5a8153cdf5533467fffdb0fa843ed0db87f46bbd19f0f634eb2fde11fc.jpg",
+          "pictures/c9e3856e65f887bd3b04edf686e6e1d265a67306a0b3a3c7a05edb83af2447b3.jpg",
+          "pictures/6fc1a126cf07a445ff88c78e3f457f479d7c04d26536b71f0262756623c67176.jpg",
+          "pictures/fdacc68a3ff3306467048482e87e9a30de05a4fb18a46c4d37be86fc387a37f8.svg",
+          "pictures/b6febf0e4469b80a238ff3092c62662d308a6990466dbf66fda7dad1a8a10851.svg",
+          "pictures/6443d24559e0ab154f79a7814e4f2f8fa071c3c8185aa40cbfead31e1ae8cde7.svg",
+          "brief.md",
+          "brief.html",
+          "journal.html",
+          "ir.html",
+          "ir/card.css",
+          "acceptance.md",
+          "DESIGN.md",
+          "ir/neighbourhood-about.svg",
+          "ir/neighbourhood-app.svg",
+          "ir/neighbourhood-camera.svg",
+          "ir/neighbourhood-detail.svg",
+          "ir/neighbourhood-gallery.svg",
+          "ir/neighbourhood-intro.svg",
+          "ir/neighbourhood-landing.svg",
+          "journal/2026-11-10-t1-detail-dark.jpeg",
+          "journal/2026-11-10-t1-gallery.jpeg",
+          "journal/2026-11-10-t10-detail-donate.jpeg",
+          "journal/2026-11-10-t10-places-donate.jpeg",
+          "journal/2026-11-10-t11-profile.jpeg",
+          "journal/2026-11-10-t12-news.jpeg",
+          "journal/2026-11-10-t13-gallery-search.jpeg",
+          "journal/2026-11-10-t14-impact.jpeg",
+          "journal/2026-11-10-t15-moderation.jpeg",
+          "journal/2026-11-10-t16-sync.jpeg",
+          "journal/2026-11-10-t17-responsive.jpeg",
+          "journal/2026-11-10-t18-dark.jpeg",
+          "journal/2026-11-10-t19-rtl-he.jpeg",
+          "journal/2026-11-10-t2-my-items.jpeg",
+          "journal/2026-11-10-t2-preview.jpeg",
+          "journal/2026-11-10-t20-credits.jpeg",
+          "journal/2026-11-10-t3-discard.jpeg",
+          "journal/2026-11-10-t3-nearby.jpeg",
+          "journal/2026-11-10-t4-intro.jpeg",
+          "journal/2026-11-10-t4-landing.jpeg",
+          "journal/2026-11-10-t5-camera.jpeg",
+          "journal/2026-11-10-t5-submitted.jpeg",
+          "journal/2026-11-10-t6-seg-center.jpeg",
+          "journal/2026-11-10-t6-seg-neck.jpeg",
+          "journal/2026-11-10-t7-classified-gallery.jpeg",
+          "journal/2026-11-10-t7-classified-queue.jpeg",
+          "journal/2026-11-10-t8-after-translate.jpeg",
+          "journal/2026-11-10-t8-before-translate.jpeg",
+          "journal/2026-11-10-t9-detail-locale.jpeg",
+          "journal/2026-11-10-t9-gallery-revamp.jpeg",
+          "journal/2026-11-10-t9-places.jpeg",
+          "journal/stitch/specimen-detail-donate-response.json",
+          "journal/stitch/specimen-detail-donate.html",
+          "journal/stitch/specimen-detail-donate.png",
+          "robots.txt",
+          "sitemap.xml"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "database_srcs",
+      "project": "iris",
+      "dir": ".",
+      "outs": {
+        "globs": [
+          "services/database/migrations/000_extensions.sql",
+          "services/database/migrations/001_roles.sql",
+          "services/database/migrations/002_grants.sql",
+          "services/database/migrations/004_types.sql",
+          "services/database/migrations/005_create_tables.sql",
+          "services/database/migrations/006_policies.sql",
+          "services/database/migrations/007_txid.sql",
+          "services/database/migrations/008_publication.sql",
+          "services/database/migrations/010_machines.sql",
+          "services/database/migrations/003_rls.sql",
+          "services/database/migrations/013_me_provision.sql",
+          "services/database/migrations/014_default_privileges.sql",
+          "services/database/migrations/015_classify_request.sql",
+          "services/database/migrations/016_translate_item.sql",
+          "services/database/migrations/017_owner_writes.sql",
+          "services/database/migrations/018_me_readonly.sql",
+          "services/database/migrations/020_demo_items.sql"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "migrate_srcs",
+      "project": "iris",
+      "dir": ".",
+      "outs": {
+        "globs": [
+          "services/database/pgroll/20261114_ugc_translation.json"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "airlock_srcs",
+      "project": "iris",
+      "dir": ".",
+      "outs": {
+        "globs": [
+          "services/airlock/effects.json",
+          "effects/classify-waste.js"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "airlock-mesh_srcs",
+      "project": "iris",
+      "dir": ".",
+      "outs": {
+        "globs": [
+          "services/airlock/dapr/classify-waste.yaml"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "setup_srcs",
+      "project": "iris",
+      "dir": ".",
+      "outs": {
+        "globs": [
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock",
+          "[.]tool-versions",
+          "[m]ise.local.toml"
+        ],
+        "exclude": []
+      }
+    },
+    {
+      "name": "check-ledger_srcs",
+      "project": "iris",
+      "dir": ".",
+      "outs": {
+        "globs": [
+          "tests/**"
+        ],
+        "exclude": []
+      }
+    }
+  ],
+  "cmds": [
+    {
+      "srcs": {
+        "globs": [
+          ".bayt/**"
+        ],
+        "exclude": [],
+        "defaultGlobs": null,
+        "defaultExclude": null
+      },
+      "name": "builtin",
+      "do": "set -eu\nexport DOCKER_HOST_TCP=\"$DOCKER_HOST\"\nexport DEPOT_DISABLE_OTEL=1\ndocker compose --profile '*' config -o /tmp/ci-compose.yaml\ndocker buildx bake --allow=fs.read=/ -f /tmp/ci-compose.yaml --print ci-visual ci-replay ci-ledger > /tmp/ci-bake.json\nfor target in ci-visual ci-replay ci-ledger; do\n docker buildx bake -f /tmp/ci-bake.json --progress plain --set '*.output=type=cacheonly' ${SAYT_NO_CACHE:+--no-cache --set \"*.cache-from=\" --set \"*.cache-to=\"} ${SAYT_NO_CACHE_FROM:+--set \"*.cache-from=\"} ${SAYT_NO_CACHE_TO:+--set \"*.cache-to=\"} \"$target\"\ndone",
+      "shell": "sh",
+      "dockerfile": {
+        "inject": {
+          "secrets": [
+            {
+              "id": "docker_host",
+              "var": {
+                "contents": "DOCKER_HOST"
+              }
+            },
+            {
+              "id": "buildx_builder",
+              "var": {
+                "contents": "BUILDX_BUILDER"
+              }
+            },
+            {
+              "id": "testcontainers_host",
+              "var": {
+                "contents": "TESTCONTAINERS_HOST_OVERRIDE"
+              }
+            },
+            {
+              "id": "cache_scope",
+              "var": {
+                "contents": "CACHE_SCOPE"
+              }
+            },
+            {
+              "id": "cache_scope_fallback",
+              "var": {
+                "contents": "CACHE_SCOPE_FALLBACK"
+              }
+            },
+            {
+              "id": "sayt_buildkit_syntax",
+              "var": {
+                "contents": "BUILDKIT_SYNTAX"
+              }
+            },
+            {
+              "id": "sayt_no_cache",
+              "var": {
+                "contents": "SAYT_NO_CACHE"
+              }
+            },
+            {
+              "id": "bayt_image_tag",
+              "var": {
+                "contents": "BAYT_IMAGE_TAG"
+              }
+            },
+            {
+              "id": "bayt_pull_policy",
+              "var": {
+                "contents": "BAYT_PULL_POLICY"
+              }
+            },
+            {
+              "id": "sayt_no_cache_from",
+              "var": {
+                "contents": "SAYT_NO_CACHE_FROM"
+              }
+            },
+            {
+              "id": "sayt_no_cache_to",
+              "var": {
+                "contents": "SAYT_NO_CACHE_TO"
+              }
+            },
+            {
+              "id": "depot_token",
+              "var": {
+                "contents": "DEPOT_TOKEN"
+              }
+            },
+            {
+              "id": "depot_project_id",
+              "var": {
+                "contents": "DEPOT_PROJECT_ID"
+              }
+            },
+            {
+              "id": "depot_org_id",
+              "var": {
+                "contents": "DEPOT_ORG_ID"
+              }
+            },
+            {
+              "id": "depot_disable_otel",
+              "var": {
+                "contents": "DEPOT_DISABLE_OTEL"
+              }
+            },
+            {
+              "id": "actions_results_url",
+              "var": {
+                "contents": "ACTIONS_RESULTS_URL"
+              }
+            },
+            {
+              "id": "actions_runtime_token",
+              "var": {
+                "contents": "ACTIONS_RUNTIME_TOKEN"
+              }
+            },
+            {
+              "id": "bkid_project",
+              "var": {
+                "contents": "BKID_PROJECT"
+              }
+            },
+            {
+              "id": "buildx_instance",
+              "var": {
+                "contents": "BUILDX_INSTANCE"
+              }
+            },
+            {
+              "id": "docker_config",
+              "var": {
+                "contents": "DOCKER_AUTH_CONFIG",
+                "path": "/root/.docker/config.json"
+              },
+              "mode": "0600"
+            }
+          ],
+          "defaultSteps": {
+            "buildx-instance": {
+              "name": "buildx-instance",
+              "priority": 11,
+              "pre": "if [ -n \"$BUILDX_BUILDER\" ] && [ -n \"$BUILDX_INSTANCE\" ]; then\n  install -d -m 0700 /root/.docker/buildx/instances\n  printf '%s' \"$BUILDX_INSTANCE\" > \"/root/.docker/buildx/instances/$BUILDX_BUILDER\"\n  chmod 0600 \"/root/.docker/buildx/instances/$BUILDX_BUILDER\"\nfi"
+            },
+            "unix-socket-forward": {
+              "name": "unix-socket-forward",
+              "priority": 10,
+              "pre": "if [ -n \"$DOCKER_HOST\" ] && [ ! -e /var/run/docker.sock ]; then\n  ulimit -n 1048576 2>/dev/null || true\n  addr=${DOCKER_HOST#tcp://}\n  [ -n \"$addr\" ] || { echo \"bkid: DOCKER_HOST=$DOCKER_HOST has no tcp:// address\" >&2; exit 1; }\n  socat -d0 -t 86400 UNIX-LISTEN:/var/run/docker.sock,fork,backlog=1024,reuseaddr \"TCP:$addr,keepalive,keepidle=30,keepintvl=15,keepcnt=4\" &\n  SOCAT_PID=$!\n  trap 'kill $SOCAT_PID 2>/dev/null || true' EXIT INT TERM\n  socat -u OPEN:/dev/null UNIX-CONNECT:/var/run/docker.sock,retry=20,interval=0.2 >/dev/null 2>&1 \\\n    || { echo \"bkid: socat bridge to /var/run/docker.sock not ready\" >&2; exit 1; }\nfi"
+            }
+          },
+          "steps": []
+        }
+      },
+      "stop": false
+    }
+  ],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

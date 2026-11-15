@@ -1,0 +1,961 @@
+/* Iris navigation rail (desktop left rail on >=860px, compact top brand strip
+   on phones <860px, following guis/iris & Stitch) and Access & Portability modal.
+   Every colour and length resolves through shell/design.css tokens so light and
+   dark appearances stay in lockstep. */
+
+:root {
+  --shell-font: var(--type-body)/1.5 "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --shell-heading-font: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body > nav > a::before {
+  content: "";
+  display: inline-block;
+  width: var(--size-4);
+  height: var(--size-4);
+  flex-shrink: 0;
+  background-color: currentColor;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
+body > nav > a[data-route="gallery"]:not([data-param-shelf])::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolygon points='16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolygon points='16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76'/%3E%3C/svg%3E");
+}
+
+body > nav > a[data-param-shelf="mine"]::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='20' height='5' x='2' y='3' rx='1'/%3E%3Cpath d='M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8'/%3E%3Cpath d='M10 12h4'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='20' height='5' x='2' y='3' rx='1'/%3E%3Cpath d='M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8'/%3E%3Cpath d='M10 12h4'/%3E%3C/svg%3E");
+}
+
+body > nav > a[data-param-shelf="gallery"]::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2' ry='2'/%3E%3Ccircle cx='9' cy='9' r='2'/%3E%3Cpath d='m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2' ry='2'/%3E%3Ccircle cx='9' cy='9' r='2'/%3E%3Cpath d='m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21'/%3E%3C/svg%3E");
+}
+
+body > nav > a[data-route="camera"]::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z'/%3E%3Ccircle cx='12' cy='13' r='3'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z'/%3E%3Ccircle cx='12' cy='13' r='3'/%3E%3C/svg%3E");
+}
+
+body > nav > a[data-route="about"]::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E");
+}
+
+@media screen and (min-width: 860px) {
+  body {
+    display: block;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body > nav {
+    position: fixed !important;
+    top: 0 !important;
+    inset-inline-start: 0 !important;
+    bottom: 0 !important;
+    width: var(--size-12) !important;
+    height: 100vh !important;
+    z-index: 100 !important;
+    background: var(--header) !important;
+    color: var(--strip-ink) !important;
+    border-inline-end: var(--border-size-1) solid color-mix(in srgb, var(--strip-ink) 16%, var(--header)) !important;
+    border-block-end: none !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: var(--size-1) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+    transition: width var(--motion-fast) var(--motion-ease) !important;
+  }
+
+  body > nav::before {
+    content: "";
+    display: block;
+    width: 100%;
+    height: var(--size-9);
+    padding: var(--sp-md);
+    margin: 0 0 var(--sp-sm) 0 !important;
+    background-image: url("/pictures/25275fc0e139d54350917c4ccecf5999c40df6c1c8df37aa27035bfe7d9a6e09.svg");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: auto var(--size-6);
+    border-block-end: var(--border-size-1) solid color-mix(in srgb, var(--strip-ink) 16%, var(--header));
+    box-sizing: border-box;
+    flex-shrink: 0;
+  }
+
+  body > nav > a {
+    display: flex !important;
+    align-items: center !important;
+    gap: var(--sp-sm) !important;
+    width: calc(100% - var(--sp-md)) !important;
+    margin: 0 var(--sp-sm) !important;
+    padding: var(--sp-sm) var(--sp-md) !important;
+    min-height: var(--control-h-lg) !important;
+    border-radius: var(--r-md) !important;
+    border: var(--border-size-1) solid transparent !important;
+    background: transparent !important;
+    color: var(--strip-ink) !important;
+    font-size: var(--type-caption) !important;
+    font-weight: 500 !important;
+    text-decoration: none !important;
+    box-sizing: border-box !important;
+    transition: background var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease) !important;
+  }
+
+  body > nav > a:hover {
+    background: color-mix(in srgb, var(--strip-ink) 12%, var(--header)) !important;
+    color: var(--strip-ink) !important;
+    text-decoration: none !important;
+  }
+
+  body > nav > a[aria-current="page"] {
+    background: var(--strip-ink) !important;
+    color: var(--header) !important;
+    font-weight: 600 !important;
+    box-shadow: var(--shadow-1) !important;
+    text-decoration: none !important;
+  }
+
+  body > nav > a[data-route="about"] {
+    margin-block-start: auto !important;
+    margin-block-end: var(--sp-sm) !important;
+  }
+
+  body > nav .shell-me {
+    margin-block-start: 0 !important;
+    margin-inline-start: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: var(--sp-md) !important;
+    border-block-start: var(--border-size-1) solid color-mix(in srgb, var(--strip-ink) 16%, var(--header)) !important;
+    background: color-mix(in srgb, var(--primary) 10%, var(--header)) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: var(--sp-sm) !important;
+  }
+
+  body > nav .shell-who {
+    display: flex !important;
+    align-items: center !important;
+    gap: var(--sp-sm) !important;
+    min-width: 0 !important;
+    color: var(--strip-ink) !important;
+    font-size: var(--type-label) !important;
+    text-decoration: none !important;
+  }
+
+  body > nav .shell-who::before {
+    content: "";
+    display: inline-block;
+    width: var(--size-5);
+    height: var(--size-5);
+    border-radius: var(--r-full);
+    background-color: var(--strip-ink);
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E");
+    -webkit-mask-size: var(--size-3) var(--size-3);
+    mask-size: var(--size-3) var(--size-3);
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    flex-shrink: 0;
+  }
+
+  body > nav .shell-who .name {
+    font-weight: 600 !important;
+    color: var(--strip-ink) !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  body > nav .shell-who .handle {
+    font-weight: 500 !important;
+    color: var(--strip-ink) !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  body > nav .shell-who[data-guest] .handle {
+    display: flex !important;
+    flex-direction: column !important;
+    line-height: var(--type-leading-title) !important;
+  }
+
+  body > nav .shell-who[data-guest] .handle::after {
+    content: "Saved on this device";
+    font-size: var(--type-label);
+    font-weight: 400;
+    color: var(--strip-ink);
+    opacity: .85;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :lang(es) body > nav .shell-who[data-guest] .handle::after { content: "Guardado en este dispositivo"; }
+  :lang(pt) body > nav .shell-who[data-guest] .handle::after { content: "Salvo neste aparelho"; }
+  :lang(ru) body > nav .shell-who[data-guest] .handle::after { content: "Сохранено на этом устройстве"; }
+  :lang(he) body > nav .shell-who[data-guest] .handle::after { content: "שמור במכשיר זה"; }
+  :lang(kk) body > nav .shell-who[data-guest] .handle::after { content: "Осы құрылғыда сақталған"; }
+
+  body > nav .shell-signout:not([hidden]),
+  body > nav .shell-signin:not([hidden]) {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    min-height: var(--control-h-sm) !important;
+    padding: var(--size-1) var(--sp-sm) !important;
+    border-radius: var(--r-full) !important;
+    background: var(--strip-ink) !important;
+    color: var(--header) !important;
+    border: var(--border-size-1) solid transparent !important;
+    font-size: var(--type-label) !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
+    cursor: pointer !important;
+  }
+
+  body > nav .shell-signout:hover,
+  body > nav .shell-signin:hover {
+    filter: brightness(.95) !important;
+  }
+
+  body > main#app {
+    margin-inline-start: var(--size-12) !important;
+    width: calc(100% - var(--size-12)) !important;
+    max-width: calc(100% - var(--size-12)) !important;
+    box-sizing: border-box !important;
+    min-width: 0 !important;
+    min-height: 100vh !important;
+    transition: margin-inline-start var(--motion-fast) var(--motion-ease), width var(--motion-fast) var(--motion-ease), max-width var(--motion-fast) var(--motion-ease) !important;
+  }
+
+  body:has(.shell-login) > main#app {
+    margin-inline-start: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Automated compact icon rail on medium desktop viewports (860px–1179px) */
+@media screen and (min-width: 860px) and (max-width: 1179px) {
+  body > nav {
+    width: var(--size-9) !important;
+  }
+
+  body > nav::before {
+    padding: var(--sp-sm) !important;
+    background-size: auto var(--size-5) !important;
+  }
+
+  body > nav > a {
+    justify-content: center !important;
+    padding: var(--sp-sm) !important;
+    gap: 0 !important;
+    font-size: 0 !important;
+  }
+
+  body > nav .shell-me {
+    padding: var(--sp-sm) !important;
+    align-items: center !important;
+  }
+
+  body > nav .shell-signin,
+  body > nav .shell-signout {
+    padding: var(--size-1) !important;
+    font-size: 0 !important;
+    gap: 0 !important;
+  }
+
+  body > nav .shell-signin::before {
+    content: "🔑";
+    font-size: var(--type-body);
+  }
+
+  body > nav .shell-signout::before {
+    content: "⎋";
+    font-size: var(--type-body);
+  }
+
+  body > nav .shell-who {
+    justify-content: center !important;
+    gap: 0 !important;
+  }
+
+  body > nav .shell-who .name,
+  body > nav .shell-who .handle {
+    display: none !important;
+  }
+
+  body > main#app {
+    margin-inline-start: var(--size-9) !important;
+    width: calc(100% - var(--size-9)) !important;
+    max-width: calc(100% - var(--size-9)) !important;
+  }
+}
+
+@media screen and (max-width: 859px) {
+  body > nav {
+    position: sticky !important;
+    inset: 0 0 auto 0 !important;
+    z-index: 100 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(var(--size-8), 1fr)) !important;
+    gap: var(--size-1) !important;
+    padding: var(--size-1) var(--sp-sm) !important;
+    background: var(--header) !important;
+    color: var(--strip-ink) !important;
+    border: none !important;
+    border-block-end: var(--border-size-1) solid color-mix(in srgb, var(--strip-ink) 18%, var(--header)) !important;
+    box-sizing: border-box !important;
+  }
+
+  body > nav::before,
+  body > nav::after,
+  body > nav .shell-me {
+    display: none !important;
+  }
+
+  body > nav > a {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: var(--size-1) !important;
+    min-width: 0 !important;
+    min-height: var(--size-8) !important;
+    box-sizing: border-box !important;
+    padding: var(--size-1) !important;
+    border: none !important;
+    border-radius: var(--r-md) !important;
+    background: transparent !important;
+    color: var(--strip-ink) !important;
+    font-size: var(--type-label) !important;
+    font-weight: 500 !important;
+    line-height: var(--type-leading-title) !important;
+    text-align: center !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    text-decoration: none !important;
+    transition: background var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease) !important;
+  }
+
+  body > nav > a[aria-current="page"] {
+    background: var(--strip-ink) !important;
+    color: var(--header) !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+  }
+
+  body > main#app {
+    margin-inline-start: 0 !important;
+    margin-block-end: 0 !important;
+  }
+}
+
+body[data-auth="user"] .login-modal-overlay {
+  display: none !important;
+}
+
+body > nav .shell-me[data-auth="guest"] .shell-signin,
+body > nav .shell-register,
+body > nav .shell-register:not([hidden]),
+body > nav .shell-provider,
+body > nav .shell-provider:not([hidden]) {
+  display: none !important;
+}
+
+body > nav .shell-me[data-auth="guest"] .shell-who {
+  cursor: pointer !important;
+}
+
+body > nav .shell-signin:not([hidden]),
+body > nav .shell-signout:not([hidden]) {
+  font-weight: 600 !important;
+  font-size: var(--type-label) !important;
+  color: var(--header) !important;
+  background: var(--strip-ink) !important;
+  border: var(--border-size-1) solid transparent !important;
+  border-radius: var(--r-full) !important;
+  padding: var(--size-1) var(--sp-sm) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: var(--size-1) !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  min-height: var(--control-h-sm) !important;
+  transition: filter var(--motion-fast) var(--motion-ease) !important;
+}
+
+.header-utility-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  flex-wrap: wrap;
+}
+
+.theme-radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sidebar-settings-details {
+  display: none;
+  position: relative;
+  width: 100%;
+}
+
+.sidebar-settings-btn {
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--size-1);
+  width: 100%;
+  min-height: var(--control-h-sm);
+  padding: var(--size-1) var(--sp-sm);
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--strip-ink) 12%, var(--header));
+  border: var(--border-size-1) solid color-mix(in srgb, var(--strip-ink) 22%, var(--header));
+  color: var(--strip-ink);
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  box-sizing: border-box;
+  transition: background var(--motion-fast) var(--motion-ease);
+}
+
+.sidebar-settings-btn::-webkit-details-marker {
+  display: none;
+}
+
+.sidebar-settings-btn:hover,
+.sidebar-settings-details[open] .sidebar-settings-btn {
+  background: color-mix(in srgb, var(--strip-ink) 22%, var(--header));
+}
+
+.sidebar-settings-popover {
+  position: absolute;
+  top: calc(100% + var(--sp-sm));
+  inset-inline-end: 0;
+  min-width: var(--size-13);
+  padding: var(--sp-md);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--primary);
+  border: var(--border-size-1) solid var(--border);
+  box-shadow: var(--shadow-3);
+  display: grid;
+  gap: var(--sp-md);
+  z-index: 200;
+}
+
+.settings-group {
+  display: grid;
+  gap: var(--size-1);
+}
+
+.settings-group-label {
+  color: var(--secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.theme-switch {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  gap: var(--size-1);
+  padding: var(--size-1);
+  border-radius: var(--r-full);
+  background: var(--surface-muted);
+  border: var(--border-size-1) solid var(--border);
+}
+
+.theme-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--control-h-xs);
+  min-width: var(--control-h-xs);
+  padding: var(--size-1) var(--sp-sm);
+  border-radius: var(--r-full);
+  background: transparent;
+  color: var(--primary);
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  text-decoration: none;
+  transition: background var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease);
+}
+
+.theme-btn:hover {
+  background: var(--surface);
+  color: var(--primary);
+}
+
+.theme-auto-chk:checked ~ * .theme-btn[data-theme-opt="auto"],
+.theme-light-chk:checked ~ * .theme-btn[data-theme-opt="light"],
+.theme-dark-chk:checked ~ * .theme-btn[data-theme-opt="dark"] {
+  background: var(--header);
+  color: var(--strip-ink);
+  font-weight: 700;
+}
+
+html:has(.shell-screen:not([hidden]) .theme-light-chk:checked),
+.screen:has(.theme-light-chk:checked) {
+  color-scheme: light !important;
+}
+
+html:has(.shell-screen:not([hidden]) .theme-dark-chk:checked),
+.screen:has(.theme-dark-chk:checked) {
+  color-scheme: dark !important;
+}
+
+.shell-auth-feedback {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-1);
+  margin-block-start: var(--size-1);
+}
+
+.shell-auth-error {
+  margin: 0;
+  font-size: var(--type-caption);
+  color: var(--danger);
+}
+
+.shell-auth-recover {
+  font-weight: 600;
+  font-size: var(--type-caption);
+  color: var(--primary);
+  background: var(--surface);
+  border: var(--border-size-1) solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--sp-sm) var(--sp-md);
+  min-height: var(--control-h-sm);
+  cursor: pointer;
+}
+
+/* Login & Portability Modal */
+.login-modal-chk {
+  display: none !important;
+}
+
+.login-modal-overlay {
+  display: none !important;
+  position: fixed !important;
+  inset: 0 !important;
+  background: color-mix(in srgb, var(--primary) 65%, transparent) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  z-index: 9999 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: var(--sp-lg) !important;
+}
+
+.login-modal-chk:checked ~ .login-modal-overlay,
+[data-status="login"] .login-modal-overlay,
+.login-modal-overlay[data-open="true"] {
+  display: flex !important;
+}
+
+.login-modal-card {
+  position: relative !important;
+  background: var(--surface) !important;
+  color: var(--primary) !important;
+  border-radius: var(--r-md) !important;
+  border: var(--border-size-1) solid var(--border) !important;
+  max-width: var(--size-15) !important;
+  width: 100% !important;
+  padding: var(--sp-xl) var(--sp-lg) var(--sp-lg) !important;
+  box-shadow: var(--shadow-3) !important;
+}
+
+.login-modal-close {
+  position: absolute !important;
+  top: var(--sp-md) !important;
+  inset-inline-end: var(--sp-md) !important;
+  width: var(--control-h-sm) !important;
+  height: var(--control-h-sm) !important;
+  border-radius: var(--r-full) !important;
+  border: var(--border-size-1) solid var(--border) !important;
+  padding: 0 !important;
+  background: var(--surface-muted) !important;
+  color: var(--secondary) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  font-size: var(--type-body) !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  user-select: none !important;
+}
+
+.login-modal-close:hover {
+  background: var(--border) !important;
+  color: var(--primary) !important;
+}
+
+.login-modal-header {
+  margin-block-end: var(--sp-md) !important;
+}
+
+.login-modal-brand {
+  display: inline-block !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: var(--accent) !important;
+  margin-block-end: var(--size-1) !important;
+}
+
+.login-modal-title {
+  font-size: var(--type-subtitle) !important;
+  font-weight: 700 !important;
+  color: var(--primary) !important;
+  letter-spacing: -0.01em !important;
+  margin: 0 0 var(--size-1) !important;
+}
+
+.login-modal-desc {
+  color: var(--secondary) !important;
+  margin: 0 !important;
+}
+
+.login-status-card {
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--sp-sm) !important;
+  padding: var(--sp-sm) var(--sp-md) !important;
+  background: var(--surface-muted) !important;
+  border: var(--border-size-1) solid var(--border) !important;
+  border-radius: var(--r-md) !important;
+  margin-block-end: var(--sp-md) !important;
+}
+
+.login-status-copy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--size-1);
+}
+
+.login-status-card .status-label {
+  color: var(--secondary) !important;
+}
+
+.login-status-card .status-name {
+  color: var(--primary) !important;
+  font-weight: 600 !important;
+}
+
+.login-status-card .status-badge {
+  color: var(--accent) !important;
+  font-weight: 600 !important;
+}
+
+.login-modal-methods {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: var(--sp-sm) !important;
+}
+
+.login-method-btn {
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--sp-md) !important;
+  width: 100% !important;
+  text-align: start !important;
+  padding: var(--sp-sm) var(--sp-md) !important;
+  min-height: var(--control-h) !important;
+  border-radius: var(--r-md) !important;
+  border: var(--border-size-1) solid var(--border) !important;
+  background: var(--surface) !important;
+  color: var(--primary) !important;
+  cursor: pointer !important;
+  transition: background var(--motion-fast) var(--motion-ease), border-color var(--motion-fast) var(--motion-ease) !important;
+  user-select: none !important;
+  text-decoration: none !important;
+  box-sizing: border-box !important;
+}
+
+.login-method-btn:hover {
+  background: var(--surface-muted) !important;
+  border-color: var(--accent) !important;
+}
+
+.login-method-icon {
+  width: var(--control-h) !important;
+  height: var(--control-h) !important;
+  border-radius: var(--r-sm) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: var(--type-subtitle) !important;
+  flex-shrink: 0 !important;
+  background: var(--surface-muted) !important;
+  border: var(--border-size-1) solid var(--border) !important;
+}
+
+.login-method-info {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: var(--size-1) !important;
+}
+
+.login-method-title {
+  font-weight: 600 !important;
+  color: var(--primary) !important;
+}
+
+.login-method-hint {
+  color: var(--secondary) !important;
+}
+
+/* The Iris sign-in door: split layout pairing the Iris Teal brand panel with
+   the passkey/guest entry form on the mint-alabaster ground. */
+body:has(.shell-login) {
+  margin: 0;
+  padding: 0;
+  background: var(--neutral);
+}
+.shell-login {
+  --gate-split: 54%;
+  --gate-form: calc(var(--size-14) + var(--size-9));
+  --gate-gutter: calc(var(--sp-xl) + var(--sp-md));
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: var(--gate-split) minmax(0, 1fr);
+  grid-template-rows: auto auto 1fr;
+  align-items: start;
+  gap: 0;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(90deg, var(--header) var(--gate-split), var(--neutral) var(--gate-split));
+}
+.shell-login .login-intro {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
+  padding: var(--sp-xl) var(--gate-gutter) 0;
+  color: var(--strip-ink);
+}
+.shell-login .login-mark {
+  width: var(--size-9);
+  height: var(--size-8);
+  margin: 0;
+  font-size: 0;
+  color: transparent;
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+  background-image: url("/pictures/25275fc0e139d54350917c4ccecf5999c40df6c1c8df37aa27035bfe7d9a6e09.svg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+.shell-login .login-intro h1 {
+  font-size: var(--type-subtitle);
+  letter-spacing: -.02em;
+  line-height: 1;
+  margin: 0;
+  color: var(--strip-ink);
+  font-weight: 600;
+}
+.shell-login .login-intro .login-hint {
+  display: none;
+}
+.shell-login::before {
+  grid-column: 1;
+  grid-row: 2;
+  margin: var(--sp-xl) var(--gate-gutter) 0;
+  max-width: 18ch;
+  font-size: clamp(var(--size-6), 2.8vw, var(--size-7));
+  font-weight: 600;
+  line-height: var(--type-leading-title);
+  letter-spacing: -.02em;
+  color: var(--strip-ink);
+  white-space: pre-line;
+  content: "Give every discarded item the right next life.";
+}
+.shell-login::after {
+  grid-column: 1;
+  grid-row: 3;
+  align-self: start;
+  margin: var(--sp-lg) var(--gate-gutter) var(--sp-xl);
+  max-width: 42ch;
+  font-size: var(--type-body);
+  line-height: var(--type-leading-body);
+  color: var(--strip-ink);
+  white-space: pre-line;
+  content: "Snap waste items, inspect step-by-step recycling instructions across six languages, and locate verified neighbourhood drop-off bins.";
+}
+html[lang="pt"] .shell-login::before {
+  content: "Dê o destino certo para cada resíduo.";
+}
+html[lang="pt"] .shell-login::after {
+  content: "Fotografe itens descartados, veja instruções passo a passo de reciclagem em seis idiomas e encontre ecopontos no seu bairro.";
+}
+html[lang="es"] .shell-login::before {
+  content: "Dale a cada residuo el destino correcto.";
+}
+html[lang="es"] .shell-login::after {
+  content: "Fotografía residuos, consulta instrucciones de reciclaje paso a paso en seis idiomas y ubica puntos limpios cercanos.";
+}
+.shell-login form {
+  grid-column: 2;
+  grid-row: 1 / -1;
+  align-self: center;
+  justify-self: center;
+  width: min(var(--gate-form), 100%);
+  box-sizing: border-box;
+  margin: 0;
+  padding: var(--sp-xl) var(--sp-lg);
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.shell-login form::before {
+  order: 0;
+  font-size: var(--type-label);
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--secondary);
+  content: "IRIS";
+}
+.shell-login form::after {
+  order: 1;
+  margin-block-start: var(--sp-sm);
+  padding-block-end: var(--sp-md);
+  border-block-end: var(--border-size-1) solid var(--border);
+  color: var(--primary);
+  font-size: var(--type-subtitle);
+  font-weight: 600;
+  line-height: var(--type-leading-title);
+  content: "Sign in with your device's passkey, or continue as a guest.";
+}
+html[lang="pt"] .shell-login form::after {
+  content: "Entre com a chave do seu aparelho ou continue como visitante.";
+}
+html[lang="es"] .shell-login form::after {
+  content: "Inicia sesión con tu llave de acceso o continúa como invitado.";
+}
+.shell-login .login-error {
+  order: 2;
+  margin: var(--sp-md) 0 0;
+  color: var(--danger);
+}
+.shell-login .login-actions {
+  order: 3;
+  width: 100%;
+  margin-block-start: var(--sp-lg);
+  display: grid;
+  gap: var(--sp-sm);
+}
+.shell-login .login-passkey,
+.shell-login .login-provider {
+  min-height: var(--size-8);
+  border-radius: var(--r-full);
+  font-size: var(--type-body);
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--surface);
+  border-color: transparent;
+}
+.shell-login .login-provider {
+  background: var(--primary);
+}
+.shell-login .login-guest {
+  min-height: var(--control-h-lg);
+  border-radius: var(--r-full);
+  background: var(--surface);
+  border: var(--border-size-1) solid var(--border);
+  color: var(--primary);
+  font-weight: 600;
+  font-size: var(--type-body);
+}
+.shell-login .login-guest:hover {
+  background: var(--surface-muted);
+}
+.shell-login :is(button, a):focus-visible {
+  outline: var(--border-size-2) solid var(--accent);
+  outline-offset: var(--size-1);
+}
+@media (max-width: 767px) {
+  .shell-login {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto 1fr;
+    background: var(--header);
+  }
+  .shell-login .login-intro {
+    grid-row: 1;
+    padding: var(--sp-lg) var(--sp-lg) 0;
+  }
+  .shell-login::before {
+    grid-row: 2;
+    margin: 0;
+    padding: var(--sp-lg) var(--sp-lg) 0;
+    font-size: var(--size-6);
+  }
+  .shell-login::after {
+    grid-row: 3;
+    margin: 0;
+    padding: var(--sp-md) var(--sp-lg) var(--sp-xl);
+    max-width: none;
+  }
+  .shell-login form {
+    grid-column: 1;
+    grid-row: 4;
+    align-self: stretch;
+    justify-self: stretch;
+    width: 100%;
+    padding: var(--sp-xl) var(--sp-lg);
+    background: var(--neutral);
+  }
+}

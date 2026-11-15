@@ -1,0 +1,1768 @@
+# generated from bayt.cue — do not edit
+FROM libraries_mecha-airlock-image AS tsbifrost
+ARG BAYT_DIR
+WORKDIR /app/airlock
+COPY <<'TSBIFROST' /app/airlock/tsbifrost.ts
+import { whiteBackgroundBase64 } from "./white-background.ts";
+import {
+  type AiBackendTier,
+  type AiCapabilitiesConfig,
+  type AiModality,
+  type AiModelSpec,
+  type AiTarget,
+  type AiTier,
+  DEFAULT_AI_MODELS,
+  providerKey,
+  resolveModelSpec,
+} from "./ai-models.ts";
+
+export * from "./ai-models.ts";
+// The AI gateway bridge (tsbifrost): OpenAI-compatible HTTP from the airlock's
+// daprd in, tier-and-target-routed model calls out.
+//
+// An app declares its modalities and tiers in `capabilities.ai`, with optional
+// per-tier or per-target model overrides. Effect handlers inside the airlock
+// cage speak a single normalized contract:
+//   - POST /v1/chat/completions   ({ tier: "cheap" | "heavy", messages, ... })
+//   - POST /v1/images/generations ({ tier: "cheap" | "heavy", prompt, ... })
+//   - GET  /v1/models
+//   - GET  /healthz
+//
+// tsbifrost resolves (target, modality, tier) to the concrete provider, model,
+// endpoint, image dimensions, and step budget, translates the wire payload for
+// Ollama, sd.cpp, Cloudflare Workers AI, Google Gemini / Imagen, or OpenAI,
+// and returns a normalized OpenAI-shaped response with `model` and `tier`.
+//
+// What the provider is sent, each layer merged into the one before it
+// (mergeExtra: objects field by field, anything else replaced):
+//   1. the body tsbifrost builds from the request's normalized fields;
+//   2. the model's `params` from `capabilities.ai`, provider-specific fields
+//      (Phoenix's `guidance`) declared beside the model they belong to;
+//   3. the request's `extra_params`, only under the header
+//      `x-bf-passthrough-extra-params: true`, Bifrost's own contract
+//      (docs.getbifrost.ai/providers/request-options). Without the header they
+//      are refused, not dropped.
+// Where Bifrost lets its own fields win, a field a later layer names wins here:
+// naming it is the caller's whole intent.
+
+export const TSBIFROST_PORT = 8090;
+
+export interface CloudflareAiBinding {
+  run(model: string, input: Record<string, unknown>): Promise<unknown>;
+}
+
+export type TsBifrostOptions = {
+  target?: AiTarget;
+  config?: AiCapabilitiesConfig;
+  env?: Record<string, string | undefined>;
+  fetcher?: typeof fetch;
+  aiBinding?: CloudflareAiBinding;
+};
+
+function json(status: number, body: unknown): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json" },
+  });
+}
+
+function isTier(v: unknown): v is AiBackendTier {
+  return v === "cheap" || v === "heavy";
+}
+
+export const PASSTHROUGH_HEADER = "x-bf-passthrough-extra-params";
+
+type Extra = Record<string, unknown>;
+
+const isPlain = (v: unknown): v is Extra => typeof v === "object" && v !== null && !Array.isArray(v);
+
+/** The request's extra_params, or the 400 that refuses them. */
+function extraParams(req: Request, body: Record<string, unknown>): Extra | Response {
+  if (body.extra_params === undefined) return {};
+  if (!isPlain(body.extra_params)) return json(400, { error: "extra_params must be an object" });
+  if (req.headers.get(PASSTHROUGH_HEADER)?.toLowerCase() !== "true") {
+    return json(400, { error: `extra_params reach the provider only with header ${PASSTHROUGH_HEADER}: true` });
+  }
+  return body.extra_params;
+}
+
+/** Layers 2 and 3 of what the provider is sent: the model's params, where the
+ * request did not name another model, then the request's extra_params. */
+function layered(spec: AiModelSpec, model: string, requested: Extra): Extra {
+  return mergeExtra(model === spec.model ? spec.params ?? {} : {}, requested);
+}
+
+/** `extra` merged into `base`: objects field by field, anything else replaced. */
+export function mergeExtra(base: Extra, extra: Extra): Extra {
+  const out: Extra = { ...base };
+  for (const [k, v] of Object.entries(extra)) {
+    out[k] = isPlain(v) && isPlain(out[k]) ? mergeExtra(out[k] as Extra, v) : v;
+  }
+  return out;
+}
+
+// The sayt platforms whose name differs from the AI target they run on.
+const SAYT_PLATFORM_TARGETS: Record<string, AiTarget> = { host: "local", compose: "docker" };
+
+export function createTsBifrost(opts: TsBifrostOptions = {}): (req: Request) => Promise<Response> {
+  const env = opts.env ?? (typeof Deno !== "undefined" ? Deno.env.toObject() : {});
+  const rawPlatform = opts.target ?? env.AI_TARGET ?? env.SAYT_PLATFORM ?? "docker";
+  const rawTarget = (SAYT_PLATFORM_TARGETS[rawPlatform] ?? rawPlatform) as AiTarget;
+  const target: AiTarget = rawTarget in DEFAULT_AI_MODELS ? rawTarget : "docker";
+  const config: AiCapabilitiesConfig = opts.config ?? (env.AI_MODELS ? JSON.parse(env.AI_MODELS) : {});
+  const fetcher = opts.fetcher ?? fetch;
+  const aiBinding = opts.aiBinding;
+
+  const handle = async (req: Request): Promise<Response> => {
+    const url = new URL(req.url);
+
+    if (req.method === "GET" && (url.pathname === "/healthz" || url.pathname === "/health")) {
+      return json(200, { status: "ok", target });
+    }
+
+    // On Cloud Run the airlock has no daprd: its mesh address is this gateway,
+    // answering the invocation as daprd would hand it through.
+    const invoked = /^\/v1\.0\/invoke\/[^/]+\/method(\/.*)$/.exec(url.pathname);
+    if (invoked) {
+      return await handle(new Request(`http://tsbifrost:${TSBIFROST_PORT}${invoked[1]}${url.search}`, req));
+    }
+
+    if (req.method === "GET" && url.pathname === "/v1/models") {
+      const tiers: AiTier[] = ["browser", "cheap", "heavy"];
+      const modalities: AiModality[] = ["text", "image"];
+      const data = modalities.flatMap((modality) =>
+        tiers.map((tier) => {
+          const spec = resolveModelSpec(config, target, modality, tier, env);
+          return {
+            id: `${modality}:${tier}`,
+            object: "model",
+            modality,
+            tier,
+            target,
+            ...spec,
+          };
+        })
+      );
+      return json(200, { object: "list", target, data });
+    }
+
+    if (req.method === "POST" && url.pathname === "/v1/chat/completions") {
+      let body: Record<string, unknown>;
+      try {
+        body = (await req.json()) as Record<string, unknown>;
+      } catch {
+        return json(400, { error: "invalid JSON body" });
+      }
+      const requested = extraParams(req, body);
+      if (requested instanceof Response) return requested;
+      const tier: AiBackendTier = isTier(body.tier) ? body.tier : "cheap";
+      const messages = body.messages;
+      if (!Array.isArray(messages) || messages.length === 0) {
+        return json(400, { error: "messages array is required" });
+      }
+      const spec = resolveModelSpec(config, target, "text", tier, env);
+      const model = typeof body.model === "string" && body.model !== "" && body.model !== "auto"
+        ? body.model
+        : spec.model;
+      const extra = layered(spec, model, requested);
+      const idempotencyKey = req.headers.get("idempotency-key") ?? "";
+
+      try {
+        const content = await dispatchText(
+          target,
+          spec,
+          model,
+          messages as Array<{ role: string; content: ChatMessageContent }>,
+          body,
+          extra,
+          idempotencyKey,
+          env,
+          fetcher,
+          aiBinding,
+        );
+        return json(200, {
+          id: `chatcmpl-${idempotencyKey || "tsbifrost"}`,
+          object: "chat.completion",
+          model,
+          tier,
+          provider: spec.provider,
+          choices: [
+            {
+              index: 0,
+              message: { role: "assistant", content },
+              finish_reason: "stop",
+            },
+          ],
+        });
+      } catch (e) {
+        console.error(`tsbifrost chat/completions error (${spec.provider}/${model}/${tier}):`, e instanceof Error ? e.stack ?? e.message : String(e));
+        if (e instanceof UpstreamError) {
+          return json(e.status, { error: e.message, provider: spec.provider, model, tier });
+        }
+        return json(503, { error: e instanceof Error ? e.message : String(e), provider: spec.provider, model, tier });
+      }
+    }
+
+    if (req.method === "POST" && url.pathname === "/v1/images/generations") {
+      let body: Record<string, unknown>;
+      try {
+        body = (await req.json()) as Record<string, unknown>;
+      } catch {
+        return json(400, { error: "invalid JSON body" });
+      }
+      const requested = extraParams(req, body);
+      if (requested instanceof Response) return requested;
+      const tier: AiBackendTier = isTier(body.tier) ? body.tier : "cheap";
+      const prompt = body.prompt;
+      if (typeof prompt !== "string" || prompt.trim() === "") {
+        return json(400, { error: "prompt string is required" });
+      }
+      const spec = resolveModelSpec(config, target, "image", tier, env);
+      const model = typeof body.model === "string" && body.model !== "" && body.model !== "auto"
+        ? body.model
+        : spec.model;
+      const extra = layered(spec, model, requested);
+      const size = typeof body.size === "string" && body.size !== "" ? body.size : (spec.size ?? "256x256");
+      const steps = typeof body.steps === "number" ? body.steps : (spec.steps ?? 1);
+      const idempotencyKey = req.headers.get("idempotency-key") ?? "";
+
+      try {
+        const rawImage = await dispatchImage(
+          target,
+          spec,
+          model,
+          prompt,
+          size,
+          steps,
+          body,
+          extra,
+          idempotencyKey,
+          env,
+          fetcher,
+          aiBinding,
+        );
+        const b64_json = body.background === "white" ? whiteBackgroundBase64(rawImage) : rawImage;
+        return json(200, {
+          model,
+          tier,
+          provider: spec.provider,
+          size,
+          steps,
+          data: [{ b64_json }],
+        });
+      } catch (e) {
+        console.error(`tsbifrost images/generations error (${spec.provider}/${model}/${tier}):`, e instanceof Error ? e.stack ?? e.message : String(e));
+        if (e instanceof UpstreamError) {
+          return json(e.status, { error: e.message, provider: spec.provider, model, tier });
+        }
+        return json(503, { error: e instanceof Error ? e.message : String(e), provider: spec.provider, model, tier });
+      }
+    }
+
+    return json(404, { error: "not found" });
+  };
+  return handle;
+}
+
+class UpstreamError extends Error {
+  constructor(readonly status: number, message: string) {
+    super(message);
+  }
+}
+
+type ChatMessageContent = string | Array<Record<string, unknown>>;
+
+function googleParts(content: ChatMessageContent): Array<Record<string, unknown>> {
+  if (typeof content === "string") return [{ text: content }];
+  if (!Array.isArray(content) || content.length === 0) {
+    throw new UpstreamError(400, "google message content must be a string or non-empty multimodal array");
+  }
+  return content.map((part) => {
+    if (typeof part === "string") return { text: part };
+    if (part.type === "text" && typeof part.text === "string") return { text: part.text };
+    if (part.type === "image_url") {
+      const rawUrl = typeof part.image_url === "string"
+        ? part.image_url
+        : isPlain(part.image_url) && typeof part.image_url.url === "string"
+        ? part.image_url.url
+        : "";
+      const dataMatch = /^data:([^;,]+);base64,(.+)$/s.exec(rawUrl);
+      if (dataMatch) {
+        return { inlineData: { mimeType: dataMatch[1], data: dataMatch[2] } };
+      }
+      if (rawUrl.startsWith("https://") || rawUrl.startsWith("gs://")) {
+        return { fileData: { fileUri: rawUrl } };
+      }
+      throw new UpstreamError(400, "google image_url must be a base64 data URI or https/gs URI");
+    }
+    throw new UpstreamError(400, `unsupported google message part type: ${String(part.type)}`);
+  });
+}
+
+async function dispatchText(
+  target: AiTarget,
+  spec: AiModelSpec,
+  model: string,
+  messages: Array<{ role: string; content: ChatMessageContent }>,
+  body: Record<string, unknown>,
+  extra: Extra,
+  idempotencyKey: string,
+  env: Record<string, string | undefined>,
+  fetcher: typeof fetch,
+  aiBinding?: CloudflareAiBinding,
+): Promise<string> {
+  const temperature = typeof body.temperature === "number" ? body.temperature : 0.2;
+  const maxTokens = typeof body.max_tokens === "number" ? body.max_tokens : 384;
+  const seed = typeof body.seed === "number" ? body.seed : undefined;
+  const rf = (typeof body.response_format === "object" && body.response_format !== null)
+    ? (body.response_format as { type?: string; schema?: unknown; json_schema?: unknown })
+    : undefined;
+  const jsonSchema = rf?.type === "json_schema" ? rf.json_schema ?? rf.schema : undefined;
+  const wantsJson = body.format === "json" || rf?.type === "json_object" || Boolean(jsonSchema);
+
+  if (spec.provider === "ollama") {
+    const rawEndpoint = spec.endpoint ?? env.OLLAMA_HOST ?? "http://smollm3:11434";
+    const endpoint = (
+      target === "local" && env.AI_LOCAL_OLLAMA_HOST && rawEndpoint.includes("127.0.0.1")
+        ? env.AI_LOCAL_OLLAMA_HOST
+        : rawEndpoint
+    ).replace(/\/$/, "");
+    const res = await fetcher(`${endpoint}/api/chat`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
+      },
+      body: JSON.stringify(mergeExtra({
+        model,
+        stream: false,
+        ...(jsonSchema ? { format: jsonSchema } : wantsJson ? { format: "json" } : {}),
+        options: {
+          temperature,
+          num_predict: maxTokens,
+          ...(seed !== undefined ? { seed } : {}),
+        },
+        messages,
+      }, extra)),
+    });
+    const text = await res.text();
+    if (!res.ok) throw new UpstreamError(res.status, `ollama ${res.status}: ${text}`);
+    const parsed = JSON.parse(text) as {
+      message?: { content?: string };
+      response?: string;
+      choices?: Array<{ message?: { content?: string } }>;
+    };
+    const content = parsed.message?.content ?? parsed.response ?? parsed.choices?.[0]?.message?.content;
+    if (typeof content !== "string") throw new UpstreamError(502, "ollama response missing message.content");
+    return content;
+  }
+
+  if (spec.provider === "cloudflare") {
+    const responseFormat = jsonSchema ? { type: "json_schema", json_schema: jsonSchema } : { type: "json_object" };
+    if (aiBinding && !spec.endpoint && !env.CF_API_TOKEN) {
+      const extractText = (out: unknown): string | undefined => {
+        if (typeof out === "string" && out.trim() !== "") return out;
+        if (out && typeof out === "object") {
+          const o = out as {
+            response?: unknown;
+            result?: {
+              response?: unknown;
+              choices?: Array<{ message?: { content?: unknown; reasoning_content?: string }; text?: string }>;
+            };
+            choices?: Array<{ message?: { content?: unknown; reasoning_content?: string }; text?: string }>;
+          };
+          if (o.response !== undefined && o.response !== null) {
+            if (typeof o.response === "string" && o.response.trim() !== "") return o.response;
+            if (typeof o.response === "object") return JSON.stringify(o.response);
+          }
+          if (o.result?.response !== undefined && o.result?.response !== null) {
+            if (typeof o.result.response === "string" && o.result.response.trim() !== "") return o.result.response;
+            if (typeof o.result.response === "object") return JSON.stringify(o.result.response);
+          }
+          const msg = o.choices?.[0]?.message ?? o.result?.choices?.[0]?.message;
+          const rawContent = msg?.content;
+          const partText = Array.isArray(rawContent)
+            ? rawContent.map((p: any) => (typeof p === "string" ? p : p?.text ?? "")).join("")
+            : typeof rawContent === "string"
+            ? rawContent
+            : rawContent && typeof rawContent === "object"
+            ? JSON.stringify(rawContent)
+            : undefined;
+          const cand = (partText && partText.trim() !== "" ? partText : undefined) ??
+            o.choices?.[0]?.text ??
+            o.result?.choices?.[0]?.text ??
+            msg?.reasoning_content;
+          if (typeof cand === "string" && cand.trim() !== "") return cand;
+        }
+        return undefined;
+      };
+      // The configured model first: one that answers worse ran ahead of it, and Llama 3.3
+      // left regional names untranslated where Gemma 4 named the species.
+      const candidateModels = [model, "@cf/meta/llama-3.3-70b-instruct-fp8-fast", "@cf/google/gemma-3-12b-it", "@cf/meta/llama-3.1-8b-instruct-fast"];
+      const textErrors: string[] = [];
+      for (const m of candidateModels) {
+        try {
+          const out = await aiBinding.run(m, mergeExtra({
+            messages,
+            max_tokens: maxTokens,
+            temperature,
+            ...(wantsJson ? { response_format: responseFormat } : {}),
+            ...(seed !== undefined ? { seed } : {}),
+          }, extra));
+          const content = extractText(out);
+          if (typeof content === "string") return content;
+          textErrors.push(`${m}: non-string ${JSON.stringify(out)?.slice(0, 400)}`);
+        } catch (err) {
+          textErrors.push(`${m}: ${err instanceof Error ? err.message : String(err)}`);
+        }
+      }
+      throw new UpstreamError(502, `cloudflare AI binding response missing response (${textErrors.join(" | ")})`);
+    }
+    const accountId = env.CF_ACCOUNT_ID ?? "";
+    const token = env.CF_API_TOKEN ?? "";
+    const base = (spec.endpoint ?? `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run`).replace(/\/$/, "");
+    const res = await fetcher(`${base}/${model}`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        ...(token ? { authorization: `Bearer ${token}` } : {}),
+        ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
+      },
+      body: JSON.stringify(mergeExtra({
+        messages,
+        max_tokens: maxTokens,
+        temperature,
+        ...(wantsJson ? { response_format: responseFormat } : {}),
+        ...(seed !== undefined ? { seed } : {}),
+      }, extra)),
+    });
+    const text = await res.text();
+    if (!res.ok) throw new UpstreamError(res.status, `cloudflare ${res.status}: ${text}`);
+    const parsed = JSON.parse(text) as {
+      result?: { response?: unknown };
+      choices?: Array<{ message?: { content?: unknown } }>;
+    };
+    const content = parsed.result?.response ?? parsed.choices?.[0]?.message?.content;
+    if (wantsJson && content !== null && typeof content === "object") return JSON.stringify(content);
+    if (typeof content !== "string") throw new UpstreamError(502, "cloudflare response missing result.response");
+    return content;
+  }
+
+  if (spec.provider === "google") {
+    const apiKey = providerKey("google", env);
+    const base = (spec.endpoint ?? "https://generativelanguage.googleapis.com/v1beta/models").replace(/\/$/, "");
+    const systemParts = messages.filter((m) => m.role === "system").flatMap((m) => googleParts(m.content));
+    const contents = messages.filter((m) => m.role !== "system").map((m) => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: googleParts(m.content),
+    }));
+    const res = await fetcher(`${base}/${model}:generateContent`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        ...(apiKey ? { "x-goog-api-key": apiKey } : {}),
+        ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
+      },
+      body: JSON.stringify(mergeExtra({
+        ...(systemParts.length > 0 ? { systemInstruction: { parts: systemParts } } : {}),
+        contents: contents.length > 0 ? contents : [{ role: "user", parts: systemParts }],
+        generationConfig: {
+          temperature,
+          maxOutputTokens: maxTokens,
+          ...(wantsJson ? { responseMimeType: "application/json" } : {}),
+          ...(seed !== undefined ? { seed } : {}),
+        },
+      }, extra)),
+    });
+    const text = await res.text();
+    if (!res.ok) throw new UpstreamError(res.status, `google ${res.status}: ${text}`);
+    const parsed = JSON.parse(text) as {
+      candidates?: Array<{ content?: { parts?: Array<{ text?: string; thought?: boolean }> } }>;
+      choices?: Array<{ message?: { content?: string } }>;
+    };
+    const candidateParts = parsed.candidates?.[0]?.content?.parts ?? [];
+    const answerText = candidateParts
+      .filter((p) => !p.thought && typeof p.text === "string")
+      .map((p) => p.text)
+      .join("");
+    const content = answerText !== "" ? answerText : parsed.choices?.[0]?.message?.content;
+    if (typeof content !== "string") throw new UpstreamError(502, "google response missing candidate text");
+    return content;
+  }
+
+  // OpenAI-compatible fallback
+  const endpoint = (spec.endpoint ?? "http://127.0.0.1:8080").replace(/\/$/, "");
+  const res = await fetcher(`${endpoint}/v1/chat/completions`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      ...(providerKey("openai", env) ? { authorization: `Bearer ${providerKey("openai", env)}` } : {}),
+      ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
+    },
+    body: JSON.stringify(mergeExtra({
+      model,
+      messages,
+      temperature,
+      max_tokens: maxTokens,
+      ...(wantsJson ? { response_format: { type: "json_object" } } : {}),
+      ...(seed !== undefined ? { seed } : {}),
+    }, extra)),
+  });
+  const text = await res.text();
+  if (!res.ok) throw new UpstreamError(res.status, `openai ${res.status}: ${text}`);
+  const parsed = JSON.parse(text) as { choices?: Array<{ message?: { content?: string } }> };
+  const content = parsed.choices?.[0]?.message?.content;
+  if (typeof content !== "string") throw new UpstreamError(502, "openai response missing choices[0].message.content");
+  return content;
+}
+
+async function dispatchImage(
+  target: AiTarget,
+  spec: AiModelSpec,
+  model: string,
+  prompt: string,
+  size: string,
+  steps: number,
+  body: Record<string, unknown>,
+  extra: Extra,
+  idempotencyKey: string,
+  env: Record<string, string | undefined>,
+  fetcher: typeof fetch,
+  aiBinding?: CloudflareAiBinding,
+): Promise<string> {
+  const seed = typeof body.seed === "number" ? body.seed : undefined;
+  const negativePrompt = typeof body.negative_prompt === "string" ? body.negative_prompt : undefined;
+
+  if (spec.provider === "cloudflare") {
+    // One model takes the same JSON input over the binding and over REST.
+    const cfImageInput = (m: string): Extra => {
+      if (m.includes("leonardo/")) {
+        const [wStr, hStr] = size.split("x");
+        return mergeExtra({
+          prompt,
+          width: Math.min(Math.max(Number(wStr) || 512, 256), 512),
+          height: Math.min(Math.max(Number(hStr) || 512, 256), 512),
+          num_steps: steps,
+          ...(negativePrompt ? { negative_prompt: negativePrompt } : {}),
+          ...(seed !== undefined ? { seed } : {}),
+        }, extra);
+      }
+      return mergeExtra({ prompt, steps: Math.min(Math.max(steps, 1), 8) }, extra);
+    };
+    if (aiBinding && !spec.endpoint && !env.CF_API_TOKEN) {
+      const extractImageB64 = async (out: unknown): Promise<string | undefined> => {
+        if (out && typeof out === "object" && ("image" in out || "result" in out || "data" in out)) {
+          const obj = out as { image?: string; result?: { image?: string }; data?: Array<{ b64_json?: string }> };
+          const b64 = obj.image ?? obj.result?.image ?? obj.data?.[0]?.b64_json;
+          if (typeof b64 === "string" && b64 !== "") return b64;
+        }
+        if (out instanceof Uint8Array || out instanceof ArrayBuffer || (out && typeof (out as ReadableStream).getReader === "function")) {
+          const bytes = out instanceof Uint8Array
+            ? out
+            : out instanceof ArrayBuffer
+            ? new Uint8Array(out)
+            : new Uint8Array(await new Response(out as BodyInit).arrayBuffer());
+          let bin = "";
+          for (let i = 0; i < bytes.length; i += 0x8000) {
+            bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+          }
+          if (bin !== "") return btoa(bin);
+        }
+        return undefined;
+      };
+      const runCfImageModel = async (m: string): Promise<string | undefined> => {
+        if (m.includes("flux-2")) {
+          const form = new FormData();
+          form.append("prompt", prompt);
+          form.append("steps", String(steps));
+          if (seed !== undefined) form.append("seed", String(seed));
+          for (const [k, v] of Object.entries(extra)) form.set(k, typeof v === "string" ? v : JSON.stringify(v));
+          const req = new Response(form);
+          const contentType = req.headers.get("content-type") || "multipart/form-data";
+          const out = await aiBinding.run(m, {
+            multipart: { body: req.body, contentType },
+          });
+          return extractImageB64(out);
+        }
+        return extractImageB64(await aiBinding.run(m, cfImageInput(m)));
+      };
+      const b64 = await runCfImageModel(model);
+      if (b64) return b64;
+      throw new UpstreamError(502, `cloudflare AI binding response missing image (${model})`);
+    }
+    const accountId = env.CF_ACCOUNT_ID ?? "";
+    const token = env.CF_API_TOKEN ?? "";
+    const base = (spec.endpoint ?? `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run`).replace(/\/$/, "");
+    const res = await fetcher(`${base}/${model}`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        ...(token ? { authorization: `Bearer ${token}` } : {}),
+        ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
+      },
+      body: JSON.stringify(cfImageInput(model)),
+    });
+    const text = await res.text();
+    if (!res.ok) throw new UpstreamError(res.status, `cloudflare ${res.status}: ${text}`);
+    const parsed = JSON.parse(text) as {
+      result?: { image?: string };
+      data?: Array<{ b64_json?: string }>;
+    };
+    const b64 = parsed.result?.image ?? parsed.data?.[0]?.b64_json;
+    if (typeof b64 !== "string" || b64 === "") throw new UpstreamError(502, "cloudflare response missing image base64");
+    return b64;
+  }
+
+  if (spec.provider === "google") {
+    const apiKey = providerKey("google", env);
+    const base = (spec.endpoint ?? "https://generativelanguage.googleapis.com/v1beta/models").replace(/\/$/, "");
+    if (model.startsWith("gemini-")) {
+      const res = await fetcher(`${base}/${model}:generateContent`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          ...(apiKey ? { "x-goog-api-key": apiKey } : {}),
+          ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
+        },
+        body: JSON.stringify(mergeExtra({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: { responseModalities: ["IMAGE"] },
+        }, extra)),
+      });
+      const text = await res.text();
+      if (!res.ok) throw new UpstreamError(res.status, `google ${res.status}: ${text}`);
+      const parsed = JSON.parse(text) as {
+        candidates?: Array<{ content?: { parts?: Array<{ inlineData?: { data?: string } }> } }>;
+      };
+      const parts = parsed.candidates?.[0]?.content?.parts ?? [];
+      const b64 = parts.find((p) => typeof p?.inlineData?.data === "string" && p.inlineData.data !== "")?.inlineData?.data;
+      if (typeof b64 !== "string" || b64 === "") throw new UpstreamError(502, "google response missing inlineData.data");
+      return b64;
+    }
+    const res = await fetcher(`${base}/${model}:predict`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        ...(apiKey ? { "x-goog-api-key": apiKey } : {}),
+        ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
+      },
+      body: JSON.stringify(mergeExtra({
+        instances: [{ prompt }],
+        parameters: {
+          sampleCount: 1,
+          ...(seed !== undefined ? { seed } : {}),
+        },
+      }, extra)),
+    });
+    const text = await res.text();
+    if (!res.ok) throw new UpstreamError(res.status, `google ${res.status}: ${text}`);
+    const parsed = JSON.parse(text) as {
+      predictions?: Array<{ bytesBase64Encoded?: string }>;
+      data?: Array<{ b64_json?: string }>;
+    };
+    const b64 = parsed.predictions?.[0]?.bytesBase64Encoded ?? parsed.data?.[0]?.b64_json;
+    if (typeof b64 !== "string" || b64 === "") throw new UpstreamError(502, "google response missing bytesBase64Encoded");
+    return b64;
+  }
+
+  // sd.cpp / OpenAI-compatible /v1/images/generations
+  const rawEndpoint = spec.endpoint ?? env.SDCPP_HOST ?? "http://diffusion:8000";
+  const endpoint = (
+    target === "local" && env.AI_LOCAL_SDCPP_HOST && rawEndpoint.includes("127.0.0.1")
+      ? env.AI_LOCAL_SDCPP_HOST
+      : rawEndpoint
+  ).replace(/\/$/, "");
+  const res = await fetcher(`${endpoint}/v1/images/generations`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
+    },
+    body: JSON.stringify(mergeExtra({
+      model,
+      prompt,
+      ...(negativePrompt !== undefined ? { negative_prompt: negativePrompt } : {}),
+      n: typeof body.n === "number" ? body.n : 1,
+      size,
+      steps,
+      response_format: "b64_json",
+      ...(seed !== undefined ? { seed } : {}),
+    }, extra)),
+  });
+  const text = await res.text();
+  if (!res.ok) throw new UpstreamError(res.status, `sdcpp ${res.status}: ${text}`);
+  const parsed = JSON.parse(text) as {
+    data?: Array<{ b64_json?: string }>;
+    image?: string;
+  };
+  const b64 = parsed.data?.[0]?.b64_json ?? parsed.image;
+  if (typeof b64 !== "string" || b64 === "") throw new UpstreamError(502, "sdcpp response missing b64_json");
+  return b64;
+}
+
+if (import.meta.main) {
+  const port = Number(Deno.env.get("TSBIFROST_PORT") ?? TSBIFROST_PORT);
+  const plat = Deno.env.get("SAYT_PLATFORM");
+  Deno.serve({ hostname: plat === "host" ? "127.0.0.1" : "0.0.0.0", port }, createTsBifrost());
+}
+
+TSBIFROST
+COPY <<'WHITE_BACKGROUND' /app/airlock/white-background.ts
+import jpeg from "jpeg-js";
+import { decode as decodePng, encode as encodePng } from "fast-png";
+
+export function whitenBorderBackground(data: Uint8Array, width: number, height: number): void {
+  if (data.length !== width * height * 4) throw new Error("invalid RGBA image dimensions");
+  let borderPixels = 0, whitePixels = 0;
+  const inspect = (p: number) => {
+    borderPixels++;
+    if (data[p * 4] === 255 && data[p * 4 + 1] === 255 && data[p * 4 + 2] === 255) whitePixels++;
+  };
+  for (let x = 0; x < width; x++) { inspect(x); inspect((height - 1) * width + x); }
+  for (let y = 1; y + 1 < height; y++) { inspect(y * width); inspect(y * width + width - 1); }
+  if (whitePixels / borderPixels >= 0.95) return;
+  const seen = new Uint8Array(width * height);
+  const queue = new Uint32Array(width * height);
+  let head = 0, tail = 0;
+  const visit = (p: number) => {
+    if (seen[p]) return;
+    seen[p] = 1;
+    const i = p * 4;
+    const low = Math.min(data[i], data[i + 1], data[i + 2]);
+    const high = Math.max(data[i], data[i + 1], data[i + 2]);
+    // Only the light, neutral component connected to the border is paper.
+    // Enclosed grays and saturated highlights belong to the illustration.
+    if (low < 180 || high - low > 14) return;
+    queue[tail++] = p;
+  };
+  for (let x = 0; x < width; x++) { visit(x); visit((height - 1) * width + x); }
+  for (let y = 0; y < height; y++) { visit(y * width); visit(y * width + width - 1); }
+  while (head < tail) {
+    const p = queue[head++];
+    const i = p * 4;
+    const low = Math.min(data[i], data[i + 1], data[i + 2]);
+    const t = Math.min(1, (low - 180) / 35);
+    const amount = t * t * (3 - 2 * t);
+    for (let c = 0; c < 3; c++) data[i + c] = Math.round(data[i + c] + (255 - data[i + c]) * amount);
+    const x = p % width;
+    if (x > 0) visit(p - 1);
+    if (x + 1 < width) visit(p + 1);
+    if (p >= width) visit(p - width);
+    if (p + width < width * height) visit(p + width);
+  }
+}
+
+export function whiteBackgroundPng(bytes: Uint8Array): Uint8Array {
+  let width: number, height: number, data: Uint8Array;
+  if (bytes[0] === 0xff && bytes[1] === 0xd8) {
+    const decoded = jpeg.decode(bytes, { useTArray: true, maxResolutionInMP: 4, maxMemoryUsageInMB: 64 });
+    ({ width, height, data } = decoded);
+  } else if (bytes[0] === 137 && bytes[1] === 80) {
+    const decoded = decodePng(bytes);
+    if (decoded.depth !== 8) throw new Error("white background requires an 8-bit image");
+    ({ width, height } = decoded);
+    if (width * height > 4_000_000) throw new Error("image exceeds white background size limit");
+    data = new Uint8Array(width * height * 4);
+    const channels = decoded.channels;
+    for (let p = 0; p < width * height; p++) {
+      const src = p * channels, dst = p * 4;
+      const alpha = channels === 2 || channels === 4 ? decoded.data[src + channels - 1] / 255 : 1;
+      for (let c = 0; c < 3; c++) data[dst + c] = Math.round(decoded.data[src + (channels <= 2 ? 0 : c)] * alpha + 255 * (1 - alpha));
+      data[dst + 3] = 255;
+    }
+  } else {
+    throw new Error("white background requires a JPEG or PNG image");
+  }
+  whitenBorderBackground(data, width, height);
+  return encodePng({ width, height, data, channels: 4, depth: 8 });
+}
+
+export function whiteBackgroundBase64(base64: string): string {
+  const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+  const png = whiteBackgroundPng(bytes);
+  let binary = "";
+  for (let i = 0; i < png.length; i += 0x8000) binary += String.fromCharCode(...png.subarray(i, i + 0x8000));
+  return btoa(binary);
+}
+
+WHITE_BACKGROUND
+COPY <<'AI_MODELS' /app/airlock/ai-models.ts
+// The models an app's AI tiers resolve to, per release target, and the keys
+// each provider reads: what tsbifrost.ts calls with, and what a release reads
+// to know which secrets its effects need, without loading the gateway.
+
+export type AiModality = "text" | "image";
+export type AiTier = "browser" | "cheap" | "heavy";
+export type AiBackendTier = "cheap" | "heavy";
+export type AiTarget = "browser" | "pages" | "docker" | "local" | "cloudflare" | "gcp" | "k8s" | "aws";
+export type AiProvider = "browser" | "ollama" | "sdcpp" | "cloudflare" | "google" | "openai";
+
+export type AiModelSpec = {
+  provider: AiProvider;
+  model: string;
+  endpoint?: string;
+  size?: string;
+  steps?: number;
+  /** Merged into the provider call for this model only: an override that
+   * names another model leaves them behind. */
+  params?: Record<string, unknown>;
+};
+
+export type AiModelOverride = string | Partial<AiModelSpec>;
+
+export type AiTierMap<T = AiModelSpec> = {
+  browser?: T;
+  cheap?: T;
+  heavy?: T;
+};
+
+export type AiModalityMap<T = AiModelSpec> = {
+  text?: AiTierMap<T>;
+  image?: AiTierMap<T>;
+};
+
+export type AiCapabilitiesConfig = {
+  text?: AiTier[];
+  image?: AiTier[];
+  models?: AiModalityMap<AiModelOverride>;
+  targets?: Partial<Record<AiTarget, AiModalityMap<AiModelOverride>>>;
+};
+
+const GEMMA_4_NO_THINKING = { chat_template_kwargs: { enable_thinking: false } };
+
+export const DEFAULT_AI_MODELS: Record<AiTarget, Record<AiModality, Record<AiTier, AiModelSpec>>> = {
+  browser: {
+    text: {
+      browser: { provider: "browser", model: "HuggingFaceTB/SmolLM2-135M-Instruct" },
+      cheap: { provider: "browser", model: "HuggingFaceTB/SmolLM2-135M-Instruct" },
+      heavy: { provider: "browser", model: "HuggingFaceTB/SmolLM2-135M-Instruct" },
+    },
+    image: {
+      browser: { provider: "browser", model: "procedural-svg", size: "256x256", steps: 1 },
+      cheap: { provider: "browser", model: "procedural-svg", size: "256x256", steps: 1 },
+      heavy: { provider: "browser", model: "procedural-svg", size: "512x512", steps: 2 },
+    },
+  },
+  pages: {
+    text: {
+      browser: { provider: "browser", model: "HuggingFaceTB/SmolLM2-135M-Instruct" },
+      cheap: { provider: "browser", model: "HuggingFaceTB/SmolLM2-135M-Instruct" },
+      heavy: { provider: "browser", model: "HuggingFaceTB/SmolLM2-135M-Instruct" },
+    },
+    image: {
+      browser: { provider: "browser", model: "procedural-svg", size: "256x256", steps: 1 },
+      cheap: { provider: "browser", model: "procedural-svg", size: "256x256", steps: 1 },
+      heavy: { provider: "browser", model: "procedural-svg", size: "512x512", steps: 2 },
+    },
+  },
+  docker: {
+    text: {
+      browser: { provider: "browser", model: "google/gemma-4-e2b-it" },
+      cheap: { provider: "ollama", model: "smollm3:latest", endpoint: "http://smollm3:11434" },
+      heavy: { provider: "ollama", model: "smollm3:latest", endpoint: "http://smollm3:11434" },
+    },
+    image: {
+      browser: { provider: "browser", model: "procedural-svg-sketch", size: "256x256", steps: 1 },
+      cheap: { provider: "sdcpp", model: "sd-turbo-q4_0", endpoint: "http://diffusion:8000", size: "256x256", steps: 1 },
+      heavy: { provider: "sdcpp", model: "sd-turbo-q8_0", endpoint: "http://diffusion:8000", size: "512x512", steps: 2 },
+    },
+  },
+  local: {
+    text: {
+      browser: { provider: "browser", model: "google/gemma-4-e2b-it" },
+      cheap: { provider: "ollama", model: "gemma4:e4b", endpoint: "http://127.0.0.1:11434" },
+      heavy: { provider: "ollama", model: "gemma4:26b", endpoint: "http://127.0.0.1:11434" },
+    },
+    image: {
+      browser: { provider: "browser", model: "procedural-svg-sketch", size: "256x256", steps: 1 },
+      cheap: { provider: "sdcpp", model: "sd-turbo-q8_0", endpoint: "http://127.0.0.1:8000", size: "512x512", steps: 1 },
+      heavy: { provider: "sdcpp", model: "flux1-schnell-q4_k", endpoint: "http://127.0.0.1:8000", size: "512x512", steps: 4 },
+    },
+  },
+  cloudflare: {
+    text: {
+      browser: { provider: "browser", model: "google/gemma-4-e2b-it" },
+      // Thinking, Gemma 4 spent its whole budget before answering: a deck's words took 32 s
+      // where they take 5 s without, past the airlock's 45 s bound once the deck is long.
+      cheap: { provider: "cloudflare", model: "@cf/google/gemma-4-26b-a4b-it", params: GEMMA_4_NO_THINKING },
+      heavy: { provider: "cloudflare", model: "@cf/google/gemma-4-26b-a4b-it", params: GEMMA_4_NO_THINKING },
+    },
+    image: {
+      browser: { provider: "browser", model: "procedural-svg-sketch", size: "256x256", steps: 1 },
+      cheap: { provider: "cloudflare", model: "@cf/black-forest-labs/flux-1-schnell", size: "512x512", steps: 2 },
+      heavy: { provider: "cloudflare", model: "@cf/leonardo/phoenix-1.0", size: "512x512", steps: 20 },
+    },
+  },
+  gcp: {
+    text: {
+      browser: { provider: "browser", model: "google/gemma-4-e2b-it" },
+      cheap: { provider: "google", model: "gemma-4-26b-a4b-it" },
+      heavy: { provider: "google", model: "gemma-4-31b-it" },
+    },
+    image: {
+      browser: { provider: "browser", model: "procedural-svg-sketch", size: "256x256", steps: 1 },
+      cheap: { provider: "google", model: "imagen-4.0-fast-generate-001", size: "512x512", steps: 2 },
+      heavy: { provider: "google", model: "imagen-4.0-ultra-generate-001", size: "1024x1024", steps: 4 },
+    },
+  },
+  k8s: {
+    text: {
+      browser: { provider: "browser", model: "google/gemma-4-e2b-it" },
+      cheap: { provider: "google", model: "gemma-4-26b-a4b-it" },
+      heavy: { provider: "google", model: "gemma-4-31b-it" },
+    },
+    image: {
+      browser: { provider: "browser", model: "procedural-svg-sketch", size: "256x256", steps: 1 },
+      cheap: { provider: "google", model: "imagen-4.0-fast-generate-001", size: "512x512", steps: 2 },
+      heavy: { provider: "google", model: "imagen-4.0-ultra-generate-001", size: "1024x1024", steps: 4 },
+    },
+  },
+  aws: {
+    text: {
+      browser: { provider: "browser", model: "google/gemma-4-e2b-it" },
+      cheap: { provider: "google", model: "gemma-4-26b-a4b-it" },
+      heavy: { provider: "google", model: "gemma-4-31b-it" },
+    },
+    image: {
+      browser: { provider: "browser", model: "procedural-svg-sketch", size: "256x256", steps: 1 },
+      cheap: { provider: "google", model: "imagen-4.0-fast-generate-001", size: "512x512", steps: 2 },
+      heavy: { provider: "google", model: "imagen-4.0-ultra-generate-001", size: "1024x1024", steps: 4 },
+    },
+  },
+};
+
+/** `spec` moved to `model`, leaving its params behind when the model changes. */
+function forModel(spec: AiModelSpec, model: string): AiModelSpec {
+  if (model === spec.model) return { ...spec };
+  const { params: _left, ...rest } = spec;
+  return { ...rest, model };
+}
+
+function applyOverride(base: AiModelSpec, override?: AiModelOverride): AiModelSpec {
+  if (!override) return { ...base };
+  if (typeof override === "string") return forModel(base, override);
+  return {
+    ...forModel(base, override.model ?? base.model),
+    ...(override.provider !== undefined ? { provider: override.provider } : {}),
+    ...(override.endpoint !== undefined ? { endpoint: override.endpoint } : {}),
+    ...(override.size !== undefined ? { size: override.size } : {}),
+    ...(override.steps !== undefined ? { steps: override.steps } : {}),
+    ...(override.params !== undefined ? { params: override.params } : {}),
+  };
+}
+
+/** Resolves the concrete model specification for `(target, modality, tier)`
+ * after layering global tier overrides (`config.models`), release-target
+ * overrides (`config.targets[target]`), and environment overrides. */
+export function resolveModelSpec(
+  config: AiCapabilitiesConfig | undefined,
+  target: AiTarget,
+  modality: AiModality,
+  tier: AiTier,
+  env: Record<string, string | undefined> = {},
+): AiModelSpec {
+  const targetTable = DEFAULT_AI_MODELS[target] ?? DEFAULT_AI_MODELS.docker;
+  const base = targetTable[modality][tier];
+  const withGlobal = applyOverride(base, config?.models?.[modality]?.[tier]);
+  const withTarget = applyOverride(withGlobal, config?.targets?.[target]?.[modality]?.[tier]);
+
+  const envPrefix = `AI_${modality.toUpperCase()}_${tier.toUpperCase()}`;
+  const envModel = env[`${envPrefix}_MODEL`];
+  const envEndpoint = env[`${envPrefix}_ENDPOINT`];
+  const envProvider = env[`${envPrefix}_PROVIDER`] as AiProvider | undefined;
+  const envSize = env[`${envPrefix}_SIZE`];
+  const envSteps = env[`${envPrefix}_STEPS`];
+
+  return {
+    ...forModel(withTarget, envModel || withTarget.model),
+    ...(envProvider ? { provider: envProvider } : {}),
+    ...(envEndpoint ? { endpoint: envEndpoint } : {}),
+    ...(envSize ? { size: envSize } : {}),
+    ...(envSteps && Number.isInteger(Number(envSteps)) ? { steps: Number(envSteps) } : {}),
+  };
+}
+
+/** The environment a provider's key is read from, the first set name
+ * serving. Workers AI answers through its binding, and local providers need
+ * no key. */
+export const PROVIDER_KEYS: Partial<Record<AiProvider, readonly string[]>> = {
+  google: ["GEMINI_API_KEY", "GOOGLE_API_KEY"],
+  openai: ["OPENAI_API_KEY"],
+};
+
+export function providerKey(provider: AiProvider, env: Record<string, string | undefined>): string {
+  for (const name of PROVIDER_KEYS[provider] ?? []) if (env[name]) return env[name]!;
+  return "";
+}
+
+/** The keys a target's calls can read, as resolveModelSpec resolves every
+ * backend tier the config declares: one group per provider, any of whose
+ * names serves. */
+export function providerKeyGroups(config: AiCapabilitiesConfig | undefined, target: AiTarget): string[][] {
+  const groups = new Map<AiProvider, string[]>();
+  for (const modality of ["text", "image"] as const) {
+    for (const tier of config?.[modality] ?? []) {
+      if (tier === "browser") continue;
+      const { provider } = resolveModelSpec(config, target, modality, tier);
+      const keys = PROVIDER_KEYS[provider];
+      if (keys) groups.set(provider, [...keys]);
+    }
+  }
+  return [...groups.values()];
+}
+
+AI_MODELS
+COPY <<'PACKAGE' /app/airlock/package.json
+{
+  "private": true,
+  "dependencies": {
+    "fast-png": "6.4.0",
+    "jpeg-js": "0.4.4"
+  }
+}
+
+PACKAGE
+COPY <<'LOCK' /app/airlock/deno.lock
+{
+  "version": "5",
+  "specifiers": {
+    "jsr:@std/assert@1.0.8": "1.0.8",
+    "jsr:@std/internal@^1.0.5": "1.0.14",
+    "npm:@e965/xlsx@0.20.3": "0.20.3",
+    "npm:@endo/module-source@1.4.0": "1.4.0",
+    "npm:@pdfme/pdf-lib@6.2.8": "6.2.8",
+    "npm:@types/node@*": "22.20.5",
+    "npm:cheerio@1.2.0": "1.2.0",
+    "npm:fast-png@6.4.0": "6.4.0",
+    "npm:graphile-worker@0.18.0": "0.18.0",
+    "npm:jpeg-js@0.4.4": "0.4.4",
+    "npm:pg@8.16.3": "8.16.3",
+    "npm:ses@1.15.0": "1.15.0"
+  },
+  "jsr": {
+    "@std/assert@1.0.8": {
+      "integrity": "ebe0bd7eb488ee39686f77003992f389a06c3da1bbd8022184804852b2fa641b",
+      "dependencies": [
+        "jsr:@std/internal"
+      ]
+    },
+    "@std/internal@1.0.14": {
+      "integrity": "291516b3d4c35024d6ffbc0a9df5bf4c64116e05b50012cf846710152d2ffdf7"
+    }
+  },
+  "npm": {
+    "@babel/code-frame@7.29.7": {
+      "integrity": "sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw==",
+      "dependencies": [
+        "@babel/helper-validator-identifier",
+        "js-tokens",
+        "picocolors"
+      ]
+    },
+    "@babel/generator@7.29.8": {
+      "integrity": "sha512-gZbepsdh3WDtgZKWL+vTPh71LSBrm/Y4/QDZBVCcYfmeTEEuoOYwlSy+G1StfJg+/Zy550u/3TATbm7qDbbMtg==",
+      "dependencies": [
+        "@babel/parser@7.29.9",
+        "@babel/types@7.29.8",
+        "@jridgewell/gen-mapping",
+        "@jridgewell/trace-mapping",
+        "jsesc"
+      ]
+    },
+    "@babel/helper-globals@7.29.7": {
+      "integrity": "sha512-3nQVUAtvkKH9zahfWgw96Jc/uFOmjACE1kQz82E2lqWmHBgjzbNlsC22nuQTfahmWeQtTq5nQ/4Nnd2A1wj4zA=="
+    },
+    "@babel/helper-string-parser@7.29.7": {
+      "integrity": "sha512-Pb5ijPrZ89GDH8223L4UP8i6QApWxs04RbPQJTeWDV0/keR2E36MeKnyr6LYmUUvqRRI+Iv87SuF1W6ErINzYw=="
+    },
+    "@babel/helper-validator-identifier@7.29.7": {
+      "integrity": "sha512-qehxGkRj55h/ff8EMaJ+cYhyaKlHIxqYDn682wQD7RNp9UujOQsHog2uS0r2vzr4pW+sXf90NeeayjcNaX3fFg=="
+    },
+    "@babel/parser@7.28.6": {
+      "integrity": "sha512-TeR9zWR18BvbfPmGbLampPMW+uW1NZnJlRuuHso8i87QZNq2JRF9i6RgxRqtEq+wQGsS19NNTWr2duhnE49mfQ==",
+      "dependencies": [
+        "@babel/types@7.29.8"
+      ],
+      "bin": true
+    },
+    "@babel/parser@7.29.9": {
+      "integrity": "sha512-CjXrNHTnvqBVqHgdBysY3vk2T8tpJHb5/RMeHJBTyVa9xgugCB0CJTx/3oO8RV2QRQP391RWpB7D6hLjm8V9uA==",
+      "dependencies": [
+        "@babel/types@7.29.8"
+      ],
+      "bin": true
+    },
+    "@babel/template@7.29.7": {
+      "integrity": "sha512-puq+Gf35oI24FeN11LkoUQFqv9uwNeWpxXZi/Ji3rRIoKAzKnxRaZ+Gkj0vKS9ZCiTESfng1N9LyOyXvo+m+Gg==",
+      "dependencies": [
+        "@babel/code-frame",
+        "@babel/parser@7.29.9",
+        "@babel/types@7.29.8"
+      ]
+    },
+    "@babel/traverse@7.28.6": {
+      "integrity": "sha512-fgWX62k02qtjqdSNTAGxmKYY/7FSL9WAS1o2Hu5+I5m9T0yxZzr4cnrfXQ/MX0rIifthCSs6FKTlzYbJcPtMNg==",
+      "dependencies": [
+        "@babel/code-frame",
+        "@babel/generator",
+        "@babel/helper-globals",
+        "@babel/parser@7.29.9",
+        "@babel/template",
+        "@babel/types@7.29.8",
+        "debug"
+      ]
+    },
+    "@babel/types@7.28.6": {
+      "integrity": "sha512-0ZrskXVEHSWIqZM/sQZ4EV3jZJXRkio/WCxaqKZP1g//CEWEPSfeZFcms4XeKBCHU0ZKnIkdJeU/kF+eRp5lBg==",
+      "dependencies": [
+        "@babel/helper-string-parser",
+        "@babel/helper-validator-identifier"
+      ]
+    },
+    "@babel/types@7.29.8": {
+      "integrity": "sha512-Vj1jF3cPfxg7OAfoI7QnVKLoILlm2JF9pnVHrX8qx7AHMiYWT+NDAA7jChlNgRS4WTLc/fD1lXLmPixluj+3Gg==",
+      "dependencies": [
+        "@babel/helper-string-parser",
+        "@babel/helper-validator-identifier"
+      ]
+    },
+    "@e965/xlsx@0.20.3": {
+      "integrity": "sha512-703RN/3OdsRD5mtse2HBX7Um7xwaP9tlswEG6svOtjqokXoX7rJdQj7DyabD2I+xk22RgaIIU+R6BHgkpZGB/w==",
+      "bin": true
+    },
+    "@endo/cache-map@1.1.0": {
+      "integrity": "sha512-owFGshs/97PDw9oguZqU/px8Lv1d0KjAUtDUiPwKHNXRVUE/jyettEbRoTbNJR1OaI8biMn6bHr9kVJsOh6dXw=="
+    },
+    "@endo/env-options@1.1.11": {
+      "integrity": "sha512-p9OnAPsdqoX4YJsE98e3NBVhIr2iW9gNZxHhAI2/Ul5TdRfoOViItzHzTqrgUVopw6XxA1u1uS6CykLMDUxarA=="
+    },
+    "@endo/harden@1.1.0": {
+      "integrity": "sha512-d0CF7EVqymx9YUbkRI2sj10NrMLhrpmsaq5aBbEEbWDFxNe7F/mM8Gv8zT+iHErKEfeMCId90n5mk665SnxrRA=="
+    },
+    "@endo/immutable-arraybuffer@1.1.2": {
+      "integrity": "sha512-u+NaYB2aqEugQ3u7w3c5QNkPogf8q/xGgsPaqdY6pUiGWtYiTiFspKFcha6+oeZhWXWQ23rf0KrUq0kfuzqYyQ=="
+    },
+    "@endo/module-source@1.4.0": {
+      "integrity": "sha512-L/uOG7dPS3ZzJLI5a/gqtzVZ4cLaprfA4P3SWeWBRRuUntvP5gzoJLiw8YMlvq30BS/6D1jGCc+wSWDo/5HWsA==",
+      "dependencies": [
+        "@babel/generator",
+        "@babel/parser@7.28.6",
+        "@babel/traverse",
+        "@babel/types@7.28.6",
+        "@endo/harden",
+        "ses"
+      ]
+    },
+    "@graphile/logger@0.3.0": {
+      "integrity": "sha512-0+79VNQYCIPQ7sD/rjQCvRV15k9zhWYHFc1QE7Bv0GLchgmxsTNtkKT1RSG8zCy0jPchel7x6o2RQ1dnnzhF0A=="
+    },
+    "@jridgewell/gen-mapping@0.3.13": {
+      "integrity": "sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==",
+      "dependencies": [
+        "@jridgewell/sourcemap-codec",
+        "@jridgewell/trace-mapping"
+      ]
+    },
+    "@jridgewell/resolve-uri@3.1.2": {
+      "integrity": "sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw=="
+    },
+    "@jridgewell/sourcemap-codec@1.6.0": {
+      "integrity": "sha512-T7jf+5zgsZHwNJ4lvQ7/aezbyk0nNX+zJVWpmHA7VYsEx7a7qr5Rg5IbtJFqkgze5Y2sruq1RUY8Q837Od7iFw=="
+    },
+    "@jridgewell/trace-mapping@0.3.31": {
+      "integrity": "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==",
+      "dependencies": [
+        "@jridgewell/resolve-uri",
+        "@jridgewell/sourcemap-codec"
+      ]
+    },
+    "@pdf-lib/standard-fonts@1.0.0": {
+      "integrity": "sha512-hU30BK9IUN/su0Mn9VdlVKsWBS6GyhVfqjwl1FjZN4TxP6cCw0jP2w7V3Hf5uX7M0AZJ16vey9yE0ny7Sa59ZA==",
+      "dependencies": [
+        "pako@1.0.11"
+      ]
+    },
+    "@pdf-lib/upng@1.0.1": {
+      "integrity": "sha512-dQK2FUMQtowVP00mtIksrlZhdFXQZPC+taih1q4CvPZ5vqdxR/LKBaFg0oAfzd1GlHZXXSPdQfzQnt+ViGvEIQ==",
+      "dependencies": [
+        "pako@1.0.11"
+      ]
+    },
+    "@pdfme/pdf-lib@6.2.8": {
+      "integrity": "sha512-CT8expve+fFcYkJCRWgvouy0aAszvUrV0W2lRe1fOYfeBqY8T3WeNDpgZerh8LEOBWBa3Y9fyLWa1CI56O48cg==",
+      "dependencies": [
+        "@pdf-lib/standard-fonts",
+        "@pdf-lib/upng",
+        "color",
+        "node-html-better-parser",
+        "pako@3.0.3"
+      ]
+    },
+    "@types/debug@4.1.13": {
+      "integrity": "sha512-KSVgmQmzMwPlmtljOomayoR89W4FynCAi3E8PPs7vmDVPe84hT+vGPKkJfThkmXs0x0jAaa9U8uW8bbfyS2fWw==",
+      "dependencies": [
+        "@types/ms"
+      ]
+    },
+    "@types/interpret@1.1.4": {
+      "integrity": "sha512-r+tPKWHYqaxJOYA3Eik0mMi+SEREqOXLmsooRFmc6GHv7nWUDixFtKN+cegvsPlDcEZd9wxsdp041v2imQuvag==",
+      "dependencies": [
+        "@types/node"
+      ]
+    },
+    "@types/ms@2.1.0": {
+      "integrity": "sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA=="
+    },
+    "@types/node@22.20.5": {
+      "integrity": "sha512-U2+DNr+wSjpsTS/wZGYHq7GcwfuSmKiKvoPvK22zwTlRhU91yOniN4qRR5KhIjvif7ysw/dz/hKmfDH0Ris4aA==",
+      "dependencies": [
+        "undici-types"
+      ]
+    },
+    "@types/pako@2.0.4": {
+      "integrity": "sha512-VWDCbrLeVXJM9fihYodcLiIv0ku+AlOa/TQ1SvYOaBuyrSKgEcro95LJyIsJ4vSo6BXIxOKxiJAat04CmST9Fw=="
+    },
+    "@types/pg@8.23.1": {
+      "integrity": "sha512-fKVHpikPdg4GKks3JuLEhvwSyvwzF23hnabPy6DD8ljVbC7+6J5dQzdv4arV6jqq57djnMgs1HKBxX4P8aBI3A==",
+      "dependencies": [
+        "@types/node",
+        "pg-protocol",
+        "pg-types"
+      ]
+    },
+    "@types/semver@7.8.0": {
+      "integrity": "sha512-1mAINjtQCXXeLkJ9ehXkwOcBpqtLxiVtKhpUf83DdRNdQKV0iXZpaHYqRr7nj+wvxuJzoAmAwXI+sCNMv1CzLQ=="
+    },
+    "ansi-regex@5.0.1": {
+      "integrity": "sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ=="
+    },
+    "ansi-styles@4.3.0": {
+      "integrity": "sha512-zbB9rCJAT1rbjiVDb2hqKFHNYLxgtk8NURxZ3IZwD3F6NtxbXZQCnnSi1Lkx+IDohdPlFp222wVALIheZJQSEg==",
+      "dependencies": [
+        "color-convert@2.0.1"
+      ]
+    },
+    "argparse@2.0.1": {
+      "integrity": "sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q=="
+    },
+    "boolbase@1.0.0": {
+      "integrity": "sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww=="
+    },
+    "callsites@3.1.0": {
+      "integrity": "sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ=="
+    },
+    "chalk@4.1.2": {
+      "integrity": "sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==",
+      "dependencies": [
+        "ansi-styles",
+        "supports-color"
+      ]
+    },
+    "cheerio-select@2.1.0": {
+      "integrity": "sha512-9v9kG0LvzrlcungtnJtpGNxY+fzECQKhK4EGJX2vByejiMX84MFNQw4UxPJl3bFbTMw+Dfs37XaIkCwTZfLh4g==",
+      "dependencies": [
+        "boolbase",
+        "css-select",
+        "css-what",
+        "domelementtype",
+        "domhandler",
+        "domutils"
+      ]
+    },
+    "cheerio@1.2.0": {
+      "integrity": "sha512-WDrybc/gKFpTYQutKIK6UvfcuxijIZfMfXaYm8NMsPQxSYvf+13fXUJ4rztGGbJcBQ/GF55gvrZ0Bc0bj/mqvg==",
+      "dependencies": [
+        "cheerio-select",
+        "dom-serializer",
+        "domhandler",
+        "domutils",
+        "encoding-sniffer",
+        "htmlparser2",
+        "parse5",
+        "parse5-htmlparser2-tree-adapter",
+        "parse5-parser-stream",
+        "undici",
+        "whatwg-mimetype"
+      ]
+    },
+    "cliui@8.0.1": {
+      "integrity": "sha512-BSeNnyus75C4//NQ9gQt1/csTXyo/8Sb+afLAkzAptFuMsod9HFokGNudZpi/oQV73hnVK+sR+5PVRMd+Dr7YQ==",
+      "dependencies": [
+        "string-width",
+        "strip-ansi",
+        "wrap-ansi"
+      ]
+    },
+    "color-convert@2.0.1": {
+      "integrity": "sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ==",
+      "dependencies": [
+        "color-name@1.1.4"
+      ]
+    },
+    "color-convert@3.1.3": {
+      "integrity": "sha512-fasDH2ont2GqF5HpyO4w0+BcewlhHEZOFn9c1ckZdHpJ56Qb7MHhH/IcJZbBGgvdtwdwNbLvxiBEdg336iA9Sg==",
+      "dependencies": [
+        "color-name@2.1.1"
+      ]
+    },
+    "color-name@1.1.4": {
+      "integrity": "sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA=="
+    },
+    "color-name@2.1.1": {
+      "integrity": "sha512-p2FdgwVx1a9yWBHP2wI0VgShkDpgN4kZISkxdNipGBJWpa5G6b04OINlVWCyJj0JmfvcPrgqt95E9k8yvaOJFg=="
+    },
+    "color-string@2.1.4": {
+      "integrity": "sha512-Bb6Cq8oq0IjDOe8wJmi4JeNn763Xs9cfrBcaylK1tPypWzyoy2G3l90v9k64kjphl/ZJjPIShFztenRomi8WTg==",
+      "dependencies": [
+        "color-name@2.1.1"
+      ]
+    },
+    "color@5.0.3": {
+      "integrity": "sha512-ezmVcLR3xAVp8kYOm4GS45ZLLgIE6SPAFoduLr6hTDajwb3KZ2F46gulK3XpcwRFb5KKGCSezCBAY4Dw4HsyXA==",
+      "dependencies": [
+        "color-convert@3.1.3",
+        "color-string"
+      ]
+    },
+    "cosmiconfig@8.3.6": {
+      "integrity": "sha512-kcZ6+W5QzcJ3P1Mt+83OUv/oHFqZHIx8DuxG6eZ5RGMERoLqp4BuGjhHLYGK+Kf5XVkQvqBSmAy/nGWN3qDgEA==",
+      "dependencies": [
+        "import-fresh",
+        "js-yaml",
+        "parse-json",
+        "path-type"
+      ]
+    },
+    "css-select@5.2.2": {
+      "integrity": "sha512-TizTzUddG/xYLA3NXodFM0fSbNizXjOKhqiQQwvhlspadZokn1KDy0NZFS0wuEubIYAV5/c1/lAr0TaaFXEXzw==",
+      "dependencies": [
+        "boolbase",
+        "css-what",
+        "domhandler",
+        "domutils",
+        "nth-check"
+      ]
+    },
+    "css-what@6.2.2": {
+      "integrity": "sha512-u/O3vwbptzhMs3L1fQE82ZSLHQQfto5gyZzwteVIEyeaY5Fc7R4dapF/BvRoSYFeqfBk4m0V1Vafq5Pjv25wvA=="
+    },
+    "debug@4.4.3": {
+      "integrity": "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==",
+      "dependencies": [
+        "ms"
+      ]
+    },
+    "dom-serializer@2.0.0": {
+      "integrity": "sha512-wIkAryiqt/nV5EQKqQpo3SToSOV9J0DnbJqwK7Wv/Trc92zIAYZ4FlMu+JPFW1DfGFt81ZTCGgDEabffXeLyJg==",
+      "dependencies": [
+        "domelementtype",
+        "domhandler",
+        "entities@4.5.0"
+      ]
+    },
+    "domelementtype@2.3.0": {
+      "integrity": "sha512-OLETBj6w0OsagBwdXnPdN0cnMfF9opN69co+7ZrbfPGrdpPVNBUj02spi6B1N7wChLQiPn4CSH/zJvXw56gmHw=="
+    },
+    "domhandler@5.0.3": {
+      "integrity": "sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==",
+      "dependencies": [
+        "domelementtype"
+      ]
+    },
+    "domutils@3.2.2": {
+      "integrity": "sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==",
+      "dependencies": [
+        "dom-serializer",
+        "domelementtype",
+        "domhandler"
+      ]
+    },
+    "emoji-regex@8.0.0": {
+      "integrity": "sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A=="
+    },
+    "encoding-sniffer@0.2.1": {
+      "integrity": "sha512-5gvq20T6vfpekVtqrYQsSCFZ1wEg5+wW0/QaZMWkFr6BqD3NfKs0rLCx4rrVlSWJeZb5NBJgVLswK/w2MWU+Gw==",
+      "dependencies": [
+        "iconv-lite",
+        "whatwg-encoding"
+      ]
+    },
+    "entities@4.5.0": {
+      "integrity": "sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw=="
+    },
+    "entities@6.0.1": {
+      "integrity": "sha512-aN97NXWF6AWBTahfVOIrB/NShkzi5H7F9r1s9mD3cDj4Ko5f2qhhVoYMibXF7GlLveb/D2ioWay8lxI97Ven3g=="
+    },
+    "entities@7.0.1": {
+      "integrity": "sha512-TWrgLOFUQTH994YUyl1yT4uyavY5nNB5muff+RtWaqNVCAK408b5ZnnbNAUEWLTCpum9w6arT70i1XdQ4UeOPA=="
+    },
+    "error-ex@1.3.4": {
+      "integrity": "sha512-sqQamAnR14VgCr1A618A3sGrygcpK+HEbenA/HiEAkkUwcZIIB/tgWqHFxWgOyDh4nB4JCRimh79dR5Ywc9MDQ==",
+      "dependencies": [
+        "is-arrayish"
+      ]
+    },
+    "escalade@3.2.0": {
+      "integrity": "sha512-WUj2qlxaQtO4g6Pq5c29GTcWGDyd8itL8zTlipgECz3JesAiiOKotd8JU6otB3PACgG6xkJUyVhboMS+bje/jA=="
+    },
+    "fast-png@6.4.0": {
+      "integrity": "sha512-kAqZq1TlgBjZcLr5mcN6NP5Rv4V2f22z00c3g8vRrwkcqjerx7BEhPbOnWCPqaHUl2XWQBJQvOT/FQhdMT7X/Q==",
+      "dependencies": [
+        "@types/pako",
+        "iobuffer",
+        "pako@2.2.0"
+      ]
+    },
+    "get-caller-file@2.0.5": {
+      "integrity": "sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg=="
+    },
+    "graphile-config@0.0.1-beta.18": {
+      "integrity": "sha512-uMdF9Rt8/NwT1wVXNleYgM5ro2hHDodHiKA3efJhgdU8iP+r/hksnghOHreMva0sF5tV73f4TpiELPUR0g7O9w==",
+      "dependencies": [
+        "@types/interpret",
+        "@types/node",
+        "@types/semver",
+        "chalk",
+        "debug",
+        "interpret",
+        "semver",
+        "tslib",
+        "yargs"
+      ]
+    },
+    "graphile-worker@0.18.0": {
+      "integrity": "sha512-WDpuFp7v6TUoTeA5k9YFHfopaomZkyIy90PvRWMuM5BV0igRnNScw82HI6IehAiaI7wWpS56IWloLZ8ugZ2ceA==",
+      "dependencies": [
+        "@graphile/logger",
+        "@types/debug",
+        "@types/pg",
+        "cosmiconfig",
+        "graphile-config",
+        "json5",
+        "pg",
+        "yargs"
+      ],
+      "bin": true
+    },
+    "has-flag@4.0.0": {
+      "integrity": "sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ=="
+    },
+    "html-entities@2.6.0": {
+      "integrity": "sha512-kig+rMn/QOVRvr7c86gQ8lWXq+Hkv6CbAH1hLu+RG338StTpE8Z0b44SDVaqVu7HGKf27frdmUYEs9hTUX/cLQ=="
+    },
+    "htmlparser2@10.1.0": {
+      "integrity": "sha512-VTZkM9GWRAtEpveh7MSF6SjjrpNVNNVJfFup7xTY3UpFtm67foy9HDVXneLtFVt4pMz5kZtgNcvCniNFb1hlEQ==",
+      "dependencies": [
+        "domelementtype",
+        "domhandler",
+        "domutils",
+        "entities@7.0.1"
+      ]
+    },
+    "iconv-lite@0.6.3": {
+      "integrity": "sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==",
+      "dependencies": [
+        "safer-buffer"
+      ]
+    },
+    "import-fresh@3.3.1": {
+      "integrity": "sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ==",
+      "dependencies": [
+        "parent-module",
+        "resolve-from"
+      ]
+    },
+    "interpret@3.1.1": {
+      "integrity": "sha512-6xwYfHbajpoF0xLW+iwLkhwgvLoZDfjYfoFNu8ftMoXINzwuymNLd9u/KmwtdT2GbR+/Cz66otEGEVVUHX9QLQ=="
+    },
+    "iobuffer@5.4.0": {
+      "integrity": "sha512-DRebOWuqDvxunfkNJAlc3IzWIPD5xVxwUNbHr7xKB8E6aLJxIPfNX3CoMJghcFjpv6RWQsrcJbghtEwSPoJqMA=="
+    },
+    "is-arrayish@0.2.1": {
+      "integrity": "sha512-zz06S8t0ozoDXMG+ube26zeCTNXcKIPJZJi8hBrF4idCLms4CG9QtK7qBl1boi5ODzFpjswb5JPmHCbMpjaYzg=="
+    },
+    "is-fullwidth-code-point@3.0.0": {
+      "integrity": "sha512-zymm5+u+sCsSWyD9qNaejV3DFvhCKclKdizYaJUuHA83RLjb7nSuGnddCHGv0hk+KY7BMAlsWeK4Ueg6EV6XQg=="
+    },
+    "jpeg-js@0.4.4": {
+      "integrity": "sha512-WZzeDOEtTOBK4Mdsar0IqEU5sMr3vSV2RqkAIzUEV2BHnUfKGyswWFPFwK5EeDo93K3FohSHbLAjj0s1Wzd+dg=="
+    },
+    "js-tokens@4.0.0": {
+      "integrity": "sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ=="
+    },
+    "js-yaml@4.3.2": {
+      "integrity": "sha512-SFNOvSJ+Dgf/9An904Yx+CgSlIPCkIpao4qo51lpee25TIRejdH3rhR4EZMGoNx3/TP3O+wzWuiTFl4sqbltzA==",
+      "dependencies": [
+        "argparse"
+      ],
+      "bin": true
+    },
+    "jsesc@3.1.0": {
+      "integrity": "sha512-/sM3dO2FOzXjKQhJuo0Q173wf2KOo8t4I8vHy6lF9poUp7bKT0/NHE8fPX23PwfhnykfqnC2xRxOnVw5XuGIaA==",
+      "bin": true
+    },
+    "json-parse-even-better-errors@2.3.1": {
+      "integrity": "sha512-xyFwyhro/JEof6Ghe2iz2NcXoj2sloNsWr/XsERDK/oiPCfaNhl5ONfp+jQdAZRQQ0IJWNzH9zIZF7li91kh2w=="
+    },
+    "json5@2.2.3": {
+      "integrity": "sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==",
+      "bin": true
+    },
+    "lines-and-columns@1.2.4": {
+      "integrity": "sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg=="
+    },
+    "ms@2.1.3": {
+      "integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA=="
+    },
+    "node-html-better-parser@1.5.9": {
+      "integrity": "sha512-z1I5UINMezJXYL9cH3h0a9KBth2G978gSLlfkpQ+CQzzVHVQy9gpARgm9eDsz1O4gn1HtgUqjdAIYxKFZm6uHQ==",
+      "dependencies": [
+        "html-entities"
+      ]
+    },
+    "nth-check@2.1.1": {
+      "integrity": "sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==",
+      "dependencies": [
+        "boolbase"
+      ]
+    },
+    "pako@1.0.11": {
+      "integrity": "sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw=="
+    },
+    "pako@2.2.0": {
+      "integrity": "sha512-zJq6RP/5q+TO2OpFV3FHzlPnFjmkb7Nc99a5SNjJE+uu/PkpChs+NIZSSzbBoD+6kjiISXjfYdwj1ZRQ81dz/w=="
+    },
+    "pako@3.0.3": {
+      "integrity": "sha512-tmrebBBYI5FOw8QICGwJNqE8fotC8R+gwcxOvoFNv+GKehOI6Lc6YBolNcQNnC4v96l1wt7rh102ifD4kVeZAQ=="
+    },
+    "parent-module@1.0.1": {
+      "integrity": "sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==",
+      "dependencies": [
+        "callsites"
+      ]
+    },
+    "parse-json@5.2.0": {
+      "integrity": "sha512-ayCKvm/phCGxOkYRSCM82iDwct8/EonSEgCSxWxD7ve6jHggsFl4fZVQBPRNgQoKiuV/odhFrGzQXZwbifC8Rg==",
+      "dependencies": [
+        "@babel/code-frame",
+        "error-ex",
+        "json-parse-even-better-errors",
+        "lines-and-columns"
+      ]
+    },
+    "parse5-htmlparser2-tree-adapter@7.1.0": {
+      "integrity": "sha512-ruw5xyKs6lrpo9x9rCZqZZnIUntICjQAd0Wsmp396Ul9lN/h+ifgVV1x1gZHi8euej6wTfpqX8j+BFQxF0NS/g==",
+      "dependencies": [
+        "domhandler",
+        "parse5"
+      ]
+    },
+    "parse5-parser-stream@7.1.2": {
+      "integrity": "sha512-JyeQc9iwFLn5TbvvqACIF/VXG6abODeB3Fwmv/TGdLk2LfbWkaySGY72at4+Ty7EkPZj854u4CrICqNk2qIbow==",
+      "dependencies": [
+        "parse5"
+      ]
+    },
+    "parse5@7.3.0": {
+      "integrity": "sha512-IInvU7fabl34qmi9gY8XOVxhYyMyuH2xUNpb2q8/Y+7552KlejkRvqvD19nMoUW/uQGGbqNpA6Tufu5FL5BZgw==",
+      "dependencies": [
+        "entities@6.0.1"
+      ]
+    },
+    "path-type@4.0.0": {
+      "integrity": "sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw=="
+    },
+    "pg-cloudflare@1.4.1": {
+      "integrity": "sha512-6PQbsFWZcp9EmJEwy5cGQ2La+AMWpP46lgbb8X+U/XsHIUweYDNCpeuKck5RxL2MdVFi7krbbEi5nX4Zh7JhrQ=="
+    },
+    "pg-connection-string@2.14.1": {
+      "integrity": "sha512-qR3kGNPBLpCNtz0evbKA0Y/MRFXwSSdT+pTJvYp/bXTcReZbvX1kzF0IyTc1QnxqF7AZbOeBhNL8R5mYQZV/MA=="
+    },
+    "pg-int8@1.0.1": {
+      "integrity": "sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw=="
+    },
+    "pg-pool@3.14.0_pg@8.16.3": {
+      "integrity": "sha512-gKtPkFdQPU3DksooVLi9LsjZxrsBUZIpa+7aVx+LV5pNh0KzP4Zleud2po+ConrxbuXGBJ6Hfer6hdgpIBpBaw==",
+      "dependencies": [
+        "pg"
+      ]
+    },
+    "pg-protocol@1.16.1": {
+      "integrity": "sha512-p9VOFMiHB/ZbJATetbg+99PxssTVSQRnyuPSQ67mN1+1KBOjZaZ83ZQzltnxPhJwSsC3nwVjJ10DVJlerbFzLg=="
+    },
+    "pg-types@2.2.0": {
+      "integrity": "sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==",
+      "dependencies": [
+        "pg-int8",
+        "postgres-array",
+        "postgres-bytea",
+        "postgres-date",
+        "postgres-interval"
+      ]
+    },
+    "pg@8.16.3": {
+      "integrity": "sha512-enxc1h0jA/aq5oSDMvqyW3q89ra6XIIDZgCX9vkMrnz5DFTw/Ny3Li2lFQ+pt3L6MCgm/5o2o8HW9hiJji+xvw==",
+      "dependencies": [
+        "pg-connection-string",
+        "pg-pool",
+        "pg-protocol",
+        "pg-types",
+        "pgpass"
+      ],
+      "optionalDependencies": [
+        "pg-cloudflare"
+      ]
+    },
+    "pgpass@1.0.5": {
+      "integrity": "sha512-FdW9r/jQZhSeohs1Z3sI1yxFQNFvMcnmfuj4WBMUTxOrAyLMaTcE1aAMBiTlbMNaXvBCQuVi0R7hd8udDSP7ug==",
+      "dependencies": [
+        "split2"
+      ]
+    },
+    "picocolors@1.1.1": {
+      "integrity": "sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA=="
+    },
+    "postgres-array@2.0.0": {
+      "integrity": "sha512-VpZrUqU5A69eQyW2c5CA1jtLecCsN2U/bD6VilrFDWq5+5UIEVO7nazS3TEcHf1zuPYO/sqGvUvW62g86RXZuA=="
+    },
+    "postgres-bytea@1.0.1": {
+      "integrity": "sha512-5+5HqXnsZPE65IJZSMkZtURARZelel2oXUEO8rH83VS/hxH5vv1uHquPg5wZs8yMAfdv971IU+kcPUczi7NVBQ=="
+    },
+    "postgres-date@1.0.7": {
+      "integrity": "sha512-suDmjLVQg78nMK2UZ454hAG+OAW+HQPZ6n++TNDUX+L0+uUlLywnoxJKDou51Zm+zTCjrCl0Nq6J9C5hP9vK/Q=="
+    },
+    "postgres-interval@1.2.0": {
+      "integrity": "sha512-9ZhXKM/rw350N1ovuWHbGxnGh/SNJ4cnxHiM0rxE4VN41wsg8P8zWn9hv/buK00RP4WvlOyr/RBDiptyxVbkZQ==",
+      "dependencies": [
+        "xtend"
+      ]
+    },
+    "require-directory@2.1.1": {
+      "integrity": "sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q=="
+    },
+    "resolve-from@4.0.0": {
+      "integrity": "sha512-pb/MYmXstAkysRFx8piNI1tGFNQIFA3vkE3Gq4EuA1dF6gHp/+vgZqsCGJapvy8N3Q+4o7FwvquPJcnZ7RYy4g=="
+    },
+    "safer-buffer@2.1.2": {
+      "integrity": "sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg=="
+    },
+    "semver@7.8.5": {
+      "integrity": "sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA==",
+      "bin": true
+    },
+    "ses@1.15.0": {
+      "integrity": "sha512-Y7RvgVXhkwQEqVActNn44QBxB2BCUbPfexAaMiUFjbJkDXDnxPisQC5jYQeWOZ3QBOfecnmLfPn0sQKLiYGBAQ==",
+      "dependencies": [
+        "@endo/cache-map",
+        "@endo/env-options",
+        "@endo/immutable-arraybuffer"
+      ]
+    },
+    "split2@4.2.0": {
+      "integrity": "sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg=="
+    },
+    "string-width@4.2.3": {
+      "integrity": "sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==",
+      "dependencies": [
+        "emoji-regex",
+        "is-fullwidth-code-point",
+        "strip-ansi"
+      ]
+    },
+    "strip-ansi@6.0.1": {
+      "integrity": "sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==",
+      "dependencies": [
+        "ansi-regex"
+      ]
+    },
+    "supports-color@7.2.0": {
+      "integrity": "sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==",
+      "dependencies": [
+        "has-flag"
+      ]
+    },
+    "tslib@2.8.1": {
+      "integrity": "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w=="
+    },
+    "undici-types@6.21.0": {
+      "integrity": "sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ=="
+    },
+    "undici@7.30.0": {
+      "integrity": "sha512-dkrQXeHSaoamnItlYbmzG0wFYrM0ZwDxCIg0A7aKjTyyhh9svRzCNFEzV+Vm05/yehjCzjDZ31KXfGEjYSztDQ=="
+    },
+    "whatwg-encoding@3.1.1": {
+      "integrity": "sha512-6qN4hJdMwfYBtE3YBTTHhoeuUrDBPZmbQaxWAqSALV/MeEnR5z1xd8UKud2RAkFoPkmB+hli1TZSnyi84xz1vQ==",
+      "dependencies": [
+        "iconv-lite"
+      ],
+      "deprecated": true
+    },
+    "whatwg-mimetype@4.0.0": {
+      "integrity": "sha512-QaKxh0eNIi2mE9p2vEdzfagOKHCcj1pJ56EEHGQOVxp8r9/iszLUUV7v89x9O1p/T+NlTM5W7jW6+cz4Fq1YVg=="
+    },
+    "wrap-ansi@7.0.0": {
+      "integrity": "sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==",
+      "dependencies": [
+        "ansi-styles",
+        "string-width",
+        "strip-ansi"
+      ]
+    },
+    "xtend@4.0.2": {
+      "integrity": "sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ=="
+    },
+    "y18n@5.0.8": {
+      "integrity": "sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA=="
+    },
+    "yargs-parser@21.1.1": {
+      "integrity": "sha512-tVpsJW7DdjecAiFpbIB1e3qxIQsE6NoPc5/eTdrbbIC4h0LVsWhnoa3g+m2HclBIujHzsxZ4VJVA+GUuc2/LBw=="
+    },
+    "yargs@17.7.3": {
+      "integrity": "sha512-GZtjxm/J/4TSxuL3FNYjCmLktBTnIw/rVmKSIyKeYAZpmJB2ig9VauCC5xsa82GNKVKDAqpOn3KVzNt0zmrU0g==",
+      "dependencies": [
+        "cliui",
+        "escalade",
+        "get-caller-file",
+        "require-directory",
+        "string-width",
+        "y18n",
+        "yargs-parser"
+      ]
+    }
+  },
+  "workspace": {
+    "dependencies": [
+      "jsr:@std/assert@1.0.8",
+      "npm:@e965/xlsx@0.20.3",
+      "npm:@endo/module-source@1.4.0",
+      "npm:@pdfme/pdf-lib@6.2.8",
+      "npm:graphile-worker@0.18.0",
+      "npm:pg@8.16.3",
+      "npm:ses@1.15.0"
+    ],
+    "packageJson": {
+      "dependencies": [
+        "npm:fast-png@6.4.0",
+        "npm:jpeg-js@0.4.4"
+      ]
+    }
+  }
+}
+
+LOCK
+COPY --chmod=755 --from=tarampampam/microcheck:1@sha256:79c187c05bfa67518078bf4db117771942fa8fe107dc79a905861c75ddf28dfa /bin/portcheck /usr/local/bin/portcheck
+RUN --mount=type=cache,target=/deno-store,id=iris-tsbifrost:/deno-store,sharing=locked sh -c 'd="${DENO_DIR:-/root/.cache/deno}"; s=/deno-store; k="$(sha256sum deno.lock */deno.lock */*/deno.lock deno.json */deno.json */*/deno.json package.json */package.json 2>/dev/null | sha256sum | cut -d'\'' '\'' -f1)"; mkdir -p "$d" "$s"; for sub in remote npm jsr; do if [ -d "$s/$k/$sub" ]; then mkdir -p "$d/$sub" && cp -a "$s/$k/$sub"/. "$d/$sub"/ 2>/dev/null || true; fi; done; (deno cache --frozen --node-modules-dir=auto tsbifrost.ts) || exit; t="$s/.tmp.$$"; rm -rf "$t"; mkdir -p "$t"; for sub in remote npm jsr; do if [ -d "$d/$sub" ]; then mkdir -p "$t/$sub" && cp -a "$d/$sub"/. "$t/$sub"/ 2>/dev/null || true; fi; done; rm -rf "$s/$k" && mv "$t" "$s/$k" 2>/dev/null || rm -rf "$t"; find "$s" -mindepth 1 -maxdepth 1 ! -name "$k" -exec rm -rf {} + 2>/dev/null || true'
+COPY .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/bayt.tsbifrost.json ./.bayt/
+EXPOSE 8090
+CMD ["run", "--allow-net", "--allow-env", "/app/airlock/tsbifrost.ts"]
+HEALTHCHECK --interval=5s --timeout=5s --retries=30 --start-period=30s CMD ["portcheck","--port","8090"]
+
+FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223 AS tsbifrost_bayt_ctxs
+ARG BAYT_DIR
+WORKDIR /monorepo/${BAYT_DIR}
+COPY --parents .bayt/compose.tsbifrost.yaml .bayt/Dockerfile.tsbifrost .bayt/bayt.tsbifrost.json .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/process-compose.yaml ./
+ARG SOURCE_DATE_EPOCH
+ARG BAYT_CLAMP=1
+RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/${BAYT_DIR} -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && { d=$(dirname /monorepo/${BAYT_DIR}); while [ "$d" != / ]; do touch -hd @${SOURCE_DATE_EPOCH:-0} "$d" || exit; d=$(dirname "$d"); done; }; fi
+FROM scratch AS tsbifrost_bayt
+COPY --from=tsbifrost_bayt_ctxs /monorepo /monorepo

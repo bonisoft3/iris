@@ -1,0 +1,213 @@
+{
+  "_generated_from": "bayt.cue (do not edit)",
+  "compose": {
+    "up": false,
+    "manual": false,
+    "environment": {},
+    "ports": [],
+    "volumes": [],
+    "depends_on": {},
+    "networks": {
+      "default": {
+        "aliases": [
+          "smollm3"
+        ]
+      },
+      "airlock-egress": {
+        "aliases": [
+          "smollm3"
+        ]
+      }
+    },
+    "healthcheck": {
+      "test": [
+        "CMD",
+        "httpcheck",
+        "http://127.0.0.1:11434/api/tags"
+      ],
+      "interval": "1s",
+      "timeout": "5s",
+      "retries": 30,
+      "start_period": "30s",
+      "start_interval": "200ms"
+    }
+  },
+  "dockerfile": {
+    "preamble": [
+      "COPY <<'EOF' /srv/ollama.ts\nconst port = Number(Deno.env.get(\"PORT\") || 11434);\nconst host = Deno.env.get(\"HOST\") || \"0.0.0.0\";\nconst mock = (Deno.env.get(\"BAYT_LOCAL_MOCK_AI\") ?? \"1\") !== \"0\";\nconst upstream = (Deno.env.get(\"OLLAMA_UPSTREAM\") || \"http://host.docker.internal:11434\").replace(/\\/$/, \"\");\nDeno.serve({ hostname: host, port }, async (req) => {\n  const url = new URL(req.url);\n  if (!mock) {\n    const proxied = await fetch(`${upstream}${url.pathname}${url.search}`, {\n      method: req.method,\n      headers: req.headers,\n      body: req.method === \"GET\" || req.method === \"HEAD\" ? undefined : req.body,\n    });\n    return new Response(proxied.body, { status: proxied.status, headers: proxied.headers });\n  }\n  if (url.pathname === \"/api/tags\") {\n    return Response.json({ models: [{ name: \"gemma3:4b\" }, { name: \"gemma3:12b\" }] });\n  }\n  if (url.pathname === \"/api/chat\") {\n    const body = await req.json().catch(() => ({}));\n    const model = String(body.model || \"gemma3:4b\");\n    const rawMessages = JSON.stringify(body.messages || \"\");\n    if (rawMessages.includes(\"[TRANSLATE:\")) {\n      return Response.json({\n        model,\n        done: true,\n        message: {\n          role: \"assistant\",\n          content: JSON.stringify({\n            caption: \"Botella de agua mineral PET #1 transparente (500 ml)\",\n            object_material: \"Tereftalato de polietileno (PET #1) con tapa HDPE #2\",\n            disposal_instructions: \"1. Vacíe el líquido restante por completo. 2. Enjuague brevemente y deposítela en reciclables secos.\",\n            sub_classifications: \"Reciclable · Envase de bebida · Ciclo cerrado\",\n            price: \"US$ 0,85 / kg (flujo reciclable seco)\",\n            nearby_recycling_places: \"Ecoponto Pinheiros (0,6 km) · Cooperativa Vila Mariana (1,4 km)\"\n          })\n        }\n      });\n    }\n    const isHeavy = model.includes(\"12b\") || model.includes(\"26b\");\n    return Response.json({\n      model,\n      done: true,\n      message: {\n        role: \"assistant\",\n        content: JSON.stringify({\n          caption: isHeavy ? \"Clear PET #1 Mineral Water Bottle (500 ml)\" : \"Pressed Aluminum Beverage Can (350 ml · ALU #41)\",\n          label: \"recyclable\",\n          object_material: isHeavy ? \"Polyethylene Terephthalate (PET #1) with HDPE #2 cap\" : \"Beverage-grade Aluminum Alloy (AA 3004 / 5182 · ALU #41)\",\n          disposal_instructions: \"1. Empty any remaining liquid completely. 2. Quick-rinse and place in the dry recyclables bin.\",\n          sub_classifications: \"Recyclable · Beverage Container · Closed-Loop Stream\",\n          price: \"US$ 0.85 / kg (sorted recyclable stream)\",\n          nearby_recycling_places: \"Ecoponto Pinheiros (0.6 km) · Cooperativa Vila Mariana (1.4 km)\"\n        })\n      }\n    });\n  }\n  return new Response(\"Not Found\", { status: 404 });\n});\nEOF"
+    ],
+    "preambleCopyContexts": [],
+    "from": {
+      "name": "denoland/deno:debian-2.9.7@sha256:fa335acdf6b72106eda2cb6a8cb5f4187e7630e357467489db4b2e7352d5e432"
+    },
+    "add": [],
+    "mounts": [],
+    "secrets": {},
+    "extra_hosts": [],
+    "epilogue": [],
+    "copy": [
+      {
+        "from": {
+          "name": "tarampampam/microcheck:1@sha256:79c187c05bfa67518078bf4db117771942fa8fe107dc79a905861c75ddf28dfa"
+        },
+        "srcs": [
+          "/bin/httpcheck"
+        ],
+        "dst": "/usr/local/bin/httpcheck",
+        "chmod": "755",
+        "link": true,
+        "parents": false,
+        "exclude": []
+      }
+    ],
+    "healthcheck": {
+      "test": [
+        "CMD",
+        "httpcheck",
+        "http://127.0.0.1:11434/api/tags"
+      ],
+      "interval": "1s",
+      "timeout": "5s",
+      "retries": 30,
+      "start_period": "30s"
+    },
+    "expose": [],
+    "entrypoint": null,
+    "incremental": false,
+    "cmd": null
+  },
+  "entrypoint": {
+    "do": "if (($env.BAYT_LOCAL_MOCK_AI? | default '1') == '0') { if (which ollama | is-empty) { error make { msg: 'ollama not found on PATH' } }; with-env { OLLAMA_HOST: $'127.0.0.1:($env.PORT? | default \"11434\")' } { ^ollama serve } } else { let f = (($env.BAYT_LOCAL_WORK_DIR? | default $nu.temp-dir) | path join 'ollama-iris-mock.ts'); open --raw .bayt/Dockerfile.smollm3 | lines | skip until {|l| $l =~ '^COPY <<.EOF. /srv/ollama.ts$' } | skip 1 | take until {|l| $l == 'EOF' } | str join (char nl) | save -f $f; with-env { HOST: '127.0.0.1' } { ^deno run --allow-net --allow-env $f } }",
+    "dockerfile": {
+      "do": "deno run --allow-net --allow-env /srv/ollama.ts",
+      "shell": "sh"
+    },
+    "shell": "nu",
+    "env": {
+      "BAYT_LOCAL_MOCK_AI": "${BAYT_LOCAL_MOCK_AI:-1}",
+      "OLLAMA_UPSTREAM": "${OLLAMA_UPSTREAM:-http://host.docker.internal:11434}"
+    },
+    "after": {},
+    "host": true
+  },
+  "expose": {
+    "api": {
+      "port": 11434,
+      "env": "PORT"
+    }
+  },
+  "healthcheck": {
+    "template": "http",
+    "scheme": "http",
+    "host": "127.0.0.1",
+    "port": 11434,
+    "path": "/api/tags",
+    "url": "http://127.0.0.1:11434/api/tags",
+    "authorization": null,
+    "headers": [],
+    "start_interval": "200ms",
+    "interval": "1s",
+    "timeout": "5s",
+    "retries": 30,
+    "start_period": "30s"
+  },
+  "name": "smollm3",
+  "process-compose": {
+    "activate": "mise x --"
+  },
+  "project": "iris",
+  "dir": ".",
+  "activate": "",
+  "srcs": {
+    "globs": [],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [],
+    "exclude": []
+  },
+  "state": {
+    "globs": []
+  },
+  "env": {},
+  "synthetics": {
+    "bayt": {
+      "name": "smollm3_bayt",
+      "project": "iris",
+      "dir": ".",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          ".bayt/compose.smollm3.yaml",
+          ".bayt/Dockerfile.smollm3",
+          ".bayt/bayt.smollm3.json",
+          ".bayt/Taskfile.yml",
+          ".bayt/Taskfile.bayt.yml",
+          ".bayt/process-compose.yaml"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "./.bayt/compose.smollm3.yaml"
+      ]
+    },
+    "outs": {
+      "name": "smollm3_outs",
+      "project": "iris",
+      "dir": ".",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [],
+        "exclude": []
+      },
+      "env": {},
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "./.bayt/compose.smollm3.yaml"
+      ]
+    }
+  },
+  "visibility": "internal",
+  "emitsSrcs": false,
+  "deps": [],
+  "sameProjectDeps": [],
+  "transitiveDeps": [],
+  "transitiveCrossDeps": [],
+  "upClosure": [
+    "./.bayt/compose.smollm3.yaml"
+  ],
+  "chainedDeps": [],
+  "cmds": [],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

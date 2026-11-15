@@ -1,0 +1,183 @@
+@import "./shared/iris.css";
+
+/* landing — ir: #landing. Iris Campaigns showcase and live community specimen highlights. */
+[data-screen="landing"] .landing-body {
+  container-type: inline-size;
+}
+[data-screen="landing"][data-state="loading"] .skeleton {
+  display: block;
+}
+[data-screen="landing"][data-state="loading"] .landing-body {
+  display: none;
+}
+[data-screen="landing"] .landing-skel {
+  min-height: calc(var(--size-14) * 2);
+}
+
+[data-screen="landing"] .landing-body {
+  padding: var(--sp-lg);
+  display: grid;
+  gap: var(--sp-lg);
+}
+
+[data-screen="landing"] .lp-hero {
+  background: var(--header);
+  color: var(--strip-ink);
+  border-color: var(--header);
+}
+[data-screen="landing"] .lp-hero-inner {
+  max-width: var(--measure-column);
+  margin: 0 auto;
+  padding: var(--sp-xl) var(--sp-lg);
+  text-align: center;
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-md);
+}
+@container (max-width: 520px) {
+  [data-screen="landing"] .lp-hero-inner {
+    padding: var(--sp-lg) var(--sp-md);
+  }
+}
+[data-screen="landing"] .lp-logo {
+  width: var(--size-11);
+  height: var(--size-10);
+  object-fit: contain;
+}
+[data-screen="landing"] .lp-title {
+  margin: 0;
+  color: var(--strip-ink);
+}
+[data-screen="landing"] .lp-subtitle {
+  margin: 0;
+  color: var(--strip-ink);
+  opacity: .9;
+  max-width: var(--measure-portrait);
+}
+[data-screen="landing"] .lp-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-sm);
+}
+[data-screen="landing"] .lp-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--control-h);
+  text-decoration: none;
+  border-radius: var(--r-full);
+  padding: 0 var(--sp-lg);
+  font-weight: 600;
+}
+[data-screen="landing"] .lp-cta.btn-primary {
+  background: var(--accent);
+  color: var(--surface);
+  border: var(--border-size-1) solid var(--accent);
+}
+[data-screen="landing"] .lp-cta.btn-secondary {
+  background: transparent;
+  color: var(--strip-ink);
+  border: var(--border-size-1) solid var(--strip-ink);
+}
+
+[data-screen="landing"] .campaign-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--size-14)), 1fr));
+  gap: var(--sp-md);
+  padding: var(--sp-md);
+}
+[data-screen="landing"] .campaign-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-muted);
+  border: var(--border-size-1) solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+[data-screen="landing"] .campaign-img {
+  width: 100%;
+  aspect-ratio: var(--ratio-landscape);
+  object-fit: cover;
+  border-bottom: var(--border-size-1) solid var(--border);
+  background: var(--surface);
+}
+[data-screen="landing"] .campaign-copy {
+  padding: var(--sp-md);
+  display: grid;
+  gap: var(--size-1);
+}
+[data-screen="landing"] .campaign-copy .chip,
+[data-screen="landing"] .showcase-info .chip {
+  justify-self: start;
+}
+[data-screen="landing"] .campaign-title {
+  margin: var(--size-1) 0 0;
+}
+[data-screen="landing"] .campaign-hook {
+  margin: 0;
+}
+[data-screen="landing"] .campaign-audience {
+  margin: 0;
+  color: var(--secondary);
+}
+
+[data-screen="landing"] .showcase-grid {
+  list-style: none;
+  margin: 0;
+  padding: var(--sp-md);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--size-14)), 1fr));
+  gap: var(--sp-sm);
+}
+[data-screen="landing"] .showcase-card {
+  background: var(--surface-muted);
+  border: var(--border-size-1) solid var(--border);
+  border-radius: var(--r-md);
+  transition: border-color var(--motion-fast) var(--motion-ease);
+}
+[data-screen="landing"] .showcase-card:hover {
+  border-color: var(--accent);
+}
+[data-screen="landing"] .showcase-link {
+  display: grid;
+  grid-template-columns: var(--size-9) minmax(0, 1fr);
+  gap: var(--sp-sm);
+  align-items: center;
+  padding: var(--sp-sm);
+  text-decoration: none;
+  color: inherit;
+}
+[data-screen="landing"] .showcase-thumb {
+  width: var(--size-9);
+  height: var(--size-9);
+  border-radius: var(--r-sm);
+  object-fit: contain;
+  background: var(--surface);
+  border: var(--border-size-1) solid var(--border);
+  padding: var(--size-1);
+}
+[data-screen="landing"] .showcase-info {
+  display: grid;
+  gap: var(--size-1);
+}
+[data-screen="landing"] .showcase-caption {
+  margin: 0;
+}
+[data-screen="landing"] .showcase-material {
+  margin: 0;
+  color: var(--secondary);
+  overflow-wrap: anywhere;
+}
+[data-screen="landing"] .showcase-localized-meta {
+  display: grid;
+  gap: var(--size-1);
+}
+[data-screen="landing"] .showcase-localized-meta[data-locale="he"] {
+  direction: rtl;
+  text-align: start;
+}
+[data-screen="landing"] .showcase-info:has(.showcase-localized-slot:not(:empty)) > .showcase-caption-fallback,
+[data-screen="landing"] .showcase-info:has(.showcase-localized-slot:not(:empty)) > .showcase-material-fallback {
+  display: none;
+}

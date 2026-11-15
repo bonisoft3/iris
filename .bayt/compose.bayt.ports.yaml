@@ -1,0 +1,9 @@
+# generated from bayt.cue — do not edit
+services:
+  iris-caddy:
+    ports:
+    - ${CADDY_TLS_HOST_PORT:-12413}:8443
+    - ${CADDY_TLS_HOST_PORT:-12413}:8443/udp
+  iris-identity:
+    ports:
+    - ${IDENTITY_HTTP_PORT:-28443}:28443

@@ -1,3 +1,0 @@
-creation_rules:
-  - path_regex: 'service-account.json(.enc)?$'
-    gcp_kms: projects/trash-362115/locations/global/keyRings/sops/cryptoKeys/sops-key

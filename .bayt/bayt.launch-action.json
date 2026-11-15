@@ -1,0 +1,90 @@
+{
+  "_generated_from": "bayt.cue (do not edit)",
+  "name": "launch-action",
+  "project": "iris",
+  "dir": ".",
+  "activate": "mise x --",
+  "srcs": {
+    "globs": [],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [],
+    "exclude": []
+  },
+  "state": {
+    "globs": []
+  },
+  "env": {},
+  "taskfile": {
+    "run": "always",
+    "incremental": false,
+    "preconditions": []
+  },
+  "visibility": "internal",
+  "emitsSrcs": false,
+  "deps": [
+    "build"
+  ],
+  "sameProjectDeps": [
+    "build"
+  ],
+  "transitiveDeps": [
+    "build",
+    "generate",
+    "setup"
+  ],
+  "transitiveCrossDeps": [],
+  "upClosure": [
+    "./.bayt/compose.build.yaml",
+    "./.bayt/compose.generate.yaml",
+    "./.bayt/compose.setup.yaml"
+  ],
+  "chainedDeps": [
+    {
+      "name": "build",
+      "project": "iris",
+      "dir": ".",
+      "outs": {
+        "globs": [],
+        "exclude": []
+      }
+    },
+    {
+      "name": "generate",
+      "project": "iris",
+      "dir": ".",
+      "outs": {
+        "globs": [],
+        "exclude": []
+      }
+    },
+    {
+      "name": "setup",
+      "project": "iris",
+      "dir": ".",
+      "outs": {
+        "globs": [],
+        "exclude": []
+      }
+    }
+  ],
+  "cmds": [
+    {
+      "srcs": {
+        "globs": [],
+        "exclude": [],
+        "defaultGlobs": null,
+        "defaultExclude": null
+      },
+      "name": "builtin",
+      "do": "^nu -I (^mise where github:bonisoft3/sayt | str trim) -c 'use task-leaf.nu; task-leaf launch'",
+      "shell": "nu",
+      "stop": false
+    }
+  ],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

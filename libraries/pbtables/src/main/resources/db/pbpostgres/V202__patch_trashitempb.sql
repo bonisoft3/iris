@@ -1,5 +1,0 @@
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
-ALTER TABLE UserIris DROP COLUMN id;
-ALTER TABLE UserIris ADD COLUMN id uuid DEFAULT uuid_generate_v4();
-ALTER TABLE UserIris ADD PRIMARY KEY (id);

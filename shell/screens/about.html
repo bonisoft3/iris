@@ -1,0 +1,216 @@
+<!-- about — ir: #about. Product overview, 3-step how-it-works summary, ad campaign landing page links, and Bonisoft studio card. -->
+<section class="screen" data-screen="about">
+  <input type="radio" name="iris-theme-about" id="theme-auto-chk" class="theme-radio theme-auto-chk" checked>
+  <input type="radio" name="iris-theme-about" id="theme-light-chk" class="theme-radio theme-light-chk">
+  <input type="radio" name="iris-theme-about" id="theme-dark-chk" class="theme-radio theme-dark-chk">
+  <input type="checkbox" id="login-modal-toggle" class="login-modal-chk">
+  <label for="login-modal-toggle" data-auth-trigger hidden></label>
+  <div class="login-modal-overlay login-modal-backdrop">
+    <div class="login-modal-card" role="dialog" aria-modal="true" aria-labelledby="login-modal-title">
+      <label for="login-modal-toggle" id="btn-login-close" class="login-modal-close" aria-label="{msg.login_close_label}">✕</label>
+      <div class="login-modal-header">
+        <span class="login-modal-brand role-label" data-text="{msg.login_modal_brand}">✦ Iris Circular</span>
+        <h2 class="login-modal-title role-title" id="login-modal-title" data-text="{msg.login_modal_title}">Access &amp; Portability</h2>
+        <p class="login-modal-desc role-meta" data-text="{msg.login_modal_desc}">Iris is free to browse and classify waste. Sign in only when you want to sync your scanned items across devices with Passkey or Google.</p>
+      </div>
+      <div class="login-status-card">
+        <span class="login-status-icon" aria-hidden="true">ℹ️</span>
+        <div class="login-status-copy">
+          <span class="status-label role-label" data-text="{msg.login_status_label}">Account status:</span>
+          <strong class="status-name role-label" data-auth-field="handle" data-text="{msg.login_status_guest}">Not signed in</strong>
+          <span class="status-badge role-label" data-text="{msg.login_status_badge}">· Saved on this device</span>
+        </div>
+      </div>
+      <div class="login-modal-methods">
+        <label for="login-modal-toggle" id="btn-auth-passkey" class="login-method-btn method-passkey" data-auth-action="passkey-signin">
+          <div class="login-method-icon method-icon-passkey" aria-hidden="true">🔑</div>
+          <div class="login-method-info">
+            <span class="login-method-title role-meta" data-text="{msg.login_passkey_title}">Passkey / Biometrics (WebAuthn)</span>
+            <span class="login-method-hint role-label" data-text="{msg.login_passkey_hint}">Touch ID, Face ID or security key. Fast and passwordless.</span>
+          </div>
+        </label>
+        <label for="login-modal-toggle" id="btn-auth-google" class="login-method-btn method-google" data-auth-provider="google">
+          <div class="login-method-icon method-icon-google" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24Z"/><path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.15Z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98Z"/></svg>
+          </div>
+          <div class="login-method-info">
+            <span class="login-method-title role-meta" data-text="{msg.login_google_title}">Continue with Google</span>
+            <span class="login-method-hint role-label" data-text="{msg.login_google_hint}">Full portability to access your scanned items across multiple devices.</span>
+          </div>
+        </label>
+        <label for="login-modal-toggle" id="btn-auth-guest" class="login-method-btn method-guest" data-auth-action="guest">
+          <div class="login-method-icon method-icon-guest" aria-hidden="true">👤</div>
+          <div class="login-method-info">
+            <span class="login-method-title role-meta" data-text="{msg.login_guest_title}">Continue as guest</span>
+            <span class="login-method-hint role-label" data-text="{msg.login_guest_hint}">Free browsing and scanning on this device. Zero signup.</span>
+          </div>
+        </label>
+      </div>
+    </div>
+  </div>
+  <header class="masthead brand-topbar">
+    <div class="brand-topbar-row">
+      <div class="brand-topbar-copy">
+        <div class="brand-topbar-title-row">
+          <img class="brand-logo-img" src="/pictures/25275fc0e139d54350917c4ccecf5999c40df6c1c8df37aa27035bfe7d9a6e09.svg" alt="" width="45" height="26">
+          <h1 class="wordmark role-title" data-text="{msg.brand_name}">Iris</h1>
+        </div>
+        <p class="tagline role-meta" data-text="{msg.tagline}">Snap, classify, and give every item the right next life.</p>
+      </div>
+    </div>
+  </header>
+
+  <p class="offline role-meta" data-text="{msg.offline}">Iris cannot reach the server right now.</p>
+
+  <div class="skeleton" aria-hidden="true">
+    <div class="skel"></div>
+  </div>
+
+  <div class="about-shell" data-live="onboarding_step" data-filter="id=eq.step" data-empty-row='{"id":"step","step":"1","visited":"false"}'>
+    <section class="settings-panel panel">
+      <div class="band">
+        <h2 class="settings-panel-title role-band" data-text="{msg.settings_label}">⚙️ Settings</h2>
+        <div class="settings-jump-links">
+          <a href="#about-iris-hero" class="btn-secondary role-label" data-text="{msg.about_pill}">About Iris</a>
+          <a class="btn-secondary role-label" data-route="intro" data-text="{msg.about_how_it_works_cta}">How it works</a>
+        </div>
+      </div>
+      <div class="panel-body settings-grid">
+        <div class="settings-card">
+          <span class="settings-group-label role-label" data-text="{msg.settings_theme_label}">Theme</span>
+          <div class="theme-switch" role="group">
+            <label for="theme-auto-chk" class="theme-btn role-label" data-theme-opt="auto" data-text="{msg.theme_auto}">Auto</label>
+            <label for="theme-light-chk" class="theme-btn role-label" data-theme-opt="light" data-text="{msg.theme_light}">☀️</label>
+            <label for="theme-dark-chk" class="theme-btn role-label" data-theme-opt="dark" data-text="{msg.theme_dark}">🌙</label>
+          </div>
+        </div>
+        <div class="settings-card">
+          <span class="settings-group-label role-label" data-text="{msg.settings_lang_label}">Language</span>
+          <div class="lang-switch">
+            <a class="lang-link role-label" id="lang-en" data-route="about" data-locale="en" data-locale-current="page" data-text="{msg.lang_code_en}">EN</a>
+            <a class="lang-link role-label" id="lang-es" data-route="about" data-locale="es" data-locale-current="page" data-text="{msg.lang_code_es}">ES</a>
+            <a class="lang-link role-label" id="lang-pt" data-route="about" data-locale="pt" data-locale-current="page" data-text="{msg.lang_code_pt}">PT</a>
+            <a class="lang-link role-label" id="lang-ru" data-route="about" data-locale="ru" data-locale-current="page" data-text="{msg.lang_code_ru}">RU</a>
+            <a class="lang-link role-label" id="lang-he" data-route="about" data-locale="he" data-locale-current="page" data-text="{msg.lang_code_he}">HE</a>
+            <a class="lang-link role-label" id="lang-kk" data-route="about" data-locale="kk" data-locale-current="page" data-text="{msg.lang_code_kk}">KK</a>
+          </div>
+        </div>
+        <div class="settings-card">
+          <span class="settings-group-label role-label" data-text="{msg.login_modal_title}">Access &amp; Portability</span>
+          <p class="settings-account-desc role-meta" data-text="{msg.login_modal_desc}">Iris is free to browse and classify waste. Sign in only when you want to sync your scanned items across devices.</p>
+          <div class="settings-account-actions">
+            <label for="login-modal-toggle" class="btn-primary role-label" data-text="{msg.login_button}">🔑 Sign in</label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="about-iris-hero" class="about-hero">
+      <div class="about-hero-text">
+        <p class="about-pill role-label" data-text="{msg.about_pill}">About Iris</p>
+        <h2 class="about-headline role-display" data-text="{msg.about_headline}">Turn everyday waste into clear circular action.</h2>
+        <p class="about-lead role-body" data-text="{msg.about_lead}">Point your camera at any discarded item. Iris isolates the object, identifies its material, and gives you step-by-step disposal instructions and nearby drop-off locations.</p>
+        <div class="about-hero-actions">
+          <a class="about-cta btn-primary role-label" data-route="camera" data-text="{msg.about_cta}">Scan an item →</a>
+          <a class="about-secondary-cta btn-secondary role-label" data-route="intro" data-text="{msg.about_how_it_works_cta}">How it works</a>
+        </div>
+      </div>
+
+      <div class="about-fan" aria-hidden="true">
+        <div class="about-fan-card about-fan-1">
+          <div class="about-fan-art">
+            <img src="/pictures/4271dbcdab4a00c153b897c9f2958d549250e04a468635b80085e64b22d1d19c.jpg" alt="" width="96" height="96">
+          </div>
+          <span class="about-fan-word role-label" data-text="{msg.cat_organic}">Organic</span>
+        </div>
+        <div class="about-fan-card about-fan-2">
+          <div class="about-fan-art">
+            <img src="/pictures/aab36d5a8153cdf5533467fffdb0fa843ed0db87f46bbd19f0f634eb2fde11fc.jpg" alt="" width="96" height="96">
+          </div>
+          <span class="about-fan-word role-label" data-text="{msg.cat_recyclable}">Recyclable</span>
+        </div>
+        <div class="about-fan-card about-fan-3">
+          <div class="about-fan-art">
+            <img src="/pictures/334466b4324a8c80f3204ef4c63cf6892ec20a954880af364b0ad4936aa6093a.jpg" alt="" width="96" height="96">
+          </div>
+          <span class="about-fan-word role-label" data-text="{msg.cat_eletronic}">Eletronic</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="about-steps">
+      <article class="about-step">
+        <span class="about-step-num">1</span>
+        <h3 class="about-step-title role-band" data-text="{msg.about_step1_title}">Snap a photo</h3>
+        <p class="about-step-body role-body" data-text="{msg.about_step1_body}">Point your camera at any household item and tap to highlight what you want to classify.</p>
+      </article>
+      <article class="about-step">
+        <span class="about-step-num">2</span>
+        <h3 class="about-step-title role-band" data-text="{msg.about_step2_title}">AI classifies it</h3>
+        <p class="about-step-body role-body" data-text="{msg.about_step2_body}">Iris identifies the material, waste category, and estimated recovery value in seconds.</p>
+      </article>
+      <article class="about-step">
+        <span class="about-step-num">3</span>
+        <h3 class="about-step-title role-band" data-text="{msg.about_step3_title}">Discard it right</h3>
+        <p class="about-step-body role-body" data-text="{msg.about_step3_body}">Follow step-by-step disposal instructions and find nearby recycling places in your city.</p>
+      </article>
+    </section>
+
+    <section class="about-campaigns panel">
+      <div class="about-campaigns-head">
+        <div>
+          <h2 class="about-campaigns-title role-band" data-text="{msg.about_campaigns_title}">Campaigns</h2>
+          <p class="about-campaigns-sub role-meta" data-text="{msg.about_campaigns_sub}">Explore our public awareness landing pages for families, schools, and sustainability stewards.</p>
+        </div>
+        <a class="btn-secondary about-campaigns-all role-label" data-route="landing" data-text="{msg.about_campaigns_cta}">Open campaigns page →</a>
+      </div>
+
+      <div class="about-campaign-grid">
+        <a class="about-campaign-card" data-route="landing">
+          <img class="about-campaign-img" src="/pictures/895f93a9be99e1164e158ab6172482408ef5aea9436fb162e42b34702a9d272d.png" alt="" width="240" height="160">
+          <div class="about-campaign-copy">
+            <span class="chip role-label" data-text="{msg.lp_camp1_channel}">Google Search</span>
+            <h3 class="about-campaign-name role-band" data-text="{msg.lp_camp1_title}">Snap &amp; Recycle</h3>
+            <p class="about-campaign-hook role-meta" data-text="{msg.lp_camp1_hook}">Not sure if it is recyclable? Just snap a photo.</p>
+          </div>
+        </a>
+
+        <a class="about-campaign-card" data-route="landing">
+          <img class="about-campaign-img" src="/pictures/8ce8daf1ad4c745c831b741ebeddeb8002241a87ba48ae6c9f89cd491c6d656d.png" alt="" width="240" height="160">
+          <div class="about-campaign-copy">
+            <span class="chip role-label" data-text="{msg.lp_camp2_channel}">Facebook / Instagram</span>
+            <h3 class="about-campaign-name role-band" data-text="{msg.lp_camp2_title}">Small Choices, Big Impact</h3>
+            <p class="about-campaign-hook role-meta" data-text="{msg.lp_camp2_hook}">Every piece of waste you classify correctly keeps plastics and batteries out of waterways.</p>
+          </div>
+        </a>
+
+        <a class="about-campaign-card" data-route="landing">
+          <img class="about-campaign-img" src="/pictures/caca4de2e84a6a49a959f2a6952cb1b0abbccd1ae7ee6e3715aebd9e5d03f550.png" alt="" width="240" height="160">
+          <div class="about-campaign-copy">
+            <span class="chip role-label" data-text="{msg.lp_camp3_channel}">Google Display / LinkedIn</span>
+            <h3 class="about-campaign-name role-band" data-text="{msg.lp_camp3_title}">AI for Recycling</h3>
+            <p class="about-campaign-hook role-meta" data-text="{msg.lp_camp3_hook}">Use computer vision and multilingual sorting guides to navigate urban recycling streams.</p>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <section class="about-studio">
+      <div class="about-studio-card">
+        <div class="about-studio-copy">
+          <p class="about-studio-mark" data-text="{msg.about_studio_mark}">bonisoft³.</p>
+          <p class="about-studio-body role-body" data-text="{msg.about_studio_body}">Iris is made by Bonisoft — software for curious minds, built to cross languages.</p>
+        </div>
+        <a class="about-studio-link role-label" href="https://bonisoft3.com" target="_blank" rel="noopener">
+          <span data-text="{msg.about_studio_link}">Visit bonisoft3.com</span>
+          <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+      <p class="about-foot role-meta">
+        <span data-text="{msg.about_foot}">Built in Brazil. Shared with the world.</span>
+        <span aria-hidden="true"> · </span>
+        <a class="about-privacy-link" href="https://bonisoft3.com/privacy" target="_blank" rel="noopener" data-text="{msg.about_privacy}">Privacy policy</a>
+      </p>
+    </section>
+  </div>
+</section>

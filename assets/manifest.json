@@ -1,0 +1,275 @@
+{
+  "brand/logo": {
+    "file": "130a7640511f19bfd52459cd9e11775ebbb2a6e19c1e7eec6ef57418827be395.svg",
+    "sha256": "130a7640511f19bfd52459cd9e11775ebbb2a6e19c1e7eec6ef57418827be395",
+    "source": "guis/iris/public/logo.svg",
+    "license": "MIT / Iris Project",
+    "author": "Iris Team"
+  },
+  "brand/logo-colorful": {
+    "file": "eb9dd1c0c59552ec9fa6a11854486bd95b6c4ab60cf09c21cf4a17a4a9d52822.svg",
+    "sha256": "eb9dd1c0c59552ec9fa6a11854486bd95b6c4ab60cf09c21cf4a17a4a9d52822",
+    "source": "guis/iris/public/logo-colorful.svg",
+    "license": "MIT / Iris Project",
+    "author": "Iris Team"
+  },
+  "brand/logo-white": {
+    "file": "25275fc0e139d54350917c4ccecf5999c40df6c1c8df37aa27035bfe7d9a6e09.svg",
+    "sha256": "25275fc0e139d54350917c4ccecf5999c40df6c1c8df37aa27035bfe7d9a6e09",
+    "source": "guis/iris/public/logo-white.svg",
+    "license": "MIT / Iris Project",
+    "author": "Iris Team"
+  },
+  "campaign/hero": {
+    "file": "8ce8daf1ad4c745c831b741ebeddeb8002241a87ba48ae6c9f89cd491c6d656d.png",
+    "sha256": "8ce8daf1ad4c745c831b741ebeddeb8002241a87ba48ae6c9f89cd491c6d656d",
+    "source": "guis/iris/public/campaign-hero.png",
+    "license": "MIT / Iris Project",
+    "author": "Iris Team"
+  },
+  "campaign/phone": {
+    "file": "895f93a9be99e1164e158ab6172482408ef5aea9436fb162e42b34702a9d272d.png",
+    "sha256": "895f93a9be99e1164e158ab6172482408ef5aea9436fb162e42b34702a9d272d",
+    "source": "guis/iris/public/campaign-phone.png",
+    "license": "MIT / Iris Project",
+    "author": "Iris Team"
+  },
+  "campaign/trash": {
+    "file": "caca4de2e84a6a49a959f2a6952cb1b0abbccd1ae7ee6e3715aebd9e5d03f550.png",
+    "sha256": "caca4de2e84a6a49a959f2a6952cb1b0abbccd1ae7ee6e3715aebd9e5d03f550",
+    "source": "guis/iris/public/campaign-trash.png",
+    "license": "MIT / Iris Project",
+    "author": "Iris Team"
+  },
+  "icon/attachment": {
+    "file": "1823bb89adef9dea6b87d275958c3022e1c6654b0e70b9765229facc5eacfda8.svg",
+    "sha256": "1823bb89adef9dea6b87d275958c3022e1c6654b0e70b9765229facc5eacfda8",
+    "source": "guis/iris/public/classification-icons/attachment.svg",
+    "license": "MIT / Iris Project",
+    "author": "Iris Team"
+  },
+  "icon/compost": {
+    "file": "8c896aadce8da71dcfbdd565f990c9f60631427b645c041e630947279ff821d7.svg",
+    "sha256": "8c896aadce8da71dcfbdd565f990c9f60631427b645c041e630947279ff821d7",
+    "source": "guis/iris/public/classification-icons/compost.svg",
+    "license": "MIT / Iris Project",
+    "author": "Iris Team"
+  },
+  "icon/delete": {
+    "file": "3f7fa1215537885ebf6ffcd4ecd1adcffb99f0bb9ffa34933f9ecbee14ec7be9.svg",
+    "sha256": "3f7fa1215537885ebf6ffcd4ecd1adcffb99f0bb9ffa34933f9ecbee14ec7be9",
+    "source": "guis/iris/public/classification-icons/delete.svg",
+    "license": "MIT / Iris Project",
+    "author": "Iris Team"
+  },
+  "icon/devices_other": {
+    "file": "cc38896ba70806959ce67b349f99f449a4f38735961b26a199c84c9b3e53fcce.svg",
+    "sha256": "cc38896ba70806959ce67b349f99f449a4f38735961b26a199c84c9b3e53fcce",
+    "source": "guis/iris/public/classification-icons/devices_other.svg",
+    "license": "MIT / Iris Project",
+    "author": "Iris Team"
+  },
+  "icon/forest": {
+    "file": "b6a6d6c318f57e8da8affab5d5d1acde4eec30b8ddd4b32150db9d7ab15cb4c7.svg",
+    "sha256": "b6a6d6c318f57e8da8affab5d5d1acde4eec30b8ddd4b32150db9d7ab15cb4c7",
+    "source": "guis/iris/public/classification-icons/forest.svg",
+    "license": "MIT / Iris Project",
+    "author": "Iris Team"
+  },
+  "icon/format_color_reset": {
+    "file": "760bbd58ab4dcc4fe6450beda0596ac278a24e327625fa32887c43207095b9aa.svg",
+    "sha256": "760bbd58ab4dcc4fe6450beda0596ac278a24e327625fa32887c43207095b9aa",
+    "source": "guis/iris/public/classification-icons/format_color_reset.svg",
+    "license": "MIT / Iris Project",
+    "author": "Iris Team"
+  },
+  "icon/glass_cup": {
+    "file": "99b8998fa2a122ea9f24cb165bf335b3102e1063093c6a9828d88fcb9f033b60.svg",
+    "sha256": "99b8998fa2a122ea9f24cb165bf335b3102e1063093c6a9828d88fcb9f033b60",
+    "source": "guis/iris/public/classification-icons/glass_cup.svg",
+    "license": "MIT / Iris Project",
+    "author": "Iris Team"
+  },
+  "icon/help": {
+    "file": "35385f8c1318df038e04997a69832b47d4c8a3f5ad5723664fceeb71d1c74a51.svg",
+    "sha256": "35385f8c1318df038e04997a69832b47d4c8a3f5ad5723664fceeb71d1c74a51",
+    "source": "guis/iris/public/classification-icons/help.svg",
+    "license": "MIT / Iris Project",
+    "author": "Iris Team"
+  },
+  "icon/humidity_low": {
+    "file": "67bf539672ddb57a74e9bf1899cf30eb104f85e9230b5245753fd918e1f7ac71.svg",
+    "sha256": "67bf539672ddb57a74e9bf1899cf30eb104f85e9230b5245753fd918e1f7ac71",
+    "source": "guis/iris/public/classification-icons/humidity_low.svg",
+    "license": "MIT / Iris Project",
+    "author": "Iris Team"
+  },
+  "icon/note_stack": {
+    "file": "b122d7ea53874f5cf66c1e806b668599dd8e3373ec5f667b9bcf3c0ee571fbdf.svg",
+    "sha256": "b122d7ea53874f5cf66c1e806b668599dd8e3373ec5f667b9bcf3c0ee571fbdf",
+    "source": "guis/iris/public/classification-icons/note_stack.svg",
+    "license": "MIT / Iris Project",
+    "author": "Iris Team"
+  },
+  "icon/package_2": {
+    "file": "189056ba807c2cff981a787f6f1a1c142f469b011b843f85feda8df23da8d77f.svg",
+    "sha256": "189056ba807c2cff981a787f6f1a1c142f469b011b843f85feda8df23da8d77f",
+    "source": "guis/iris/public/classification-icons/package_2.svg",
+    "license": "MIT / Iris Project",
+    "author": "Iris Team"
+  },
+  "icon/report": {
+    "file": "f94cd0657cc317dbac20a6a4bf685182e9687b13d4ffd5149fd51bfbd8b32e71.svg",
+    "sha256": "f94cd0657cc317dbac20a6a4bf685182e9687b13d4ffd5149fd51bfbd8b32e71",
+    "source": "guis/iris/public/classification-icons/report.svg",
+    "license": "MIT / Iris Project",
+    "author": "Iris Team"
+  },
+  "icon/water_bottle": {
+    "file": "6386dd14cab4cf5edfb3f63b5211d0591672c4e46c8ac656d1bc9d6f8137eed7.svg",
+    "sha256": "6386dd14cab4cf5edfb3f63b5211d0591672c4e46c8ac656d1bc9d6f8137eed7",
+    "source": "guis/iris/public/classification-icons/water_bottle.svg",
+    "license": "MIT / Iris Project",
+    "author": "Iris Team"
+  },
+  "place/cooperativa-vila": {
+    "file": "25063c2320fd0fff4dc04317a7627418695c9970618a48073bb79cb3e542859c.jpg",
+    "sha256": "25063c2320fd0fff4dc04317a7627418695c9970618a48073bb79cb3e542859c",
+    "source": "gs://trash-362115-ml/mixed/paper/paper1.jpg",
+    "license": "MIT / Iris Dataset",
+    "author": "Iris Team"
+  },
+  "place/ecoponto-pinheiros": {
+    "file": "a614934e492c15e458ff950a50133af5ff2d73f2b53d7a49598b8e0519cdb23f.jpg",
+    "sha256": "a614934e492c15e458ff950a50133af5ff2d73f2b53d7a49598b8e0519cdb23f",
+    "source": "gs://trash-362115-ml/mixed/metal-12/metal102.jpg",
+    "license": "MIT / Iris Dataset",
+    "author": "Iris Team"
+  },
+  "place/horta-butanta": {
+    "file": "11e450d820a485f2ef743fff3ab688df6bf10818258c6f6e6e2db8902df8c154.jpg",
+    "sha256": "11e450d820a485f2ef743fff3ab688df6bf10818258c6f6e6e2db8902df8c154",
+    "source": "gs://trash-362115-ml/mixed/organic/O_1.jpg",
+    "license": "MIT / Iris Dataset",
+    "author": "Iris Team"
+  },
+  "place/ponto-eletronicos": {
+    "file": "32efd926e244739e97b3ced8bd3b9e2ce01ca101972eb5c7321ce1543db26877.jpg",
+    "sha256": "32efd926e244739e97b3ced8bd3b9e2ce01ca101972eb5c7321ce1543db26877",
+    "source": "gs://trash-362115-ml/mixed/battery-12/battery100.jpg",
+    "license": "MIT / Iris Dataset",
+    "author": "Iris Team"
+  },
+  "specimen/aluminum-can": {
+    "file": "947288224d612f8c7dced73d0ac17ab9608caa6627ef8d5da5628fce3a7a3579.jpg",
+    "sha256": "947288224d612f8c7dced73d0ac17ab9608caa6627ef8d5da5628fce3a7a3579",
+    "source": "gs://trash-362115-ml/mixed/metal/metal11.jpg",
+    "license": "MIT / Iris Dataset",
+    "author": "Iris Team"
+  },
+  "specimen/bottle-photo": {
+    "file": "9d97886ee64caf6078e589810ea369ae0649f66ad101d73a905a9f9871306bdd.png",
+    "sha256": "9d97886ee64caf6078e589810ea369ae0649f66ad101d73a905a9f9871306bdd",
+    "source": "guis/web/assets/images/bottle.png",
+    "license": "MIT / Iris Project",
+    "author": "Iris Team"
+  },
+  "specimen/cardboard-box": {
+    "file": "02d2fd8bf5530e970dbef1107cee1a731c781a838d61174953a3d171963f5d94.jpg",
+    "sha256": "02d2fd8bf5530e970dbef1107cee1a731c781a838d61174953a3d171963f5d94",
+    "source": "gs://trash-362115-ml/mixed/cardboard-12/cardboard10.jpg",
+    "license": "MIT / Iris Dataset",
+    "author": "Iris Team"
+  },
+  "specimen/ceramic-mug": {
+    "file": "b9f9c914ebdd06f358a2a7fe4e8f625c45665c9d6ae7c64980f9f20ee00f0d3b.jpg",
+    "sha256": "b9f9c914ebdd06f358a2a7fe4e8f625c45665c9d6ae7c64980f9f20ee00f0d3b",
+    "source": "gs://trash-362115-ml/mixed/white-glass-12/white-glass10.jpg",
+    "license": "MIT / Iris Dataset",
+    "author": "Iris Team"
+  },
+  "specimen/compost-bag": {
+    "file": "cf368766bd221864d1a18cee77ea4c77a63a52b891372023b2b603b4519dd7b4.jpg",
+    "sha256": "cf368766bd221864d1a18cee77ea4c77a63a52b891372023b2b603b4519dd7b4",
+    "source": "gs://trash-362115-ml/mixed/biological-12/biological101.jpg",
+    "license": "MIT / Iris Dataset",
+    "author": "Iris Team"
+  },
+  "specimen/copper-cable": {
+    "file": "49a84a86143beab927b8074c2d05855e4221c4e99137d5d17b183e54093871cc.jpg",
+    "sha256": "49a84a86143beab927b8074c2d05855e4221c4e99137d5d17b183e54093871cc",
+    "source": "gs://trash-362115-ml/mixed/battery-12/battery101.jpg",
+    "license": "MIT / Iris Dataset",
+    "author": "Iris Team"
+  },
+  "specimen/ewaste-battery": {
+    "file": "334466b4324a8c80f3204ef4c63cf6892ec20a954880af364b0ad4936aa6093a.jpg",
+    "sha256": "334466b4324a8c80f3204ef4c63cf6892ec20a954880af364b0ad4936aa6093a",
+    "source": "gs://trash-362115-ml/mixed/battery-12/battery10.jpg",
+    "license": "MIT / Iris Dataset",
+    "author": "Iris Team"
+  },
+  "specimen/glass-jar": {
+    "file": "084511aff76ddb2668538ed7a25fe803d53e625cd3734f5a5656e00a76fb7a92.jpg",
+    "sha256": "084511aff76ddb2668538ed7a25fe803d53e625cd3734f5a5656e00a76fb7a92",
+    "source": "gs://trash-362115-ml/mixed/glass/glass1.jpg",
+    "license": "MIT / Iris Dataset",
+    "author": "Iris Team"
+  },
+  "specimen/newspaper-stack": {
+    "file": "f91ca04ef9a09a1bc8b5f17a458c78c3bb8eeec68868c9c4cbea154666bb356b.jpg",
+    "sha256": "f91ca04ef9a09a1bc8b5f17a458c78c3bb8eeec68868c9c4cbea154666bb356b",
+    "source": "gs://trash-362115-ml/mixed/trash/trash100.jpg",
+    "license": "MIT / Iris Dataset",
+    "author": "Iris Team"
+  },
+  "specimen/organic-peels": {
+    "file": "4271dbcdab4a00c153b897c9f2958d549250e04a468635b80085e64b22d1d19c.jpg",
+    "sha256": "4271dbcdab4a00c153b897c9f2958d549250e04a468635b80085e64b22d1d19c",
+    "source": "gs://trash-362115-ml/mixed/trash/trash101.jpg",
+    "license": "MIT / Iris Dataset",
+    "author": "Iris Team"
+  },
+  "specimen/pet-bottle": {
+    "file": "aab36d5a8153cdf5533467fffdb0fa843ed0db87f46bbd19f0f634eb2fde11fc.jpg",
+    "sha256": "aab36d5a8153cdf5533467fffdb0fa843ed0db87f46bbd19f0f634eb2fde11fc",
+    "source": "gs://trash-362115-ml/mixed/plastic-12/plastic10.jpg",
+    "license": "MIT / Iris Dataset",
+    "author": "Iris Team"
+  },
+  "specimen/steel-tin": {
+    "file": "c9e3856e65f887bd3b04edf686e6e1d265a67306a0b3a3c7a05edb83af2447b3.jpg",
+    "sha256": "c9e3856e65f887bd3b04edf686e6e1d265a67306a0b3a3c7a05edb83af2447b3",
+    "source": "gs://trash-362115-ml/mixed/metal/metal1.jpg",
+    "license": "MIT / Iris Dataset",
+    "author": "Iris Team"
+  },
+  "specimen/yogurt-cup": {
+    "file": "6fc1a126cf07a445ff88c78e3f457f479d7c04d26536b71f0262756623c67176.jpg",
+    "sha256": "6fc1a126cf07a445ff88c78e3f457f479d7c04d26536b71f0262756623c67176",
+    "source": "gs://trash-362115-ml/mixed/plastic-12/plastic100.jpg",
+    "license": "MIT / Iris Dataset",
+    "author": "Iris Team"
+  },
+  "stepper/step-1": {
+    "file": "fdacc68a3ff3306467048482e87e9a30de05a4fb18a46c4d37be86fc387a37f8.svg",
+    "sha256": "fdacc68a3ff3306467048482e87e9a30de05a4fb18a46c4d37be86fc387a37f8",
+    "source": "guis/iris/public/Illustration-stepper-1.svg",
+    "license": "MIT / Iris Project",
+    "author": "Iris Team"
+  },
+  "stepper/step-2": {
+    "file": "b6febf0e4469b80a238ff3092c62662d308a6990466dbf66fda7dad1a8a10851.svg",
+    "sha256": "b6febf0e4469b80a238ff3092c62662d308a6990466dbf66fda7dad1a8a10851",
+    "source": "guis/iris/public/Illustration-stepper-2.svg",
+    "license": "MIT / Iris Project",
+    "author": "Iris Team"
+  },
+  "stepper/step-3": {
+    "file": "6443d24559e0ab154f79a7814e4f2f8fa071c3c8185aa40cbfead31e1ae8cde7.svg",
+    "sha256": "6443d24559e0ab154f79a7814e4f2f8fa071c3c8185aa40cbfead31e1ae8cde7",
+    "source": "guis/iris/public/Illustration-stepper-3.svg",
+    "license": "MIT / Iris Project",
+    "author": "Iris Team"
+  }
+}

@@ -1,0 +1,641 @@
+# generated from bayt.cue — do not edit
+version: "0.5"
+ordered_shutdown: true
+processes:
+  "launch:build":
+    entrypoint:
+    - task
+    - -t
+    - .bayt/Taskfile.yml
+    - bayt:launch
+  "bayt:httpcheck":
+    entrypoint:
+    - bayt
+    - microcheck
+    - httpcheck
+    - --help
+  "bayt:portcheck":
+    entrypoint:
+    - bayt
+    - microcheck
+    - portcheck
+    - --help
+  replay:
+    depends_on:
+      database:
+        condition: process_healthy
+    entrypoint:
+    - mise
+    - x
+    - --
+    - nu
+    - -c
+    - "let pronto = (if (($$env.PRONTO_DIR? | default '') != '') { $$env.PRONTO_DIR } else { (^mise where github:bonisoft3/pronto | str trim) }); if (($$env.BAYT_LOCAL_WORK_DIR? | default '') != '') { let work = $$env.BAYT_LOCAL_WORK_DIR; let pgroll = ($$work | path join 'pgroll'); if ('.bayt/bayt.migrate.json' | path exists) and (not ($$pgroll | path exists)) { mkdir $$pgroll; let m = (open .bayt/bayt.migrate.json | get dockerfile); ($$m | get -o copy | default []) | each {|c| cp ($$c.srcs.0) ($$pgroll | path join ($$c.dst | path basename)) } | ignore; ($$m | get -o epilogue | default []) | each {|e| let lines = ($$e | lines); if ($$lines.0 | str starts-with \"COPY <<'PGROLL' /tmp/\") { let name = ($$lines.0 | parse \"COPY <<'PGROLL' /tmp/{name}.parts\" | get 0.name); ($$lines | skip 1 | take while {|l| $$l != \"PGROLL\" } | str join \"\" | decode base64) | save --raw -f ($$pgroll | path join $$name) } else if ($$lines.0 | str starts-with \"COPY <<'PGROLL' /pgroll/\") { let name = ($$lines.0 | parse \"COPY <<'PGROLL' /pgroll/{name}\" | get 0.name); $$lines.1 | save --raw -f ($$pgroll | path join $$name) } else if ($$lines.0 | str starts-with \"COPY <<'RECONCILE' /pgroll/\") { let name = ($$lines.0 | parse \"COPY <<'RECONCILE' /pgroll/{name}\" | get 0.name); ($$lines | skip 1 | drop 1 | str join \"\\\\n\") | save --raw -f ($$pgroll | path join $$name) } } | ignore }; let os = (match $$nu.os-info.name { 'macos' => 'macos', 'windows' => 'windows', _ => 'linux' }); let sh = (if ('services/migrate/migrate.nu' | path exists) { 'services/migrate/migrate.nu' } else if ('services/migrate/migrate.sh' | path exists) and ($$os != 'windows') { 'services/migrate/migrate.sh' } else { ((^mise where github:bonisoft3/mecha | str trim) | path join 'services/migrate/migrate.nu') }); with-env { PRONTO_REPLAY_INITDB: ($$work | path join 'initdb.d'), PRONTO_REPLAY_PGROLL_DIR: $$pgroll, PRONTO_MIGRATE_SH: $$sh } { ^deno run --config ($$pronto | path join 'deno.json') --allow-read --allow-write --allow-run --allow-env ($$pronto | path join 'check-replay.ts') . } } else { ^deno run --config ($$pronto | path join 'deno.json') --allow-read --allow-write --allow-run --allow-env ($$pronto | path join 'check-replay.ts') . }"
+    availability:
+      exit_on_skipped: true
+    environment:
+    - AUTHENTICATOR_PASSWORD=${AUTHENTICATOR_PASSWORD:-dev-authenticator-password}
+    - ELECTRIC_PASSWORD=${ELECTRIC_PASSWORD:-dev-electric-password}
+    - PGHOST=127.0.0.1
+    - PGPORT=${DATABASE_PG_PORT:-16499}
+    - POSTGRES_DB=${POSTGRES_DB:-iris}
+    - >-
+      POSTGRES_INITDB_ARGS=--no-sync --encoding=UTF8 --auth=trust
+      --locale-provider=icu --icu-locale=und --locale=C
+    - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+    - POSTGRES_USER=${POSTGRES_USER:-postgres}
+  launch:
+    depends_on:
+      identity:
+        condition: process_healthy
+      smollm3:
+        condition: process_healthy
+      caddy:
+        condition: process_healthy
+      database:
+        condition: process_healthy
+      crud:
+        condition: process_healthy
+      electric:
+        condition: process_healthy
+      auth:
+        condition: process_started
+      clock:
+        condition: process_started
+      airlock:
+        condition: process_healthy
+      "launch:build":
+        condition: process_completed_successfully
+    entrypoint:
+    - mise
+    - x
+    - --
+    - nu
+    - -c
+    - loop { sleep 1hr }
+    availability:
+      exit_on_skipped: true
+    readiness_probe:
+      exec:
+        command: mise x -- nu -c exit
+      period_seconds: 1
+      timeout_seconds: 5
+      failure_threshold: 10
+  visual:
+    depends_on:
+      launch:
+        condition: process_healthy
+    entrypoint:
+    - mise
+    - x
+    - --
+    - nu
+    - -c
+    - >-
+      if ('tests/visual-fixture.ts' | path exists) { ^deno run --no-lock --allow-env
+      --allow-net --unsafely-ignore-certificate-errors=caddy,localhost,127.0.0.1
+      tests/visual-fixture.ts }; let omni = (if (($$env.OMNISHELL_DIR? | default '') != '') {
+      $$env.OMNISHELL_DIR } else { (^mise where github:bonisoft3/omnishell | str trim)
+      }); ^deno run --node-modules-dir=auto --allow-read --allow-write --allow-net
+      --allow-env --allow-run --allow-sys --allow-ffi
+      --unsafely-ignore-certificate-errors=caddy,localhost,127.0.0.1 ($$omni | path join 'check-visual.ts') .
+    availability:
+      exit_on_skipped: true
+    environment:
+    - APP_URL=https://localhost:${CADDY_TLS_HOST_PORT:-12413}
+    - SETTLE_TIMEOUT_MS=50000
+  check-ledger:
+    depends_on:
+      launch:
+        condition: process_healthy
+    entrypoint:
+    - mise
+    - x
+    - --
+    - nu
+    - -c
+    - >-
+      let omnishell = (^mise where github:bonisoft3/omnishell | str trim); deno test
+      --config ($$omnishell | path join test deno.json) --lock ($$omnishell | path join
+      test deno.lock) --frozen --allow-env --allow-read --allow-net
+      --unsafely-ignore-certificate-errors=caddy,localhost,127.0.0.1,localhost,127.0.0.1 tests/ledger.ts
+    availability:
+      exit_on_skipped: true
+    environment:
+    - APP_URL=https://localhost:${CADDY_TLS_HOST_PORT:-12413}
+    - DOOR=http://127.0.0.1:${CADDY_HTTP_PORT:-22649}
+    - ORIGIN=${ORIGIN:-https://localhost:${CADDY_TLS_HOST_PORT:-12413}}
+  database:
+    entrypoint:
+    - mise
+    - x
+    - --
+    - nu
+    - -c
+    - |-
+      if ('/docker-entrypoint-initdb.d' | path exists) { exec docker-entrypoint.sh postgres -c session_preload_libraries=pg_ivm -c wal_level=logical -c max_replication_slots=128 -c max_wal_senders=128 -c fsync=off -c synchronous_commit=off -c full_page_writes=off -c shared_buffers=32MB -c max_connections=200 }
+      let mecha = (if (($$env.PRONTO_INITDB_SRC_DIR? | default '') != '') { $$env.PRONTO_INITDB_SRC_DIR } else if ('services/database/rls/rls.sql' | path exists) { $$env.PWD } else { (^mise where github:bonisoft3/mecha | str trim) })
+      let initdb = (($$env.BAYT_LOCAL_WORK_DIR? | default $$nu.temp-dir) | path join 'initdb.d')
+      rm -rf $$initdb; mkdir $$initdb
+      cp -f ($$mecha | path join 'services/database/rls/rls.sql') ($$initdb | path join '003_rls.sql')
+      cp -f ($$mecha | path join 'services/database/role_passwords.sh') ($$initdb | path join '899_role_passwords.sh')
+      cp -f ($$mecha | path join 'services/durex/graphile.sql') ($$initdb | path join '011_graphile_worker.sql')
+      [(open --raw ($$mecha | path join 'services/ticker/schedule.sql')) (open --raw ($$mecha | path join 'services/airlock/airlock.sql'))] | str join '' | save --raw -f ($$initdb | path join '012_airlock.sql')
+      cp -f ($$mecha | path join 'services/airlock/job_key.sql') ($$initdb | path join '019_airlock_job_key.sql')
+      open .bayt/bayt.database.json | get dockerfile.copy.0.srcs | each {|s| cp -f $$s ($$initdb | path join ($$s | path basename)) } | ignore
+      exec nu ($$mecha | path join 'services/database/entrypoint.nu') $$initdb postgres -c session_preload_libraries=pg_ivm -c wal_level=logical -c max_replication_slots=128 -c max_wal_senders=128 -c fsync=off -c synchronous_commit=off -c full_page_writes=off -c shared_buffers=32MB -c max_connections=200
+    availability:
+      exit_on_skipped: true
+    environment:
+    - AUTHENTICATOR_PASSWORD=${AUTHENTICATOR_PASSWORD:-dev-authenticator-password}
+    - ELECTRIC_PASSWORD=${ELECTRIC_PASSWORD:-dev-electric-password}
+    - PGPORT=${DATABASE_PG_PORT:-16499}
+    - POSTGRES_DB=${POSTGRES_DB:-iris}
+    - >-
+      POSTGRES_INITDB_ARGS=--no-sync --encoding=UTF8 --auth=trust
+      --locale-provider=icu --icu-locale=und --locale=C
+    - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+    - POSTGRES_USER=${POSTGRES_USER:-postgres}
+    readiness_probe:
+      exec:
+        command: >-
+          mise x -- pg_isready -h localhost -p ${DATABASE_PG_PORT:-16499} -d
+          ${POSTGRES_DB:-iris} -U ${POSTGRES_USER:-postgres}
+      period_seconds: 1
+      timeout_seconds: 5
+      failure_threshold: 330
+    shutdown:
+      signal: 2
+      timeout_seconds: 5
+  airlock-mesh:
+    depends_on:
+      tsbifrost:
+        condition: process_started
+      "bayt:portcheck":
+        condition: process_completed_successfully
+    entrypoint:
+    - mise
+    - x
+    - --
+    - nu
+    - -c
+    - >-
+      let base = ($$env.BAYT_LOCAL_WORK_DIR? | default $$nu.temp-dir); let dir =
+      ($$base | path join $$'airlock-mesh-($$nu.pid)-(random int 1000..9999)'); mkdir
+      ($$dir | path join 'airlock'); let app = (if (($$env.AIRLOCK_APP_DIR? | default '') !=
+      '') { $$env.AIRLOCK_APP_DIR } else if ('services/airlock/dapr.yaml' | path
+      exists) { 'services/airlock' } else { ((^mise where github:bonisoft3/mecha | str trim)
+      | path join 'services/airlock') }); cp -f ($$app | path join 'dapr.yaml') ($$dir
+      | path join 'config.yaml');
+      'YXBpVmVyc2lvbjogZGFwci5pby92MWFscGhhMQpraW5kOiBDb21wb25lbnQKbWV0YWRhdGE6CiAgbmFtZTogd2FsbApzcGVjOgogIHR5cGU6IG1pZGRsZXdhcmUuaHR0cC5yb3V0ZXJjaGVja2VyCiAgdmVyc2lvbjogdjEKICBtZXRhZGF0YToKICAgIC0ge25hbWU6IHJ1bGUsIHZhbHVlOiAiXi92MVsuXTAvKGhlYWx0aHooL291dGJvdW5kKT98aW52b2tlLyhjbGFzc2lmeS13YXN0ZSkvbWV0aG9kLy4qKSQifQ==' | decode base64 | decode utf-8 | save -f ($$dir | path join 'airlock/wall.yaml'); 'YXBpVmVyc2lvbjogZGFwci5pby92MWFscGhhMQpraW5kOiBSZXNpbGllbmN5Cm1ldGFkYXRhOgogIG5hbWU6IGFpcmxvY2sKc3BlYzoKICBwb2xpY2llczoKICAgIGNpcmN1aXRCcmVha2VyczoKICAgICAgc2luazoKICAgICAgICBtYXhSZXF1ZXN0czogMQogICAgICAgIGludGVydmFsOiA2MHMKICAgICAgICB0aW1lb3V0OiAzMHMKICAgICAgICB0cmlwOiBjb25zZWN1dGl2ZUZhaWx1cmVzID49IDEwCiAgdGFyZ2V0czoKICAgIGFwcHM6CiAgICAgIGNsYXNzaWZ5LXdhc3RlOiB7Y2lyY3VpdEJyZWFrZXI6IHNpbmt9' | decode base64 | decode utf-8 | save -f ($$dir | path join 'airlock/resiliency.yaml'); open --raw 'services/airlock/dapr/classify-waste.yaml' | str replace --all 'http://tsbifrost:8090' $$env.TSBIFROST_URL | save -f ($$dir | path join 'airlock/classify-waste.yaml'); exec daprd --app-id airlock --dapr-listen-addresses 127.0.0.1 --dapr-internal-grpc-listen-address 127.0.0.1 --resources-path ($$dir | path join 'airlock') --config ($$dir | path join 'config.yaml') --dapr-http-port $$env.DAPR_HTTP_PORT --dapr-grpc-port $$env.DAPR_GRPC_PORT --dapr-internal-grpc-port $$env.DAPR_INTERNAL_GRPC_PORT --metrics-port 0 --profile-port 0 --max-body-size 64Mi --log-level info
+    availability:
+      exit_on_skipped: true
+      restart: on_failure
+      backoff_seconds: 1
+      max_restarts: 15
+    environment:
+    - AIRLOCK_BRIDGES=tsbifrost
+    - AIRLOCK_ORIGINS=
+    - DAPR_GRPC_PORT=${AIRLOCK_MESH_API_PORT:-32417}
+    - DAPR_HTTP_PORT=${AIRLOCK_MESH_HTTP_PORT:-29120}
+    - DAPR_INTERNAL_GRPC_PORT=${AIRLOCK_MESH_GRPC_PORT:-10471}
+    - TSBIFROST_URL=http://127.0.0.1:${TSBIFROST_HTTP_PORT:-17849}
+    readiness_probe:
+      exec:
+        command: bayt microcheck portcheck --port ${AIRLOCK_MESH_HTTP_PORT:-29120}
+      period_seconds: 5
+      timeout_seconds: 5
+      failure_threshold: 36
+  caddy:
+    depends_on:
+      crud:
+        condition: process_healthy
+      "bayt:httpcheck":
+        condition: process_completed_successfully
+    entrypoint:
+    - mise
+    - x
+    - --
+    - nu
+    - -c
+    - "let origin = ($$env.ORIGIN? | default \"\"); let h = ($$origin | str replace -r '^https?://' ''); if ($$h == $$origin) or ($$h | is-empty) or ($$h !~ '^[A-Za-z0-9.:-]+$$') { print -e $$\"ORIGIN '($$origin)' is no origin: set it to the scheme and host readers reach the door at, as https://app.example\"; exit 1 }; let p = (if ($$h | str contains \":\") { $$h | split row \":\" | last } else { \"8443\" }); let tls_port = (if (($$env.CADDY_TLS_HOST_PORT? | default \"\") != \"\") { $$env.CADDY_TLS_HOST_PORT } else { $$p }); let work = ($$env.BAYT_LOCAL_WORK_DIR? | default $$nu.temp-dir); let cdir = ($$work | path join $$\"caddy-($$nu.pid)-(random int 1000..9999)\"); mkdir ($$cdir | path join \"data\") ($$cdir | path join \"config\"); let env_file = ($$cdir | path join \"env\"); let certs = (($$env.CADDY_CERT_DIR? | default \".certs\") | path expand | str replace -a (char -u 5c) '/'); let served_dir = ($$env.BAYT_LOCAL_SERVED_DIR? | default \"\"); let is_local = (($$served_dir != \"\") and (($$served_dir | path join \"srv\") | path exists)); let cfg_src = (if $$is_local { 'docker/Caddyfile' } else { ($$env.CADDY_CONFIG_FILE? | default (if ('docker/Caddyfile' | path exists) { 'docker/Caddyfile' } else { \"/etc/caddy/Caddyfile\" })) }); mut env_lines = [$$\"CADDY_TLS_HOST_PORT=($$tls_port)\"]; mut extra_env = { XDG_DATA_HOME: ($$env.CADDY_DATA_HOME? | default ($$cdir | path join \"data\")), XDG_CONFIG_HOME: ($$cdir | path join \"config\"), CADDY_TLS_HOST_PORT: $$tls_port }; if $$is_local { let served_fwd = ($$served_dir | path expand | str replace -a (char -u 5c) '/'); let srv_root = $$\"($$served_fwd)/srv\"; let omni_root = $$\"($$served_fwd)/omnishell\"; $$env_lines = ($$env_lines | append [$$\"CADDY_DOOR_PORT=($$tls_port)\" $$\"PRONTO_SRV_ROOT=($$srv_root)\" $$\"PRONTO_OMNISHELL_ROOT=($$omni_root)\"]); $$extra_env = ($$extra_env | merge { CADDY_DOOR_PORT: $$tls_port, PRONTO_SRV_ROOT: $$srv_root, PRONTO_OMNISHELL_ROOT: $$omni_root }) }; if (($$certs | path join \"localhost.pem\") | path exists) { let tv = $$\"($$certs)/localhost.pem ($$certs)/localhost-key.pem\"; $$env_lines = ($$env_lines | append $$\"CADDY_TLS=($$tv)\"); $$extra_env = ($$extra_env | merge { CADDY_TLS: $$tv }) }; let sfile = ($$env.CADDY_SCRIPTS_FILE? | default (if (($$env.BAYT_LOCAL_SERVED_DIR? | default \"\") != \"\") { ($$env.BAYT_LOCAL_SERVED_DIR | path join \"caddy/release-scripts\") } else { \"/etc/caddy/release-scripts\" })); let rel = (if ($$sfile | path exists) { open --raw $$sfile | str trim } else { \"\" }); $$env_lines = ($$env_lines | append $$\"PRONTO_RELEASE_SCRIPTS=($$rel)\"); $$extra_env = ($$extra_env | merge { PRONTO_RELEASE_SCRIPTS: $$rel }); ($$env_lines | str join (char nl)) + (char nl) | save -f $$env_file; with-env $$extra_env { let adapted = (^caddy adapt --envfile $$env_file --config $$cfg_src --adapter caddyfile); let roots = ($$adapted | split row \",\" | parse -r '\"root\":\"(?<r>[^\"]+)\"' | get -o r | default [] | uniq); for r in $$roots { if ($$r | path exists) { glob ($$r | path join \"**/*\" | str replace -a (char -u 5c) '/') | where ($$it | path type) == \"file\" and (not ($$it | str ends-with \".etag\")) | each {|f| let etag = $$\"($$f).etag\"; if (not ($$etag | path exists)) { let d = (open --raw $$f | hash sha256); ((char dquote) + $$d + (char dquote)) | save --raw -f $$etag } } | ignore } }; exec caddy run --envfile $$env_file --config $$cfg_src --adapter caddyfile }"
+    availability:
+      exit_on_skipped: true
+    environment:
+    - ELECTRIC_SECRET=${ELECTRIC_SECRET:-dev-electric-secret}
+    - ORIGIN=${ORIGIN:-https://localhost:${CADDY_TLS_HOST_PORT:-12413}}
+    - PORT=${CADDY_HTTP_PORT:-22649}
+    - PRONTO_UPSTREAM_AUTH=127.0.0.1:${AUTH_HTTP_PORT:-16581}
+    - PRONTO_UPSTREAM_CRUD=127.0.0.1:${CRUD_HTTP_PORT:-14137}
+    - PRONTO_UPSTREAM_ELECTRIC=127.0.0.1:${ELECTRIC_HTTP_PORT:-31410}
+    - PRONTO_UPSTREAM_TICKER=127.0.0.1:${TICKER_HTTP_PORT:-32067}
+    readiness_probe:
+      exec:
+        command: bayt microcheck httpcheck http://127.0.0.1:${CADDY_HTTP_PORT:-22649}/health
+      period_seconds: 5
+      timeout_seconds: 5
+      failure_threshold: 32
+  auth:
+    depends_on:
+      database:
+        condition: process_healthy
+      migrate:
+        condition: process_completed_successfully
+      airlock-upgrade:
+        condition: process_completed_successfully
+    entrypoint:
+    - mise
+    - x
+    - --
+    - nu
+    - -c
+    - >-
+      let app = (if (($$env.AUTH_APP_DIR? | default '') != '') { $$env.AUTH_APP_DIR }
+      else if ('/app/main.ts' | path exists) { '/app' } else if
+      ('services/auth/main.ts' | path exists) { 'services/auth' } else { ((^mise where github:bonisoft3/mecha
+      | str trim) | path join 'services/auth') }); exec deno run --allow-net
+      --allow-env --config ($$app | path join 'deno.json') ($$app | path join 'main.ts')
+    availability:
+      exit_on_skipped: true
+    environment:
+    - AUTH_STATEMENT_TIMEOUT_MS=5000
+    - >-
+      DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@127.0.0.1:${DATABASE_PG_PORT:-16499}/${POSTGRES_DB:-iris}
+    - OIDC_GOOGLE_AUTHORIZE_PARAMS=${OIDC_GOOGLE_AUTHORIZE_PARAMS:-provider=google}
+    - OIDC_GOOGLE_CLIENT_ID=${OIDC_GOOGLE_CLIENT_ID:-origin}
+    - OIDC_GOOGLE_CLIENT_SECRET=${OIDC_GOOGLE_CLIENT_SECRET:-}
+    - >-
+      OIDC_GOOGLE_INTERNAL=${OIDC_GOOGLE_INTERNAL:-http://127.0.0.1:${IDENTITY_HTTP_PORT:-28443}/}
+    - OIDC_GOOGLE_ISSUER=${OIDC_GOOGLE_ISSUER:-http://localhost:28443}
+    - OIDC_GOOGLE_SCOPE=${OIDC_GOOGLE_SCOPE:-openid profile email}
+    - OIDC_PROVIDERS=google
+    - PGRST_JWT_SECRET=${PGRST_JWT_SECRET:-mecha-dev-secret-please-override-32ch}
+    - PORT=${AUTH_HTTP_PORT:-16581}
+    - WEBAUTHN_ORIGIN=${WEBAUTHN_ORIGIN:-https://localhost:*}
+    - WEBAUTHN_RP_ID=${WEBAUTHN_RP_ID:-localhost}
+  tsbifrost:
+    depends_on:
+      "bayt:portcheck":
+        condition: process_completed_successfully
+    entrypoint:
+    - mise
+    - x
+    - --
+    - nu
+    - -c
+    - >-
+      let app = (if (($$env.AIRLOCK_APP_DIR? | default '') != '') {
+      $$env.AIRLOCK_APP_DIR } else if ('services/airlock/tsbifrost.ts' | path exists) {
+      'services/airlock' } else { ((^mise where github:bonisoft3/mecha | str trim) | path join
+      'services/airlock') }); exec deno run --node-modules-dir=auto --allow-net --allow-env
+      --config ($$app | path join 'deno.json') ($$app | path join 'tsbifrost.ts')
+    availability:
+      exit_on_skipped: true
+      restart: on_failure
+      backoff_seconds: 1
+      max_restarts: 15
+    environment:
+    - AI_LOCAL_OLLAMA_HOST=http://127.0.0.1:${SMOLLM3_API_PORT:-20143}
+    - AI_LOCAL_SDCPP_HOST=${AI_LOCAL_SDCPP_HOST:-http://127.0.0.1:8000}
+    - >-
+      AI_MODELS={"text":["browser","cheap","heavy"],"image":["browser","cheap","heavy"],"targets":{"local":{"text":{"cheap":"gemma3:4b","heavy":"gemma3:12b"},"image":{"cheap":{"model":"sd-turbo-q8_0","size":"256x256","steps":1},"heavy":{"model":"flux1-schnell-q4_k","size":"384x384","steps":2}}},"docker":{"text":{"cheap":"gemma3:4b","heavy":"gemma3:12b"}},"cloudflare":{"text":{"cheap":{"provider":"google","model":"gemini-2.5-flash","params":{"generationConfig":{"thinkingConfig":{"thinkingBudget":0}}}},"heavy":{"provider":"google","model":"gemini-2.5-flash","params":{"generationConfig":{"thinkingConfig":{"thinkingBudget":0}}}}}},"gcp":{"text":{"cheap":{"provider":"google","model":"gemini-2.5-flash","params":{"generationConfig":{"thinkingConfig":{"thinkingBudget":0}}}},"heavy":{"provider":"google","model":"gemini-2.5-flash","params":{"generationConfig":{"thinkingConfig":{"thinkingBudget":0}}}}}},"k8s":{"text":{"cheap":{"provider":"google","model":"gemini-2.5-flash","params":{"generationConfig":{"thinkingConfig":{"thinkingBudget":0}}}},"heavy":{"provider":"google","model":"gemini-2.5-flash","params":{"generationConfig":{"thinkingConfig":{"thinkingBudget":0}}}}}}}}
+    - AI_TARGET=${AI_TARGET:-${SAYT_PLATFORM:-docker}}
+    - CF_ACCOUNT_ID=${CF_ACCOUNT_ID:-}
+    - CF_API_TOKEN=${CF_API_TOKEN:-}
+    - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+    - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    - TSBIFROST_PORT=${TSBIFROST_HTTP_PORT:-17849}
+    readiness_probe:
+      exec:
+        command: bayt microcheck portcheck --port ${TSBIFROST_HTTP_PORT:-17849}
+      period_seconds: 5
+      timeout_seconds: 5
+      failure_threshold: 36
+  identity-hydra:
+    depends_on:
+      "bayt:httpcheck":
+        condition: process_completed_successfully
+    entrypoint:
+    - mise
+    - x
+    - --
+    - nu
+    - -c
+    - exec hydra serve all --dev
+    availability:
+      exit_on_skipped: true
+    environment:
+    - DSN=memory
+    - LOG_LEVEL=warn
+    - OAUTH2_PKCE_ENFORCED_FOR_PUBLIC_CLIENTS=true
+    - SECRETS_SYSTEM=pronto-identity-local-launch-hydra-0000
+    - SERVE_ADMIN_PORT=28455
+    - SERVE_PUBLIC_PORT=28453
+    - TTL_ID_TOKEN=5m
+    - URLS_CONSENT=http://localhost:28443/consent
+    - URLS_LOGIN=http://localhost:28443/login
+    - URLS_SELF_ISSUER=http://localhost:28443
+    readiness_probe:
+      exec:
+        command: bayt microcheck httpcheck http://127.0.0.1:28453/health/ready
+      period_seconds: 1
+      timeout_seconds: 5
+      failure_threshold: 60
+  identity:
+    depends_on:
+      identity-hydra:
+        condition: process_healthy
+      "bayt:httpcheck":
+        condition: process_completed_successfully
+    entrypoint:
+    - mise
+    - x
+    - --
+    - nu
+    - -c
+    - |-
+      let p = (if (($$env.PRONTO_DIR? | default "") != "") {
+        $$env.PRONTO_DIR
+      } else if ("plugins/pronto/identity/hydra/front.ts" | path exists) {
+        "plugins/pronto"
+      } else if ("identity/hydra/front.ts" | path exists) {
+        "."
+      } else {
+        (^mise where github:bonisoft3/pronto | str trim)
+      })
+      ^deno run --no-config --allow-net --allow-env ($$p | path join "identity/hydra/front.ts")
+    availability:
+      exit_on_skipped: true
+    environment:
+    - BROKER_FAKE_GOOGLE=1
+    - BROKER_ISSUER=http://localhost:28443
+    - BROKER_SECRET=${BROKER_SECRET:-pronto-identity-local-launch-secret-0000}
+    - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+    - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+    - HYDRA_ADMIN=http://127.0.0.1:28455
+    - HYDRA_PUBLIC=http://127.0.0.1:28453
+    - PORT=${IDENTITY_HTTP_PORT:-28443}
+    readiness_probe:
+      exec:
+        command: bayt microcheck httpcheck http://127.0.0.1:${IDENTITY_HTTP_PORT:-28443}/health
+      period_seconds: 1
+      timeout_seconds: 5
+      failure_threshold: 60
+  migrate:
+    depends_on:
+      database:
+        condition: process_healthy
+      airlock-upgrade:
+        condition: process_completed_successfully
+    entrypoint:
+    - mise
+    - x
+    - --
+    - nu
+    - -c
+    - >-
+      let os = (match $$nu.os-info.name { 'macos' => 'macos', 'windows' => 'windows',
+      _ => 'linux' }); let dir = (if (($$env.PRONTO_REPLAY_PGROLL_DIR? | default '')
+      != '') { $$env.PRONTO_REPLAY_PGROLL_DIR } else if ('/pgroll' | path exists) {
+      '/pgroll' } else { let d = (($$env.BAYT_LOCAL_WORK_DIR? | default $$nu.temp-dir) |
+      path join 'pgroll'); rm -rf $$d; mkdir $$d; let m = (open .bayt/bayt.migrate.json |
+      get dockerfile); ($$m | get -o copy | default []) | each {|c| cp ($$c.srcs.0)
+      ($$d | path join ($$c.dst | path basename)) } | ignore; ($$m | get -o epilogue |
+      default []) | each {|e| let lines = ($$e | lines); if ($$lines.0 | str starts-with
+      "COPY <<'PGROLL' /tmp/") { let name = ($$lines.0 | parse "COPY <<'PGROLL'
+      /tmp/{name}.parts" | get 0.name); ($$lines | skip 1 | take while {|l| $$l != "PGROLL" }
+      | str join "" | decode base64) | save --raw -f ($$d | path join $$name) } else if
+      ($$lines.0 | str starts-with "COPY <<'PGROLL' /pgroll/") { let name = ($$lines.0
+      | parse "COPY <<'PGROLL' /pgroll/{name}" | get 0.name); $$lines.1 | save --raw
+      -f ($$d | path join $$name) } else if ($$lines.0 | str starts-with "COPY
+      <<'RECONCILE' /pgroll/") { let name = ($$lines.0 | parse "COPY <<'RECONCILE'
+      /pgroll/{name}" | get 0.name); ($$lines | skip 1 | drop 1 | str join "\\n") | save --raw -f
+      ($$d | path join $$name) } } | ignore; $$d }); let script = (if
+      (($$env.PRONTO_MIGRATE_SH? | default '') != '') { $$env.PRONTO_MIGRATE_SH } else if
+      ('services/migrate/migrate.nu' | path exists) { 'services/migrate/migrate.nu' } else if
+      ('/migrate.sh' | path exists) and ($$os != 'windows') { '/migrate.sh' } else { ((^mise
+      where github:bonisoft3/mecha | str trim) | path join 'services/migrate/migrate.nu')
+      }); if ($$script | str ends-with '.nu') { ^nu $$script $$dir 00_initdb } else {
+      ^bash $$script $$dir 00_initdb }
+    availability:
+      exit_on_skipped: true
+    environment:
+    - >-
+      DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@127.0.0.1:${DATABASE_PG_PORT:-16499}/${POSTGRES_DB:-iris}?sslmode=disable
+  airlock-upgrade:
+    depends_on:
+      database:
+        condition: process_healthy
+    entrypoint:
+    - mise
+    - x
+    - --
+    - nu
+    - -c
+    - >-
+      open .bayt/bayt.airlock-upgrade.json | get dockerfile.epilogue.0 | lines | skip
+      1 | drop 1 | str join (char nl) | ^psql -X --set=ON_ERROR_STOP=1
+      --single-transaction
+    availability:
+      exit_on_skipped: true
+    environment:
+    - PGDATABASE=${POSTGRES_DB:-iris}
+    - PGHOST=127.0.0.1
+    - PGPASSWORD=${POSTGRES_PASSWORD:-postgres}
+    - PGPORT=${DATABASE_PG_PORT:-16499}
+    - PGUSER=${POSTGRES_USER:-postgres}
+  ticker:
+    depends_on:
+      crud:
+        condition: process_healthy
+    entrypoint:
+    - mise
+    - x
+    - --
+    - nu
+    - -c
+    - >-
+      let app = (if (($$env.TICKER_APP_DIR? | default '') != '') {
+      $$env.TICKER_APP_DIR } else if ('services/ticker/main.ts' | path exists) { 'services/ticker' } else
+      { ((^mise where github:bonisoft3/mecha | str trim) | path join
+      'services/ticker') }); exec deno run --allow-net --allow-env --config ($$app | path join
+      'deno.json') ($$app | path join 'main.ts')
+    availability:
+      exit_on_skipped: true
+      restart: on_failure
+      backoff_seconds: 1
+      max_restarts: 15
+    environment:
+    - CALL_TIMEOUT_MS=35000
+    - CRUD_URL=http://127.0.0.1:${CRUD_HTTP_PORT:-14137}
+    - PORT=${TICKER_HTTP_PORT:-32067}
+    - >-
+      SERVICE_JWT=${SERVICE_JWT:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZSIsInN1YiI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMCIsImV4cCI6MTk4ODE1MDQwMH0.dGYz_sMSnOvZy0eANh7spJbgyr2fEzeynOERIqW7gd4}
+    - WAKE_URLS=http://127.0.0.1:${AIRLOCK_TCP_PORT:-16017}/healthz
+  smollm3:
+    depends_on:
+      "bayt:httpcheck":
+        condition: process_completed_successfully
+    entrypoint:
+    - mise
+    - x
+    - --
+    - nu
+    - -c
+    - "if (($$env.BAYT_LOCAL_MOCK_AI? | default '1') == '0') { if (which ollama | is-empty) { error make { msg: 'ollama not found on PATH' } }; with-env { OLLAMA_HOST: $$'127.0.0.1:($$env.PORT? | default \"11434\")' } { ^ollama serve } } else { let f = (($$env.BAYT_LOCAL_WORK_DIR? | default $$nu.temp-dir) | path join 'ollama-iris-mock.ts'); open --raw .bayt/Dockerfile.smollm3 | lines | skip until {|l| $$l =~ '^COPY <<.EOF. /srv/ollama.ts$$' } | skip 1 | take until {|l| $$l == 'EOF' } | str join (char nl) | save -f $$f; with-env { HOST: '127.0.0.1' } { ^deno run --allow-net --allow-env $$f } }"
+    availability:
+      exit_on_skipped: true
+    environment:
+    - BAYT_LOCAL_MOCK_AI=${BAYT_LOCAL_MOCK_AI:-1}
+    - OLLAMA_UPSTREAM=${OLLAMA_UPSTREAM:-http://host.docker.internal:11434}
+    - PORT=${SMOLLM3_API_PORT:-20143}
+    readiness_probe:
+      exec:
+        command: bayt microcheck httpcheck http://127.0.0.1:${SMOLLM3_API_PORT:-20143}/api/tags
+      period_seconds: 1
+      timeout_seconds: 5
+      failure_threshold: 60
+  clock:
+    depends_on:
+      ticker:
+        condition: process_started
+    entrypoint:
+    - mise
+    - x
+    - --
+    - nu
+    - -c
+    - >-
+      let yml = (if (($$env.CLOCK_YAML? | default '') != '') { $$env.CLOCK_YAML }
+      else if ('services/clock/clock.yaml' | path exists) { 'services/clock/clock.yaml' }
+      else { ((^mise where github:bonisoft3/mecha | str trim) | path join
+      'services/clock/clock.yaml') }); exec redpanda-connect run --set 'http.enabled=false' $$yml
+    availability:
+      exit_on_skipped: true
+      restart: on_failure
+      backoff_seconds: 1
+      max_restarts: 15
+    environment:
+    - POKE_CALLER=compose
+    - POKE_INTERVAL=${POKE_INTERVAL:-60s}
+    - POKE_URL=http://127.0.0.1:${TICKER_HTTP_PORT:-32067}
+    - >-
+      SERVICE_JWT=${SERVICE_JWT:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZSIsInN1YiI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMCIsImV4cCI6MTk4ODE1MDQwMH0.dGYz_sMSnOvZy0eANh7spJbgyr2fEzeynOERIqW7gd4}
+  airlock:
+    depends_on:
+      airlock-mesh:
+        condition: process_healthy
+      database:
+        condition: process_healthy
+      migrate:
+        condition: process_completed_successfully
+      airlock-upgrade:
+        condition: process_completed_successfully
+      "bayt:portcheck":
+        condition: process_completed_successfully
+    entrypoint:
+    - mise
+    - x
+    - --
+    - nu
+    - -c
+    - "let base = ($$env.BAYT_LOCAL_WORK_DIR? | default $$nu.temp-dir); let dir = ($$base | path join $$'airlock-($$nu.pid)-(random int 1000..9999)'); mkdir ($$dir | path join 'effects'); cp -f 'services/airlock/effects.json' ($$dir | path join 'effects.json'); cp -f 'effects/classify-waste.js' ($$dir | path join 'effects/classify-waste.js'); let app = (if (($$env.AIRLOCK_APP_DIR? | default '') != '') { $$env.AIRLOCK_APP_DIR } else if ('services/airlock/main.ts' | path exists) { 'services/airlock' } else { ((^mise where github:bonisoft3/mecha | str trim) | path join 'services/airlock') }); with-env { AIRLOCK_DIR: $$dir } { exec deno run --frozen --unstable-worker-options --allow-net --allow-read --allow-env --allow-sys --config ($$app | path join 'deno.json') ($$app | path join 'main.ts') }"
+    availability:
+      exit_on_skipped: true
+      restart: on_failure
+      backoff_seconds: 1
+      max_restarts: 15
+    environment:
+    - >-
+      DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@127.0.0.1:${DATABASE_PG_PORT:-16499}/${POSTGRES_DB:-iris}
+    - MESH_URL=http://127.0.0.1:${AIRLOCK_MESH_HTTP_PORT:-29120}
+    - ORIGIN=${ORIGIN:-https://localhost:${CADDY_TLS_HOST_PORT:-12413}}
+    - PORT=${AIRLOCK_TCP_PORT:-16017}
+    readiness_probe:
+      exec:
+        command: bayt microcheck portcheck --port ${AIRLOCK_TCP_PORT:-16017}
+      period_seconds: 5
+      timeout_seconds: 5
+      failure_threshold: 36
+  crud:
+    depends_on:
+      database:
+        condition: process_healthy
+      migrate:
+        condition: process_completed_successfully
+      airlock-upgrade:
+        condition: process_completed_successfully
+      "bayt:httpcheck":
+        condition: process_completed_successfully
+    entrypoint:
+    - mise
+    - x
+    - --
+    - nu
+    - -c
+    - "with-env { PGRST_SERVER_HOST: '127.0.0.1' } { exec postgrest }"
+    availability:
+      exit_on_skipped: true
+    environment:
+    - PGRST_ADMIN_SERVER_PORT=${CRUD_ADMIN_PORT:-25161}
+    - PGRST_DB_ANON_ROLE=anon
+    - PGRST_DB_PRE_REQUEST=public.app_pre_request
+    - PGRST_DB_SCHEMA=public
+    - >-
+      PGRST_DB_URI=postgres://authenticator:${AUTHENTICATOR_PASSWORD:-dev-authenticator-password}@127.0.0.1:${DATABASE_PG_PORT:-16499}/${POSTGRES_DB:-iris}
+    - PGRST_JWT_SECRET=${PGRST_JWT_SECRET:-mecha-dev-secret-please-override-32ch}
+    - PGRST_SERVER_HOST=*
+    - PGRST_SERVER_PORT=${CRUD_HTTP_PORT:-14137}
+    readiness_probe:
+      exec:
+        command: bayt microcheck httpcheck http://127.0.0.1:${CRUD_ADMIN_PORT:-25161}/ready
+      period_seconds: 5
+      timeout_seconds: 5
+      failure_threshold: 36
+  electric:
+    depends_on:
+      database:
+        condition: process_healthy
+      migrate:
+        condition: process_completed_successfully
+      airlock-upgrade:
+        condition: process_completed_successfully
+      "bayt:httpcheck":
+        condition: process_completed_successfully
+    entrypoint:
+    - mise
+    - x
+    - --
+    - nu
+    - -c
+    - >-
+      let mecha = (if ('services/electric/main.ts' | path exists) { $$env.PWD } else
+      { (^mise where github:bonisoft3/mecha | str trim) }); let auth_dir = (if
+      (($$env.AUTH_APP_DIR? | default '') != '') { $$env.AUTH_APP_DIR } else { ($$mecha | path
+      join 'services/auth') }); let elec_dir = (if (($$env.ELECTRIC_APP_DIR? | default
+      '') != '') { $$env.ELECTRIC_APP_DIR } else { ($$mecha | path join
+      'services/electric') }); exec deno run --allow-net --allow-env --allow-read --config ($$auth_dir
+      | path join 'deno.json') ($$elec_dir | path join 'main.ts')
+    availability:
+      exit_on_skipped: true
+      restart: on_failure
+      backoff_seconds: 1
+      max_restarts: 15
+    environment:
+    - >-
+      ADMIN_DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@127.0.0.1:${DATABASE_PG_PORT:-16499}/${POSTGRES_DB:-iris}
+    - >-
+      DATABASE_URL=postgresql://electric:${ELECTRIC_PASSWORD:-dev-electric-password}@127.0.0.1:${DATABASE_PG_PORT:-16499}/${POSTGRES_DB:-iris}?sslmode=disable
+    - ELECTRIC_MANUAL_TABLE_PUBLISHING=true
+    - ELECTRIC_SECRET=${ELECTRIC_SECRET:-dev-electric-secret}
+    - PGRST_JWT_SECRET=${PGRST_JWT_SECRET:-mecha-dev-secret-please-override-32ch}
+    - PORT=${ELECTRIC_HTTP_PORT:-31410}
+    readiness_probe:
+      exec:
+        command: >-
+          bayt microcheck httpcheck
+          http://127.0.0.1:${ELECTRIC_HTTP_PORT:-31410}/v1/health
+      period_seconds: 1
+      timeout_seconds: 5
+      failure_threshold: 60

@@ -1,0 +1,79 @@
+# generated from bayt.cue — do not edit
+FROM denoland/deno:debian-2.9.7@sha256:fa335acdf6b72106eda2cb6a8cb5f4187e7630e357467489db4b2e7352d5e432 AS smollm3
+ARG BAYT_DIR
+WORKDIR /monorepo/${BAYT_DIR}
+COPY <<'EOF' /srv/ollama.ts
+const port = Number(Deno.env.get("PORT") || 11434);
+const host = Deno.env.get("HOST") || "0.0.0.0";
+const mock = (Deno.env.get("BAYT_LOCAL_MOCK_AI") ?? "1") !== "0";
+const upstream = (Deno.env.get("OLLAMA_UPSTREAM") || "http://host.docker.internal:11434").replace(/\/$/, "");
+Deno.serve({ hostname: host, port }, async (req) => {
+  const url = new URL(req.url);
+  if (!mock) {
+    const proxied = await fetch(`${upstream}${url.pathname}${url.search}`, {
+      method: req.method,
+      headers: req.headers,
+      body: req.method === "GET" || req.method === "HEAD" ? undefined : req.body,
+    });
+    return new Response(proxied.body, { status: proxied.status, headers: proxied.headers });
+  }
+  if (url.pathname === "/api/tags") {
+    return Response.json({ models: [{ name: "gemma3:4b" }, { name: "gemma3:12b" }] });
+  }
+  if (url.pathname === "/api/chat") {
+    const body = await req.json().catch(() => ({}));
+    const model = String(body.model || "gemma3:4b");
+    const rawMessages = JSON.stringify(body.messages || "");
+    if (rawMessages.includes("[TRANSLATE:")) {
+      return Response.json({
+        model,
+        done: true,
+        message: {
+          role: "assistant",
+          content: JSON.stringify({
+            caption: "Botella de agua mineral PET #1 transparente (500 ml)",
+            object_material: "Tereftalato de polietileno (PET #1) con tapa HDPE #2",
+            disposal_instructions: "1. Vacíe el líquido restante por completo. 2. Enjuague brevemente y deposítela en reciclables secos.",
+            sub_classifications: "Reciclable · Envase de bebida · Ciclo cerrado",
+            price: "US$ 0,85 / kg (flujo reciclable seco)",
+            nearby_recycling_places: "Ecoponto Pinheiros (0,6 km) · Cooperativa Vila Mariana (1,4 km)"
+          })
+        }
+      });
+    }
+    const isHeavy = model.includes("12b") || model.includes("26b");
+    return Response.json({
+      model,
+      done: true,
+      message: {
+        role: "assistant",
+        content: JSON.stringify({
+          caption: isHeavy ? "Clear PET #1 Mineral Water Bottle (500 ml)" : "Pressed Aluminum Beverage Can (350 ml · ALU #41)",
+          label: "recyclable",
+          object_material: isHeavy ? "Polyethylene Terephthalate (PET #1) with HDPE #2 cap" : "Beverage-grade Aluminum Alloy (AA 3004 / 5182 · ALU #41)",
+          disposal_instructions: "1. Empty any remaining liquid completely. 2. Quick-rinse and place in the dry recyclables bin.",
+          sub_classifications: "Recyclable · Beverage Container · Closed-Loop Stream",
+          price: "US$ 0.85 / kg (sorted recyclable stream)",
+          nearby_recycling_places: "Ecoponto Pinheiros (0.6 km) · Cooperativa Vila Mariana (1.4 km)"
+        })
+      }
+    });
+  }
+  return new Response("Not Found", { status: 404 });
+});
+EOF
+COPY --chmod=755 --from=tarampampam/microcheck:1@sha256:79c187c05bfa67518078bf4db117771942fa8fe107dc79a905861c75ddf28dfa /bin/httpcheck /usr/local/bin/httpcheck
+COPY .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/bayt.smollm3.json ./.bayt/
+EXPOSE 11434
+ENTRYPOINT ["sh","-c","deno run --allow-net --allow-env /srv/ollama.ts"]
+HEALTHCHECK --interval=1s --timeout=5s --retries=30 --start-period=30s CMD ["httpcheck","http://127.0.0.1:11434/api/tags"]
+
+FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223 AS smollm3_bayt_ctxs
+ARG BAYT_DIR
+WORKDIR /monorepo/${BAYT_DIR}
+COPY --parents .bayt/compose.smollm3.yaml .bayt/Dockerfile.smollm3 .bayt/bayt.smollm3.json .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/process-compose.yaml ./
+ARG SOURCE_DATE_EPOCH
+ARG BAYT_CLAMP=1
+RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/${BAYT_DIR} -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && { d=$(dirname /monorepo/${BAYT_DIR}); while [ "$d" != / ]; do touch -hd @${SOURCE_DATE_EPOCH:-0} "$d" || exit; d=$(dirname "$d"); done; }; fi
+FROM scratch AS smollm3_bayt
+COPY --from=smollm3_bayt_ctxs /monorepo /monorepo

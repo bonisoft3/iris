@@ -1,0 +1,62 @@
+# generated from bayt.cue — do not edit
+services:
+  iris-tsbifrost:
+    build:
+      additional_contexts:
+        libraries_mecha-airlock-image: >-
+          ${MONOREPO_COMPOSE_MODE:-docker-image://bonitao/mecha-airlock:0.23.1@sha256:3c67d8822d64dfd469ed25cccf0db76e0d7d939d9d05486f5fe725332c2e1dd2}${MONOREPO_COMPOSE_MODE:+:libraries_mecha-airlock-image}
+      context: ..
+      dockerfile: .bayt/Dockerfile.tsbifrost
+      target: tsbifrost
+      tags:
+      - bayt-iris-tsbifrost:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+      - bayt-iris-tsbifrost:latest
+      args:
+        BAYT_DIR: ${MONOREPO_COMPOSE_MODE:+apps/iris}
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+    environment:
+      TSBIFROST_PORT: "8090"
+      AI_LOCAL_OLLAMA_HOST: ${AI_LOCAL_OLLAMA_HOST:-http://host.docker.internal:11434}
+      AI_LOCAL_SDCPP_HOST: ${AI_LOCAL_SDCPP_HOST:-http://host.docker.internal:8000}
+      AI_TARGET: ${AI_TARGET:-${SAYT_PLATFORM:-docker}}
+      CF_ACCOUNT_ID: ${CF_ACCOUNT_ID:-}
+      CF_API_TOKEN: ${CF_API_TOKEN:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      AI_MODELS: "{\"text\":[\"browser\",\"cheap\",\"heavy\"],\"image\":[\"browser\",\"cheap\",\"heavy\"],\"targets\":{\"local\":{\"text\":{\"cheap\":\"gemma3:4b\",\"heavy\":\"gemma3:12b\"},\"image\":{\"cheap\":{\"model\":\"sd-turbo-q8_0\",\"size\":\"256x256\",\"steps\":1},\"heavy\":{\"model\":\"flux1-schnell-q4_k\",\"size\":\"384x384\",\"steps\":2}}},\"docker\":{\"text\":{\"cheap\":\"gemma3:4b\",\"heavy\":\"gemma3:12b\"}},\"cloudflare\":{\"text\":{\"cheap\":{\"provider\":\"google\",\"model\":\"gemini-2.5-flash\",\"params\":{\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":0}}}},\"heavy\":{\"provider\":\"google\",\"model\":\"gemini-2.5-flash\",\"params\":{\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":0}}}}}},\"gcp\":{\"text\":{\"cheap\":{\"provider\":\"google\",\"model\":\"gemini-2.5-flash\",\"params\":{\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":0}}}},\"heavy\":{\"provider\":\"google\",\"model\":\"gemini-2.5-flash\",\"params\":{\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":0}}}}}},\"k8s\":{\"text\":{\"cheap\":{\"provider\":\"google\",\"model\":\"gemini-2.5-flash\",\"params\":{\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":0}}}},\"heavy\":{\"provider\":\"google\",\"model\":\"gemini-2.5-flash\",\"params\":{\"generationConfig\":{\"thinkingConfig\":{\"thinkingBudget\":0}}}}}}}}"
+    healthcheck:
+      test:
+      - CMD
+      - portcheck
+      - --port
+      - "8090"
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+      start_interval: 500ms
+    image: bayt-iris-tsbifrost:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      airlock-out:
+        aliases:
+        - tsbifrost
+      default:
+        aliases:
+        - tsbifrost
+      airlock-egress:
+        aliases:
+        - tsbifrost
+    restart: on-failure
+  iris-tsbifrost_bayt:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.tsbifrost
+      target: tsbifrost_bayt
+      args:
+        BAYT_DIR: ${MONOREPO_COMPOSE_MODE:+apps/iris}
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+    image: bayt-iris-tsbifrost_bayt:latest
+    scale: 0

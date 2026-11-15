@@ -1,0 +1,407 @@
+@import "./shared/iris.css";
+
+.screen[data-screen="about"] {
+  max-width: none;
+  margin-inline: 0;
+  padding: 0 0 var(--size-10);
+}
+
+.about-shell {
+  container-type: inline-size;
+  padding: var(--sp-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xl);
+}
+
+.settings-panel-title {
+  margin: 0;
+  color: var(--primary);
+}
+
+.settings-jump-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-sm);
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-lg);
+}
+
+.settings-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-sm);
+  padding: var(--sp-md);
+  background: var(--neutral);
+  border: var(--border-size-1) solid var(--border);
+  border-radius: var(--r-md);
+}
+
+.settings-account-desc {
+  margin: 0;
+  color: var(--secondary);
+}
+
+.settings-account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-sm);
+  margin-block-start: auto;
+}
+
+.about-hero {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-xl);
+  align-items: center;
+  padding-block: var(--sp-lg);
+  padding-inline: var(--sp-lg);
+  background: var(--surface);
+  border: var(--border-size-1) solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-2);
+}
+
+.about-hero-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-md);
+}
+
+.about-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-h-sm);
+  margin-block: 0;
+  padding-inline: var(--sp-md);
+  border-radius: var(--r-full);
+  background: var(--surface-muted);
+  border: var(--border-size-1) solid var(--border);
+  color: var(--accent);
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.about-headline {
+  margin-block: 0;
+  color: var(--primary);
+  font-weight: 800;
+  max-width: 18ch;
+}
+
+.about-lead {
+  margin-block: 0;
+  color: var(--secondary);
+  max-width: 50ch;
+}
+
+.about-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-sm);
+  margin-block-start: var(--sp-sm);
+}
+
+.about-cta,
+.about-secondary-cta {
+  min-height: var(--control-h);
+}
+
+/* Fanned specimen cards — tactile nod to snapcards about fan */
+.about-fan {
+  position: relative;
+  height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.about-fan-card {
+  position: absolute;
+  width: 156px;
+  aspect-ratio: var(--ratio-portrait);
+  background: var(--surface);
+  border: var(--border-size-1) solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-3);
+  padding-block: var(--sp-sm);
+  padding-inline: var(--sp-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  transition: transform var(--motion-base) var(--motion-ease);
+}
+
+.about-fan-art {
+  width: 100%;
+  flex: 1;
+  border-radius: var(--r-sm);
+  background: var(--surface-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.about-fan-art img {
+  width: 84px;
+  height: 84px;
+  object-fit: contain;
+}
+
+.about-fan-word {
+  font-weight: 800;
+  color: var(--primary);
+  padding-block: var(--size-1);
+}
+
+.about-fan-1 {
+  transform: translateX(calc(-1 * var(--size-9))) translateY(var(--sp-sm)) rotate(-11deg);
+}
+
+.about-fan-2 {
+  transform: translateY(-6px) rotate(1deg);
+  z-index: var(--layer-2);
+}
+
+.about-fan-3 {
+  transform: translateX(var(--size-9)) translateY(10px) rotate(12deg);
+}
+
+.about-fan:hover .about-fan-1 {
+  transform: translateX(calc(-1 * var(--size-10))) translateY(6px) rotate(-15deg);
+}
+
+.about-fan:hover .about-fan-2 {
+  transform: translateY(-12px) rotate(0deg) scale(1.03);
+}
+
+.about-fan:hover .about-fan-3 {
+  transform: translateX(var(--size-10)) translateY(var(--sp-sm)) rotate(16deg);
+}
+
+/* How it works — 3 steps */
+.about-steps {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-md);
+}
+
+.about-step {
+  background: var(--surface);
+  border: var(--border-size-1) solid var(--border);
+  border-radius: var(--r-md);
+  padding-block: var(--sp-lg);
+  padding-inline: var(--sp-lg);
+  box-shadow: var(--shadow-1);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-sm);
+}
+
+.about-step-num {
+  width: var(--size-7);
+  height: var(--size-7);
+  border-radius: var(--r-full);
+  background: var(--accent);
+  color: var(--surface);
+  font-size: var(--type-body);
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.about-step-title {
+  margin-block: 0;
+  color: var(--primary);
+  font-weight: 800;
+}
+
+.about-step-body {
+  margin-block: 0;
+  color: var(--secondary);
+}
+
+/* Campaigns section */
+.about-campaigns {
+  padding-block: var(--sp-lg);
+  padding-inline: var(--sp-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-lg);
+}
+
+.about-campaigns-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-md);
+}
+
+.about-campaigns-title {
+  margin-block: 0 var(--size-1);
+  color: var(--primary);
+}
+
+.about-campaigns-sub {
+  margin-block: 0;
+  color: var(--secondary);
+  max-width: 60ch;
+}
+
+.about-campaigns-all {
+  min-height: var(--control-h-sm);
+}
+
+.about-campaign-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-md);
+}
+
+.about-campaign-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--neutral);
+  border: var(--border-size-1) solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: transform var(--motion-fast) var(--motion-ease), box-shadow var(--motion-fast) var(--motion-ease);
+}
+
+.about-campaign-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-2);
+  text-decoration: none;
+}
+
+.about-campaign-img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  background: var(--surface-muted);
+}
+
+.about-campaign-copy {
+  padding-block: var(--sp-md);
+  padding-inline: var(--sp-md);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--size-2);
+}
+
+.about-campaign-name {
+  margin-block: 0;
+  color: var(--primary);
+}
+
+.about-campaign-hook {
+  margin-block: 0;
+  color: var(--secondary);
+}
+
+/* Bonisoft studio card */
+.about-studio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+
+.about-studio-card {
+  background: var(--header);
+  color: var(--strip-ink);
+  border-radius: var(--r-md);
+  padding-block: var(--sp-lg);
+  padding-inline: var(--sp-lg);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-lg);
+  box-shadow: var(--shadow-2);
+}
+
+.about-studio-copy {
+  max-width: 44ch;
+}
+
+.about-studio-mark {
+  font-size: var(--type-title);
+  font-weight: 900;
+  margin-block: 0 var(--size-2);
+  color: var(--strip-ink);
+}
+
+.about-studio-mark sup {
+  font-size: var(--type-caption);
+  color: var(--strip-ink);
+  margin-inline-start: var(--border-size-1);
+}
+
+.about-studio-dot {
+  color: var(--strip-ink);
+}
+
+.about-studio-body {
+  margin-block: 0;
+  color: var(--strip-ink);
+}
+
+.about-studio-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  min-height: var(--control-h);
+  padding-inline: var(--sp-lg);
+  border-radius: var(--r-full);
+  background: var(--surface);
+  color: var(--primary);
+  font-weight: 800;
+  text-decoration: none;
+  transition: transform var(--motion-fast) var(--motion-ease);
+}
+
+.about-studio-link:hover {
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
+.about-foot {
+  text-align: center;
+  color: var(--secondary);
+  margin-block: 0;
+}
+
+.about-privacy-link {
+  color: var(--link);
+  text-decoration: underline;
+}
+
+@container (min-width: 720px) {
+  .settings-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .about-hero {
+    grid-template-columns: 1.2fr 1fr;
+  }
+
+  .about-steps,
+  .about-campaign-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

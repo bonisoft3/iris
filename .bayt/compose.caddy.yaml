@@ -1,0 +1,324 @@
+# generated from bayt.cue — do not edit
+services:
+  iris-caddy:
+    build:
+      additional_contexts:
+        iris-crud: service:iris-crud
+        iris-served: service:iris-served
+        root: ..
+      context: ..
+      dockerfile: .bayt/Dockerfile.caddy
+      target: caddy
+      tags:
+      - bayt-iris-caddy:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+      - bayt-iris-caddy:latest
+      args:
+        BAYT_DIR: ${MONOREPO_COMPOSE_MODE:+apps/iris}
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+    depends_on:
+      iris-crud:
+        condition: service_healthy
+        restart: true
+    develop:
+      watch:
+      - action: sync+restart
+        path: ../docker/Caddyfile
+        target: /etc/caddy/Caddyfile
+      - action: sync+restart
+        path: ../.certs
+        target: /certs
+      - action: rebuild
+        path: ../shell/index.html
+        target: /srv/shell/index.html
+      - action: rebuild
+        path: ../shell/shell.css
+        target: /srv/shell/shell.css
+      - action: rebuild
+        path: ../shell/boot.js
+        target: /srv/shell/boot.js
+      - action: rebuild
+        path: ../offline-first-sw.js
+        target: /srv/offline-first-sw.js
+      - action: rebuild
+        path: ../shell/shell.yaml
+        target: /srv/shell/shell.yaml
+      - action: rebuild
+        path: ../shell/shell.json
+        target: /srv/shell/shell.json
+      - action: rebuild
+        path: ../shell/design.css
+        target: /srv/shell/design.css
+      - action: rebuild
+        path: ../shell/screens/gallery.html
+        target: /srv/shell/screens/gallery.html
+      - action: rebuild
+        path: ../shell/screens/gallery.css
+        target: /srv/shell/screens/gallery.css
+      - action: rebuild
+        path: ../shell/screens/detail.html
+        target: /srv/shell/screens/detail.html
+      - action: rebuild
+        path: ../shell/screens/detail.css
+        target: /srv/shell/screens/detail.css
+      - action: rebuild
+        path: ../shell/screens/intro.html
+        target: /srv/shell/screens/intro.html
+      - action: rebuild
+        path: ../shell/screens/intro.css
+        target: /srv/shell/screens/intro.css
+      - action: rebuild
+        path: ../shell/screens/landing.html
+        target: /srv/shell/screens/landing.html
+      - action: rebuild
+        path: ../shell/screens/landing.css
+        target: /srv/shell/screens/landing.css
+      - action: rebuild
+        path: ../shell/screens/camera.html
+        target: /srv/shell/screens/camera.html
+      - action: rebuild
+        path: ../shell/screens/camera.css
+        target: /srv/shell/screens/camera.css
+      - action: rebuild
+        path: ../shell/screens/about.html
+        target: /srv/shell/screens/about.html
+      - action: rebuild
+        path: ../shell/screens/about.css
+        target: /srv/shell/screens/about.css
+      - action: rebuild
+        path: ../shell/handlers/detail_view.js
+        target: /srv/shell/handlers/detail_view.js
+      - action: rebuild
+        path: ../shell/handlers/gallery_view.js
+        target: /srv/shell/handlers/gallery_view.js
+      - action: rebuild
+        path: ../shell/handlers/localize_content.js
+        target: /srv/shell/handlers/localize_content.js
+      - action: rebuild
+        path: ../shell/handlers/onboarding_step.js
+        target: /srv/shell/handlers/onboarding_step.js
+      - action: rebuild
+        path: ../shell/handlers/scan_draft.js
+        target: /srv/shell/handlers/scan_draft.js
+      - action: rebuild
+        path: ../shell/shared/chrome.css
+        target: /srv/shell/shared/chrome.css
+      - action: rebuild
+        path: ../shell/shared/iris.css
+        target: /srv/shell/shared/iris.css
+      - action: rebuild
+        path: ../messages/en.json
+        target: /srv/messages/en.json
+      - action: rebuild
+        path: ../messages/es.json
+        target: /srv/messages/es.json
+      - action: rebuild
+        path: ../messages/pt.json
+        target: /srv/messages/pt.json
+      - action: rebuild
+        path: ../messages/ru.json
+        target: /srv/messages/ru.json
+      - action: rebuild
+        path: ../messages/he.json
+        target: /srv/messages/he.json
+      - action: rebuild
+        path: ../messages/kk.json
+        target: /srv/messages/kk.json
+      - action: rebuild
+        path: ../brief.md
+        target: /srv/docs/brief.md
+      - action: rebuild
+        path: ../brief.html
+        target: /srv/docs/brief.html
+      - action: rebuild
+        path: ../journal.html
+        target: /srv/docs/journal.html
+      - action: rebuild
+        path: ../ir.html
+        target: /srv/docs/ir.html
+      - action: rebuild
+        path: ../ir/card.css
+        target: /srv/docs/ir/card.css
+      - action: rebuild
+        path: ../acceptance.md
+        target: /srv/docs/acceptance.md
+      - action: rebuild
+        path: ../DESIGN.md
+        target: /srv/docs/DESIGN.md
+      - action: rebuild
+        path: ../ir/neighbourhood-about.svg
+        target: /srv/docs/ir/neighbourhood-about.svg
+      - action: rebuild
+        path: ../ir/neighbourhood-app.svg
+        target: /srv/docs/ir/neighbourhood-app.svg
+      - action: rebuild
+        path: ../ir/neighbourhood-camera.svg
+        target: /srv/docs/ir/neighbourhood-camera.svg
+      - action: rebuild
+        path: ../ir/neighbourhood-detail.svg
+        target: /srv/docs/ir/neighbourhood-detail.svg
+      - action: rebuild
+        path: ../ir/neighbourhood-gallery.svg
+        target: /srv/docs/ir/neighbourhood-gallery.svg
+      - action: rebuild
+        path: ../ir/neighbourhood-intro.svg
+        target: /srv/docs/ir/neighbourhood-intro.svg
+      - action: rebuild
+        path: ../ir/neighbourhood-landing.svg
+        target: /srv/docs/ir/neighbourhood-landing.svg
+      - action: rebuild
+        path: ../journal/2026-11-10-t1-detail-dark.jpeg
+        target: /srv/docs/journal/2026-11-10-t1-detail-dark.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t1-gallery.jpeg
+        target: /srv/docs/journal/2026-11-10-t1-gallery.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t10-detail-donate.jpeg
+        target: /srv/docs/journal/2026-11-10-t10-detail-donate.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t10-places-donate.jpeg
+        target: /srv/docs/journal/2026-11-10-t10-places-donate.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t11-profile.jpeg
+        target: /srv/docs/journal/2026-11-10-t11-profile.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t12-news.jpeg
+        target: /srv/docs/journal/2026-11-10-t12-news.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t13-gallery-search.jpeg
+        target: /srv/docs/journal/2026-11-10-t13-gallery-search.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t14-impact.jpeg
+        target: /srv/docs/journal/2026-11-10-t14-impact.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t15-moderation.jpeg
+        target: /srv/docs/journal/2026-11-10-t15-moderation.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t16-sync.jpeg
+        target: /srv/docs/journal/2026-11-10-t16-sync.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t17-responsive.jpeg
+        target: /srv/docs/journal/2026-11-10-t17-responsive.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t18-dark.jpeg
+        target: /srv/docs/journal/2026-11-10-t18-dark.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t19-rtl-he.jpeg
+        target: /srv/docs/journal/2026-11-10-t19-rtl-he.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t2-my-items.jpeg
+        target: /srv/docs/journal/2026-11-10-t2-my-items.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t2-preview.jpeg
+        target: /srv/docs/journal/2026-11-10-t2-preview.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t20-credits.jpeg
+        target: /srv/docs/journal/2026-11-10-t20-credits.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t3-discard.jpeg
+        target: /srv/docs/journal/2026-11-10-t3-discard.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t3-nearby.jpeg
+        target: /srv/docs/journal/2026-11-10-t3-nearby.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t4-intro.jpeg
+        target: /srv/docs/journal/2026-11-10-t4-intro.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t4-landing.jpeg
+        target: /srv/docs/journal/2026-11-10-t4-landing.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t5-camera.jpeg
+        target: /srv/docs/journal/2026-11-10-t5-camera.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t5-submitted.jpeg
+        target: /srv/docs/journal/2026-11-10-t5-submitted.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t6-seg-center.jpeg
+        target: /srv/docs/journal/2026-11-10-t6-seg-center.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t6-seg-neck.jpeg
+        target: /srv/docs/journal/2026-11-10-t6-seg-neck.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t7-classified-gallery.jpeg
+        target: /srv/docs/journal/2026-11-10-t7-classified-gallery.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t7-classified-queue.jpeg
+        target: /srv/docs/journal/2026-11-10-t7-classified-queue.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t8-after-translate.jpeg
+        target: /srv/docs/journal/2026-11-10-t8-after-translate.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t8-before-translate.jpeg
+        target: /srv/docs/journal/2026-11-10-t8-before-translate.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t9-detail-locale.jpeg
+        target: /srv/docs/journal/2026-11-10-t9-detail-locale.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t9-gallery-revamp.jpeg
+        target: /srv/docs/journal/2026-11-10-t9-gallery-revamp.jpeg
+      - action: rebuild
+        path: ../journal/2026-11-10-t9-places.jpeg
+        target: /srv/docs/journal/2026-11-10-t9-places.jpeg
+      - action: rebuild
+        path: ../journal/stitch/specimen-detail-donate-response.json
+        target: /srv/docs/journal/stitch/specimen-detail-donate-response.json
+      - action: rebuild
+        path: ../journal/stitch/specimen-detail-donate.html
+        target: /srv/docs/journal/stitch/specimen-detail-donate.html
+      - action: rebuild
+        path: ../journal/stitch/specimen-detail-donate.png
+        target: /srv/docs/journal/stitch/specimen-detail-donate.png
+      - action: rebuild
+        path: ../robots.txt
+        target: /srv/robots.txt
+      - action: rebuild
+        path: ../sitemap.xml
+        target: /srv/sitemap.xml
+    environment:
+      PORT: "8080"
+      ORIGIN: ${ORIGIN:-https://localhost:${CADDY_TLS_HOST_PORT:-12413}}
+      ELECTRIC_SECRET: ${ELECTRIC_SECRET:-dev-electric-secret}
+      PRONTO_UPSTREAM_CRUD: crud:3000
+      PRONTO_UPSTREAM_ELECTRIC: electric:3000
+      PRONTO_UPSTREAM_AUTH: auth:9999
+      PRONTO_UPSTREAM_TICKER: ticker:9998
+    healthcheck:
+      test:
+      - CMD
+      - httpcheck
+      - http://127.0.0.1:8080/health
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+      start_interval: 500ms
+    image: bayt-iris-caddy:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default:
+        aliases:
+        - caddy
+  iris-caddy_bayt:
+    build:
+      additional_contexts:
+        iris-crud_bayt: service:iris-crud_bayt
+        iris-served_bayt: service:iris-served_bayt
+      context: ..
+      dockerfile: .bayt/Dockerfile.caddy
+      target: caddy_bayt
+      args:
+        BAYT_DIR: ${MONOREPO_COMPOSE_MODE:+apps/iris}
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+    image: bayt-iris-caddy_bayt:latest
+    scale: 0
+  iris-caddy_srcs:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.caddy
+      target: caddy_srcs
+      args:
+        BAYT_DIR: ${MONOREPO_COMPOSE_MODE:+apps/iris}
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+    image: bayt-iris-caddy_srcs:latest
+    scale: 0

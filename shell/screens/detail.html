@@ -1,0 +1,326 @@
+<!-- detail — ir: #detail. Tabbed waste specimen inspection, localized disposal guides, and nearby recycling hubs. -->
+<section class="screen" data-screen="detail">
+  <input type="radio" name="iris-theme-detail" id="theme-auto-chk" class="theme-radio theme-auto-chk" checked>
+  <input type="radio" name="iris-theme-detail" id="theme-light-chk" class="theme-radio theme-light-chk">
+  <input type="radio" name="iris-theme-detail" id="theme-dark-chk" class="theme-radio theme-dark-chk">
+  <input type="checkbox" id="login-modal-toggle" class="login-modal-chk">
+  <label for="login-modal-toggle" data-auth-trigger hidden></label>
+  <div class="login-modal-overlay login-modal-backdrop">
+    <div class="login-modal-card" role="dialog" aria-modal="true" aria-labelledby="login-modal-title">
+      <label for="login-modal-toggle" id="btn-login-close" class="login-modal-close" aria-label="{msg.login_close_label}">✕</label>
+      <div class="login-modal-header">
+        <span class="login-modal-brand role-label" data-text="{msg.login_modal_brand}">✦ Iris Circular</span>
+        <h2 class="login-modal-title role-title" id="login-modal-title" data-text="{msg.login_modal_title}">Access &amp; Portability</h2>
+        <p class="login-modal-desc role-meta" data-text="{msg.login_modal_desc}">Iris is free to browse and classify waste. Sign in only when you want to sync your scanned items across devices with Passkey or Google.</p>
+      </div>
+      <div class="login-status-card">
+        <span class="login-status-icon" aria-hidden="true">ℹ️</span>
+        <div class="login-status-copy">
+          <span class="status-label role-label" data-text="{msg.login_status_label}">Account status:</span>
+          <strong class="status-name role-label" data-auth-field="handle" data-text="{msg.login_status_guest}">Not signed in</strong>
+          <span class="status-badge role-label" data-text="{msg.login_status_badge}">· Saved on this device</span>
+        </div>
+      </div>
+      <div class="login-modal-methods">
+        <label for="login-modal-toggle" id="btn-auth-passkey" class="login-method-btn method-passkey" data-auth-action="passkey-signin">
+          <div class="login-method-icon method-icon-passkey" aria-hidden="true">🔑</div>
+          <div class="login-method-info">
+            <span class="login-method-title role-meta" data-text="{msg.login_passkey_title}">Passkey / Biometrics (WebAuthn)</span>
+            <span class="login-method-hint role-label" data-text="{msg.login_passkey_hint}">Touch ID, Face ID or security key. Fast and passwordless.</span>
+          </div>
+        </label>
+        <label for="login-modal-toggle" id="btn-auth-google" class="login-method-btn method-google" data-auth-provider="google">
+          <div class="login-method-icon method-icon-google" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24Z"/><path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.15Z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98Z"/></svg>
+          </div>
+          <div class="login-method-info">
+            <span class="login-method-title role-meta" data-text="{msg.login_google_title}">Continue with Google</span>
+            <span class="login-method-hint role-label" data-text="{msg.login_google_hint}">Full portability to access your scanned items across multiple devices.</span>
+          </div>
+        </label>
+        <label for="login-modal-toggle" id="btn-auth-guest" class="login-method-btn method-guest" data-auth-action="guest">
+          <div class="login-method-icon method-icon-guest" aria-hidden="true">👤</div>
+          <div class="login-method-info">
+            <span class="login-method-title role-meta" data-text="{msg.login_guest_title}">Continue as guest</span>
+            <span class="login-method-hint role-label" data-text="{msg.login_guest_hint}">Free browsing and scanning on this device. Zero signup.</span>
+          </div>
+        </label>
+      </div>
+    </div>
+  </div>
+  <header class="brand-topbar detail-topbar">
+    <div class="brand-topbar-row">
+      <div class="brand-topbar-copy">
+        <div class="brand-topbar-title-row">
+          <img class="brand-logo-img" src="/pictures/25275fc0e139d54350917c4ccecf5999c40df6c1c8df37aa27035bfe7d9a6e09.svg" alt="" width="45" height="26">
+          <a class="back-link role-meta" data-route="gallery" data-param-shelf="gallery" data-text="{msg.back_gallery}">← Back to Gallery</a>
+          <span class="live-pill role-label" data-text="{msg.detail_ai_badge}">AI Detected • Verified Specimen</span>
+        </div>
+      </div>
+      <div class="header-utility-actions sidebar-user-controls">
+        <details class="sidebar-settings-details">
+          <summary class="sidebar-settings-btn role-label">
+            <span class="settings-label-text" data-text="{msg.settings_label}">⚙️ Settings</span>
+          </summary>
+          <div class="sidebar-settings-popover">
+            <div class="settings-group">
+              <span class="settings-group-label role-label" data-text="{msg.settings_theme_label}">Theme</span>
+              <div class="theme-switch" role="group">
+                <label for="theme-auto-chk" class="theme-btn role-label" data-theme-opt="auto" data-text="{msg.theme_auto}">Auto</label>
+                <label for="theme-light-chk" class="theme-btn role-label" data-theme-opt="light" data-text="{msg.theme_light}">☀️</label>
+                <label for="theme-dark-chk" class="theme-btn role-label" data-theme-opt="dark" data-text="{msg.theme_dark}">🌙</label>
+              </div>
+            </div>
+            <div class="settings-group">
+              <span class="settings-group-label role-label" data-text="{msg.settings_lang_label}">Language</span>
+              <div class="lang-switch">
+                <a class="lang-link role-label" id="lang-en" data-route="detail" data-param-id="{param.id}" data-locale="en" data-locale-current="page" data-text="{msg.lang_code_en}">EN</a>
+                <a class="lang-link role-label" id="lang-es" data-route="detail" data-param-id="{param.id}" data-locale="es" data-locale-current="page" data-text="{msg.lang_code_es}">ES</a>
+                <a class="lang-link role-label" id="lang-pt" data-route="detail" data-param-id="{param.id}" data-locale="pt" data-locale-current="page" data-text="{msg.lang_code_pt}">PT</a>
+                <a class="lang-link role-label" id="lang-ru" data-route="detail" data-param-id="{param.id}" data-locale="ru" data-locale-current="page" data-text="{msg.lang_code_ru}">RU</a>
+                <a class="lang-link role-label" id="lang-he" data-route="detail" data-param-id="{param.id}" data-locale="he" data-locale-current="page" data-text="{msg.lang_code_he}">HE</a>
+                <a class="lang-link role-label" id="lang-kk" data-route="detail" data-param-id="{param.id}" data-locale="kk" data-locale-current="page" data-text="{msg.lang_code_kk}">KK</a>
+              </div>
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
+  </header>
+
+  <p class="offline role-meta" data-text="{msg.offline}">Iris cannot reach the server right now.</p>
+
+  <div class="skeleton" aria-hidden="true">
+    <div class="skel detail-skel"></div>
+  </div>
+
+  <div class="detail-workspace" data-live="detail_view" data-filter="id=eq.view" data-empty="">
+    <template data-item>
+      <div class="detail-tabs-root" data-tab="{tab}">
+        <div class="detail-wrap" data-live="trash_item" data-filter="id=eq.{param.id}" data-empty="{msg.item_not_found}" data-reads="trash_item,trash_item_translation,localized_item,me" data-on-mutation="localize_content">
+          <template data-item>
+            <article class="detail-layout" data-category="{label}" data-disposal-place="{is_disposal_place}">
+              <div class="panel visual-panel">
+                <div class="visual-frame">
+                  <img class="detail-img" src="{picture}" alt="" width="480" height="360">
+                  <div class="visual-top-overlay">
+                    <div class="badge-row">
+                      <span class="place-badge chip role-label" data-text="{msg.disposal_place_badge}">Registered Drop-off Bin</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="visual-bottom-overlay">
+                  <h1 class="detail-title role-title" data-text="{caption}"></h1>
+                  <div class="hero-localized-title-slot" data-live="localized_item" data-filter="id=eq.{id}" data-empty="">
+                    <template data-item>
+                      <p class="hero-localized-title role-title" data-translated="{translated}" data-locale="{locale}" data-text="{caption}"></p>
+                    </template>
+                  </div>
+                  <p class="contributor-line role-meta">
+                    <span data-text="{msg.scanned_by_label}">Scanned by</span>
+                    <span class="author-probe" data-live="app_user" data-filter="id=eq.{user_id}" data-empty="">
+                      <template data-item>
+                        <span class="author-item">
+                          <b class="author-name" data-text="{display_name}"></b>
+                          <span class="author-handle" data-text="{handle}"></span>
+                        </span>
+                      </template>
+                    </span>
+                  </p>
+                  <div class="owner-actions-slot" data-live="me" data-filter="id=eq.{user_id}" data-empty="">
+                    <template data-item>
+                      <div class="owner-actions-bar">
+                        <button type="button" id="delete-detail-item" class="btn-delete-inline role-label" data-command="delete-item" data-on-click="detail_view" data-text="{msg.lifecycle_delete_confirm}">Confirm Permanent Delete</button>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+              </div>
+
+              <div class="inspection-column">
+                <header class="panel summary-panel">
+                  <div class="panel-body summary-banner-body">
+                    <div class="summary-status-row">
+                      <span class="summary-kicker role-label" data-text="{msg[label_key]}">Recyclable</span>
+                      <span class="detail-value detail-value-fallback role-label">
+                        <b data-text="{msg.estimated_value_label}">Estimated Recovery Value</b>:
+                        <span data-text="{price}"></span>
+                      </span>
+                    </div>
+                    <p class="detail-material detail-material-fallback role-body">
+                      <b data-text="{msg.material_label}">Material</b>:
+                      <span data-text="{object_material}"></span>
+                    </p>
+                    <div class="summary-localized-slot" data-live="localized_item" data-filter="id=eq.{id}" data-empty="">
+                      <template data-item>
+                        <div class="summary-localized-meta" data-translated="{translated}" data-locale="{locale}">
+                          <p class="detail-material role-body">
+                            <b data-text="{msg.material_label}">Material</b>:
+                            <span data-text="{object_material}"></span>
+                          </p>
+                          <p class="detail-value role-label">
+                            <b data-text="{msg.estimated_value_label}">Estimated Recovery Value</b>:
+                            <span data-text="{price}"></span>
+                          </p>
+                        </div>
+                      </template>
+                    </div>
+                  </div>
+                </header>
+
+                <div class="detail-tab-bar" role="tablist">
+                  <button type="button" id="tab-discard" class="tab-btn role-label" data-on-click="detail_view" data-text="{msg.detail_tab_discard}">How to Discard</button>
+                  <button type="button" id="tab-details" class="tab-btn role-label" data-on-click="detail_view" data-text="{msg.detail_tab_details}">Material &amp; Streams</button>
+                  <button type="button" id="tab-nearby" class="tab-btn role-label" data-on-click="detail_view" data-text="{msg.detail_tab_nearby}">Nearby Centers</button>
+                </div>
+
+                <div class="pane-discard">
+                  <section class="panel instructions-panel">
+                    <h2 class="band role-band"><span data-text="{msg.disposal_steps_heading}">How to Discard</span></h2>
+                    <div class="panel-body instructions-body">
+                      <p class="instructions-copy role-body" data-text="{disposal_instructions}"></p>
+                      <div class="localized-live-slot" data-live="localized_item" data-filter="id=eq.{id}" data-empty="">
+                        <template data-item>
+                          <div class="localized-live-card" data-translated="{translated}" data-locale="{locale}">
+                            <div class="localized-live-head">
+                              <span class="lang-badges">
+                                <span class="chip role-label lang-pill localized-locale-pill" data-lang-id="en" data-text="{msg.lang_en}">English</span>
+                                <span class="chip role-label lang-pill localized-locale-pill" data-lang-id="es" data-text="{msg.lang_es}">Español</span>
+                                <span class="chip role-label lang-pill localized-locale-pill" data-lang-id="pt" data-text="{msg.lang_pt}">Português</span>
+                                <span class="chip role-label lang-pill localized-locale-pill" data-lang-id="ru" data-text="{msg.lang_ru}">Русский</span>
+                                <span class="chip role-label lang-pill localized-locale-pill" data-lang-id="he" data-text="{msg.lang_he}">עברית</span>
+                                <span class="chip role-label lang-pill localized-locale-pill" data-lang-id="kk" data-text="{msg.lang_kk}">Қазақша</span>
+                              </span>
+                              <strong class="localized-live-caption role-band" data-text="{caption}"></strong>
+                            </div>
+                            <p class="localized-live-steps role-body" data-text="{disposal_instructions}"></p>
+                          </div>
+                        </template>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="panel translations-panel">
+                    <h2 class="band role-band"><span data-text="{msg.translations_heading}">Localized Disposal Guides</span></h2>
+                    <div class="panel-body translation-form-wrap">
+                      <form class="translation-form" data-form="request-translation" data-entity="translation_request" data-action="create">
+                        <input type="hidden" name="item_id" data-value="{id}">
+                        <div class="translation-form-row">
+                          <label class="translation-field">
+                            <span class="field-label role-label" data-text="{msg.detail_translate_label}">Translate disposal guide into</span>
+                            <select name="language" id="translation-language" required>
+                              <option value="en" data-text="{msg.lang_en}">English</option>
+                              <option value="es" data-text="{msg.lang_es}">Español</option>
+                              <option value="pt" data-text="{msg.lang_pt}">Português</option>
+                              <option value="ru" data-text="{msg.lang_ru}">Русский</option>
+                              <option value="he" data-text="{msg.lang_he}">עברית</option>
+                              <option value="kk" data-text="{msg.lang_kk}">Қазақша</option>
+                            </select>
+                          </label>
+                          <button type="submit" id="request-translation-btn" class="primary-cta role-body" data-text="{msg.detail_translate_btn}">Translate Guide</button>
+                        </div>
+                        <p class="saved role-meta" role="status" data-text="{msg.detail_translate_saved}">Localized disposal guide generated.</p>
+                        <p class="invalid role-meta" hidden data-text="{msg.detail_translate_invalid}">Please select a target language.</p>
+                        <p class="store-error role-meta" role="status" hidden data-text="{msg.detail_translate_error}">Could not translate specimen.</p>
+                      </form>
+                    </div>
+                    <ul class="translation-list" data-live="trash_item_translation"
+                        data-filter="item_id=eq.{id}"
+                        data-order="language.asc,id.asc"
+                        data-empty="{msg.translations_empty}"
+                        data-reads="trash_item,trash_item_translation,localized_item,me"
+                        data-on-mutation="localize_content">
+                      <template data-item>
+                        <li class="translation-card" data-lang="{language}">
+                          <div class="translation-head">
+                            <span class="lang-badges">
+                              <span class="chip role-label lang-pill" data-lang-id="en" data-text="{msg.lang_en}">English</span>
+                              <span class="chip role-label lang-pill" data-lang-id="es" data-text="{msg.lang_es}">Español</span>
+                              <span class="chip role-label lang-pill" data-lang-id="pt" data-text="{msg.lang_pt}">Português</span>
+                              <span class="chip role-label lang-pill" data-lang-id="ru" data-text="{msg.lang_ru}">Русский</span>
+                              <span class="chip role-label lang-pill" data-lang-id="he" data-text="{msg.lang_he}">עברית</span>
+                              <span class="chip role-label lang-pill" data-lang-id="kk" data-text="{msg.lang_kk}">Қазақша</span>
+                            </span>
+                            <h3 class="translation-caption role-band" data-text="{caption}"></h3>
+                          </div>
+                          <p class="translation-steps role-body" data-text="{disposal_instructions}"></p>
+                        </li>
+                      </template>
+                    </ul>
+                    <ul id="translation-timeout" data-live="localized_item"
+                        data-filter="translated=eq.pending"
+                        data-order="id.asc"
+                        data-empty=""
+                        data-reads="localized_item,trash_item_translation"
+                        data-on-mutation="localize_content" hidden>
+                      <template data-item>
+                        <li data-text="{id}"></li>
+                      </template>
+                    </ul>
+                  </section>
+                </div>
+
+                <div class="pane-details">
+                  <section class="panel streams-panel">
+                    <h2 class="band role-band"><span data-text="{msg.sub_classifications_heading}">Sub-classifications &amp; Streams</span></h2>
+                    <div class="panel-body streams-body">
+                      <p class="streams-copy streams-copy-fallback role-body" data-text="{sub_classifications}"></p>
+                      <div class="streams-localized-slot" data-live="localized_item" data-filter="id=eq.{id}" data-empty="">
+                        <template data-item>
+                          <p class="streams-copy streams-copy-localized role-body" data-translated="{translated}" data-locale="{locale}" data-text="{sub_classifications}"></p>
+                        </template>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+
+                <div class="pane-nearby">
+                  <section class="panel nearby-panel">
+                    <h2 class="band role-band"><span data-text="{msg.nearby_places_heading}">Nearby Recycling &amp; Drop-off Centers</span></h2>
+                    <div class="panel-body nearby-body">
+                      <p class="nearby-copy nearby-copy-fallback role-meta" data-text="{nearby_recycling_places}"></p>
+                      <div class="nearby-localized-slot" data-live="localized_item" data-filter="id=eq.{id}" data-empty="">
+                        <template data-item>
+                          <p class="nearby-copy nearby-copy-localized role-meta" data-translated="{translated}" data-locale="{locale}" data-text="{nearby_recycling_places}"></p>
+                        </template>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="panel hubs-panel">
+                    <h2 class="band role-band"><span data-text="{msg.nearby_hubs_heading}">Matching Neighborhood Drop-off Hubs</span></h2>
+                    <ul class="nearby-hub-list" data-live="disposal_place"
+                        data-filter="material_type=eq.{label}"
+                        data-order="created_at.desc,id.asc"
+                        data-empty="{msg.nearby_hubs_empty}">
+                      <template data-item>
+                        <li class="hub-card" data-category="{material_type}">
+                          <img class="hub-thumb" src="{img_url}" alt="" width="72" height="72">
+                          <div class="hub-body">
+                            <div class="hub-badges">
+                              <span class="chip role-label" data-text="{msg[material_key]}"></span>
+                              <span class="hub-distance role-label" data-text="{distance_km}"></span>
+                            </div>
+                            <h3 class="hub-name role-band" data-text="{name}"></h3>
+                            <p class="hub-address role-meta">
+                              <b data-text="{msg.address_label}">Address</b>:
+                              <span data-text="{address}"></span>
+                            </p>
+                            <p class="hub-phone role-meta">
+                              <b data-text="{msg.phone_label}">Phone</b>:
+                              <span data-text="{phone_number}"></span>
+                            </p>
+                          </div>
+                        </li>
+                      </template>
+                    </ul>
+                  </section>
+                </div>
+              </div>
+            </article>
+          </template>
+        </div>
+      </div>
+    </template>
+  </div>
+</section>

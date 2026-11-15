@@ -1,0 +1,20 @@
+{
+  "effects": {
+    "classify-waste": {
+      "table": "classify_job",
+      "field": "status",
+      "state": "classifying",
+      "onDone": "done",
+      "onError": "failed",
+      "row": [
+        "id"
+      ],
+      "key": [
+        "id"
+      ],
+      "idempotent": true,
+      "attempts": 5,
+      "handler": "effects/classify-waste.js"
+    }
+  }
+}

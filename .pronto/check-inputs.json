@@ -1,0 +1,2304 @@
+{
+  "version": 1,
+  "terminal": true,
+  "types": {
+    "types": {
+      "string": {
+        "pg": "text",
+        "column": "plain",
+        "subset": true,
+        "base": [
+          "text",
+          "varchar",
+          "bpchar",
+          "tsvector"
+        ],
+        "json": "string",
+        "refuse": "\\x00",
+        "order": "text",
+        "beyond": [
+          "scalar-values"
+        ]
+      },
+      "bool": {
+        "pg": "boolean",
+        "column": "plain",
+        "subset": true,
+        "base": [
+          "bool",
+          "boolean"
+        ],
+        "json": "boolean",
+        "order": "boolean",
+        "beyond": []
+      },
+      "int32": {
+        "pg": "integer",
+        "column": "plain",
+        "subset": true,
+        "base": [
+          "int2",
+          "int4",
+          "integer",
+          "smallint"
+        ],
+        "json": "number",
+        "min": -2147483648,
+        "max": 2147483647,
+        "order": "number",
+        "beyond": []
+      },
+      "int64": {
+        "pg": "bigint",
+        "column": "domain",
+        "subset": false,
+        "sql": "portable_int64",
+        "base": [
+          "int8",
+          "bigint"
+        ],
+        "json": "string",
+        "pattern": "^(0|-?[1-9][0-9]*)$",
+        "order": "integer",
+        "beyond": [
+          "int64-range"
+        ]
+      },
+      "double": {
+        "pg": "double precision",
+        "column": "checked",
+        "subset": true,
+        "base": [
+          "float4",
+          "float8",
+          "double precision",
+          "real"
+        ],
+        "json": "number",
+        "order": "number",
+        "beyond": []
+      },
+      "bytes": {
+        "pg": "bytea",
+        "column": "domain",
+        "subset": false,
+        "sql": "portable_bytes",
+        "base": [
+          "bytea"
+        ],
+        "json": "string",
+        "pattern": "^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+        "order": "none",
+        "beyond": []
+      },
+      "uuid": {
+        "pg": "uuid",
+        "column": "plain",
+        "subset": true,
+        "base": [
+          "uuid"
+        ],
+        "json": "string",
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+        "order": "text",
+        "beyond": []
+      },
+      "timestamp": {
+        "pg": "timestamptz",
+        "column": "domain",
+        "subset": false,
+        "sql": "portable_timestamp",
+        "base": [
+          "timestamptz",
+          "timestamp with time zone"
+        ],
+        "json": "string",
+        "pattern": "^(000[1-9]|00[1-9][0-9]|0[1-9][0-9]{2}|[1-9][0-9]{3})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{6}Z$",
+        "order": "text",
+        "beyond": [
+          "calendar"
+        ]
+      },
+      "duration": {
+        "pg": "interval",
+        "column": "domain",
+        "subset": false,
+        "sql": "portable_duration",
+        "base": [
+          "interval"
+        ],
+        "json": "string",
+        "pattern": "^PT(0|[1-9][0-9]*)(\\.[0-9]{0,5}[1-9])?S$",
+        "order": "duration",
+        "beyond": [
+          "duration-range"
+        ]
+      },
+      "decimal": {
+        "pg": "numeric",
+        "column": "domain",
+        "subset": false,
+        "base": [
+          "numeric",
+          "decimal"
+        ],
+        "json": "string",
+        "pattern": "^(0|-?[1-9][0-9]*|-?(0|[1-9][0-9]*)\\.[0-9]*[1-9])$",
+        "order": "decimal",
+        "beyond": [
+          "decimal-profile"
+        ]
+      },
+      "date": {
+        "pg": "date",
+        "column": "checked",
+        "subset": true,
+        "base": [
+          "date"
+        ],
+        "json": "string",
+        "pattern": "^(000[1-9]|00[1-9][0-9]|0[1-9][0-9]{2}|[1-9][0-9]{3})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$",
+        "order": "text",
+        "beyond": [
+          "calendar"
+        ]
+      },
+      "time": {
+        "pg": "time(6)",
+        "column": "domain",
+        "subset": false,
+        "sql": "portable_time",
+        "base": [
+          "time",
+          "time without time zone"
+        ],
+        "json": "string",
+        "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{6}$",
+        "order": "text",
+        "beyond": []
+      },
+      "timezone": {
+        "pg": "text",
+        "column": "checked",
+        "subset": true,
+        "base": [
+          "text"
+        ],
+        "json": "string",
+        "pattern": "^[A-Za-z0-9+_/-]+$",
+        "order": "none",
+        "beyond": [
+          "tzdb"
+        ]
+      },
+      "json": {
+        "pg": "json",
+        "column": "checked",
+        "subset": false,
+        "base": [
+          "json",
+          "jsonb"
+        ],
+        "json": "value",
+        "order": "none",
+        "beyond": [
+          "scalar-values",
+          "finite-numbers"
+        ]
+      },
+      "geojson": {
+        "pg": "json",
+        "column": "checked",
+        "subset": false,
+        "base": [
+          "json",
+          "jsonb",
+          "geometry",
+          "geography"
+        ],
+        "json": "value",
+        "order": "none",
+        "beyond": [
+          "scalar-values",
+          "finite-numbers",
+          "ring-closure"
+        ]
+      }
+    },
+    "aliases": {
+      "text": "string",
+      "int": "int32",
+      "bigint": "int64",
+      "timestamptz": "timestamp",
+      "tsvector": "string"
+    }
+  },
+  "entities": {
+    "AppUser": {
+      "access": {
+        "scope": "public"
+      },
+      "name": "AppUser",
+      "ir": "AppUser",
+      "read": "lazy",
+      "table": "app_user",
+      "id": "0xa5790856c7af801d",
+      "fields": [
+        {
+          "name": "id",
+          "ordinal": 1,
+          "retired": false,
+          "type": "uuid",
+          "pk": true,
+          "required": true
+        },
+        {
+          "name": "handle",
+          "ordinal": 2,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "unique": true,
+          "cel": "this.size() > 0"
+        },
+        {
+          "name": "display_name",
+          "ordinal": 3,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": false,
+          "cel": "this.size() <= 60"
+        },
+        {
+          "name": "home_address",
+          "ordinal": 4,
+          "retired": true,
+          "type": "string",
+          "pk": false,
+          "required": false
+        },
+        {
+          "name": "address_complement",
+          "ordinal": 5,
+          "retired": true,
+          "type": "string",
+          "pk": false,
+          "required": false
+        },
+        {
+          "name": "phone_number",
+          "ordinal": 6,
+          "retired": true,
+          "type": "string",
+          "pk": false,
+          "required": false
+        },
+        {
+          "name": "preferred_model",
+          "ordinal": 7,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'gemini'",
+          "cel": "this in ['gemini', 'openai']"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 8,
+          "retired": false,
+          "type": "timestamp",
+          "pk": false,
+          "required": true,
+          "default": "now()"
+        }
+      ],
+      "seed": [],
+      "durability": "server",
+      "level": "replicated",
+      "server": true,
+      "writers": [],
+      "cel": {
+        "checks": {
+          "handle": "char_length(handle) > 0",
+          "display_name": "char_length(display_name) <= 60",
+          "preferred_model": "preferred_model IN ('gemini', 'openai')"
+        },
+        "enums": {
+          "preferred_model": [
+            "gemini",
+            "openai"
+          ]
+        },
+        "bounds": {
+          "handle": {
+            "sizeMin": 1
+          },
+          "display_name": {
+            "sizeMax": 60
+          }
+        }
+      },
+      "uniques": [],
+      "validations": {}
+    },
+    "Me": {
+      "access": {
+        "scope": "private",
+        "owner": "id"
+      },
+      "name": "Me",
+      "ir": "Me",
+      "read": "eager",
+      "table": "me",
+      "id": "0xf5d6b843ee761a50",
+      "fields": [
+        {
+          "name": "id",
+          "ordinal": 1,
+          "retired": false,
+          "type": "uuid",
+          "pk": true,
+          "required": true,
+          "ref": "app_user"
+        },
+        {
+          "name": "handle",
+          "ordinal": 2,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "cel": "this.size() > 0"
+        }
+      ],
+      "seed": [],
+      "durability": "live",
+      "level": "compensable",
+      "server": true,
+      "writers": [
+        {
+          "by": "detail",
+          "kind": "screen",
+          "ops": [
+            "reduce"
+          ]
+        }
+      ],
+      "cel": {
+        "checks": {
+          "handle": "char_length(handle) > 0"
+        },
+        "enums": {},
+        "bounds": {
+          "handle": {
+            "sizeMin": 1
+          }
+        }
+      },
+      "uniques": [],
+      "validations": {}
+    },
+    "TrackRequest": {
+      "access": {
+        "scope": "public"
+      },
+      "name": "TrackRequest",
+      "ir": "TrackRequest",
+      "read": "lazy",
+      "table": "track_request",
+      "id": "0xdeea885db8450bf3",
+      "fields": [
+        {
+          "name": "id",
+          "ordinal": 1,
+          "retired": false,
+          "type": "uuid",
+          "pk": true,
+          "required": true,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 2,
+          "retired": false,
+          "type": "uuid",
+          "pk": false,
+          "required": true,
+          "ref": "app_user",
+          "default": "auth_uid()"
+        },
+        {
+          "name": "image_url",
+          "ordinal": 3,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "cel": "this.matches('^(https://|data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$|/pictures/[0-9a-f]{64}\\.(jpg|png|webp)$)') && this.size() <= 65536"
+        },
+        {
+          "name": "model",
+          "ordinal": 4,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'gemini'",
+          "cel": "this in ['gemini', 'openai']"
+        },
+        {
+          "name": "status",
+          "ordinal": 5,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'submitted'",
+          "cel": "this in ['submitted', 'synced', 'classifying', 'classified', 'failed']"
+        },
+        {
+          "name": "user_language",
+          "ordinal": 6,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'en'",
+          "cel": "this in ['en', 'es', 'pt', 'ru', 'he', 'kk']"
+        },
+        {
+          "name": "user_city",
+          "ordinal": 7,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'São Paulo'",
+          "cel": "this.size() <= 80"
+        },
+        {
+          "name": "latitude",
+          "ordinal": 8,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'-23.5614'",
+          "cel": "this.size() <= 32"
+        },
+        {
+          "name": "longitude",
+          "ordinal": 9,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'-46.6559'",
+          "cel": "this.size() <= 32"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 10,
+          "retired": false,
+          "type": "timestamp",
+          "pk": false,
+          "required": true,
+          "default": "now()"
+        }
+      ],
+      "seed": [],
+      "durability": "live",
+      "level": "compensable",
+      "server": true,
+      "writers": [
+        {
+          "by": "camera",
+          "kind": "form",
+          "ops": [
+            "create"
+          ]
+        },
+        {
+          "by": "gallery",
+          "kind": "screen",
+          "ops": [
+            "reduce"
+          ]
+        },
+        {
+          "by": "camera",
+          "kind": "screen",
+          "ops": [
+            "reduce"
+          ]
+        }
+      ],
+      "indexes": [
+        {
+          "on": "user_id",
+          "using": "btree"
+        }
+      ],
+      "cel": {
+        "checks": {
+          "image_url": "image_url ~ '^(https://|data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$|/pictures/[0-9a-f]{64}\\.(jpg|png|webp)$)' AND char_length(image_url) <= 65536",
+          "model": "model IN ('gemini', 'openai')",
+          "status": "status IN ('submitted', 'synced', 'classifying', 'classified', 'failed')",
+          "user_language": "user_language IN ('en', 'es', 'pt', 'ru', 'he', 'kk')",
+          "user_city": "char_length(user_city) <= 80",
+          "latitude": "char_length(latitude) <= 32",
+          "longitude": "char_length(longitude) <= 32"
+        },
+        "enums": {
+          "model": [
+            "gemini",
+            "openai"
+          ],
+          "status": [
+            "submitted",
+            "synced",
+            "classifying",
+            "classified",
+            "failed"
+          ],
+          "user_language": [
+            "en",
+            "es",
+            "pt",
+            "ru",
+            "he",
+            "kk"
+          ]
+        },
+        "bounds": {
+          "image_url": {
+            "sizeMax": 65536,
+            "regex": "^(https://|data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$|/pictures/[0-9a-f]{64}\\.(jpg|png|webp)$)"
+          },
+          "user_city": {
+            "sizeMax": 80
+          },
+          "latitude": {
+            "sizeMax": 32
+          },
+          "longitude": {
+            "sizeMax": 32
+          }
+        }
+      },
+      "uniques": [],
+      "validations": {}
+    },
+    "TrashItem": {
+      "access": {
+        "scope": "public"
+      },
+      "name": "TrashItem",
+      "ir": "TrashItem",
+      "read": "lazy",
+      "table": "trash_item",
+      "id": "0xd7e715ad4e0ddbb0",
+      "fields": [
+        {
+          "name": "id",
+          "ordinal": 1,
+          "retired": false,
+          "type": "uuid",
+          "pk": true,
+          "required": true,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "request_id",
+          "ordinal": 2,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "unique": true,
+          "cel": "this.size() > 0 && this.size() <= 64"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 3,
+          "retired": false,
+          "type": "uuid",
+          "pk": false,
+          "required": true,
+          "ref": "app_user",
+          "default": "auth_uid()"
+        },
+        {
+          "name": "picture",
+          "ordinal": 4,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "cel": "this.matches('^(https://|data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$|/pictures/[0-9a-f]{64}\\.(jpg|png|webp)$)') && this.size() <= 65536"
+        },
+        {
+          "name": "caption",
+          "ordinal": 5,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "cel": "this.trim().size() > 0 && this.size() <= 160"
+        },
+        {
+          "name": "label",
+          "ordinal": 6,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "cel": "this in ['recyclable', 'organic', 'eletronic', 'non_recyclable', 'trash']"
+        },
+        {
+          "name": "label_key",
+          "ordinal": 7,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "cel": "this in ['cat_recyclable', 'cat_organic', 'cat_eletronic', 'cat_non_recyclable', 'cat_trash']"
+        },
+        {
+          "name": "object_material",
+          "ordinal": 8,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "cel": "this.trim().size() > 0 && this.size() <= 160"
+        },
+        {
+          "name": "disposal_instructions",
+          "ordinal": 9,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "cel": "this.trim().size() > 0 && this.size() <= 2000"
+        },
+        {
+          "name": "sub_classifications",
+          "ordinal": 10,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "cel": "this.size() <= 500"
+        },
+        {
+          "name": "price",
+          "ordinal": 11,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "cel": "this.size() <= 64"
+        },
+        {
+          "name": "is_disposal_place",
+          "ordinal": 12,
+          "retired": false,
+          "type": "bool",
+          "pk": false,
+          "required": true,
+          "default": "false"
+        },
+        {
+          "name": "nearby_recycling_places",
+          "ordinal": 13,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "cel": "this.size() <= 600"
+        },
+        {
+          "name": "tagged_as_inappropriate",
+          "ordinal": 14,
+          "retired": false,
+          "type": "bool",
+          "pk": false,
+          "required": true,
+          "default": "false"
+        },
+        {
+          "name": "user_language",
+          "ordinal": 15,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'en'",
+          "cel": "this in ['en', 'es', 'pt', 'ru', 'he', 'kk']"
+        },
+        {
+          "name": "latitude",
+          "ordinal": 16,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'-23.5614'",
+          "cel": "this.size() <= 32"
+        },
+        {
+          "name": "longitude",
+          "ordinal": 17,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'-46.6559'",
+          "cel": "this.size() <= 32"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 18,
+          "retired": false,
+          "type": "timestamp",
+          "pk": false,
+          "required": true,
+          "default": "now()"
+        },
+        {
+          "name": "search_text",
+          "ordinal": 19,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "generated": "coalesce(caption, '') || ' ' || coalesce(object_material, '') || ' ' || coalesce(label, '')"
+        }
+      ],
+      "seed": [],
+      "durability": "live",
+      "level": "compensable",
+      "server": true,
+      "writers": [
+        {
+          "by": "gallery",
+          "kind": "screen",
+          "ops": [
+            "reduce"
+          ]
+        },
+        {
+          "by": "detail",
+          "kind": "screen",
+          "ops": [
+            "reduce"
+          ]
+        },
+        {
+          "by": "landing",
+          "kind": "screen",
+          "ops": [
+            "reduce"
+          ]
+        },
+        {
+          "by": "camera",
+          "kind": "screen",
+          "ops": [
+            "reduce"
+          ]
+        }
+      ],
+      "indexes": [
+        {
+          "on": "user_id",
+          "using": "btree"
+        },
+        {
+          "on": "label",
+          "using": "btree"
+        }
+      ],
+      "cel": {
+        "checks": {
+          "request_id": "char_length(request_id) > 0 AND char_length(request_id) <= 64",
+          "picture": "picture ~ '^(https://|data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$|/pictures/[0-9a-f]{64}\\.(jpg|png|webp)$)' AND char_length(picture) <= 65536",
+          "caption": "char_length(regexp_replace(caption, '^[\\s\\u0085\\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000]+|[\\s\\u0085\\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000]+$', '', 'g')) > 0 AND char_length(caption) <= 160",
+          "label": "label IN ('recyclable', 'organic', 'eletronic', 'non_recyclable', 'trash')",
+          "label_key": "label_key IN ('cat_recyclable', 'cat_organic', 'cat_eletronic', 'cat_non_recyclable', 'cat_trash')",
+          "object_material": "char_length(regexp_replace(object_material, '^[\\s\\u0085\\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000]+|[\\s\\u0085\\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000]+$', '', 'g')) > 0 AND char_length(object_material) <= 160",
+          "disposal_instructions": "char_length(regexp_replace(disposal_instructions, '^[\\s\\u0085\\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000]+|[\\s\\u0085\\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000]+$', '', 'g')) > 0 AND char_length(disposal_instructions) <= 2000",
+          "sub_classifications": "char_length(sub_classifications) <= 500",
+          "price": "char_length(price) <= 64",
+          "nearby_recycling_places": "char_length(nearby_recycling_places) <= 600",
+          "user_language": "user_language IN ('en', 'es', 'pt', 'ru', 'he', 'kk')",
+          "latitude": "char_length(latitude) <= 32",
+          "longitude": "char_length(longitude) <= 32"
+        },
+        "enums": {
+          "label": [
+            "recyclable",
+            "organic",
+            "eletronic",
+            "non_recyclable",
+            "trash"
+          ],
+          "label_key": [
+            "cat_recyclable",
+            "cat_organic",
+            "cat_eletronic",
+            "cat_non_recyclable",
+            "cat_trash"
+          ],
+          "user_language": [
+            "en",
+            "es",
+            "pt",
+            "ru",
+            "he",
+            "kk"
+          ]
+        },
+        "bounds": {
+          "request_id": {
+            "sizeMin": 1,
+            "sizeMax": 64
+          },
+          "picture": {
+            "sizeMax": 65536,
+            "regex": "^(https://|data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$|/pictures/[0-9a-f]{64}\\.(jpg|png|webp)$)"
+          },
+          "caption": {
+            "sizeMin": 1,
+            "sizeMax": 160
+          },
+          "object_material": {
+            "sizeMin": 1,
+            "sizeMax": 160
+          },
+          "disposal_instructions": {
+            "sizeMin": 1,
+            "sizeMax": 2000
+          },
+          "sub_classifications": {
+            "sizeMax": 500
+          },
+          "price": {
+            "sizeMax": 64
+          },
+          "nearby_recycling_places": {
+            "sizeMax": 600
+          },
+          "latitude": {
+            "sizeMax": 32
+          },
+          "longitude": {
+            "sizeMax": 32
+          }
+        }
+      },
+      "uniques": [],
+      "validations": {}
+    },
+    "TrashItemTranslation": {
+      "access": {
+        "scope": "public"
+      },
+      "name": "TrashItemTranslation",
+      "ir": "TrashItemTranslation",
+      "read": "lazy",
+      "table": "trash_item_translation",
+      "id": "0xd19b0b56796b189d",
+      "fields": [
+        {
+          "name": "id",
+          "ordinal": 1,
+          "retired": false,
+          "type": "uuid",
+          "pk": true,
+          "required": true,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "item_id",
+          "ordinal": 2,
+          "retired": false,
+          "type": "uuid",
+          "pk": false,
+          "required": true,
+          "ref": "trash_item"
+        },
+        {
+          "name": "language",
+          "ordinal": 3,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "cel": "this in ['en', 'es', 'pt', 'ru', 'he', 'kk']"
+        },
+        {
+          "name": "caption",
+          "ordinal": 4,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "cel": "this.trim().size() > 0 && this.size() <= 160"
+        },
+        {
+          "name": "disposal_instructions",
+          "ordinal": 5,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "cel": "this.trim().size() > 0 && this.size() <= 2000"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 6,
+          "retired": false,
+          "type": "timestamp",
+          "pk": false,
+          "required": true,
+          "default": "now()"
+        },
+        {
+          "name": "object_material",
+          "ordinal": 7,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "''",
+          "cel": "this.size() <= 160"
+        },
+        {
+          "name": "sub_classifications",
+          "ordinal": 8,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "''",
+          "cel": "this.size() <= 500"
+        },
+        {
+          "name": "price",
+          "ordinal": 9,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "''",
+          "cel": "this.size() <= 64"
+        },
+        {
+          "name": "nearby_recycling_places",
+          "ordinal": 10,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "''",
+          "cel": "this.size() <= 600"
+        }
+      ],
+      "seed": [],
+      "durability": "live",
+      "level": "compensable",
+      "server": true,
+      "writers": [
+        {
+          "by": "gallery",
+          "kind": "screen",
+          "ops": [
+            "reduce"
+          ]
+        },
+        {
+          "by": "detail",
+          "kind": "screen",
+          "ops": [
+            "reduce"
+          ]
+        },
+        {
+          "by": "landing",
+          "kind": "screen",
+          "ops": [
+            "reduce"
+          ]
+        },
+        {
+          "by": "camera",
+          "kind": "screen",
+          "ops": [
+            "reduce"
+          ]
+        }
+      ],
+      "indexes": [
+        {
+          "on": "item_id",
+          "using": "btree"
+        }
+      ],
+      "cel": {
+        "checks": {
+          "language": "language IN ('en', 'es', 'pt', 'ru', 'he', 'kk')",
+          "caption": "char_length(regexp_replace(caption, '^[\\s\\u0085\\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000]+|[\\s\\u0085\\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000]+$', '', 'g')) > 0 AND char_length(caption) <= 160",
+          "disposal_instructions": "char_length(regexp_replace(disposal_instructions, '^[\\s\\u0085\\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000]+|[\\s\\u0085\\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000]+$', '', 'g')) > 0 AND char_length(disposal_instructions) <= 2000",
+          "object_material": "char_length(object_material) <= 160",
+          "sub_classifications": "char_length(sub_classifications) <= 500",
+          "price": "char_length(price) <= 64",
+          "nearby_recycling_places": "char_length(nearby_recycling_places) <= 600"
+        },
+        "enums": {
+          "language": [
+            "en",
+            "es",
+            "pt",
+            "ru",
+            "he",
+            "kk"
+          ]
+        },
+        "bounds": {
+          "caption": {
+            "sizeMin": 1,
+            "sizeMax": 160
+          },
+          "disposal_instructions": {
+            "sizeMin": 1,
+            "sizeMax": 2000
+          },
+          "object_material": {
+            "sizeMax": 160
+          },
+          "sub_classifications": {
+            "sizeMax": 500
+          },
+          "price": {
+            "sizeMax": 64
+          },
+          "nearby_recycling_places": {
+            "sizeMax": 600
+          }
+        }
+      },
+      "uniques": [
+        {
+          "name": "uq_trash_item_translation_pair",
+          "cols": [
+            "item_id",
+            "language"
+          ]
+        }
+      ],
+      "validations": {}
+    },
+    "TranslationRequest": {
+      "access": {
+        "scope": "public"
+      },
+      "name": "TranslationRequest",
+      "ir": "TranslationRequest",
+      "read": "eager",
+      "table": "translation_request",
+      "id": "0xceae60f163b37144",
+      "fields": [
+        {
+          "name": "id",
+          "ordinal": 1,
+          "retired": false,
+          "type": "uuid",
+          "pk": true,
+          "required": true,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "item_id",
+          "ordinal": 2,
+          "retired": false,
+          "type": "uuid",
+          "pk": false,
+          "required": true,
+          "ref": "trash_item"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 3,
+          "retired": false,
+          "type": "uuid",
+          "pk": false,
+          "required": true,
+          "ref": "app_user",
+          "default": "auth_uid()"
+        },
+        {
+          "name": "language",
+          "ordinal": 4,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "cel": "this in ['en', 'es', 'pt', 'ru', 'he', 'kk']"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 5,
+          "retired": false,
+          "type": "timestamp",
+          "pk": false,
+          "required": true,
+          "default": "now()"
+        }
+      ],
+      "seed": [],
+      "durability": "server",
+      "level": "replicated",
+      "server": true,
+      "writers": [
+        {
+          "by": "detail",
+          "kind": "form",
+          "ops": [
+            "create"
+          ]
+        }
+      ],
+      "indexes": [
+        {
+          "on": "item_id",
+          "using": "btree"
+        }
+      ],
+      "cel": {
+        "checks": {
+          "language": "language IN ('en', 'es', 'pt', 'ru', 'he', 'kk')"
+        },
+        "enums": {
+          "language": [
+            "en",
+            "es",
+            "pt",
+            "ru",
+            "he",
+            "kk"
+          ]
+        },
+        "bounds": {}
+      },
+      "uniques": [],
+      "validations": {}
+    },
+    "DisposalPlace": {
+      "access": {
+        "scope": "public"
+      },
+      "name": "DisposalPlace",
+      "ir": "DisposalPlace",
+      "read": "lazy",
+      "table": "disposal_place",
+      "id": "0xe4310d8e856a5788",
+      "fields": [
+        {
+          "name": "id",
+          "ordinal": 1,
+          "retired": false,
+          "type": "uuid",
+          "pk": true,
+          "required": true,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 2,
+          "retired": false,
+          "type": "uuid",
+          "pk": false,
+          "required": true,
+          "ref": "app_user",
+          "default": "auth_uid()"
+        },
+        {
+          "name": "name",
+          "ordinal": 3,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "cel": "this.trim().size() > 0 && this.size() <= 120"
+        },
+        {
+          "name": "img_url",
+          "ordinal": 4,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'/pictures/a614934e492c15e458ff950a50133af5ff2d73f2b53d7a49598b8e0519cdb23f.jpg'",
+          "cel": "this.matches('^(https://|/pictures/[0-9a-f]{64}\\\\.(jpg|png|webp)$)') && this.size() <= 2048"
+        },
+        {
+          "name": "material_type",
+          "ordinal": 5,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "cel": "this in ['recyclable', 'organic', 'eletronic', 'non_recyclable', 'trash']"
+        },
+        {
+          "name": "material_key",
+          "ordinal": 6,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'cat_recyclable'",
+          "cel": "this in ['cat_recyclable', 'cat_organic', 'cat_eletronic', 'cat_non_recyclable', 'cat_trash']"
+        },
+        {
+          "name": "address",
+          "ordinal": 7,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "cel": "this.trim().size() > 0 && this.size() <= 240"
+        },
+        {
+          "name": "phone_number",
+          "ordinal": 8,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "cel": "this.size() <= 40"
+        },
+        {
+          "name": "distance_km",
+          "ordinal": 9,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'0.8 km'",
+          "cel": "this.size() <= 24"
+        },
+        {
+          "name": "latitude",
+          "ordinal": 10,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'-23.5614'",
+          "cel": "this.size() <= 32"
+        },
+        {
+          "name": "longitude",
+          "ordinal": 11,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'-46.6559'",
+          "cel": "this.size() <= 32"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 12,
+          "retired": false,
+          "type": "timestamp",
+          "pk": false,
+          "required": true,
+          "default": "now()"
+        }
+      ],
+      "seed": [],
+      "durability": "live",
+      "level": "compensable",
+      "server": true,
+      "writers": [],
+      "indexes": [
+        {
+          "on": "material_type",
+          "using": "btree"
+        }
+      ],
+      "cel": {
+        "checks": {
+          "name": "char_length(regexp_replace(name, '^[\\s\\u0085\\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000]+|[\\s\\u0085\\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000]+$', '', 'g')) > 0 AND char_length(name) <= 120",
+          "img_url": "img_url ~ '^(https://|/pictures/[0-9a-f]{64}\\.(jpg|png|webp)$)' AND char_length(img_url) <= 2048",
+          "material_type": "material_type IN ('recyclable', 'organic', 'eletronic', 'non_recyclable', 'trash')",
+          "material_key": "material_key IN ('cat_recyclable', 'cat_organic', 'cat_eletronic', 'cat_non_recyclable', 'cat_trash')",
+          "address": "char_length(regexp_replace(address, '^[\\s\\u0085\\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000]+|[\\s\\u0085\\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000]+$', '', 'g')) > 0 AND char_length(address) <= 240",
+          "phone_number": "char_length(phone_number) <= 40",
+          "distance_km": "char_length(distance_km) <= 24",
+          "latitude": "char_length(latitude) <= 32",
+          "longitude": "char_length(longitude) <= 32"
+        },
+        "enums": {
+          "material_type": [
+            "recyclable",
+            "organic",
+            "eletronic",
+            "non_recyclable",
+            "trash"
+          ],
+          "material_key": [
+            "cat_recyclable",
+            "cat_organic",
+            "cat_eletronic",
+            "cat_non_recyclable",
+            "cat_trash"
+          ]
+        },
+        "bounds": {
+          "name": {
+            "sizeMin": 1,
+            "sizeMax": 120
+          },
+          "img_url": {
+            "sizeMax": 2048,
+            "regex": "^(https://|/pictures/[0-9a-f]{64}\\.(jpg|png|webp)$)"
+          },
+          "address": {
+            "sizeMin": 1,
+            "sizeMax": 240
+          },
+          "phone_number": {
+            "sizeMax": 40
+          },
+          "distance_km": {
+            "sizeMax": 24
+          },
+          "latitude": {
+            "sizeMax": 32
+          },
+          "longitude": {
+            "sizeMax": 32
+          }
+        }
+      },
+      "uniques": [],
+      "validations": {}
+    },
+    "GalleryView": {
+      "name": "GalleryView",
+      "ir": "GalleryView",
+      "table": "gallery_view",
+      "id": "0x9c8f7015554e5f89",
+      "fields": [
+        {
+          "name": "id",
+          "ordinal": 1,
+          "retired": false,
+          "type": "string",
+          "pk": true,
+          "required": true,
+          "cel": "this == 'view'"
+        },
+        {
+          "name": "tab",
+          "ordinal": 2,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'global'",
+          "cel": "this in ['global', 'my_items']"
+        },
+        {
+          "name": "preview_id",
+          "ordinal": 3,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'cc000000-0000-4000-8000-000000000001'",
+          "cel": "this.size() > 0 && this.size() <= 64"
+        },
+        {
+          "name": "category",
+          "ordinal": 4,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'all'",
+          "cel": "this in ['all', 'recyclable', 'organic', 'eletronic', 'non_recyclable', 'trash']"
+        },
+        {
+          "name": "query",
+          "ordinal": 5,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "''",
+          "cel": "this.size() <= 80"
+        }
+      ],
+      "seed": [
+        {
+          "id": "view",
+          "tab": "global",
+          "preview_id": "cc000000-0000-4000-8000-000000000001",
+          "category": "all",
+          "query": ""
+        }
+      ],
+      "durability": "tab",
+      "level": "ephemeral",
+      "server": false,
+      "writers": [
+        {
+          "by": "gallery",
+          "kind": "screen",
+          "ops": [
+            "reduce"
+          ]
+        }
+      ],
+      "cel": {
+        "checks": {},
+        "enums": {
+          "id": [
+            "view"
+          ],
+          "tab": [
+            "global",
+            "my_items"
+          ],
+          "category": [
+            "all",
+            "recyclable",
+            "organic",
+            "eletronic",
+            "non_recyclable",
+            "trash"
+          ]
+        },
+        "bounds": {
+          "preview_id": {
+            "sizeMin": 1,
+            "sizeMax": 64
+          },
+          "query": {
+            "sizeMax": 80
+          }
+        }
+      },
+      "uniques": [],
+      "validations": {}
+    },
+    "DetailView": {
+      "name": "DetailView",
+      "ir": "DetailView",
+      "table": "detail_view",
+      "id": "0xc0041b25806194d0",
+      "fields": [
+        {
+          "name": "id",
+          "ordinal": 1,
+          "retired": false,
+          "type": "string",
+          "pk": true,
+          "required": true,
+          "cel": "this == 'view'"
+        },
+        {
+          "name": "tab",
+          "ordinal": 2,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'discard'",
+          "cel": "this in ['discard', 'details', 'nearby']"
+        }
+      ],
+      "seed": [
+        {
+          "id": "view",
+          "tab": "discard"
+        }
+      ],
+      "durability": "tab",
+      "level": "ephemeral",
+      "server": false,
+      "writers": [],
+      "cel": {
+        "checks": {},
+        "enums": {
+          "id": [
+            "view"
+          ],
+          "tab": [
+            "discard",
+            "details",
+            "nearby"
+          ]
+        },
+        "bounds": {}
+      },
+      "uniques": [],
+      "validations": {}
+    },
+    "OnboardingStep": {
+      "name": "OnboardingStep",
+      "ir": "OnboardingStep",
+      "table": "onboarding_step",
+      "id": "0xa28e1047df44d53a",
+      "fields": [
+        {
+          "name": "id",
+          "ordinal": 1,
+          "retired": false,
+          "type": "string",
+          "pk": true,
+          "required": true,
+          "cel": "this == 'step'"
+        },
+        {
+          "name": "step",
+          "ordinal": 2,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'1'",
+          "cel": "this in ['1', '2', '3']"
+        },
+        {
+          "name": "visited",
+          "ordinal": 3,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'false'",
+          "cel": "this in ['false', 'true']"
+        }
+      ],
+      "seed": [],
+      "durability": "device",
+      "level": "ephemeral",
+      "server": false,
+      "writers": [
+        {
+          "by": "gallery",
+          "kind": "screen",
+          "ops": [
+            "reduce"
+          ]
+        },
+        {
+          "by": "intro",
+          "kind": "screen",
+          "ops": [
+            "reduce"
+          ]
+        }
+      ],
+      "cel": {
+        "checks": {},
+        "enums": {
+          "id": [
+            "step"
+          ],
+          "step": [
+            "1",
+            "2",
+            "3"
+          ],
+          "visited": [
+            "false",
+            "true"
+          ]
+        },
+        "bounds": {}
+      },
+      "uniques": [],
+      "validations": {}
+    },
+    "ScanDraft": {
+      "name": "ScanDraft",
+      "ir": "ScanDraft",
+      "table": "scan_draft",
+      "id": "0x877c9da90e137c4b",
+      "fields": [
+        {
+          "name": "id",
+          "ordinal": 1,
+          "retired": false,
+          "type": "string",
+          "pk": true,
+          "required": true,
+          "cel": "this == 'draft'"
+        },
+        {
+          "name": "image_url",
+          "ordinal": 2,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'/pictures/aab36d5a8153cdf5533467fffdb0fa843ed0db87f46bbd19f0f634eb2fde11fc.jpg'",
+          "cel": "this.matches('^(https://|data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$|/pictures/[0-9a-f]{64}\\\\.(jpg|png|webp|svg)$)') && this.size() <= 65536"
+        },
+        {
+          "name": "preset_label",
+          "ordinal": 3,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'camera_preset_pet'",
+          "cel": "this in ['camera_preset_pet', 'camera_preset_organic', 'camera_preset_ewaste', 'camera_preset_ceramic', 'camera_preset_aluminum']"
+        },
+        {
+          "name": "model",
+          "ordinal": 4,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'gemini'",
+          "cel": "this in ['gemini', 'openai']"
+        },
+        {
+          "name": "user_city",
+          "ordinal": 5,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'São Paulo'",
+          "cel": "this.size() <= 80"
+        },
+        {
+          "name": "segment_region",
+          "ordinal": 6,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'center'",
+          "cel": "this in ['center', 'neck', 'base', 'full']"
+        },
+        {
+          "name": "segment_status",
+          "ordinal": 7,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'ready'",
+          "cel": "this in ['ready', 'segmented']"
+        },
+        {
+          "name": "giou_score",
+          "ordinal": 8,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'camera_giou_center'",
+          "cel": "this in ['camera_giou_center', 'camera_giou_neck', 'camera_giou_base', 'camera_giou_full']"
+        },
+        {
+          "name": "bbox_summary",
+          "ordinal": 9,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'camera_bbox_center'",
+          "cel": "this in ['camera_bbox_center', 'camera_bbox_neck', 'camera_bbox_base', 'camera_bbox_full']"
+        },
+        {
+          "name": "user_language",
+          "ordinal": 10,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'en'",
+          "cel": "this in ['en', 'es', 'pt', 'ru', 'he', 'kk']"
+        }
+      ],
+      "seed": [
+        {
+          "id": "draft",
+          "image_url": "/pictures/aab36d5a8153cdf5533467fffdb0fa843ed0db87f46bbd19f0f634eb2fde11fc.jpg",
+          "preset_label": "camera_preset_pet",
+          "model": "gemini",
+          "user_city": "São Paulo",
+          "segment_region": "center",
+          "segment_status": "ready",
+          "giou_score": "camera_giou_center",
+          "bbox_summary": "camera_bbox_center",
+          "user_language": "en"
+        }
+      ],
+      "durability": "tab",
+      "level": "ephemeral",
+      "server": false,
+      "writers": [
+        {
+          "by": "camera",
+          "kind": "screen",
+          "ops": [
+            "reduce"
+          ]
+        }
+      ],
+      "cel": {
+        "checks": {},
+        "enums": {
+          "id": [
+            "draft"
+          ],
+          "preset_label": [
+            "camera_preset_pet",
+            "camera_preset_organic",
+            "camera_preset_ewaste",
+            "camera_preset_ceramic",
+            "camera_preset_aluminum"
+          ],
+          "model": [
+            "gemini",
+            "openai"
+          ],
+          "segment_region": [
+            "center",
+            "neck",
+            "base",
+            "full"
+          ],
+          "segment_status": [
+            "ready",
+            "segmented"
+          ],
+          "giou_score": [
+            "camera_giou_center",
+            "camera_giou_neck",
+            "camera_giou_base",
+            "camera_giou_full"
+          ],
+          "bbox_summary": [
+            "camera_bbox_center",
+            "camera_bbox_neck",
+            "camera_bbox_base",
+            "camera_bbox_full"
+          ],
+          "user_language": [
+            "en",
+            "es",
+            "pt",
+            "ru",
+            "he",
+            "kk"
+          ]
+        },
+        "bounds": {
+          "image_url": {
+            "sizeMax": 65536,
+            "regex": "^(https://|data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$|/pictures/[0-9a-f]{64}\\.(jpg|png|webp|svg)$)"
+          },
+          "user_city": {
+            "sizeMax": 80
+          }
+        }
+      },
+      "uniques": [],
+      "validations": {}
+    },
+    "LocalizedItem": {
+      "name": "LocalizedItem",
+      "ir": "LocalizedItem",
+      "table": "localized_item",
+      "id": "0xc21ecdf03eeea896",
+      "fields": [
+        {
+          "name": "id",
+          "ordinal": 1,
+          "retired": false,
+          "type": "string",
+          "pk": true,
+          "required": true,
+          "cel": "this.size() > 0 && this.size() <= 64"
+        },
+        {
+          "name": "locale",
+          "ordinal": 2,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'en'",
+          "cel": "this in ['en', 'es', 'pt', 'ru', 'he', 'kk']"
+        },
+        {
+          "name": "caption",
+          "ordinal": 3,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "cel": "this.size() <= 160"
+        },
+        {
+          "name": "original_caption",
+          "ordinal": 4,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "cel": "this.size() <= 160"
+        },
+        {
+          "name": "disposal_instructions",
+          "ordinal": 5,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "cel": "this.size() <= 2000"
+        },
+        {
+          "name": "translated",
+          "ordinal": 6,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'false'",
+          "cel": "this in ['true', 'false', 'pending', 'failed']"
+        },
+        {
+          "name": "object_material",
+          "ordinal": 7,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "''",
+          "cel": "this.size() <= 160"
+        },
+        {
+          "name": "sub_classifications",
+          "ordinal": 8,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "''",
+          "cel": "this.size() <= 500"
+        },
+        {
+          "name": "price",
+          "ordinal": 9,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "''",
+          "cel": "this.size() <= 64"
+        },
+        {
+          "name": "nearby_recycling_places",
+          "ordinal": 10,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "''",
+          "cel": "this.size() <= 600"
+        }
+      ],
+      "seed": [],
+      "durability": "tab",
+      "level": "ephemeral",
+      "server": false,
+      "writers": [
+        {
+          "by": "gallery",
+          "kind": "screen",
+          "ops": [
+            "reduce"
+          ]
+        },
+        {
+          "by": "detail",
+          "kind": "screen",
+          "ops": [
+            "reduce"
+          ]
+        },
+        {
+          "by": "landing",
+          "kind": "screen",
+          "ops": [
+            "reduce"
+          ]
+        },
+        {
+          "by": "camera",
+          "kind": "screen",
+          "ops": [
+            "reduce"
+          ]
+        }
+      ],
+      "cel": {
+        "checks": {},
+        "enums": {
+          "locale": [
+            "en",
+            "es",
+            "pt",
+            "ru",
+            "he",
+            "kk"
+          ],
+          "translated": [
+            "true",
+            "false",
+            "pending",
+            "failed"
+          ]
+        },
+        "bounds": {
+          "id": {
+            "sizeMin": 1,
+            "sizeMax": 64
+          },
+          "caption": {
+            "sizeMax": 160
+          },
+          "original_caption": {
+            "sizeMax": 160
+          },
+          "disposal_instructions": {
+            "sizeMax": 2000
+          },
+          "object_material": {
+            "sizeMax": 160
+          },
+          "sub_classifications": {
+            "sizeMax": 500
+          },
+          "price": {
+            "sizeMax": 64
+          },
+          "nearby_recycling_places": {
+            "sizeMax": 600
+          }
+        }
+      },
+      "uniques": [],
+      "validations": {}
+    },
+    "ClassifyJob": {
+      "access": {
+        "scope": "private",
+        "owner": "user_id"
+      },
+      "name": "ClassifyJob",
+      "ir": "ClassifyJob",
+      "read": "eager",
+      "table": "classify_job",
+      "id": "0xf5076130d2f50864",
+      "fields": [
+        {
+          "name": "id",
+          "ordinal": 1,
+          "retired": false,
+          "type": "uuid",
+          "pk": true,
+          "required": true
+        },
+        {
+          "name": "user_id",
+          "ordinal": 2,
+          "retired": false,
+          "type": "uuid",
+          "pk": false,
+          "required": true,
+          "ref": "app_user"
+        },
+        {
+          "name": "image_url",
+          "ordinal": 3,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "cel": "this.size() > 0 && this.size() <= 65536"
+        },
+        {
+          "name": "model",
+          "ordinal": 4,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'gemini'",
+          "cel": "this in ['gemini', 'openai']"
+        },
+        {
+          "name": "user_language",
+          "ordinal": 5,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'en'",
+          "cel": "this in ['en', 'es', 'pt', 'ru', 'he', 'kk']"
+        },
+        {
+          "name": "user_city",
+          "ordinal": 6,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'São Paulo'",
+          "cel": "this.size() <= 80"
+        },
+        {
+          "name": "latitude",
+          "ordinal": 7,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'-23.5614'",
+          "cel": "this.size() <= 32"
+        },
+        {
+          "name": "longitude",
+          "ordinal": 8,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'-46.6559'",
+          "cel": "this.size() <= 32"
+        },
+        {
+          "name": "status",
+          "ordinal": 9,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "'classifying'",
+          "cel": "this in ['classifying', 'done', 'failed']"
+        },
+        {
+          "name": "result_json",
+          "ordinal": 10,
+          "retired": false,
+          "type": "string",
+          "pk": false,
+          "required": true,
+          "default": "''",
+          "cel": "this.size() <= 8192"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 11,
+          "retired": false,
+          "type": "timestamp",
+          "pk": false,
+          "required": true,
+          "default": "now()"
+        }
+      ],
+      "seed": [],
+      "durability": "server",
+      "level": "replicated",
+      "server": true,
+      "writers": [
+        {
+          "by": "ClassifyJobMachine",
+          "kind": "machine",
+          "ops": [
+            "update"
+          ]
+        }
+      ],
+      "cel": {
+        "checks": {
+          "image_url": "char_length(image_url) > 0 AND char_length(image_url) <= 65536",
+          "model": "model IN ('gemini', 'openai')",
+          "user_language": "user_language IN ('en', 'es', 'pt', 'ru', 'he', 'kk')",
+          "user_city": "char_length(user_city) <= 80",
+          "latitude": "char_length(latitude) <= 32",
+          "longitude": "char_length(longitude) <= 32",
+          "status": "status IN ('classifying', 'done', 'failed')",
+          "result_json": "char_length(result_json) <= 8192"
+        },
+        "enums": {
+          "model": [
+            "gemini",
+            "openai"
+          ],
+          "user_language": [
+            "en",
+            "es",
+            "pt",
+            "ru",
+            "he",
+            "kk"
+          ],
+          "status": [
+            "classifying",
+            "done",
+            "failed"
+          ]
+        },
+        "bounds": {
+          "image_url": {
+            "sizeMin": 1,
+            "sizeMax": 65536
+          },
+          "user_city": {
+            "sizeMax": 80
+          },
+          "latitude": {
+            "sizeMax": 32
+          },
+          "longitude": {
+            "sizeMax": 32
+          },
+          "result_json": {
+            "sizeMax": 8192
+          }
+        }
+      },
+      "uniques": [],
+      "validations": {}
+    }
+  },
+  "reducers": {},
+  "machines": {
+    "ClassifyJobMachine": {
+      "name": "ClassifyJobMachine",
+      "ir": "ClassifyJobMachine",
+      "entity": "ClassifyJob",
+      "guards": {},
+      "level": "external",
+      "hatches": [],
+      "field": "status",
+      "initial": "classifying",
+      "states": {
+        "classifying": {
+          "invoke": {
+            "src": "classify-waste",
+            "onDone": {
+              "target": "done",
+              "actions": [
+                {
+                  "assign": {
+                    "result_json": {
+                      "raw": "COALESCE(outcome->'data'->>'result_json', '')"
+                    }
+                  }
+                }
+              ]
+            },
+            "onError": {
+              "target": "failed",
+              "actions": [
+                {
+                  "assign": {
+                    "result_json": {
+                      "raw": "COALESCE(outcome->>'kind', 'failed')"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "done": {
+          "type": "final"
+        },
+        "failed": {
+          "type": "final"
+        }
+      }
+    }
+  },
+  "hatches": {},
+  "rawMigrations": [
+    {
+      "name": "003_rls.sql",
+      "src": "services/database/sql/003_rls.txt"
+    },
+    {
+      "name": "013_me_provision.sql",
+      "src": "services/database/sql/013_me_provision.sql"
+    },
+    {
+      "name": "014_default_privileges.sql",
+      "src": "services/database/sql/014_default_privileges.sql"
+    },
+    {
+      "name": "015_classify_request.sql",
+      "src": "services/database/sql/015_classify_request.sql"
+    },
+    {
+      "name": "016_translate_item.sql",
+      "src": "services/database/sql/016_translate_item.sql"
+    },
+    {
+      "name": "017_owner_writes.sql",
+      "src": "services/database/sql/011_owner_writes.sql"
+    },
+    {
+      "name": "018_me_readonly.sql",
+      "src": "services/database/sql/012_me_readonly.sql"
+    },
+    {
+      "name": "020_demo_items.sql",
+      "src": "services/database/sql/020_demo_items.sql"
+    }
+  ],
+  "duckstreams": {},
+  "effects": {
+    "classify-waste": {
+      "name": "classify-waste",
+      "ir": "classify-waste",
+      "key": [
+        "id"
+      ],
+      "input": {
+        "image_url": "NEW.image_url",
+        "model": "NEW.model",
+        "user_language": "NEW.user_language",
+        "user_city": "NEW.user_city"
+      },
+      "sink": {
+        "ai": "text",
+        "tier": "heavy",
+        "idempotent": true
+      },
+      "note": "tsbifrost multimodal vision classification of a captured waste specimen photo into category, material composition, and localized disposal instructions",
+      "attempts": 5
+    }
+  }
+}

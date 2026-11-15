@@ -1,0 +1,107 @@
+<!-- landing — ir: #landing. Iris Campaigns showcase and live community waste specimens. -->
+<section class="screen" data-screen="landing">
+  <p class="offline role-meta" data-text="{msg.offline}">Iris cannot reach the server right now.</p>
+
+  <div class="skeleton" aria-hidden="true">
+    <div class="skel landing-skel"></div>
+  </div>
+
+  <div class="landing-body">
+    <header class="lp-hero panel">
+      <div class="lp-hero-inner">
+        <img class="lp-logo" src="/pictures/eb9dd1c0c59552ec9fa6a11854486bd95b6c4ab60cf09c21cf4a17a4a9d52822.svg" alt="" width="88" height="88">
+        <h1 class="lp-title role-title" data-text="{msg.lp_heading}">Iris Campaigns</h1>
+        <p class="lp-subtitle role-body" data-text="{msg.lp_subheading}">Not sure if it is recyclable? Just snap a photo — Iris classifies your waste, explains how to discard it, and locates neighbourhood drop-off centers.</p>
+        <div class="lp-cta-row">
+          <a class="btn-primary lp-cta role-label" data-route="gallery" data-text="{msg.lp_try_free_cta}">Explore Field Guide</a>
+          <a class="btn-secondary lp-cta role-label" data-route="intro" data-text="{msg.lp_how_it_works_cta}">See How Iris Works →</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="panel campaigns-panel">
+      <h2 class="band role-band" data-text="{msg.lp_campaigns_band}">Campaign Tracks</h2>
+      <div class="campaign-grid">
+        <article class="campaign-card">
+          <img class="campaign-img" src="/pictures/895f93a9be99e1164e158ab6172482408ef5aea9436fb162e42b34702a9d272d.png" alt="" width="240" height="180">
+          <div class="campaign-copy">
+            <span class="chip role-label" data-text="{msg.lp_camp1_channel}">Google Search</span>
+            <h3 class="campaign-title role-band" data-text="{msg.lp_camp1_title}">Snap &amp; Recycle</h3>
+            <p class="campaign-hook role-body" data-text="{msg.lp_camp1_hook}">Not sure if it is recyclable? Just snap a photo.</p>
+            <p class="campaign-audience role-meta" data-text="{msg.lp_camp1_audience}">Audience: People searching how to recycle specific household items</p>
+          </div>
+        </article>
+
+        <article class="campaign-card">
+          <img class="campaign-img" src="/pictures/8ce8daf1ad4c745c831b741ebeddeb8002241a87ba48ae6c9f89cd491c6d656d.png" alt="" width="240" height="180">
+          <div class="campaign-copy">
+            <span class="chip role-label" data-text="{msg.lp_camp2_channel}">Facebook / Instagram</span>
+            <h3 class="campaign-title role-band" data-text="{msg.lp_camp2_title}">Small Choices, Big Impact</h3>
+            <p class="campaign-hook role-body" data-text="{msg.lp_camp2_hook}">Every piece of waste you classify correctly keeps plastics and batteries out of waterways.</p>
+            <p class="campaign-audience role-meta" data-text="{msg.lp_camp2_audience}">Audience: Eco-conscious neighbourhoods and circular-economy communities</p>
+          </div>
+        </article>
+
+        <article class="campaign-card">
+          <img class="campaign-img" src="/pictures/caca4de2e84a6a49a959f2a6952cb1b0abbccd1ae7ee6e3715aebd9e5d03f550.png" alt="" width="240" height="180">
+          <div class="campaign-copy">
+            <span class="chip role-label" data-text="{msg.lp_camp3_channel}">Google Display / LinkedIn</span>
+            <h3 class="campaign-title role-band" data-text="{msg.lp_camp3_title}">AI for Recycling</h3>
+            <p class="campaign-hook role-body" data-text="{msg.lp_camp3_hook}">Use computer vision and multilingual sorting guides to navigate urban recycling streams.</p>
+            <p class="campaign-audience role-meta" data-text="{msg.lp_camp3_audience}">Audience: Municipal cooperatives, campuses, and sustainability teams</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel showcase-panel">
+      <h2 class="band role-band" data-text="{msg.lp_showcase_heading}">Live Community Specimens</h2>
+      <ul class="showcase-grid" data-live="trash_item"
+          data-filter="tagged_as_inappropriate=eq.false"
+          data-order="created_at.desc,id.asc"
+          data-empty="{msg.gallery_empty}"
+          data-reads="trash_item,trash_item_translation,localized_item,me"
+          data-on-mutation="localize_content">
+        <template data-item>
+          <li class="showcase-card" data-category="{label}">
+            <a class="showcase-link" data-route="detail" data-param-id="{id}">
+              <img class="showcase-thumb" src="{picture}" alt="" width="64" height="64">
+              <div class="showcase-info">
+                <span class="chip role-label" data-text="{msg[label_key]}"></span>
+                <h3 class="showcase-caption showcase-caption-fallback role-band" data-text="{caption}"></h3>
+                <p class="showcase-material showcase-material-fallback role-meta" data-text="{object_material}"></p>
+                <div class="showcase-localized-slot" data-live="localized_item" data-filter="id=eq.{id}" data-empty="">
+                  <template data-item>
+                    <div class="showcase-localized-meta" data-translated="{translated}" data-locale="{locale}">
+                      <h3 class="showcase-caption role-band" data-text="{caption}"></h3>
+                      <p class="showcase-material role-meta" data-text="{object_material}"></p>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </a>
+          </li>
+        </template>
+      </ul>
+      <ul class="landing-translations-sync" data-live="trash_item_translation"
+          data-order="language.asc,id.asc"
+          data-empty=""
+          data-reads="trash_item,trash_item_translation,localized_item,me"
+          data-on-mutation="localize_content" hidden>
+        <template data-item>
+          <li data-text="{id}"></li>
+        </template>
+      </ul>
+      <ul id="translation-timeout" data-live="localized_item"
+          data-filter="translated=eq.pending"
+          data-order="id.asc"
+          data-empty=""
+          data-reads="localized_item,trash_item_translation"
+          data-on-mutation="localize_content" hidden>
+        <template data-item>
+          <li data-text="{id}"></li>
+        </template>
+      </ul>
+    </section>
+  </div>
+</section>

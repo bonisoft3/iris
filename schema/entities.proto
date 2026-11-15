@@ -1,0 +1,155 @@
+syntax = "proto3";
+package pronto.entities;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+
+message AppUser {
+  optional string id = 1 [json_name = "id"];
+  optional string handle = 2 [json_name = "handle"];
+  optional string display_name = 3 [json_name = "display_name"];
+  reserved 4;
+  reserved "home_address";
+  reserved 5;
+  reserved "address_complement";
+  reserved 6;
+  reserved "phone_number";
+  optional string preferred_model = 7 [json_name = "preferred_model"];
+  google.protobuf.Timestamp created_at = 8 [json_name = "created_at"];
+}
+
+message ClassifyJob {
+  optional string id = 1 [json_name = "id"];
+  optional string user_id = 2 [json_name = "user_id"];
+  optional string image_url = 3 [json_name = "image_url"];
+  optional string model = 4 [json_name = "model"];
+  optional string user_language = 5 [json_name = "user_language"];
+  optional string user_city = 6 [json_name = "user_city"];
+  optional string latitude = 7 [json_name = "latitude"];
+  optional string longitude = 8 [json_name = "longitude"];
+  optional string status = 9 [json_name = "status"];
+  optional string result_json = 10 [json_name = "result_json"];
+  google.protobuf.Timestamp created_at = 11 [json_name = "created_at"];
+}
+
+message DetailView {
+  optional string id = 1 [json_name = "id"];
+  optional string tab = 2 [json_name = "tab"];
+}
+
+message DisposalPlace {
+  optional string id = 1 [json_name = "id"];
+  optional string user_id = 2 [json_name = "user_id"];
+  optional string name = 3 [json_name = "name"];
+  optional string img_url = 4 [json_name = "img_url"];
+  optional string material_type = 5 [json_name = "material_type"];
+  optional string material_key = 6 [json_name = "material_key"];
+  optional string address = 7 [json_name = "address"];
+  optional string phone_number = 8 [json_name = "phone_number"];
+  optional string distance_km = 9 [json_name = "distance_km"];
+  optional string latitude = 10 [json_name = "latitude"];
+  optional string longitude = 11 [json_name = "longitude"];
+  google.protobuf.Timestamp created_at = 12 [json_name = "created_at"];
+}
+
+message GalleryView {
+  optional string id = 1 [json_name = "id"];
+  optional string tab = 2 [json_name = "tab"];
+  optional string preview_id = 3 [json_name = "preview_id"];
+  optional string category = 4 [json_name = "category"];
+  optional string query = 5 [json_name = "query"];
+}
+
+message LocalizedItem {
+  optional string id = 1 [json_name = "id"];
+  optional string locale = 2 [json_name = "locale"];
+  optional string caption = 3 [json_name = "caption"];
+  optional string original_caption = 4 [json_name = "original_caption"];
+  optional string disposal_instructions = 5 [json_name = "disposal_instructions"];
+  optional string translated = 6 [json_name = "translated"];
+  optional string object_material = 7 [json_name = "object_material"];
+  optional string sub_classifications = 8 [json_name = "sub_classifications"];
+  optional string price = 9 [json_name = "price"];
+  optional string nearby_recycling_places = 10 [json_name = "nearby_recycling_places"];
+}
+
+message Me {
+  optional string id = 1 [json_name = "id"];
+  optional string handle = 2 [json_name = "handle"];
+}
+
+message OnboardingStep {
+  optional string id = 1 [json_name = "id"];
+  optional string step = 2 [json_name = "step"];
+  optional string visited = 3 [json_name = "visited"];
+}
+
+message ScanDraft {
+  optional string id = 1 [json_name = "id"];
+  optional string image_url = 2 [json_name = "image_url"];
+  optional string preset_label = 3 [json_name = "preset_label"];
+  optional string model = 4 [json_name = "model"];
+  optional string user_city = 5 [json_name = "user_city"];
+  optional string segment_region = 6 [json_name = "segment_region"];
+  optional string segment_status = 7 [json_name = "segment_status"];
+  optional string giou_score = 8 [json_name = "giou_score"];
+  optional string bbox_summary = 9 [json_name = "bbox_summary"];
+  optional string user_language = 10 [json_name = "user_language"];
+}
+
+message TrackRequest {
+  optional string id = 1 [json_name = "id"];
+  optional string user_id = 2 [json_name = "user_id"];
+  optional string image_url = 3 [json_name = "image_url"];
+  optional string model = 4 [json_name = "model"];
+  optional string status = 5 [json_name = "status"];
+  optional string user_language = 6 [json_name = "user_language"];
+  optional string user_city = 7 [json_name = "user_city"];
+  optional string latitude = 8 [json_name = "latitude"];
+  optional string longitude = 9 [json_name = "longitude"];
+  google.protobuf.Timestamp created_at = 10 [json_name = "created_at"];
+}
+
+message TranslationRequest {
+  optional string id = 1 [json_name = "id"];
+  optional string item_id = 2 [json_name = "item_id"];
+  optional string user_id = 3 [json_name = "user_id"];
+  optional string language = 4 [json_name = "language"];
+  google.protobuf.Timestamp created_at = 5 [json_name = "created_at"];
+}
+
+message TrashItem {
+  optional string id = 1 [json_name = "id"];
+  optional string request_id = 2 [json_name = "request_id"];
+  optional string user_id = 3 [json_name = "user_id"];
+  optional string picture = 4 [json_name = "picture"];
+  optional string caption = 5 [json_name = "caption"];
+  optional string label = 6 [json_name = "label"];
+  optional string label_key = 7 [json_name = "label_key"];
+  optional string object_material = 8 [json_name = "object_material"];
+  optional string disposal_instructions = 9 [json_name = "disposal_instructions"];
+  optional string sub_classifications = 10 [json_name = "sub_classifications"];
+  optional string price = 11 [json_name = "price"];
+  optional bool is_disposal_place = 12 [json_name = "is_disposal_place"];
+  optional string nearby_recycling_places = 13 [json_name = "nearby_recycling_places"];
+  optional bool tagged_as_inappropriate = 14 [json_name = "tagged_as_inappropriate"];
+  optional string user_language = 15 [json_name = "user_language"];
+  optional string latitude = 16 [json_name = "latitude"];
+  optional string longitude = 17 [json_name = "longitude"];
+  google.protobuf.Timestamp created_at = 18 [json_name = "created_at"];
+  optional string search_text = 19 [json_name = "search_text"];
+}
+
+message TrashItemTranslation {
+  optional string id = 1 [json_name = "id"];
+  optional string item_id = 2 [json_name = "item_id"];
+  optional string language = 3 [json_name = "language"];
+  optional string caption = 4 [json_name = "caption"];
+  optional string disposal_instructions = 5 [json_name = "disposal_instructions"];
+  google.protobuf.Timestamp created_at = 6 [json_name = "created_at"];
+  optional string object_material = 7 [json_name = "object_material"];
+  optional string sub_classifications = 8 [json_name = "sub_classifications"];
+  optional string price = 9 [json_name = "price"];
+  optional string nearby_recycling_places = 10 [json_name = "nearby_recycling_places"];
+}

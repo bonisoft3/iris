@@ -1,0 +1,47 @@
+# generated from bayt.cue — do not edit
+services:
+  iris-smollm3:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.smollm3
+      target: smollm3
+      tags:
+      - bayt-iris-smollm3:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+      - bayt-iris-smollm3:latest
+      args:
+        BAYT_DIR: ${MONOREPO_COMPOSE_MODE:+apps/iris}
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+    environment:
+      PORT: "11434"
+      BAYT_LOCAL_MOCK_AI: ${BAYT_LOCAL_MOCK_AI:-1}
+      OLLAMA_UPSTREAM: ${OLLAMA_UPSTREAM:-http://host.docker.internal:11434}
+    healthcheck:
+      test:
+      - CMD
+      - httpcheck
+      - http://127.0.0.1:11434/api/tags
+      interval: 1s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+      start_interval: 200ms
+    image: bayt-iris-smollm3:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default:
+        aliases:
+        - smollm3
+      airlock-egress:
+        aliases:
+        - smollm3
+  iris-smollm3_bayt:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.smollm3
+      target: smollm3_bayt
+      args:
+        BAYT_DIR: ${MONOREPO_COMPOSE_MODE:+apps/iris}
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+    image: bayt-iris-smollm3_bayt:latest
+    scale: 0

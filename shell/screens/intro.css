@@ -1,0 +1,18 @@
+@import "./shared/iris.css";
+
+/* intro — ir: #intro. Three-step onboarding walkthrough. */
+[data-screen="intro"] {
+  padding-block-end: 0;
+}
+[data-screen="intro"] .intro-shell {
+  container-type: inline-size;
+}
+[data-screen="intro"][data-state="loading"] .skeleton {
+  display: block;
+}
+[data-screen="intro"][data-state="loading"] .intro-shell {
+  display: none;
+}
+[data-screen="intro"] .intro-skel {
+  min-height: calc(var(--size-14) * 2);
+}

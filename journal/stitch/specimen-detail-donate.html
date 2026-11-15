@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Specimen #GLS-7049 — Community Reuse &amp; Donate | Iris Recovery OS</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts: Newsreader (Editorial Serif), Plus Jakarta Sans (Clean UI), Inter (Body), JetBrains Mono (Technical) -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&amp;family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-primary": "#ffffff",
+            "tertiary": "#4f5e58",
+            "surface-container": "#eaedff",
+            "on-tertiary-container": "#eefff7",
+            "on-tertiary-fixed-variant": "#3b4a44",
+            "surface-container-high": "#e2e7ff",
+            "primary-fixed": "#92f5d8",
+            "tertiary-fixed-dim": "#bacac3",
+            "outline": "#6e7a75",
+            "on-primary-fixed-variant": "#005141",
+            "surface": "#faf8ff",
+            "inverse-on-surface": "#eef0ff",
+            "on-secondary-fixed": "#002019",
+            "on-secondary-container": "#196f5c",
+            "on-error": "#ffffff",
+            "secondary-fixed": "#a3f2d9",
+            "on-secondary-fixed-variant": "#005141",
+            "on-error-container": "#93000a",
+            "background": "#faf8ff",
+            "outline-variant": "#bdc9c3",
+            "primary-fixed-dim": "#76d8bc",
+            "on-surface-variant": "#3e4945",
+            "secondary": "#116b57",
+            "on-tertiary-fixed": "#101e1a",
+            "surface-container-low": "#f2f3ff",
+            "secondary-fixed-dim": "#87d5be",
+            "surface-container-highest": "#dae2fd",
+            "primary": "#006854",
+            "tertiary-container": "#677771",
+            "inverse-primary": "#76d8bc",
+            "secondary-container": "#a0efd6",
+            "on-primary-container": "#effff7",
+            "on-secondary": "#ffffff",
+            "tertiary-fixed": "#d5e6df",
+            "on-background": "#131b2e",
+            "surface-tint": "#006b57",
+            "surface-variant": "#dae2fd",
+            "on-tertiary": "#ffffff",
+            "error-container": "#ffdad6",
+            "error": "#ba1a1a",
+            "on-primary-fixed": "#002019",
+            "primary-container": "#0a836b",
+            "on-surface": "#131b2e",
+            "surface-bright": "#faf8ff",
+            "inverse-surface": "#283044",
+            "surface-dim": "#d2d9f4",
+            "surface-container-lowest": "#ffffff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "margin-mobile": "1rem",
+            "space-xs": "0.25rem",
+            "gutter-mobile": "1rem",
+            "space-sm": "0.5rem",
+            "space-md": "1rem",
+            "margin": "2rem",
+            "space-lg": "1.5rem",
+            "gutter": "1.5rem",
+            "space-xl": "2.5rem"
+          },
+          "fontFamily": {
+            "headline-xl": ["Plus Jakarta Sans"],
+            "body-sm": ["Inter"],
+            "headline-lg-mobile": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "label-sm": ["Plus Jakarta Sans"],
+            "headline-xl-mobile": ["Plus Jakarta Sans"],
+            "body-md": ["Inter"],
+            "body-lg": ["Inter"],
+            "label-md": ["Plus Jakarta Sans"],
+            "label-lg": ["Plus Jakarta Sans"],
+            "serif": ["Newsreader", "Georgia", "serif"],
+            "mono": ["JetBrains Mono", "monospace"]
+          },
+          "fontSize": {
+            "headline-xl": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "body-sm": ["12px", { "lineHeight": "18px", "fontWeight": "400" }],
+            "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.015em", "fontWeight": "700" }],
+            "headline-sm": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "label-sm": ["10px", { "lineHeight": "14px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+            "headline-xl-mobile": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "700" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    /* Material Symbols setup */
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    
+    /* Ecological Iris Precision Custom Styling overrides for warm alabaster baseline */
+    :root {
+      --canvas-alabaster: #fcf8f1;
+      --card-sage-mist: #eef2e6;
+      --card-crisp-cream: #ffffff;
+      --border-hairline: #d5dccb;
+      --ink-deep-moss: #13160f;
+      --accent-forest-emerald: #255c27;
+      --accent-forest-hover: #1e4b20;
+    }
+
+    body {
+      background-color: var(--canvas-alabaster);
+      color: var(--ink-deep-moss);
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .font-editorial {
+      font-family: 'Newsreader', Georgia, serif;
+    }
+
+    .border-hairline {
+      border-color: var(--border-hairline);
+    }
+    
+    .bg-sage-mist {
+      background-color: var(--card-sage-mist);
+    }
+
+    .bg-forest-emerald {
+      background-color: var(--accent-forest-emerald);
+    }
+
+    .bg-forest-emerald:hover {
+      background-color: var(--accent-forest-hover);
+    }
+
+    .text-forest-emerald {
+      color: var(--accent-forest-emerald);
+    }
+
+    .border-forest-emerald {
+      border-color: var(--accent-forest-emerald);
+    }
+
+    /* Soft tactile ambient shadows */
+    .shadow-eco-sm {
+      box-shadow: 0 2px 8px -1px rgba(37, 92, 39, 0.05), 0 1px 3px 0 rgba(19, 22, 15, 0.04);
+    }
+    .shadow-eco-md {
+      box-shadow: 0 8px 24px -4px rgba(37, 92, 39, 0.07), 0 2px 6px -1px rgba(19, 22, 15, 0.03);
+    }
+
+    /* Subtle custom details disclosure marker styling */
+    details summary::-webkit-details-marker {
+      display: none;
+    }
+    details summary {
+      list-style: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-secondary-container selection:text-on-secondary-container">
+<!-- ================= TOP NAVIGATION BAR (Shared Component Execution) ================= -->
+<!-- style_shell_layout: sticky top-0 z-40 flex items-center justify-between px-margin w-full h-16 -->
+<!-- style_bg_color: bg-primary dark:bg-inverse-surface, style_primary_color: text-on-primary -->
+<!-- style_separation_logic: border-b border-primary-container -->
+<header class="sticky top-0 z-40 flex items-center justify-between px-4 md:px-margin w-full h-16 bg-primary text-on-primary border-b border-primary-container shadow-sm">
+<!-- Left Cluster: Brand & Search -->
+<div class="flex items-center space-x-6">
+<div class="flex items-center space-x-2.5">
+<span class="flex items-center justify-center w-8 h-8 rounded-lg bg-primary-container text-on-primary font-bold text-base border border-white/20">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">eco</span>
+</span>
+<span class="font-headline-sm text-headline-sm font-bold text-on-primary tracking-tight">Iris Circular</span>
+</div>
+<!-- Search Bar (on_left) -->
+<div class="hidden lg:flex items-center relative w-64 xl:w-80">
+<span class="material-symbols-outlined absolute left-3 text-on-primary/60 text-lg">search</span>
+<input class="w-full h-9 pl-9 pr-4 text-xs rounded-xl bg-white/10 text-on-primary placeholder:text-on-primary/60 border border-white/15 focus:outline-none focus:ring-2 focus:ring-primary-fixed focus:bg-white/15 transition-all" placeholder="Search specimens, IDs, or hubs..." type="text"/>
+</div>
+</div>
+<!-- Center Navigation Links -->
+<nav class="hidden md:flex items-center space-x-1 lg:space-x-2">
+<!-- Active Tab: Feed (closest intent to specimen stream inspection) -->
+<a class="text-on-primary bg-primary-container rounded-xl px-3 py-1.5 font-label-lg text-label-lg hover:bg-primary-container/80 transition-colors duration-150 active:scale-[0.98]" href="#feed">
+        Feed
+      </a>
+<a class="text-on-primary/80 hover:text-on-primary px-3 py-1.5 font-label-lg text-label-lg hover:bg-primary-container/80 rounded-xl transition-colors duration-150 active:scale-[0.98]" href="#live-cameras">
+        Live Cameras
+      </a>
+<a class="text-on-primary/80 hover:text-on-primary px-3 py-1.5 font-label-lg text-label-lg hover:bg-primary-container/80 rounded-xl transition-colors duration-150 active:scale-[0.98]" href="#recovery-hubs">
+        Recovery Hubs
+      </a>
+<a class="text-on-primary/80 hover:text-on-primary px-3 py-1.5 font-label-lg text-label-lg hover:bg-primary-container/80 rounded-xl transition-colors duration-150 active:scale-[0.98]" href="#analytics">
+        Analytics
+      </a>
+</nav>
+<!-- Trailing Actions & Operator Profile -->
+<div class="flex items-center space-x-3">
+<button class="hidden sm:inline-flex items-center space-x-1.5 bg-primary-container text-on-primary px-3.5 py-1.5 rounded-xl font-label-lg text-label-lg hover:bg-primary-container/80 transition-colors shadow-sm active:scale-[0.98]">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+<span>Register Hub</span>
+</button>
+<div class="flex items-center space-x-1 text-on-primary/80">
+<button class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-primary-container/60 hover:text-on-primary transition-colors" title="Notifications">
+<span class="material-symbols-outlined text-xl">notifications</span>
+</button>
+<button class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-primary-container/60 hover:text-on-primary transition-colors" title="Tune Controls">
+<span class="material-symbols-outlined text-xl">tune</span>
+</button>
+</div>
+<div class="flex items-center space-x-2 pl-2 border-l border-white/20">
+<div class="w-8 h-8 rounded-full bg-primary-fixed text-on-primary-fixed font-semibold text-xs flex items-center justify-center border border-white/30" title="Operator profile avatar">
+          OP
+        </div>
+</div>
+</div>
+</header>
+<!-- ================= BREADCRUMBS & CONTEXT SUB-BAR ================= -->
+<div class="w-full bg-[#f6f2e9] border-b border-hairline py-2.5 px-4 md:px-margin">
+<div class="max-w-[1400px] mx-auto flex flex-wrap items-center justify-between gap-2">
+<div class="flex items-center space-x-2 font-mono text-xs text-[#525e4f]">
+<a class="hover:text-forest-emerald hover:underline flex items-center gap-1" href="#feed">
+<span class="material-symbols-outlined text-sm">dashboard</span>
+          Specimen Feed
+        </a>
+<span>/</span>
+<span class="flex items-center gap-1 text-[#2d3a2b] font-medium">
+<span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+          Glass Stream
+        </span>
+<span>/</span>
+<span class="text-forest-emerald font-semibold bg-emerald-100/60 px-2 py-0.5 rounded border border-emerald-300/60">
+          Specimen #GLS-7049
+        </span>
+</div>
+<div class="flex items-center space-x-3 text-xs text-[#525e4f]">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-emerald-700">verified</span>
+          Iris AI Vision Class: <strong>High Purity Borosilicate / Amber Soda-Lime</strong>
+</span>
+<span class="hidden sm:inline text-stone-300">•</span>
+<span class="hidden sm:inline font-mono">Telemetry: Node #3 (Optical Sorter Cam-04)</span>
+</div>
+</div>
+</div>
+<!-- ================= MAIN CONTAINER ================= -->
+<main class="flex-grow w-full max-w-[1400px] mx-auto px-4 md:px-margin py-6 md:py-8 space-y-6">
+<!-- ================= 1. TOP SPECIMEN CONTEXT SUMMARY BAR ================= -->
+<section class="bg-white border border-hairline rounded-2xl p-4 md:p-6 shadow-eco-sm">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+<!-- Specimen Image Preview & Verification badge -->
+<div class="lg:col-span-4 flex items-center space-x-4">
+<div class="relative w-28 h-28 md:w-32 md:h-32 flex-shrink-0 rounded-xl overflow-hidden border border-hairline bg-stone-100 shadow-inner group">
+<img alt="Vintage Amber Apothecary Glass Jar (500ml) on laboratory counter" class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOn4zt0HQsD8BUjGBxfIb0nXhsiGiRn33HpIup9fgOqC9CAYq-rywwDiiyNglZr1vJSK0WQZVcszflHveujr4iSeVnGk2E2a6N5kACrvmq8_oq6vM7f5G9EsTMkTEw046StuHnND8T5yKPuwy4YDEIP3pRjrkU5apBZ-pmrjJRJaL3em5h3DQfXH2F6iachX-4-9MP71OeNa3kBLeJUbRjfKzaYQjYdo_E8YwR8fj7fdWqJO-zEvC-v9fl4NxS88ceM8djwZUdKgw"/>
+<div class="absolute top-1.5 left-1.5 bg-black/60 backdrop-blur-sm text-white font-mono text-[9px] px-1.5 py-0.5 rounded flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              Optical Rec 99%
+            </div>
+</div>
+<div class="flex flex-col justify-center space-y-1.5">
+<div class="flex flex-wrap items-center gap-1.5">
+<span class="inline-flex items-center gap-1 bg-[#ecfdf5] text-forest-emerald border border-emerald-300/70 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full font-mono">
+<span class="material-symbols-outlined text-[13px]" style="font-variation-settings: 'FILL' 1;">autorenew</span>
+                Reusable Container
+              </span>
+<span class="bg-[#f0f9ff] text-[#0369a1] border border-sky-200 text-[10px] font-mono px-2 py-0.5 rounded-full">
+                #70 Cullet
+              </span>
+</div>
+<h1 class="font-editorial text-2xl md:text-3xl text-[#13160f] font-normal leading-tight">
+              Vintage Amber Apothecary Jar (500ml)
+            </h1>
+<p class="text-xs text-[#525e4f] font-medium flex items-center gap-2">
+<span>Lot: SP-2024-098</span>
+<span class="text-stone-300">•</span>
+<span class="text-emerald-800 font-semibold">Priority: Direct Local Reuse</span>
+</p>
+</div>
+</div>
+<!-- Specimen Key Metrics Dashboard (Middle 5 Cols) -->
+<div class="lg:col-span-5 grid grid-cols-3 gap-3 border-y lg:border-y-0 lg:border-x border-hairline py-3 lg:py-0 lg:px-6">
+<div class="flex flex-col">
+<span class="font-mono text-[10px] text-stone-500 uppercase tracking-wider">Net Mass</span>
+<span class="font-headline-sm text-headline-sm font-bold text-[#13160f] mt-0.5 font-mono">410<span class="text-xs font-normal text-stone-500 ml-0.5">g</span></span>
+<span class="text-[11px] text-stone-500 mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs text-stone-400">scale</span> Heavy amber flint
+            </span>
+</div>
+<div class="flex flex-col">
+<span class="font-mono text-[10px] text-stone-500 uppercase tracking-wider">Avoided CO₂e</span>
+<span class="font-headline-sm text-headline-sm font-bold text-forest-emerald mt-0.5 font-mono">310<span class="text-xs font-normal text-forest-emerald ml-0.5">g</span></span>
+<span class="text-[11px] text-emerald-800 mt-1 flex items-center gap-1 font-medium">
+<span class="material-symbols-outlined text-xs">savings</span> Net 100% saved
+            </span>
+</div>
+<div class="flex flex-col">
+<span class="font-mono text-[10px] text-stone-500 uppercase tracking-wider">Sanitary Grade</span>
+<span class="font-headline-sm text-headline-sm font-bold text-[#13160f] mt-0.5">Grade A</span>
+<span class="text-[11px] text-stone-600 mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs text-emerald-600">health_and_safety</span> Food/Preserve safe
+            </span>
+</div>
+</div>
+<!-- Drop-off Hubs & Centers summary strip (Right 3 cols) -->
+<div class="lg:col-span-3 bg-sage-mist/60 border border-hairline rounded-xl p-3 flex flex-col justify-between space-y-2">
+<div class="flex items-center justify-between text-xs font-semibold text-[#13160f]">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-forest-emerald">storefront</span>
+              Nearby Drop-off Hubs
+            </span>
+<span class="font-mono text-[10px] text-stone-500">2 Verified</span>
+</div>
+<div class="space-y-1.5">
+<div class="flex items-center justify-between text-xs bg-white/80 px-2.5 py-1.5 rounded-lg border border-hairline">
+<span class="truncate font-medium text-[#13160f]">EcoPonto Vila Madalena</span>
+<span class="font-mono text-[11px] font-semibold text-forest-emerald ml-2 flex-shrink-0">0.6 km</span>
+</div>
+<div class="flex items-center justify-between text-xs bg-white/80 px-2.5 py-1.5 rounded-lg border border-hairline">
+<span class="truncate font-medium text-[#13160f]">GreenLoop Depot Pinheiros</span>
+<span class="font-mono text-[11px] font-semibold text-stone-600 ml-2 flex-shrink-0">1.4 km</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= 2. MAIN FOCUS: COMMUNITY REUSE & DONATE SECTION ================= -->
+<section class="space-y-6" data-live="donate">
+<!-- Section Header & Filter Tabs -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 border-b border-hairline">
+<div>
+<div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-100 text-forest-emerald font-mono text-[11px] font-semibold uppercase tracking-wider mb-2">
+<span class="w-1.5 h-1.5 rounded-full bg-forest-emerald"></span>
+            Peer-to-Peer Upcycling &amp; Local Reuse Exchange
+          </div>
+<h2 class="font-editorial text-3xl md:text-4xl text-[#13160f] font-normal tracking-tight">
+            Community Reuse &amp; Donate Handover
+          </h2>
+<p class="text-sm text-[#4f5e58] mt-1 max-w-2xl font-body-md">
+            Directly transfer authenticated reusable glass specimens to neighboring circular creators, herbalists, and food preservationists. Bypasses energy-intensive furnace remelting.
+          </p>
+</div>
+<!-- Filter Tabs -->
+<div class="flex items-center p-1 bg-[#ede8dc] rounded-xl border border-hairline self-start md:self-auto font-mono text-xs">
+<button class="px-3.5 py-1.5 rounded-lg bg-white font-semibold text-[#13160f] shadow-sm transition-all">
+            All Offers (3)
+          </button>
+<button class="px-3.5 py-1.5 rounded-lg text-stone-600 hover:text-stone-900 transition-all">
+            Available (1)
+          </button>
+<button class="px-3.5 py-1.5 rounded-lg text-stone-600 hover:text-stone-900 transition-all">
+            Handover Complete (2)
+          </button>
+</div>
+</div>
+<!-- Two-Column Asymmetric Bento Grid (7 cols left, 5 cols right) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<!-- ================= LEFT COLUMN: ACTIVE COMMUNITY DONATIONS LIST (7 COLS) ================= -->
+<div class="lg:col-span-7 space-y-4">
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-forest-emerald text-lg">receipt_long</span>
+<h3 class="font-headline-sm text-headline-sm text-[#13160f]">
+                Community Reuse &amp; Handover Ledger
+              </h3>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 text-forest-emerald text-xs font-mono font-semibold">
+<span class="w-2 h-2 rounded-full bg-emerald-600 animate-ping"></span>
+              3 Active Offers
+            </span>
+</div>
+<!-- CARD 1: OPEN STATE -->
+<article class="bg-white border-2 border-emerald-600/70 rounded-2xl p-5 shadow-eco-md relative transition-all hover:border-emerald-600">
+<!-- Active indicator ribbon -->
+<div class="absolute -top-3 right-6 bg-forest-emerald text-white font-mono text-[10px] font-bold uppercase tracking-wider px-3 py-0.5 rounded-full shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">check_circle</span>
+              Ready for pickup
+            </div>
+<!-- Top row: Status, Qty, Timestamp -->
+<div class="flex flex-wrap items-center justify-between gap-2 pb-3.5 border-b border-hairline">
+<div class="flex items-center space-x-2">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-forest-emerald font-mono text-xs font-bold uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-forest-emerald"></span>
+                  open
+                </span>
+<span class="px-2.5 py-0.5 rounded-full bg-[#f4efe4] text-[#13160f] font-mono text-xs font-semibold border border-hairline">
+                  qty: 2
+                </span>
+</div>
+<span class="text-xs text-stone-500 font-mono flex items-center gap-1">
+<span class="material-symbols-outlined text-xs text-stone-400">schedule</span>
+                Listed 25m ago
+              </span>
+</div>
+<!-- Middle: Description & Location Note -->
+<div class="my-4 space-y-2">
+<p class="text-sm md:text-base text-[#13160f] font-medium leading-relaxed">
+                “Sterilized 500ml amber glass jars with brass lids — porch pickup near Vila Madalena station after 18h. Includes silicone seals.”
+              </p>
+<div class="flex items-center gap-2 text-xs text-stone-600 bg-sage-mist/40 p-2.5 rounded-xl border border-hairline">
+<span class="material-symbols-outlined text-forest-emerald text-base">location_on</span>
+<span>Porch Storage Box • R. Harmonia, 310 (Corner of Girassol) • <strong>0.4 km away</strong></span>
+</div>
+</div>
+<!-- Donor Profile Details -->
+<div class="flex items-center justify-between pt-2 pb-4">
+<div class="flex items-center space-x-3">
+<div class="w-10 h-10 rounded-full bg-[#e3ecd7] text-forest-emerald font-bold font-mono text-sm flex items-center justify-center border border-emerald-300">
+                  CM
+                </div>
+<div>
+<div class="flex items-center space-x-1.5">
+<span class="text-xs font-bold text-[#13160f]">@clara.m</span>
+<span class="inline-flex items-center text-[11px] text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
+                      ★ 4.9
+                    </span>
+</div>
+<span class="text-[11px] text-stone-500 font-mono">18 successful handovers • Zero waste champion</span>
+</div>
+</div>
+<div class="text-right hidden sm:block">
+<span class="text-[11px] font-mono text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  Verified Cleanliness 100%
+                </span>
+</div>
+</div>
+<!-- Action Row -->
+<div class="pt-3 border-t border-hairline flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+<!-- Two-tap Retract disclosure -->
+<details class="group self-start sm:self-center">
+<summary class="cursor-pointer text-xs font-semibold text-stone-500 hover:text-stone-800 transition-colors py-1 flex items-center gap-1 select-none">
+<span class="material-symbols-outlined text-sm group-open:rotate-90 transition-transform">chevron_right</span>
+                  Retract Offer
+                </summary>
+<div class="mt-2.5 p-3 bg-red-50/90 border border-red-200 rounded-xl space-y-2 max-w-xs">
+<p class="text-[11px] text-red-900 leading-tight">
+                    Cancels listing immediately from local board. This cannot be undone once claimed.
+                  </p>
+<button class="w-full text-center px-3 py-1.5 bg-[#b91c1c] hover:bg-[#991b1b] text-white text-xs font-bold rounded-lg transition-colors shadow-sm" phx-click="retract-donation" type="button">
+                    Confirm Retract
+                  </button>
+</div>
+</details>
+<!-- Prominent Forest Emerald CTA button -->
+<button class="inline-flex items-center justify-center space-x-2 bg-forest-emerald text-white px-6 py-2.5 rounded-xl font-label-lg text-label-lg font-semibold shadow-md hover:bg-forest-emerald/90 hover:shadow-lg active:scale-[0.98] transition-all" phx-click="claim-donation" type="button">
+<span class="material-symbols-outlined text-[18px]">handshake</span>
+<span>Claim for Reuse</span>
+</button>
+</div>
+</article>
+<!-- CARD 2: CLAIMED STATE -->
+<article class="bg-white/95 border border-hairline rounded-2xl p-5 shadow-eco-sm relative">
+<div class="flex flex-wrap items-center justify-between gap-2 pb-3.5 border-b border-hairline">
+<div class="flex items-center space-x-2">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-mono text-xs font-bold uppercase border border-amber-300">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+                  claimed
+                </span>
+<span class="px-2.5 py-0.5 rounded-full bg-[#f4efe4] text-[#13160f] font-mono text-xs font-semibold border border-hairline">
+                  qty: 1
+                </span>
+</div>
+<span class="text-xs text-amber-800 font-mono font-medium flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+<span class="material-symbols-outlined text-xs text-amber-700">timer</span>
+                Pickup scheduled within 4h
+              </span>
+</div>
+<div class="my-3 space-y-1.5">
+<p class="text-sm text-[#13160f] font-normal leading-relaxed">
+                “Crate of 6 mason jars for home preserves — Lobby desk handover with concierge.”
+              </p>
+<!-- Handover Participants Connection -->
+<div class="flex items-center space-x-2 text-xs font-mono text-stone-600 py-1">
+<span class="font-medium text-[#13160f]">Offered by @lucas.r</span>
+<span class="material-symbols-outlined text-sm text-stone-400">arrow_forward</span>
+<span class="font-semibold text-forest-emerald">Claimed by @marina.eco</span>
+</div>
+</div>
+<!-- Verification Token Container -->
+<div class="pt-3 border-t border-hairline flex flex-wrap items-center justify-between gap-2 bg-[#f9faf6] -mx-5 -mb-5 p-4 rounded-b-2xl">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-stone-500 text-base">pin</span>
+<span class="text-xs text-stone-600">Secure handover verification:</span>
+</div>
+<div class="font-mono text-xs font-bold bg-white text-forest-emerald px-3 py-1 rounded-lg border border-emerald-300 shadow-sm tracking-widest">
+                Handover Token: IRIS-8942
+              </div>
+</div>
+</article>
+<!-- CARD 3: COMPLETED STATE -->
+<article class="bg-sage-mist/70 border border-hairline rounded-2xl p-5 shadow-eco-sm opacity-90">
+<div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-hairline">
+<div class="flex items-center space-x-2">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-stone-200 text-stone-700 font-mono text-xs font-bold uppercase">
+<span class="material-symbols-outlined text-[13px]">check</span>
+                  completed
+                </span>
+<span class="px-2.5 py-0.5 rounded-full bg-white text-stone-700 font-mono text-xs font-semibold border border-hairline">
+                  qty: 4
+                </span>
+</div>
+<span class="text-xs text-stone-500 font-mono">
+                Handed over yesterday at EcoPonto
+              </span>
+</div>
+<div class="my-3 space-y-1">
+<p class="text-sm text-stone-700 font-normal">
+                “Clean glass bottles for kombucha brewing — Handed over at EcoPonto reception locker.”
+              </p>
+</div>
+<div class="pt-3 border-t border-hairline flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="w-6 h-6 rounded-full bg-emerald-200/80 text-forest-emerald flex items-center justify-center font-mono text-[10px] font-bold">✓</span>
+<span class="text-xs text-stone-600">Recipient verified condition upon receipt</span>
+</div>
+<!-- Circular Impact Badge -->
+<span class="inline-flex items-center gap-1 text-[11px] font-mono font-semibold text-emerald-800 bg-white/90 px-2.5 py-1 rounded-full border border-emerald-300">
+<span class="material-symbols-outlined text-xs text-emerald-600">recycling</span>
+                1.64 kg Glass Diverted • 0.9 kg CO₂e Abated
+              </span>
+</div>
+</article>
+</div>
+<!-- ================= RIGHT COLUMN: OFFER FOR REUSE FORM (5 COLS) ================= -->
+<div class="lg:col-span-5">
+<div class="sticky top-24 bg-sage-mist border border-hairline rounded-3xl p-6 md:p-7 shadow-eco-md space-y-6" id="offer-donation">
+<!-- Card Header -->
+<div class="space-y-1 border-b border-hairline pb-4">
+<div class="flex items-center space-x-2 text-forest-emerald">
+<span class="material-symbols-outlined text-xl">volunteer_activism</span>
+<span class="font-mono text-xs uppercase tracking-wider font-bold">Circular Peer Network</span>
+</div>
+<h3 class="font-editorial text-2xl md:text-3xl text-[#13160f] font-normal">
+                Offer Specimen for Community Reuse
+              </h3>
+<p class="text-xs text-[#4f5e58] leading-relaxed">
+                Keep high-grade glass in local circulation instead of downcycling into aggregate. Connect directly with nearby makers.
+              </p>
+</div>
+<!-- Form -->
+<form action="#submit-offer" class="space-y-4" method="POST" onsubmit="event.preventDefault();">
+<!-- Pickup Note & Handover Instructions -->
+<div class="space-y-1.5">
+<label class="block text-xs font-bold text-[#13160f] uppercase font-mono tracking-wider" for="pickup-note">
+                  Pickup Note &amp; Handover Instructions
+                </label>
+<textarea class="w-full rounded-xl bg-white border border-hairline p-3 text-sm text-[#13160f] placeholder:text-stone-400 focus:border-forest-emerald focus:ring-2 focus:ring-forest-emerald/20 transition-all font-sans leading-relaxed" id="pickup-note" name="note" placeholder="Describe item condition, pickup window, or neighborhood drop-off spot (e.g. porch, door code, or coffee shop)..." rows="3">Sterilized 500ml amber bottle with original airtight lid. Safe for oils or apothecary storage. Contactless porch box pickup available.</textarea>
+</div>
+<!-- Quantity Input with Stepper -->
+<div class="space-y-1.5">
+<label class="block text-xs font-bold text-[#13160f] uppercase font-mono tracking-wider">
+                  Quantity to Release
+                </label>
+<div class="flex items-center space-x-3">
+<div class="inline-flex items-center bg-white rounded-xl border border-hairline p-1 shadow-sm">
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-stone-600 hover:bg-stone-100 hover:text-stone-900 active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-base">remove</span>
+</button>
+<input class="w-12 text-center border-0 p-0 font-mono text-sm font-bold text-[#13160f] focus:ring-0" max="24" min="1" name="quantity" type="number" value="1"/>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-stone-600 hover:bg-stone-100 hover:text-stone-900 active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-base">add</span>
+</button>
+</div>
+<span class="font-mono text-xs text-stone-600 bg-white/70 px-3 py-2 rounded-xl border border-hairline">
+                    units available in lot
+                  </span>
+</div>
+</div>
+<!-- Preferred Handover Method (Pills) -->
+<div class="space-y-1.5">
+<label class="block text-xs font-bold text-[#13160f] uppercase font-mono tracking-wider">
+                  Handover Method
+                </label>
+<div class="grid grid-cols-1 gap-2">
+<label class="flex items-center space-x-3 p-2.5 bg-white rounded-xl border border-forest-emerald/60 cursor-pointer hover:bg-emerald-50/50 transition-colors">
+<input checked="" class="text-forest-emerald focus:ring-forest-emerald" name="handover_method" type="radio" value="porch"/>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-[#13160f]">Porch / Contactless Pickup</span>
+<span class="text-[11px] text-stone-500">Pick up from doorstep bin or concierge safely</span>
+</div>
+</label>
+<label class="flex items-center space-x-3 p-2.5 bg-white/70 rounded-xl border border-hairline cursor-pointer hover:bg-white transition-colors">
+<input class="text-forest-emerald focus:ring-forest-emerald" name="handover_method" type="radio" value="meetup"/>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-[#13160f]">Direct In-Person Meetup</span>
+<span class="text-[11px] text-stone-500">Agree on local landmark (e.g. metro exit)</span>
+</div>
+</label>
+<label class="flex items-center space-x-3 p-2.5 bg-white/70 rounded-xl border border-hairline cursor-pointer hover:bg-white transition-colors">
+<input class="text-forest-emerald focus:ring-forest-emerald" name="handover_method" type="radio" value="hub"/>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-[#13160f]">Leave at Partner Hub</span>
+<span class="text-[11px] text-stone-500">Drop at EcoPonto Vila Madalena smart locker</span>
+</div>
+</label>
+</div>
+</div>
+<!-- Safety & Cleanliness verification checkbox -->
+<div class="pt-2">
+<label class="flex items-start space-x-2.5 cursor-pointer">
+<input checked="" class="mt-0.5 rounded border-stone-300 text-forest-emerald focus:ring-forest-emerald" type="checkbox"/>
+<span class="text-xs text-[#2b3324] leading-tight">
+<strong>Cleanliness Verified:</strong> Specimen has been washed, sanitized with alcohol/boiling water, and exhibits no micro-fractures or sharp rim cracks.
+                  </span>
+</label>
+</div>
+<!-- CTA Submit Button -->
+<div class="pt-2 space-y-2">
+<button class="w-full flex items-center justify-center space-x-2 bg-forest-emerald text-white py-3 px-4 rounded-xl font-label-lg text-label-lg font-bold shadow-md hover:bg-forest-emerald/90 hover:shadow-lg active:scale-[0.98] transition-all" type="submit">
+<span>Offer for Community Reuse</span>
+<span class="material-symbols-outlined text-lg">arrow_forward</span>
+</button>
+<!-- Sub-text Caption -->
+<p class="text-[11px] text-[#4f5e58] text-center font-mono leading-normal pt-1">
+                  Traceable via Iris Circular Chain • Instant notification sent to <strong>48 verified local reuse members</strong> nearby.
+                </p>
+</div>
+</form>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= 3. COMPLEMENTARY CIRCULAR INTELLIGENCE DRAWER ================= -->
+<section class="bg-white border border-hairline rounded-2xl p-6 shadow-eco-sm">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-hairline">
+<div class="flex items-center space-x-3">
+<div class="w-10 h-10 rounded-xl bg-sage-mist flex items-center justify-center text-forest-emerald">
+<span class="material-symbols-outlined">network_node</span>
+</div>
+<div>
+<h4 class="font-headline-sm text-headline-sm text-[#13160f]">
+              Iris Specimen Circular Traceability Matrix
+            </h4>
+<p class="text-xs text-stone-500 font-mono">
+              Cryptographic lifecycle passport #PASS-GLS-7049 • Sorter Station 04
+            </p>
+</div>
+</div>
+<div class="flex items-center space-x-2">
+<span class="inline-flex items-center gap-1 font-mono text-xs bg-emerald-50 text-forest-emerald border border-emerald-200 px-3 py-1 rounded-lg">
+<span class="material-symbols-outlined text-xs">verified</span> Certified Zero-Landfill Pathway
+          </span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 text-xs">
+<div class="p-3 bg-[#faf7ef] rounded-xl border border-hairline">
+<span class="text-stone-500 font-mono uppercase text-[10px]">Sorting Line Origin</span>
+<p class="font-bold text-[#13160f] mt-1">Conveyor Line C • Optical Stream</p>
+<span class="text-[11px] text-stone-500">Spectral IR signature: Amber Flint</span>
+</div>
+<div class="p-3 bg-[#faf7ef] rounded-xl border border-hairline">
+<span class="text-stone-500 font-mono uppercase text-[10px]">Thermal Embodied Energy</span>
+<p class="font-bold text-forest-emerald mt-1 font-mono">2.84 MJ Conserved</p>
+<span class="text-[11px] text-stone-500">Furnace cycle skipped</span>
+</div>
+<div class="p-3 bg-[#faf7ef] rounded-xl border border-hairline">
+<span class="text-stone-500 font-mono uppercase text-[10px]">Local Network Density</span>
+<p class="font-bold text-[#13160f] mt-1">High (1.2km radius)</p>
+<span class="text-[11px] text-stone-500">3 herbalists, 2 fermenters active</span>
+</div>
+<div class="p-3 bg-[#faf7ef] rounded-xl border border-hairline">
+<span class="text-stone-500 font-mono uppercase text-[10px]">Regulatory Compliance</span>
+<p class="font-bold text-[#13160f] mt-1">EU &amp; ABNT Glass Norms</p>
+<span class="text-[11px] text-stone-500">100% Circular Compliant</span>
+</div>
+</div>
+</section>
+</main>
+<!-- ================= FOOTER / SYSTEM STATUS ================= -->
+<footer class="w-full bg-[#f4efe4] border-t border-hairline mt-12 py-6 px-4 md:px-margin text-xs text-[#525e4f]">
+<div class="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+<div class="flex items-center space-x-3">
+<span class="font-bold text-[#13160f] flex items-center gap-1.5 font-headline-sm text-sm">
+<span class="w-2.5 h-2.5 rounded-full bg-forest-emerald"></span>
+          Iris Recovery OS
+        </span>
+<span>•</span>
+<span>Specimen Classification &amp; Community Reuse v4.12</span>
+</div>
+<div class="flex items-center space-x-6 font-mono text-[11px]">
+<span class="flex items-center gap-1 text-emerald-800">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+          Community Ledger: Syncing
+        </span>
+<a class="hover:text-stone-900 transition-colors" href="#privacy">Safety Protocol</a>
+<a class="hover:text-stone-900 transition-colors" href="#guidelines">Sanitation Guidelines</a>
+</div>
+</div>
+</footer>
+</body></html>

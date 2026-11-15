@@ -1,0 +1,51 @@
+# generated from bayt.cue — do not edit
+services:
+  iris-identity-hydra:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.identity-hydra
+      target: identity-hydra
+      tags:
+      - bayt-iris-identity-hydra:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+      - bayt-iris-identity-hydra:latest
+      args:
+        BAYT_DIR: ${MONOREPO_COMPOSE_MODE:+apps/iris}
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+    environment:
+      DSN: memory
+      SECRETS_SYSTEM: pronto-identity-local-launch-hydra-0000
+      LOG_LEVEL: warn
+      URLS_SELF_ISSUER: http://localhost:28443
+      URLS_LOGIN: http://localhost:28443/login
+      URLS_CONSENT: http://localhost:28443/consent
+      SERVE_PUBLIC_PORT: "28453"
+      SERVE_ADMIN_PORT: "28455"
+      OAUTH2_PKCE_ENFORCED_FOR_PUBLIC_CLIENTS: "true"
+      TTL_ID_TOKEN: 5m
+    healthcheck:
+      test:
+      - CMD
+      - httpcheck
+      - http://127.0.0.1:28453/health/ready
+      interval: 1s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+      start_interval: 200ms
+    image: bayt-iris-identity-hydra:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default:
+        aliases:
+        - identity-hydra
+  iris-identity-hydra_bayt:
+    build:
+      context: ..
+      dockerfile: .bayt/Dockerfile.identity-hydra
+      target: identity-hydra_bayt
+      args:
+        BAYT_DIR: ${MONOREPO_COMPOSE_MODE:+apps/iris}
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+    image: bayt-iris-identity-hydra_bayt:latest
+    scale: 0

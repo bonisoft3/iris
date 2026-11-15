@@ -1,0 +1,85 @@
+# generated from bayt.cue — do not edit
+services:
+  iris-launch:
+    build:
+      additional_contexts:
+        iris-identity: service:iris-identity
+        iris-smollm3: service:iris-smollm3
+        iris-caddy: service:iris-caddy
+        iris-database: service:iris-database
+        iris-crud: service:iris-crud
+        iris-electric: service:iris-electric
+        iris-auth: service:iris-auth
+        iris-clock: service:iris-clock
+        iris-airlock: service:iris-airlock
+      context: ..
+      dockerfile: .bayt/Dockerfile.launch
+      target: launch
+      tags:
+      - bayt-iris-launch:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+      - bayt-iris-launch:latest
+      args:
+        BAYT_DIR: ${MONOREPO_COMPOSE_MODE:+apps/iris}
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+    depends_on:
+      iris-identity:
+        condition: service_healthy
+        restart: true
+      iris-smollm3:
+        condition: service_healthy
+        restart: true
+      iris-caddy:
+        condition: service_healthy
+        restart: true
+      iris-database:
+        condition: service_healthy
+        restart: true
+      iris-crud:
+        condition: service_healthy
+        restart: true
+      iris-electric:
+        condition: service_healthy
+        restart: true
+      iris-auth:
+        condition: service_started
+      iris-clock:
+        condition: service_started
+      iris-airlock:
+        condition: service_healthy
+        restart: true
+    healthcheck:
+      test:
+      - CMD
+      - echo
+      - iris is healthy
+      interval: 5s
+      timeout: 2s
+      retries: 3
+    image: bayt-iris-launch:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default:
+        aliases:
+        - launch
+  iris-launch_bayt:
+    build:
+      additional_contexts:
+        iris-build_bayt: service:iris-build_bayt
+        iris-identity_bayt: service:iris-identity_bayt
+        iris-smollm3_bayt: service:iris-smollm3_bayt
+        iris-caddy_bayt: service:iris-caddy_bayt
+        iris-database_bayt: service:iris-database_bayt
+        iris-crud_bayt: service:iris-crud_bayt
+        iris-electric_bayt: service:iris-electric_bayt
+        iris-auth_bayt: service:iris-auth_bayt
+        iris-clock_bayt: service:iris-clock_bayt
+        iris-airlock_bayt: service:iris-airlock_bayt
+      context: ..
+      dockerfile: .bayt/Dockerfile.launch
+      target: launch_bayt
+      args:
+        BAYT_DIR: ${MONOREPO_COMPOSE_MODE:+apps/iris}
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+    image: bayt-iris-launch_bayt:latest
+    scale: 0

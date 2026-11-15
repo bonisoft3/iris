@@ -1,0 +1,180 @@
+# generated from bayt.cue — do not edit
+FROM docker:29.9.1-cli@sha256:6fae2214c3121a28d5aa639d09032f61310b7c9c75ffbad1025f261a1b621800 AS ci-ledger
+ARG BAYT_DIR
+WORKDIR /monorepo/${BAYT_DIR}
+COPY --from=bonitao/lazybox:0.8.6@sha256:0f30c48513fac757f844f02c864802991dec045f9c4189e3db2ae4ac297544df /lazybox/ /root/.local/share/lazybox/
+COPY --from=alpine/socat:1.8.0.0@sha256:a6be4c0262b339c53ddad723cdd178a1a13271e1137c65e27f90a08c16de02b8 /usr/bin/socat1 /usr/local/bin/socat
+COPY --from=alpine/socat:1.8.0.0@sha256:a6be4c0262b339c53ddad723cdd178a1a13271e1137c65e27f90a08c16de02b8 /usr/lib/libreadline.so.8 /usr/lib/libncursesw.so.6 /usr/lib/
+ENV PATH=$PATH:/root/.local/bin:/root/.local/share/lazybox/bin
+COPY <<'BKID_MISE' /opt/bkid/mise.toml
+[settings]
+experimental = true
+github_attestations = false
+locked = true
+lockfile = true
+slsa = false
+
+[settings.github]
+github_attestations = false
+slsa = false
+
+[tools]
+'github:depot/cli' = '2.102.25'
+'github:go-task/task' = 'v3.54.0'
+BKID_MISE
+COPY <<'BKID_LOCK' /opt/bkid/mise.lock
+[tools]
+[[tools.'github:depot/cli']]
+backend = 'github:depot/cli'
+version = '2.102.25'
+
+[tools.'github:depot/cli'.platforms]
+[tools.'github:depot/cli'.platforms.linux-arm64]
+checksum = 'sha256:52abe04ef24cd06f2ed37e15dbaa1d52d282db26ead04ff2493faf181347d6eb'
+url = 'https://github.com/depot/cli/releases/download/v2.102.25/depot_2.102.25_linux_arm64.tar.gz'
+url_api = 'https://api.github.com/repos/depot/cli/releases/assets/660782767'
+
+[tools.'github:depot/cli'.platforms.linux-arm64-musl]
+checksum = 'sha256:52abe04ef24cd06f2ed37e15dbaa1d52d282db26ead04ff2493faf181347d6eb'
+url = 'https://github.com/depot/cli/releases/download/v2.102.25/depot_2.102.25_linux_arm64.tar.gz'
+url_api = 'https://api.github.com/repos/depot/cli/releases/assets/660782767'
+
+[tools.'github:depot/cli'.platforms.linux-x64]
+checksum = 'sha256:b62952f5951a0bcd4f48597b59fe29a4b7d84cac4e82710ee19d79262bf271af'
+url = 'https://github.com/depot/cli/releases/download/v2.102.25/depot_2.102.25_linux_amd64.tar.gz'
+url_api = 'https://api.github.com/repos/depot/cli/releases/assets/660782770'
+
+[tools.'github:depot/cli'.platforms.linux-x64-musl]
+checksum = 'sha256:b62952f5951a0bcd4f48597b59fe29a4b7d84cac4e82710ee19d79262bf271af'
+url = 'https://github.com/depot/cli/releases/download/v2.102.25/depot_2.102.25_linux_amd64.tar.gz'
+url_api = 'https://api.github.com/repos/depot/cli/releases/assets/660782770'
+
+[[tools.'github:go-task/task']]
+backend = 'github:go-task/task'
+version = 'v3.54.0'
+
+[tools.'github:go-task/task'.platforms]
+[tools.'github:go-task/task'.platforms.linux-arm64]
+checksum = 'sha256:d7189d439d4a6058e39e1b2acd7c8b27acd4856691b408f23b242e4294e1df5b'
+url = 'https://github.com/go-task/task/releases/download/v3.54.0/task_linux_arm64.tar.gz'
+url_api = 'https://api.github.com/repos/go-task/task/releases/assets/604090041'
+
+[tools.'github:go-task/task'.platforms.linux-arm64-musl]
+checksum = 'sha256:d7189d439d4a6058e39e1b2acd7c8b27acd4856691b408f23b242e4294e1df5b'
+url = 'https://github.com/go-task/task/releases/download/v3.54.0/task_linux_arm64.tar.gz'
+url_api = 'https://api.github.com/repos/go-task/task/releases/assets/604090041'
+
+[tools.'github:go-task/task'.platforms.linux-x64]
+checksum = 'sha256:680859dbb4d881a9c72d4d9a8f510825450849af8567deacd7302c01124416fb'
+url = 'https://github.com/go-task/task/releases/download/v3.54.0/task_linux_amd64.tar.gz'
+url_api = 'https://api.github.com/repos/go-task/task/releases/assets/604090073'
+
+[tools.'github:go-task/task'.platforms.linux-x64-musl]
+checksum = 'sha256:680859dbb4d881a9c72d4d9a8f510825450849af8567deacd7302c01124416fb'
+url = 'https://github.com/go-task/task/releases/download/v3.54.0/task_linux_amd64.tar.gz'
+url_api = 'https://api.github.com/repos/go-task/task/releases/assets/604090073'
+BKID_LOCK
+COPY --from=bayt . /monorepo/plugins/bayt/runtime
+RUN cd /opt/bkid && mise trust -y && mise install && mise exec -- sh -c 'cp "$(mise which task)" /usr/local/bin/task && cp "$(mise which depot)" /usr/local/bin/depot'
+ENV PATH=/monorepo/plugins/bayt/runtime:${PATH}
+ARG MONOREPO_COMPOSE_MODE
+ENV MONOREPO_COMPOSE_MODE=$MONOREPO_COMPOSE_MODE
+ARG BAYT_RUNTIME
+ENV BAYT_RUNTIME=$BAYT_RUNTIME
+ENV FELDERA_COMPILATION_PROFILE=unoptimized
+COPY --from=libraries_mecha-activepieces-image_bayt /monorep[o] /monorepo/
+COPY --from=libraries_mecha-activepieces-image_srcs /monorep[o] /monorepo/
+COPY --from=libraries_mecha-airlock-image_bayt /monorep[o] /monorepo/
+COPY --from=libraries_mecha-airlock-image_srcs /monorep[o] /monorepo/
+COPY --from=libraries_mecha-auth-image_bayt /monorep[o] /monorepo/
+COPY --from=libraries_mecha-auth-image_srcs /monorep[o] /monorepo/
+COPY --from=libraries_mecha-clock-image_bayt /monorep[o] /monorepo/
+COPY --from=libraries_mecha-clock-image_srcs /monorep[o] /monorepo/
+COPY --from=libraries_mecha-compute-image_bayt /monorep[o] /monorepo/
+COPY --from=libraries_mecha-compute-image_srcs /monorep[o] /monorepo/
+COPY --from=libraries_mecha-conduit-image_bayt /monorep[o] /monorepo/
+COPY --from=libraries_mecha-database-image_bayt /monorep[o] /monorepo/
+COPY --from=libraries_mecha-database-image_srcs /monorep[o] /monorepo/
+COPY --from=libraries_mecha-extensions-image_bayt /monorep[o] /monorepo/
+COPY --from=libraries_mecha-extensions-image_srcs /monorep[o] /monorepo/
+COPY --from=libraries_mecha-mesh-image_bayt /monorep[o] /monorepo/
+COPY --from=libraries_mecha-mesh-image_srcs /monorep[o] /monorepo/
+COPY --from=libraries_mecha-ticker-image_bayt /monorep[o] /monorepo/
+COPY --from=libraries_mecha-ticker-image_srcs /monorep[o] /monorepo/
+COPY --from=plugins_omnishell-runtime-image_bayt /monorep[o] /monorepo/
+COPY --from=plugins_omnishell-runtime-image_srcs /monorep[o] /monorepo/
+COPY --from=workspaceroot-pronto-sources_bayt /monorep[o] /monorepo/
+COPY --from=workspaceroot-pronto-sources_srcs /monorep[o] /monorepo/
+COPY --parents monorepo/*.yaml ./
+COPY --from=iris-check-ledger_srcs --parents /monorepo/${BAYT_DIR:+${BAYT_DIR}/}tests/** /
+COPY --from=iris-check-ledger_bayt --link /monorepo /monorepo
+COPY --from=iris-caddy_srcs --parents /monorepo/${BAYT_DIR:+${BAYT_DIR}/}docker/Caddyfile /
+COPY --from=iris-served_srcs --parents /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/index.html /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/shell.css /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/boot.js /monorepo/${BAYT_DIR:+${BAYT_DIR}/}offline-first-sw.js /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/shell.yaml /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/shell.json /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/design.css /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/screens/gallery.html /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/screens/gallery.css /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/screens/detail.html /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/screens/detail.css /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/screens/intro.html /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/screens/intro.css /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/screens/landing.html /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/screens/landing.css /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/screens/camera.html /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/screens/camera.css /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/screens/about.html /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/screens/about.css /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/handlers/detail_view.js /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/handlers/gallery_view.js /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/handlers/localize_content.js /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/handlers/onboarding_step.js /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/handlers/scan_draft.js /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/shared/chrome.css /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/shared/iris.css /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/units/camera-lens/index.html /monorepo/${BAYT_DIR:+${BAYT_DIR}/}messages/en.json /monorepo/${BAYT_DIR:+${BAYT_DIR}/}messages/es.json /monorepo/${BAYT_DIR:+${BAYT_DIR}/}messages/pt.json /monorepo/${BAYT_DIR:+${BAYT_DIR}/}messages/ru.json /monorepo/${BAYT_DIR:+${BAYT_DIR}/}messages/he.json /monorepo/${BAYT_DIR:+${BAYT_DIR}/}messages/kk.json /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/130a7640511f19bfd52459cd9e11775ebbb2a6e19c1e7eec6ef57418827be395.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/eb9dd1c0c59552ec9fa6a11854486bd95b6c4ab60cf09c21cf4a17a4a9d52822.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/25275fc0e139d54350917c4ccecf5999c40df6c1c8df37aa27035bfe7d9a6e09.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/8ce8daf1ad4c745c831b741ebeddeb8002241a87ba48ae6c9f89cd491c6d656d.png /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/895f93a9be99e1164e158ab6172482408ef5aea9436fb162e42b34702a9d272d.png /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/caca4de2e84a6a49a959f2a6952cb1b0abbccd1ae7ee6e3715aebd9e5d03f550.png /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/1823bb89adef9dea6b87d275958c3022e1c6654b0e70b9765229facc5eacfda8.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/8c896aadce8da71dcfbdd565f990c9f60631427b645c041e630947279ff821d7.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/3f7fa1215537885ebf6ffcd4ecd1adcffb99f0bb9ffa34933f9ecbee14ec7be9.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/cc38896ba70806959ce67b349f99f449a4f38735961b26a199c84c9b3e53fcce.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/b6a6d6c318f57e8da8affab5d5d1acde4eec30b8ddd4b32150db9d7ab15cb4c7.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/760bbd58ab4dcc4fe6450beda0596ac278a24e327625fa32887c43207095b9aa.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/99b8998fa2a122ea9f24cb165bf335b3102e1063093c6a9828d88fcb9f033b60.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/35385f8c1318df038e04997a69832b47d4c8a3f5ad5723664fceeb71d1c74a51.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/67bf539672ddb57a74e9bf1899cf30eb104f85e9230b5245753fd918e1f7ac71.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/b122d7ea53874f5cf66c1e806b668599dd8e3373ec5f667b9bcf3c0ee571fbdf.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/189056ba807c2cff981a787f6f1a1c142f469b011b843f85feda8df23da8d77f.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/f94cd0657cc317dbac20a6a4bf685182e9687b13d4ffd5149fd51bfbd8b32e71.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/6386dd14cab4cf5edfb3f63b5211d0591672c4e46c8ac656d1bc9d6f8137eed7.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/25063c2320fd0fff4dc04317a7627418695c9970618a48073bb79cb3e542859c.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/a614934e492c15e458ff950a50133af5ff2d73f2b53d7a49598b8e0519cdb23f.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/11e450d820a485f2ef743fff3ab688df6bf10818258c6f6e6e2db8902df8c154.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/32efd926e244739e97b3ced8bd3b9e2ce01ca101972eb5c7321ce1543db26877.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/947288224d612f8c7dced73d0ac17ab9608caa6627ef8d5da5628fce3a7a3579.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/9d97886ee64caf6078e589810ea369ae0649f66ad101d73a905a9f9871306bdd.png /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/02d2fd8bf5530e970dbef1107cee1a731c781a838d61174953a3d171963f5d94.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/b9f9c914ebdd06f358a2a7fe4e8f625c45665c9d6ae7c64980f9f20ee00f0d3b.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/cf368766bd221864d1a18cee77ea4c77a63a52b891372023b2b603b4519dd7b4.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/49a84a86143beab927b8074c2d05855e4221c4e99137d5d17b183e54093871cc.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/334466b4324a8c80f3204ef4c63cf6892ec20a954880af364b0ad4936aa6093a.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/084511aff76ddb2668538ed7a25fe803d53e625cd3734f5a5656e00a76fb7a92.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/f91ca04ef9a09a1bc8b5f17a458c78c3bb8eeec68868c9c4cbea154666bb356b.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/4271dbcdab4a00c153b897c9f2958d549250e04a468635b80085e64b22d1d19c.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/aab36d5a8153cdf5533467fffdb0fa843ed0db87f46bbd19f0f634eb2fde11fc.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/c9e3856e65f887bd3b04edf686e6e1d265a67306a0b3a3c7a05edb83af2447b3.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/6fc1a126cf07a445ff88c78e3f457f479d7c04d26536b71f0262756623c67176.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/fdacc68a3ff3306467048482e87e9a30de05a4fb18a46c4d37be86fc387a37f8.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/b6febf0e4469b80a238ff3092c62662d308a6990466dbf66fda7dad1a8a10851.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/6443d24559e0ab154f79a7814e4f2f8fa071c3c8185aa40cbfead31e1ae8cde7.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}brief.md /monorepo/${BAYT_DIR:+${BAYT_DIR}/}brief.html /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal.html /monorepo/${BAYT_DIR:+${BAYT_DIR}/}ir.html /monorepo/${BAYT_DIR:+${BAYT_DIR}/}ir/card.css /monorepo/${BAYT_DIR:+${BAYT_DIR}/}acceptance.md /monorepo/${BAYT_DIR:+${BAYT_DIR}/}DESIGN.md /monorepo/${BAYT_DIR:+${BAYT_DIR}/}ir/neighbourhood-about.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}ir/neighbourhood-app.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}ir/neighbourhood-camera.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}ir/neighbourhood-detail.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}ir/neighbourhood-gallery.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}ir/neighbourhood-intro.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}ir/neighbourhood-landing.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t1-detail-dark.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t1-gallery.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t10-detail-donate.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t10-places-donate.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t11-profile.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t12-news.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t13-gallery-search.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t14-impact.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t15-moderation.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t16-sync.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t17-responsive.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t18-dark.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t19-rtl-he.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t2-my-items.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t2-preview.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t20-credits.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t3-discard.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t3-nearby.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t4-intro.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t4-landing.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t5-camera.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t5-submitted.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t6-seg-center.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t6-seg-neck.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t7-classified-gallery.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t7-classified-queue.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t8-after-translate.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t8-before-translate.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t9-detail-locale.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t9-gallery-revamp.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t9-places.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/stitch/specimen-detail-donate-response.json /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/stitch/specimen-detail-donate.html /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/stitch/specimen-detail-donate.png /monorepo/${BAYT_DIR:+${BAYT_DIR}/}robots.txt /monorepo/${BAYT_DIR:+${BAYT_DIR}/}sitemap.xml /
+COPY --from=iris-served-release_srcs --parents /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/index.html /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/shell.css /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/boot.js /monorepo/${BAYT_DIR:+${BAYT_DIR}/}offline-first-sw.js /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/shell.yaml /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/shell.json /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/design.css /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/screens/gallery.html /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/screens/gallery.css /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/screens/detail.html /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/screens/detail.css /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/screens/intro.html /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/screens/intro.css /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/screens/landing.html /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/screens/landing.css /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/screens/camera.html /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/screens/camera.css /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/screens/about.html /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/screens/about.css /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/handlers/detail_view.js /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/handlers/gallery_view.js /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/handlers/localize_content.js /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/handlers/onboarding_step.js /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/handlers/scan_draft.js /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/shared/chrome.css /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/shared/iris.css /monorepo/${BAYT_DIR:+${BAYT_DIR}/}shell/units/camera-lens/index.html /monorepo/${BAYT_DIR:+${BAYT_DIR}/}messages/en.json /monorepo/${BAYT_DIR:+${BAYT_DIR}/}messages/es.json /monorepo/${BAYT_DIR:+${BAYT_DIR}/}messages/pt.json /monorepo/${BAYT_DIR:+${BAYT_DIR}/}messages/ru.json /monorepo/${BAYT_DIR:+${BAYT_DIR}/}messages/he.json /monorepo/${BAYT_DIR:+${BAYT_DIR}/}messages/kk.json /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/130a7640511f19bfd52459cd9e11775ebbb2a6e19c1e7eec6ef57418827be395.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/eb9dd1c0c59552ec9fa6a11854486bd95b6c4ab60cf09c21cf4a17a4a9d52822.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/25275fc0e139d54350917c4ccecf5999c40df6c1c8df37aa27035bfe7d9a6e09.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/8ce8daf1ad4c745c831b741ebeddeb8002241a87ba48ae6c9f89cd491c6d656d.png /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/895f93a9be99e1164e158ab6172482408ef5aea9436fb162e42b34702a9d272d.png /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/caca4de2e84a6a49a959f2a6952cb1b0abbccd1ae7ee6e3715aebd9e5d03f550.png /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/1823bb89adef9dea6b87d275958c3022e1c6654b0e70b9765229facc5eacfda8.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/8c896aadce8da71dcfbdd565f990c9f60631427b645c041e630947279ff821d7.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/3f7fa1215537885ebf6ffcd4ecd1adcffb99f0bb9ffa34933f9ecbee14ec7be9.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/cc38896ba70806959ce67b349f99f449a4f38735961b26a199c84c9b3e53fcce.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/b6a6d6c318f57e8da8affab5d5d1acde4eec30b8ddd4b32150db9d7ab15cb4c7.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/760bbd58ab4dcc4fe6450beda0596ac278a24e327625fa32887c43207095b9aa.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/99b8998fa2a122ea9f24cb165bf335b3102e1063093c6a9828d88fcb9f033b60.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/35385f8c1318df038e04997a69832b47d4c8a3f5ad5723664fceeb71d1c74a51.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/67bf539672ddb57a74e9bf1899cf30eb104f85e9230b5245753fd918e1f7ac71.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/b122d7ea53874f5cf66c1e806b668599dd8e3373ec5f667b9bcf3c0ee571fbdf.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/189056ba807c2cff981a787f6f1a1c142f469b011b843f85feda8df23da8d77f.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/f94cd0657cc317dbac20a6a4bf685182e9687b13d4ffd5149fd51bfbd8b32e71.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/6386dd14cab4cf5edfb3f63b5211d0591672c4e46c8ac656d1bc9d6f8137eed7.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/25063c2320fd0fff4dc04317a7627418695c9970618a48073bb79cb3e542859c.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/a614934e492c15e458ff950a50133af5ff2d73f2b53d7a49598b8e0519cdb23f.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/11e450d820a485f2ef743fff3ab688df6bf10818258c6f6e6e2db8902df8c154.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/32efd926e244739e97b3ced8bd3b9e2ce01ca101972eb5c7321ce1543db26877.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/947288224d612f8c7dced73d0ac17ab9608caa6627ef8d5da5628fce3a7a3579.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/9d97886ee64caf6078e589810ea369ae0649f66ad101d73a905a9f9871306bdd.png /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/02d2fd8bf5530e970dbef1107cee1a731c781a838d61174953a3d171963f5d94.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/b9f9c914ebdd06f358a2a7fe4e8f625c45665c9d6ae7c64980f9f20ee00f0d3b.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/cf368766bd221864d1a18cee77ea4c77a63a52b891372023b2b603b4519dd7b4.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/49a84a86143beab927b8074c2d05855e4221c4e99137d5d17b183e54093871cc.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/334466b4324a8c80f3204ef4c63cf6892ec20a954880af364b0ad4936aa6093a.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/084511aff76ddb2668538ed7a25fe803d53e625cd3734f5a5656e00a76fb7a92.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/f91ca04ef9a09a1bc8b5f17a458c78c3bb8eeec68868c9c4cbea154666bb356b.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/4271dbcdab4a00c153b897c9f2958d549250e04a468635b80085e64b22d1d19c.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/aab36d5a8153cdf5533467fffdb0fa843ed0db87f46bbd19f0f634eb2fde11fc.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/c9e3856e65f887bd3b04edf686e6e1d265a67306a0b3a3c7a05edb83af2447b3.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/6fc1a126cf07a445ff88c78e3f457f479d7c04d26536b71f0262756623c67176.jpg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/fdacc68a3ff3306467048482e87e9a30de05a4fb18a46c4d37be86fc387a37f8.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/b6febf0e4469b80a238ff3092c62662d308a6990466dbf66fda7dad1a8a10851.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}pictures/6443d24559e0ab154f79a7814e4f2f8fa071c3c8185aa40cbfead31e1ae8cde7.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}brief.md /monorepo/${BAYT_DIR:+${BAYT_DIR}/}brief.html /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal.html /monorepo/${BAYT_DIR:+${BAYT_DIR}/}ir.html /monorepo/${BAYT_DIR:+${BAYT_DIR}/}ir/card.css /monorepo/${BAYT_DIR:+${BAYT_DIR}/}acceptance.md /monorepo/${BAYT_DIR:+${BAYT_DIR}/}DESIGN.md /monorepo/${BAYT_DIR:+${BAYT_DIR}/}ir/neighbourhood-about.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}ir/neighbourhood-app.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}ir/neighbourhood-camera.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}ir/neighbourhood-detail.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}ir/neighbourhood-gallery.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}ir/neighbourhood-intro.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}ir/neighbourhood-landing.svg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t1-detail-dark.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t1-gallery.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t10-detail-donate.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t10-places-donate.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t11-profile.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t12-news.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t13-gallery-search.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t14-impact.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t15-moderation.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t16-sync.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t17-responsive.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t18-dark.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t19-rtl-he.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t2-my-items.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t2-preview.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t20-credits.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t3-discard.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t3-nearby.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t4-intro.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t4-landing.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t5-camera.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t5-submitted.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t6-seg-center.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t6-seg-neck.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t7-classified-gallery.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t7-classified-queue.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t8-after-translate.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t8-before-translate.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t9-detail-locale.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t9-gallery-revamp.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/2026-11-10-t9-places.jpeg /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/stitch/specimen-detail-donate-response.json /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/stitch/specimen-detail-donate.html /monorepo/${BAYT_DIR:+${BAYT_DIR}/}journal/stitch/specimen-detail-donate.png /monorepo/${BAYT_DIR:+${BAYT_DIR}/}robots.txt /monorepo/${BAYT_DIR:+${BAYT_DIR}/}sitemap.xml /
+COPY --from=iris-database_srcs --parents /monorepo/${BAYT_DIR:+${BAYT_DIR}/}services/database/migrations/000_extensions.sql /monorepo/${BAYT_DIR:+${BAYT_DIR}/}services/database/migrations/001_roles.sql /monorepo/${BAYT_DIR:+${BAYT_DIR}/}services/database/migrations/002_grants.sql /monorepo/${BAYT_DIR:+${BAYT_DIR}/}services/database/migrations/004_types.sql /monorepo/${BAYT_DIR:+${BAYT_DIR}/}services/database/migrations/005_create_tables.sql /monorepo/${BAYT_DIR:+${BAYT_DIR}/}services/database/migrations/006_policies.sql /monorepo/${BAYT_DIR:+${BAYT_DIR}/}services/database/migrations/007_txid.sql /monorepo/${BAYT_DIR:+${BAYT_DIR}/}services/database/migrations/008_publication.sql /monorepo/${BAYT_DIR:+${BAYT_DIR}/}services/database/migrations/010_machines.sql /monorepo/${BAYT_DIR:+${BAYT_DIR}/}services/database/migrations/003_rls.sql /monorepo/${BAYT_DIR:+${BAYT_DIR}/}services/database/migrations/013_me_provision.sql /monorepo/${BAYT_DIR:+${BAYT_DIR}/}services/database/migrations/014_default_privileges.sql /monorepo/${BAYT_DIR:+${BAYT_DIR}/}services/database/migrations/015_classify_request.sql /monorepo/${BAYT_DIR:+${BAYT_DIR}/}services/database/migrations/016_translate_item.sql /monorepo/${BAYT_DIR:+${BAYT_DIR}/}services/database/migrations/017_owner_writes.sql /monorepo/${BAYT_DIR:+${BAYT_DIR}/}services/database/migrations/018_me_readonly.sql /monorepo/${BAYT_DIR:+${BAYT_DIR}/}services/database/migrations/020_demo_items.sql /
+COPY --from=iris-migrate_srcs --parents /monorepo/${BAYT_DIR:+${BAYT_DIR}/}services/database/pgroll/20261114_ugc_translation.json /
+COPY --from=iris-airlock_srcs --parents /monorepo/${BAYT_DIR:+${BAYT_DIR}/}services/airlock/effects.json /monorepo/${BAYT_DIR:+${BAYT_DIR}/}effects/classify-waste.js /
+COPY --from=iris-airlock-mesh_srcs --parents /monorepo/${BAYT_DIR:+${BAYT_DIR}/}services/airlock/dapr/classify-waste.yaml /
+COPY --from=iris-setup_srcs --parents /monorepo/${BAYT_DIR:+${BAYT_DIR}/}[m]ise.toml /monorepo/${BAYT_DIR:+${BAYT_DIR}/}[.]mise.toml /monorepo/${BAYT_DIR:+${BAYT_DIR}/}[m]ise.lock /monorepo/${BAYT_DIR:+${BAYT_DIR}/}[.]tool-versions /monorepo/${BAYT_DIR:+${BAYT_DIR}/}[m]ise.local.toml /
+COPY .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/Taskfile.ci-ledger.yaml .bayt/bayt.ci-ledger.json ./.bayt/
+ENV BUILDX_BAKE_ENTITLEMENTS_FS=0
+ENV COMPOSE_BAKE=true
+RUN --mount=type=secret,id=docker_host --mount=type=secret,id=buildx_builder --mount=type=secret,id=testcontainers_host --mount=type=secret,id=cache_scope --mount=type=secret,id=cache_scope_fallback --mount=type=secret,id=sayt_buildkit_syntax --mount=type=secret,id=sayt_no_cache --mount=type=secret,id=bayt_image_tag --mount=type=secret,id=bayt_pull_policy --mount=type=secret,id=sayt_no_cache_from --mount=type=secret,id=sayt_no_cache_to --mount=type=secret,id=depot_token --mount=type=secret,id=depot_project_id --mount=type=secret,id=depot_org_id --mount=type=secret,id=depot_disable_otel --mount=type=secret,id=actions_results_url --mount=type=secret,id=actions_runtime_token --mount=type=secret,id=bkid_project --mount=type=secret,id=buildx_instance --mount=type=secret,id=docker_config,mode=0600 --mount=type=cache,target=/root/.cache/bayt,id=iris-ci-ledger:/root/.cache/bayt,sharing=locked <<BAYT_INJECT
+set -e
+export DOCKER_HOST="$(cat /run/secrets/docker_host)"
+export BUILDX_BUILDER="$(cat /run/secrets/buildx_builder)"
+export TESTCONTAINERS_HOST_OVERRIDE="$(cat /run/secrets/testcontainers_host)"
+export CACHE_SCOPE="$(cat /run/secrets/cache_scope)"
+export CACHE_SCOPE_FALLBACK="$(cat /run/secrets/cache_scope_fallback)"
+export BUILDKIT_SYNTAX="$(cat /run/secrets/sayt_buildkit_syntax)"
+export SAYT_NO_CACHE="$(cat /run/secrets/sayt_no_cache)"
+export BAYT_IMAGE_TAG="$(cat /run/secrets/bayt_image_tag)"
+export BAYT_PULL_POLICY="$(cat /run/secrets/bayt_pull_policy)"
+export SAYT_NO_CACHE_FROM="$(cat /run/secrets/sayt_no_cache_from)"
+export SAYT_NO_CACHE_TO="$(cat /run/secrets/sayt_no_cache_to)"
+export DEPOT_TOKEN="$(cat /run/secrets/depot_token)"
+export DEPOT_PROJECT_ID="$(cat /run/secrets/depot_project_id)"
+export DEPOT_ORG_ID="$(cat /run/secrets/depot_org_id)"
+export DEPOT_DISABLE_OTEL="$(cat /run/secrets/depot_disable_otel)"
+export ACTIONS_RESULTS_URL="$(cat /run/secrets/actions_results_url)"
+export ACTIONS_RUNTIME_TOKEN="$(cat /run/secrets/actions_runtime_token)"
+export BKID_PROJECT="$(cat /run/secrets/bkid_project)"
+export BUILDX_INSTANCE="$(cat /run/secrets/buildx_instance)"
+export DOCKER_AUTH_CONFIG="$(cat /run/secrets/docker_config)"
+if [ -s "/run/secrets/docker_config" ]; then mkdir -p "$(dirname "/root/.docker/config.json")"; cp -p "/run/secrets/docker_config" "/root/.docker/config.json"; fi
+if [ -n "$DOCKER_HOST" ] && [ ! -e /var/run/docker.sock ]; then
+  ulimit -n 1048576 2>/dev/null || true
+  addr=${DOCKER_HOST#tcp://}
+  [ -n "$addr" ] || { echo "bkid: DOCKER_HOST=$DOCKER_HOST has no tcp:// address" >&2; exit 1; }
+  socat -d0 -t 86400 UNIX-LISTEN:/var/run/docker.sock,fork,backlog=1024,reuseaddr "TCP:$addr,keepalive,keepidle=30,keepintvl=15,keepcnt=4" &
+  SOCAT_PID=$!
+  trap 'kill $SOCAT_PID 2>/dev/null || true' EXIT INT TERM
+  socat -u OPEN:/dev/null UNIX-CONNECT:/var/run/docker.sock,retry=20,interval=0.2 >/dev/null 2>&1 \
+    || { echo "bkid: socat bridge to /var/run/docker.sock not ready" >&2; exit 1; }
+fi
+if [ -n "$BUILDX_BUILDER" ] && [ -n "$BUILDX_INSTANCE" ]; then
+  install -d -m 0700 /root/.docker/buildx/instances
+  printf '%s' "$BUILDX_INSTANCE" > "/root/.docker/buildx/instances/$BUILDX_BUILDER"
+  chmod 0600 "/root/.docker/buildx/instances/$BUILDX_BUILDER"
+fi
+task -t .bayt/Taskfile.yml bayt:ci-ledger
+BAYT_INJECT
+
+FROM busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223 AS ci-ledger_bayt_ctxs
+ARG BAYT_DIR
+WORKDIR /monorepo/${BAYT_DIR}
+COPY --parents .bayt/compose.ci-ledger.yaml .bayt/Dockerfile.ci-ledger .bayt/bayt.ci-ledger.json .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/Taskfile.ci-ledger.yaml .bayt/process-compose.yaml ./
+COPY --from=iris-check-ledger_bayt /monorepo /monorepo
+COPY --from=iris-caddy_bayt /monorepo /monorepo
+COPY --from=iris-served_bayt /monorepo /monorepo
+COPY --from=iris-served-release_bayt /monorepo /monorepo
+COPY --from=iris-database_bayt /monorepo /monorepo
+COPY --from=iris-migrate_bayt /monorepo /monorepo
+COPY --from=iris-airlock_bayt /monorepo /monorepo
+COPY --from=iris-airlock-mesh_bayt /monorepo /monorepo
+COPY --from=iris-setup_bayt /monorepo /monorepo
+ARG SOURCE_DATE_EPOCH
+ARG BAYT_CLAMP=1
+RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/${BAYT_DIR} -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && { d=$(dirname /monorepo/${BAYT_DIR}); while [ "$d" != / ]; do touch -hd @${SOURCE_DATE_EPOCH:-0} "$d" || exit; d=$(dirname "$d"); done; }; fi
+FROM scratch AS ci-ledger_bayt
+COPY --from=ci-ledger_bayt_ctxs /monorepo /monorepo

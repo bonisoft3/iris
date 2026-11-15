@@ -1,0 +1,602 @@
+{
+  "0xa5790856c7af801d": {
+    "name": "app_user",
+    "fields": {
+      "1": {
+        "name": "id",
+        "type": "uuid",
+        "retired": false
+      },
+      "2": {
+        "name": "handle",
+        "type": "string",
+        "retired": false
+      },
+      "3": {
+        "name": "display_name",
+        "type": "string",
+        "retired": false
+      },
+      "4": {
+        "name": "home_address",
+        "type": "string",
+        "retired": true
+      },
+      "5": {
+        "name": "address_complement",
+        "type": "string",
+        "retired": true
+      },
+      "6": {
+        "name": "phone_number",
+        "type": "string",
+        "retired": true
+      },
+      "7": {
+        "name": "preferred_model",
+        "type": "string",
+        "retired": false
+      },
+      "8": {
+        "name": "created_at",
+        "type": "timestamp",
+        "retired": false
+      }
+    }
+  },
+  "0xf5d6b843ee761a50": {
+    "name": "me",
+    "fields": {
+      "1": {
+        "name": "id",
+        "type": "uuid",
+        "retired": false
+      },
+      "2": {
+        "name": "handle",
+        "type": "string",
+        "retired": false
+      }
+    }
+  },
+  "0xdeea885db8450bf3": {
+    "name": "track_request",
+    "fields": {
+      "1": {
+        "name": "id",
+        "type": "uuid",
+        "retired": false
+      },
+      "2": {
+        "name": "user_id",
+        "type": "uuid",
+        "retired": false
+      },
+      "3": {
+        "name": "image_url",
+        "type": "string",
+        "retired": false
+      },
+      "4": {
+        "name": "model",
+        "type": "string",
+        "retired": false
+      },
+      "5": {
+        "name": "status",
+        "type": "string",
+        "retired": false
+      },
+      "6": {
+        "name": "user_language",
+        "type": "string",
+        "retired": false
+      },
+      "7": {
+        "name": "user_city",
+        "type": "string",
+        "retired": false
+      },
+      "8": {
+        "name": "latitude",
+        "type": "string",
+        "retired": false
+      },
+      "9": {
+        "name": "longitude",
+        "type": "string",
+        "retired": false
+      },
+      "10": {
+        "name": "created_at",
+        "type": "timestamp",
+        "retired": false
+      }
+    }
+  },
+  "0xd7e715ad4e0ddbb0": {
+    "name": "trash_item",
+    "fields": {
+      "1": {
+        "name": "id",
+        "type": "uuid",
+        "retired": false
+      },
+      "2": {
+        "name": "request_id",
+        "type": "string",
+        "retired": false
+      },
+      "3": {
+        "name": "user_id",
+        "type": "uuid",
+        "retired": false
+      },
+      "4": {
+        "name": "picture",
+        "type": "string",
+        "retired": false
+      },
+      "5": {
+        "name": "caption",
+        "type": "string",
+        "retired": false
+      },
+      "6": {
+        "name": "label",
+        "type": "string",
+        "retired": false
+      },
+      "7": {
+        "name": "label_key",
+        "type": "string",
+        "retired": false
+      },
+      "8": {
+        "name": "object_material",
+        "type": "string",
+        "retired": false
+      },
+      "9": {
+        "name": "disposal_instructions",
+        "type": "string",
+        "retired": false
+      },
+      "10": {
+        "name": "sub_classifications",
+        "type": "string",
+        "retired": false
+      },
+      "11": {
+        "name": "price",
+        "type": "string",
+        "retired": false
+      },
+      "12": {
+        "name": "is_disposal_place",
+        "type": "bool",
+        "retired": false
+      },
+      "13": {
+        "name": "nearby_recycling_places",
+        "type": "string",
+        "retired": false
+      },
+      "14": {
+        "name": "tagged_as_inappropriate",
+        "type": "bool",
+        "retired": false
+      },
+      "15": {
+        "name": "user_language",
+        "type": "string",
+        "retired": false
+      },
+      "16": {
+        "name": "latitude",
+        "type": "string",
+        "retired": false
+      },
+      "17": {
+        "name": "longitude",
+        "type": "string",
+        "retired": false
+      },
+      "18": {
+        "name": "created_at",
+        "type": "timestamp",
+        "retired": false
+      },
+      "19": {
+        "name": "search_text",
+        "type": "string",
+        "retired": false
+      }
+    }
+  },
+  "0xd19b0b56796b189d": {
+    "name": "trash_item_translation",
+    "fields": {
+      "1": {
+        "name": "id",
+        "type": "uuid",
+        "retired": false
+      },
+      "2": {
+        "name": "item_id",
+        "type": "uuid",
+        "retired": false
+      },
+      "3": {
+        "name": "language",
+        "type": "string",
+        "retired": false
+      },
+      "4": {
+        "name": "caption",
+        "type": "string",
+        "retired": false
+      },
+      "5": {
+        "name": "disposal_instructions",
+        "type": "string",
+        "retired": false
+      },
+      "6": {
+        "name": "created_at",
+        "type": "timestamp",
+        "retired": false
+      },
+      "7": {
+        "name": "object_material",
+        "type": "string",
+        "retired": false
+      },
+      "8": {
+        "name": "sub_classifications",
+        "type": "string",
+        "retired": false
+      },
+      "9": {
+        "name": "price",
+        "type": "string",
+        "retired": false
+      },
+      "10": {
+        "name": "nearby_recycling_places",
+        "type": "string",
+        "retired": false
+      }
+    }
+  },
+  "0xceae60f163b37144": {
+    "name": "translation_request",
+    "fields": {
+      "1": {
+        "name": "id",
+        "type": "uuid",
+        "retired": false
+      },
+      "2": {
+        "name": "item_id",
+        "type": "uuid",
+        "retired": false
+      },
+      "3": {
+        "name": "user_id",
+        "type": "uuid",
+        "retired": false
+      },
+      "4": {
+        "name": "language",
+        "type": "string",
+        "retired": false
+      },
+      "5": {
+        "name": "created_at",
+        "type": "timestamp",
+        "retired": false
+      }
+    }
+  },
+  "0xe4310d8e856a5788": {
+    "name": "disposal_place",
+    "fields": {
+      "1": {
+        "name": "id",
+        "type": "uuid",
+        "retired": false
+      },
+      "2": {
+        "name": "user_id",
+        "type": "uuid",
+        "retired": false
+      },
+      "3": {
+        "name": "name",
+        "type": "string",
+        "retired": false
+      },
+      "4": {
+        "name": "img_url",
+        "type": "string",
+        "retired": false
+      },
+      "5": {
+        "name": "material_type",
+        "type": "string",
+        "retired": false
+      },
+      "6": {
+        "name": "material_key",
+        "type": "string",
+        "retired": false
+      },
+      "7": {
+        "name": "address",
+        "type": "string",
+        "retired": false
+      },
+      "8": {
+        "name": "phone_number",
+        "type": "string",
+        "retired": false
+      },
+      "9": {
+        "name": "distance_km",
+        "type": "string",
+        "retired": false
+      },
+      "10": {
+        "name": "latitude",
+        "type": "string",
+        "retired": false
+      },
+      "11": {
+        "name": "longitude",
+        "type": "string",
+        "retired": false
+      },
+      "12": {
+        "name": "created_at",
+        "type": "timestamp",
+        "retired": false
+      }
+    }
+  },
+  "0x9c8f7015554e5f89": {
+    "name": "gallery_view",
+    "fields": {
+      "1": {
+        "name": "id",
+        "type": "string",
+        "retired": false
+      },
+      "2": {
+        "name": "tab",
+        "type": "string",
+        "retired": false
+      },
+      "3": {
+        "name": "preview_id",
+        "type": "string",
+        "retired": false
+      },
+      "4": {
+        "name": "category",
+        "type": "string",
+        "retired": false
+      },
+      "5": {
+        "name": "query",
+        "type": "string",
+        "retired": false
+      }
+    }
+  },
+  "0xc0041b25806194d0": {
+    "name": "detail_view",
+    "fields": {
+      "1": {
+        "name": "id",
+        "type": "string",
+        "retired": false
+      },
+      "2": {
+        "name": "tab",
+        "type": "string",
+        "retired": false
+      }
+    }
+  },
+  "0xa28e1047df44d53a": {
+    "name": "onboarding_step",
+    "fields": {
+      "1": {
+        "name": "id",
+        "type": "string",
+        "retired": false
+      },
+      "2": {
+        "name": "step",
+        "type": "string",
+        "retired": false
+      },
+      "3": {
+        "name": "visited",
+        "type": "string",
+        "retired": false
+      }
+    }
+  },
+  "0x877c9da90e137c4b": {
+    "name": "scan_draft",
+    "fields": {
+      "1": {
+        "name": "id",
+        "type": "string",
+        "retired": false
+      },
+      "2": {
+        "name": "image_url",
+        "type": "string",
+        "retired": false
+      },
+      "3": {
+        "name": "preset_label",
+        "type": "string",
+        "retired": false
+      },
+      "4": {
+        "name": "model",
+        "type": "string",
+        "retired": false
+      },
+      "5": {
+        "name": "user_city",
+        "type": "string",
+        "retired": false
+      },
+      "6": {
+        "name": "segment_region",
+        "type": "string",
+        "retired": false
+      },
+      "7": {
+        "name": "segment_status",
+        "type": "string",
+        "retired": false
+      },
+      "8": {
+        "name": "giou_score",
+        "type": "string",
+        "retired": false
+      },
+      "9": {
+        "name": "bbox_summary",
+        "type": "string",
+        "retired": false
+      },
+      "10": {
+        "name": "user_language",
+        "type": "string",
+        "retired": false
+      }
+    }
+  },
+  "0xc21ecdf03eeea896": {
+    "name": "localized_item",
+    "fields": {
+      "1": {
+        "name": "id",
+        "type": "string",
+        "retired": false
+      },
+      "2": {
+        "name": "locale",
+        "type": "string",
+        "retired": false
+      },
+      "3": {
+        "name": "caption",
+        "type": "string",
+        "retired": false
+      },
+      "4": {
+        "name": "original_caption",
+        "type": "string",
+        "retired": false
+      },
+      "5": {
+        "name": "disposal_instructions",
+        "type": "string",
+        "retired": false
+      },
+      "6": {
+        "name": "translated",
+        "type": "string",
+        "retired": false
+      },
+      "7": {
+        "name": "object_material",
+        "type": "string",
+        "retired": false
+      },
+      "8": {
+        "name": "sub_classifications",
+        "type": "string",
+        "retired": false
+      },
+      "9": {
+        "name": "price",
+        "type": "string",
+        "retired": false
+      },
+      "10": {
+        "name": "nearby_recycling_places",
+        "type": "string",
+        "retired": false
+      }
+    }
+  },
+  "0xf5076130d2f50864": {
+    "name": "classify_job",
+    "fields": {
+      "1": {
+        "name": "id",
+        "type": "uuid",
+        "retired": false
+      },
+      "2": {
+        "name": "user_id",
+        "type": "uuid",
+        "retired": false
+      },
+      "3": {
+        "name": "image_url",
+        "type": "string",
+        "retired": false
+      },
+      "4": {
+        "name": "model",
+        "type": "string",
+        "retired": false
+      },
+      "5": {
+        "name": "user_language",
+        "type": "string",
+        "retired": false
+      },
+      "6": {
+        "name": "user_city",
+        "type": "string",
+        "retired": false
+      },
+      "7": {
+        "name": "latitude",
+        "type": "string",
+        "retired": false
+      },
+      "8": {
+        "name": "longitude",
+        "type": "string",
+        "retired": false
+      },
+      "9": {
+        "name": "status",
+        "type": "string",
+        "retired": false
+      },
+      "10": {
+        "name": "result_json",
+        "type": "string",
+        "retired": false
+      },
+      "11": {
+        "name": "created_at",
+        "type": "timestamp",
+        "retired": false
+      }
+    }
+  }
+}

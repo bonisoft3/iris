@@ -1,1 +1,0 @@
-GRANT SELECT ON disposalplace TO anon

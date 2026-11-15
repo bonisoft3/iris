@@ -1,0 +1,223 @@
+{
+  "_generated_from": "bayt.cue (do not edit)",
+  "compose": {
+    "up": false,
+    "manual": false,
+    "build": {
+      "additional_contexts": {
+        "workspaceroot-pronto-sources_srcs": "${MONOREPO_COMPOSE_MODE:-docker-image://busybox:musl@sha256:03db190ed4c1ceb1c55d179a0940e2d71d42130636a780272629735893292223}${MONOREPO_COMPOSE_MODE:+:workspaceroot-pronto-sources_srcs}"
+      },
+      "secrets": [],
+      "args": {}
+    },
+    "environment": {},
+    "ports": [],
+    "volumes": [],
+    "depends_on": {}
+  },
+  "dockerfile": {
+    "preamble": [
+      "COPY --from=bonitao/lazybox:0.8.6@sha256:0f30c48513fac757f844f02c864802991dec045f9c4189e3db2ae4ac297544df /lazybox/ /root/.local/share/lazybox/",
+      "ENV PATH=/root/.local/bin:/root/.local/share/lazybox/bin:$PATH",
+      "ENV MISE_TRUSTED_CONFIG_PATHS=/monorepo",
+      "RUN --mount=type=cache,target=/apt-store,id=/apt-store,sharing=shared --mount=type=cache,target=/var/cache/apt,id=iris-setup:/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt/lists,id=iris-setup:/var/lib/apt/lists,sharing=locked s=/apt-store; d=/var/cache/apt/archives; mkdir -p \"$s\" \"$d\"; cp -r \"$s\"/. \"$d\"/ 2>/dev/null || true; rm -f /etc/apt/apt.conf.d/docker-clean && echo 'Binary::apt::APT::Keep-Downloaded-Packages \"true\";' > /etc/apt/apt.conf.d/keep-cache && apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends 'git=1:2.47.*' 'libatomic1=14.2.*' 'curl=8.14.*' 'ca-certificates=20250419*' 'procps=2:4.0.*' || exit; cd \"$d\" && for f in *.deb; do [ -f \"$f\" ] || continue; o=\"$s/$f\"; [ -e \"$o\" ] && continue; t=\"$(mktemp \"$s/.pXXXXXX\")\" && cp \"$f\" \"$t\" && mv -f \"$t\" \"$o\"; done; :"
+    ],
+    "preambleCopyContexts": [],
+    "from": {
+      "name": "debian:13.7-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2"
+    },
+    "add": [],
+    "mounts": [],
+    "secrets": {},
+    "extra_hosts": [],
+    "epilogue": [
+      "COPY --from=workspaceroot-pronto-sources_srcs /monorep[o] /monorepo/",
+      {
+        "srcs": [
+          "[m]ise.local.toml"
+        ]
+      },
+      "RUN mise install"
+    ],
+    "copy": [],
+    "healthcheck": null,
+    "expose": [],
+    "entrypoint": null,
+    "incremental": false,
+    "cmd": null
+  },
+  "name": "setup",
+  "project": "iris",
+  "dir": ".",
+  "activate": "",
+  "srcs": {
+    "globs": [],
+    "exclude": []
+  },
+  "outs": {
+    "globs": [],
+    "exclude": []
+  },
+  "state": {
+    "globs": []
+  },
+  "env": {
+    "MISE_ALWAYS_KEEP_DOWNLOAD": "1"
+  },
+  "synthetics": {
+    "bayt": {
+      "name": "setup_bayt",
+      "project": "iris",
+      "dir": ".",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          ".bayt/compose.setup.yaml",
+          ".bayt/Dockerfile.setup",
+          ".bayt/bayt.setup.json",
+          ".bayt/Taskfile.yml",
+          ".bayt/Taskfile.bayt.yml",
+          ".bayt/Taskfile.setup.yaml",
+          ".bayt/process-compose.yaml"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "./.bayt/compose.setup.yaml"
+      ]
+    },
+    "outs": {
+      "name": "setup_outs",
+      "project": "iris",
+      "dir": ".",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [],
+        "exclude": []
+      },
+      "env": {},
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "./.bayt/compose.setup.yaml"
+      ]
+    },
+    "srcs": {
+      "name": "setup_srcs",
+      "project": "iris",
+      "dir": ".",
+      "activate": "",
+      "srcs": {
+        "globs": [],
+        "exclude": []
+      },
+      "outs": {
+        "globs": [
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock",
+          "[.]tool-versions",
+          "[m]ise.local.toml"
+        ],
+        "exclude": []
+      },
+      "env": {},
+      "visibility": "internal",
+      "deps": [],
+      "transitiveDeps": [],
+      "transitiveCrossDeps": [],
+      "chainedDeps": [],
+      "cmds": [],
+      "cache": {
+        "full": false,
+        "similar": false
+      },
+      "upClosure": [
+        "./.bayt/compose.setup.yaml"
+      ]
+    }
+  },
+  "taskfile": {
+    "run": "when_changed",
+    "incremental": true,
+    "preconditions": []
+  },
+  "visibility": "internal",
+  "emitsSrcs": true,
+  "deps": [],
+  "sameProjectDeps": [],
+  "transitiveDeps": [],
+  "transitiveCrossDeps": [],
+  "upClosure": [
+    "./.bayt/compose.setup.yaml"
+  ],
+  "chainedDeps": [],
+  "cmds": [
+    {
+      "srcs": {
+        "globs": [
+          "[m]ise.toml",
+          "[.]mise.toml",
+          "[m]ise.lock",
+          "[.]tool-versions"
+        ],
+        "exclude": [],
+        "defaultGlobs": null,
+        "defaultExclude": null
+      },
+      "name": "builtin",
+      "do": "mise install",
+      "dockerfile": {
+        "do": "d=/root/.local/share/mise/downloads; s=/mise-tarball-store; mkdir -p \"$d\" \"$s\"; cp -r \"$s\"/. \"$d\"/ 2>/dev/null || true; mise install || exit; cd \"$d\" && for f in */*/*; do [ -f \"$f\" ] || continue; o=\"$s/$f\"; [ -e \"$o\" ] && continue; mkdir -p \"$(dirname \"$o\")\"; t=\"$(mktemp \"$(dirname \"$o\")/.pXXXXXX\")\" && cp \"$f\" \"$t\" && mv -f \"$t\" \"$o\"; done; :",
+        "mounts": [
+          {
+            "type": "cache",
+            "target": "/root/.local/share/mise/downloads",
+            "scope": "project",
+            "required": false
+          },
+          {
+            "type": "cache",
+            "target": "/mise-tarball-store",
+            "scope": "global",
+            "required": false
+          }
+        ],
+        "shell": "sh"
+      },
+      "shell": "exec",
+      "stop": false
+    }
+  ],
+  "cache": {
+    "full": false,
+    "similar": false
+  }
+}

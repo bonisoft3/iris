@@ -1,0 +1,367 @@
+@import "./shared/iris.css";
+
+/* camera.css — Live camera capture, interactive MediaPipe segmentation, and classification submission. */
+
+[data-screen="camera"] {
+  max-width: none;
+  margin-inline: 0;
+  padding: 0 0 var(--sp-xl);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+[data-screen="camera"] .camera-workspace {
+  container-type: inline-size;
+  padding: var(--sp-lg);
+  flex: 1;
+}
+
+[data-screen="camera"] .camera-title {
+  margin: 0;
+  color: var(--strip-ink);
+}
+
+[data-screen="camera"] .secondary-cta {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-h);
+  padding: var(--size-1) var(--sp-md);
+  border-radius: var(--r-full);
+  border: var(--border-size-1) solid transparent;
+  background: var(--strip-ink);
+  color: var(--header);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+[data-screen="camera"] .camera-split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-lg);
+  align-items: start;
+}
+
+@container (min-width: 860px) {
+  [data-screen="camera"] .camera-split {
+    grid-template-columns: 1.15fr 0.85fr;
+  }
+}
+
+[data-screen="camera"] .camera-lens-card {
+  display: grid;
+  gap: var(--sp-sm);
+}
+
+[data-screen="camera"] .scan-form-card {
+  background: var(--surface);
+  border: var(--border-size-1) solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--sp-lg);
+  display: grid;
+  gap: var(--sp-md);
+}
+
+[data-screen="camera"] .camera-submit-column {
+  display: grid;
+  gap: var(--sp-lg);
+}
+
+[data-screen="camera"] .section-title {
+  margin: 0;
+  color: var(--primary);
+}
+
+[data-screen="camera"] .camera-hatch-mount {
+  width: 100%;
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+
+[data-screen="camera"] .camera-hatch-mount:empty {
+  display: none;
+}
+
+[data-screen="camera"] .camera-hatch-mount:not(:empty) ~ .lens-frame {
+  display: none;
+}
+
+[data-screen="camera"] .lens-frame {
+  margin: 0;
+  background: var(--surface);
+  border: var(--border-size-2) solid var(--accent);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  display: grid;
+}
+
+[data-screen="camera"] .lens-stage {
+  position: relative;
+  display: grid;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--accent) 22%, var(--header)), var(--header));
+}
+
+[data-screen="camera"] .lens-preview-img {
+  width: 100%;
+  aspect-ratio: var(--ratio-landscape);
+  object-fit: cover;
+  padding: 0;
+  background: transparent;
+  filter: blur(var(--size-5)) saturate(1.2) brightness(0.42);
+  transform: scale(1.12);
+}
+
+[data-screen="camera"] .lens-caption {
+  padding: var(--sp-sm) var(--sp-md);
+  border-block-start: var(--border-size-1) solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-sm);
+}
+
+[data-screen="camera"] .lens-city-tag {
+  color: var(--secondary);
+}
+
+[data-screen="camera"] .scan-form-sub {
+  margin: 0;
+  color: var(--secondary);
+}
+
+[data-screen="camera"] .scan-form {
+  display: grid;
+  gap: var(--sp-md);
+}
+
+[data-screen="camera"] .field {
+  display: grid;
+  gap: var(--size-1);
+}
+
+[data-screen="camera"] .field-label {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+[data-screen="camera"] .field select,
+[data-screen="camera"] .field input[type="text"] {
+  min-height: var(--control-h);
+  padding: var(--size-1) var(--sp-sm);
+  border-radius: var(--r-sm);
+  border: var(--border-size-1) solid var(--border);
+  background: var(--neutral);
+  color: var(--primary);
+  font: inherit;
+}
+
+[data-screen="camera"] .form-actions {
+  display: grid;
+  gap: var(--sp-sm);
+}
+
+[data-screen="camera"] .primary-cta {
+  min-height: var(--control-h);
+  padding: var(--sp-sm) var(--sp-lg);
+  border-radius: var(--r-full);
+  border: var(--border-size-1) solid var(--accent);
+  background: var(--accent);
+  color: var(--surface);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+[data-screen="camera"] .saved {
+  margin: 0;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+[data-screen="camera"] .invalid,
+[data-screen="camera"] .store-error {
+  margin: 0;
+  color: var(--danger);
+  font-weight: 600;
+}
+
+[data-screen="camera"] .card-open-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-h-sm);
+  width: fit-content;
+  color: var(--link);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+[data-screen="camera"] .camera-results-scope {
+  display: contents;
+}
+
+[data-screen="camera"] .generated-scans-banner {
+  background: var(--surface);
+  border: var(--border-size-1) solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--sp-lg);
+  display: grid;
+  gap: var(--sp-md);
+}
+
+[data-screen="camera"] .gen-progress-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-sm);
+}
+
+[data-screen="camera"] .camera-queue-list,
+[data-screen="camera"] .camera-results-list {
+  display: grid;
+  gap: var(--sp-sm);
+}
+
+[data-screen="camera"] .camera-queue-list:empty {
+  display: none;
+}
+
+[data-screen="camera"] .scan-queue-row {
+  display: grid;
+  grid-template-columns: var(--size-9) 1fr;
+  gap: var(--sp-sm);
+  align-items: center;
+  padding: var(--sp-sm);
+  border-radius: var(--r-sm);
+  border: var(--border-size-1) dashed var(--accent);
+  background: var(--surface-muted);
+}
+
+[data-screen="camera"] .scan-queue-thumb {
+  width: var(--size-9);
+  height: var(--size-9);
+  border-radius: var(--r-sm);
+  object-fit: cover;
+  background: var(--neutral);
+}
+
+[data-screen="camera"] .scan-queue-copy {
+  display: grid;
+  gap: var(--size-1);
+}
+
+[data-screen="camera"] .scan-queue-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-sm);
+}
+
+[data-screen="camera"] .scan-queue-row[data-status="failed"] {
+  border-color: var(--danger);
+}
+
+[data-screen="camera"] .scan-queue-row[data-status="failed"] .phase-pill-active,
+[data-screen="camera"] .scan-queue-row:not([data-status="failed"]) .phase-pill-failed {
+  display: none;
+}
+
+[data-screen="camera"] .scan-queue-row[data-status="failed"] .phase-pill-failed {
+  color: var(--danger);
+}
+
+[data-screen="camera"] .scan-result-card {
+  display: grid;
+  gap: var(--sp-sm);
+  padding: var(--sp-md);
+  border-radius: var(--r-md);
+  border: var(--border-size-1) solid var(--border);
+  background: var(--surface-muted);
+}
+
+[data-screen="camera"] .scan-result-main {
+  display: grid;
+  grid-template-columns: var(--size-9) 1fr;
+  gap: var(--sp-md);
+  align-items: center;
+}
+
+[data-screen="camera"] .scan-result-thumb {
+  width: var(--size-9);
+  height: var(--size-9);
+  border-radius: var(--r-sm);
+  object-fit: cover;
+  background: var(--surface);
+  border: var(--border-size-1) solid var(--border);
+}
+
+[data-screen="camera"] .scan-result-body {
+  display: grid;
+  gap: var(--size-1);
+  min-width: 0;
+}
+
+[data-screen="camera"] .scan-result-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-sm);
+}
+
+[data-screen="camera"] .scan-result-title {
+  margin: 0;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+[data-screen="camera"] .scan-result-material {
+  margin: 0;
+  color: var(--secondary);
+}
+
+[data-screen="camera"] .scan-result-steps {
+  margin: 0;
+  color: var(--primary);
+  padding-top: var(--size-1);
+  border-block-start: var(--border-size-1) solid var(--border);
+}
+
+[data-screen="camera"] .scan-result-localized-meta {
+  display: grid;
+  gap: var(--size-1);
+}
+
+[data-screen="camera"] .scan-result-localized-meta[data-locale="he"] {
+  direction: rtl;
+  text-align: start;
+}
+
+[data-screen="camera"] .scan-result-card:has(.scan-result-localized-slot:not(:empty)) .scan-result-title-fallback,
+[data-screen="camera"] .scan-result-card:has(.scan-result-localized-slot:not(:empty)) .scan-result-material-fallback,
+[data-screen="camera"] .scan-result-card:has(.scan-result-localized-slot:not(:empty)) .scan-result-steps-fallback {
+  display: none;
+}
+
+[data-screen="camera"] .scan-result-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-sm);
+  padding-top: var(--size-1);
+}
+
+[data-screen="camera"] .scan-result-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--control-h-sm);
+  padding: var(--size-1) var(--sp-md);
+  border-radius: var(--r-full);
+  background: var(--accent);
+  color: var(--surface);
+  text-decoration: none;
+  font-weight: 700;
+}

@@ -1,0 +1,26 @@
+{
+  "schema": {
+    "pgroll": {
+      "target": "migrate",
+      "dir": "/pgroll",
+      "baseline": "00_initdb"
+    },
+    "target": "database",
+    "initdb": "/docker-entrypoint-initdb.d"
+  },
+  "database": "bonitao/mecha-database:0.23.1@sha256:ab98bb1431e05361e30e73583335c01170c17d8dcddbb666b2f57bb837f63f77",
+  "server": true,
+  "steps": {
+    "graphile": "011_graphile_worker.sql",
+    "airlock": "012_airlock.sql",
+    "jobKey": "019_airlock_job_key.sql",
+    "note": "The steps 013 to 018 write no classify_job row: 015's inserts are inside trigger functions, which the demo items at 020 are the first to fire."
+  },
+  "tokenRoles": [
+    "anon",
+    "app_user",
+    "service"
+  ],
+  "computations": [],
+  "drains": []
+}

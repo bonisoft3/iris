@@ -1,0 +1,65 @@
+<!-- intro — ir: #intro. Three-step onboarding walkthrough matching iris.cleaning/intro. -->
+<section class="screen" data-screen="intro">
+  <p class="offline role-meta" data-text="{msg.offline}">Iris cannot reach the server right now.</p>
+
+  <div class="skeleton" aria-hidden="true">
+    <div class="skel intro-skel"></div>
+  </div>
+
+  <div class="intro-shell" data-live="onboarding_step" data-filter="id=eq.step" data-empty-row='{"id":"step","step":"1","visited":"false"}'>
+    <div class="intro-stage" data-step="{step}">
+      <div class="intro-progress" role="group">
+        <button type="button" id="intro-step-1" class="progress-seg" data-seg="1" data-on-click="onboarding_step" aria-label="1">
+          <span class="sr-only" data-text="{msg.intro_step1_title}"></span>
+        </button>
+        <button type="button" id="intro-step-2" class="progress-seg" data-seg="2" data-on-click="onboarding_step" aria-label="2">
+          <span class="sr-only" data-text="{msg.intro_step2_title}"></span>
+        </button>
+        <button type="button" id="intro-step-3" class="progress-seg" data-seg="3" data-on-click="onboarding_step" aria-label="3">
+          <span class="sr-only" data-text="{msg.intro_step3_title}"></span>
+        </button>
+      </div>
+
+      <article class="intro-slide slide-1">
+        <div class="intro-visual">
+          <img class="intro-img" src="/pictures/fdacc68a3ff3306467048482e87e9a30de05a4fb18a46c4d37be86fc387a37f8.svg" alt="" width="260" height="260">
+        </div>
+        <div class="intro-copy">
+          <h1 class="intro-title role-title" data-text="{msg.intro_step1_title}">Do your part for a more sustainable future with IRIS.</h1>
+          <p class="intro-sub role-body" data-text="{msg.intro_step1_sub}">Understand more about your waste, where to dispose of it, and how to handle it better.</p>
+        </div>
+        <div class="intro-actions">
+          <button type="button" id="intro-next-1" class="btn-primary intro-cta role-label" data-on-click="onboarding_step" data-text="{msg.intro_next_cta}">Next</button>
+          <a id="intro-skip-1" class="intro-skip role-label" data-route="gallery" data-on-click="onboarding_step" data-text="{msg.intro_skip_cta}">Skip</a>
+        </div>
+      </article>
+
+      <article class="intro-slide slide-2">
+        <div class="intro-visual">
+          <img class="intro-img" src="/pictures/b6febf0e4469b80a238ff3092c62662d308a6990466dbf66fda7dad1a8a10851.svg" alt="" width="260" height="260">
+        </div>
+        <div class="intro-copy">
+          <h1 class="intro-title role-title" data-text="{msg.intro_step2_title}">Learn how point-to-point collection works.</h1>
+          <p class="intro-sub role-body" data-text="{msg.intro_step2_sub}">Which companies are responsible for improving recycling in your neighborhood.</p>
+        </div>
+        <div class="intro-actions">
+          <button type="button" id="intro-next-2" class="btn-primary intro-cta role-label" data-on-click="onboarding_step" data-text="{msg.intro_next_cta}">Next</button>
+          <a id="intro-skip-2" class="intro-skip role-label" data-route="gallery" data-on-click="onboarding_step" data-text="{msg.intro_skip_cta}">Skip</a>
+        </div>
+      </article>
+
+      <article class="intro-slide slide-3">
+        <div class="intro-visual">
+          <img class="intro-img" src="/pictures/6443d24559e0ab154f79a7814e4f2f8fa071c3c8185aa40cbfead31e1ae8cde7.svg" alt="" width="260" height="260">
+        </div>
+        <div class="intro-copy">
+          <h1 class="intro-title role-title" data-text="{msg.intro_step3_title}">Do everything through your cell phone camera.</h1>
+          <p class="intro-sub role-body" data-text="{msg.intro_step3_sub}">Find a well-lit place, take a picture of your waste, and you will have the right information in the palm of your hand.</p>
+        </div>
+        <div class="intro-actions">
+          <a id="intro-start" class="btn-primary intro-cta role-label" data-route="gallery" data-on-click="onboarding_step" data-text="{msg.intro_start_cta}">Start Iris now</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>

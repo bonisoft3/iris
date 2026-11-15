@@ -1,0 +1,57 @@
+# generated from bayt.cue — do not edit
+services:
+  iris-identity:
+    build:
+      additional_contexts:
+        iris-identity-hydra: service:iris-identity-hydra
+      context: ..
+      dockerfile: .bayt/Dockerfile.identity
+      target: identity
+      tags:
+      - bayt-iris-identity:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+      - bayt-iris-identity:latest
+      args:
+        BAYT_DIR: ${MONOREPO_COMPOSE_MODE:+apps/iris}
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+    depends_on:
+      iris-identity-hydra:
+        condition: service_healthy
+        restart: true
+    environment:
+      BROKER_ISSUER: http://localhost:28443
+      BROKER_SECRET: ${BROKER_SECRET:-pronto-identity-local-launch-secret-0000}
+      BROKER_FAKE_GOOGLE: "1"
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      HYDRA_PUBLIC: http://identity-hydra:28453
+      HYDRA_ADMIN: http://identity-hydra:28455
+      PORT: "28443"
+    healthcheck:
+      test:
+      - CMD
+      - httpcheck
+      - http://127.0.0.1:28443/health
+      interval: 1s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+      start_interval: 200ms
+    image: bayt-iris-identity:${BAYT_IMAGE_TAG:-${COMPOSE_PROJECT_NAME}}
+    networks:
+      default:
+        aliases:
+        - identity
+  iris-identity_bayt:
+    build:
+      additional_contexts:
+        iris-identity-hydra_bayt: service:iris-identity-hydra_bayt
+      context: ..
+      dockerfile: .bayt/Dockerfile.identity
+      target: identity_bayt
+      args:
+        BAYT_DIR: ${MONOREPO_COMPOSE_MODE:+apps/iris}
+        BUILDKIT_SYNTAX: >-
+          docker/dockerfile:1.27@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+    image: bayt-iris-identity_bayt:latest
+    scale: 0

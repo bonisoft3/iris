@@ -1,9 +1,0 @@
-kind: Kustomization
-apiVersion: kustomize.config.k8s.io/v1beta1
-generators:
-  - ./ksops-generator.yaml
-resources:
-- gcp-provider-config.yaml
-- crossplane-pgrst.yaml
-- crossplane-services.yaml
-- crossplane-electric.yaml

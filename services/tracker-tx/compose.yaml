@@ -1,6 +1,0 @@
-# Compose discovery looks for ./compose.yaml at the project root by
-# default, so this top-level file just federates the bayt-emitted
-# graph. Every service (launch, build, integrate, release) is now
-# bayt-modeled — see services/tracker-tx/bayt.cue.
-include:
-  - path: ./.bayt/compose.yaml
