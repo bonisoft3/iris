@@ -2281,11 +2281,11 @@
   "duckstreams": {},
   "effects": {
     "classify-waste": {
-      "name": "classify-waste",
-      "ir": "classify-waste",
       "key": [
         "id"
       ],
+      "name": "classify-waste",
+      "ir": "classify-waste",
       "input": {
         "image_url": "NEW.image_url",
         "model": "NEW.model",
