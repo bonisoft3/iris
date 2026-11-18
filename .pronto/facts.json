@@ -208,7 +208,7 @@
     {"path":"shell/shared/iris.css","token":"--font-mono"}
   ],
   "artifact": [
-    {"path":"program.cue","sha256":"b5e04311309348c4ca9de4b0ef1d24a005e1fece3447b7914e1ff51a57574ed0","derived":false},
+    {"path":"program.cue","sha256":"3c0f60a4a1b058a105d481ce83ccd08538617cfe5fbc66db2a6121245cb37a0b","derived":false},
     {"path":"DESIGN.md","sha256":"d37d503b85a9c2a7fb8930e8679d3c6bedd0e1ecf1f5ee36a3b8090f8ba5fae2","derived":false},
     {"path":"ir.html","sha256":"ab1823fbd22441e841a98d401e8fc0c116693712e5bf555ae9d9907add09a3e0","derived":false},
     {"path":"acceptance.md","sha256":"5c4c6359f033d6835e169ff0489238749344a2e8af0c867c2de2afafcf6c9c44","derived":false},
