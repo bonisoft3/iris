@@ -45,6 +45,8 @@ processes:
       - AIRLOCK_DIR=/airlock
       - DENO_DIR=/airlock-deno-dir
       - PORT=9997
+      - AIRLOCK_RELEASE=docker
+      - AIRLOCK_SEAL_DEV=
     depends_on:
       airlock-upgrade:
         condition: process_completed_successfully
@@ -120,6 +122,7 @@ RUN printf '%s\n' '#!/bin/sh' 'while [ $# -gt 0 ]; do if [ "$1" = "--" ]; then s
 RUN printf '#!/bin/sh\nexit 0\n' > /usr/local/bin/task && chmod 755 /usr/local/bin/task
 RUN printf '%s\n' '#!/bin/sh' 'set -e' 'for n in crud database auth airlock-mesh airlock; do' '  grep -Eq "^[^#]*[[:space:]]$n([[:space:]]|$)" /etc/hosts || echo "127.0.0.1 $n" >> /etc/hosts || { echo "appliance: cannot name $n in /etc/hosts" >&2; exit 1; }' 'done' 'export PORT="${PORT:-8080}"' 'export CADDY_HTTP_PORT="${PORT}"' 'export CADDY_TLS_HOST_PORT="${PORT}"' 'if [ -n "$ORIGIN" ]; then' '  if [ -z "$WEBAUTHN_RP_ID" ]; then' '    h="${ORIGIN#*://}"' '    h="${h%%/*}"' '    h="${h%%:*}"' '    if [ -n "$h" ] && [ "$h" != "localhost" ]; then export WEBAUTHN_RP_ID="$h"; fi' '  fi' '  if [ -z "$WEBAUTHN_ORIGIN" ] && [ -n "$WEBAUTHN_RP_ID" ] && [ "$WEBAUTHN_RP_ID" != "localhost" ]; then export WEBAUTHN_ORIGIN="$ORIGIN"; fi' 'fi' 'exec "$@"' > /usr/local/bin/appliance-entrypoint.sh && chmod 755 /usr/local/bin/appliance-entrypoint.sh
 RUN sed -Ei 's|http://127\.0\.0\.1:\$\{CADDY_HTTP_PORT:-[0-9]+\}/health|http://127.0.0.1:${PORT:-8080}/health|g' /.bayt/process-compose.yaml
+RUN grep -v AIRLOCK_SEAL_DEV /.bayt/process-compose.yaml > /tmp/process-compose.yaml && mv /tmp/process-compose.yaml /.bayt/process-compose.yaml
 RUN awk 'skip { d += gsub(/\{/, "{") - gsub(/\}/, "}"); if (d <= 0) skip = 0; next } /handle @rendered \{/ { skip = 1; d = 1; next } { print }' /etc/caddy/Caddyfile > /tmp/Caddyfile && mv /tmp/Caddyfile /etc/caddy/Caddyfile
 RUN ELECTRIC_SECRET=validation-only caddy validate --adapter caddyfile --config /etc/caddy/Caddyfile
 

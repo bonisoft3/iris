@@ -210,8 +210,6 @@ processes:
     depends_on:
       crud:
         condition: process_healthy
-      "bayt:httpcheck":
-        condition: process_completed_successfully
     entrypoint:
     - mise
     - x
@@ -230,8 +228,12 @@ processes:
     - PRONTO_UPSTREAM_ELECTRIC=127.0.0.1:${ELECTRIC_HTTP_PORT:-31410}
     - PRONTO_UPSTREAM_TICKER=127.0.0.1:${TICKER_HTTP_PORT:-32067}
     readiness_probe:
-      exec:
-        command: bayt microcheck httpcheck http://127.0.0.1:${CADDY_HTTP_PORT:-22649}/health
+      http_get:
+        scheme: http
+        host: 127.0.0.1
+        port: ${CADDY_HTTP_PORT:-22649}
+        path: /health
+        status_code: 200
       period_seconds: 5
       timeout_seconds: 5
       failure_threshold: 32
@@ -346,8 +348,6 @@ processes:
     depends_on:
       identity-hydra:
         condition: process_healthy
-      "bayt:httpcheck":
-        condition: process_completed_successfully
     entrypoint:
     - mise
     - x
@@ -377,8 +377,12 @@ processes:
     - HYDRA_PUBLIC=http://127.0.0.1:28453
     - PORT=${IDENTITY_HTTP_PORT:-28443}
     readiness_probe:
-      exec:
-        command: bayt microcheck httpcheck http://127.0.0.1:${IDENTITY_HTTP_PORT:-28443}/health
+      http_get:
+        scheme: http
+        host: 127.0.0.1
+        port: ${IDENTITY_HTTP_PORT:-28443}
+        path: /health
+        status_code: 200
       period_seconds: 1
       timeout_seconds: 5
       failure_threshold: 60
@@ -579,6 +583,7 @@ processes:
       exit_on_skipped: true
     environment:
     - PGRST_ADMIN_SERVER_PORT=${CRUD_ADMIN_PORT:-25161}
+    - PGRST_APP_SETTINGS_TOKEN_ROLES=
     - PGRST_DB_ANON_ROLE=anon
     - PGRST_DB_PRE_REQUEST=public.app_pre_request
     - PGRST_DB_SCHEMA=public
