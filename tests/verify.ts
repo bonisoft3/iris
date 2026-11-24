@@ -58,7 +58,7 @@ const gallery: JourneyItem = {
     const base = String(ctx?.baseUrl);
     await navigate(page, base, "/", "gallery");
 
-    const session = await page.evaluate(() => JSON.parse(sessionStorage.getItem("pronto-token") ?? "null"));
+    const session = await page.evaluate(() => JSON.parse(localStorage.getItem("pronto-token") ?? "null"));
     if (!session?.token || !session.user?.guest) throw new Error("lazy guest session did not establish a token");
 
     const item = await readRow(
@@ -80,16 +80,14 @@ const gallery: JourneyItem = {
     await page.locator("#intro-start").click();
     await page.locator(".workspace-root").waitFor({ state: "visible", timeout: 15_000 });
 
-    const topLoginButtons = await page.locator(".btn-top-login, #btn-top-login").count();
-    if (topLoginButtons !== 0) throw new Error(`expected zero top-right login buttons, got ${topLoginButtons}`);
-
-    // Open the Access & Portability modal via the nav rail and commit the guest session.
-    await page.locator("body > nav .shell-signin, body > nav .shell-who[data-guest]").first().click();
-    await page.locator("#app .shell-screen:not([hidden]) #btn-auth-passkey").waitFor({ state: "visible", timeout: 15_000 });
-    await page.locator("#app .shell-screen:not([hidden]) #btn-auth-google").waitFor({ state: "visible", timeout: 15_000 });
-    await page.locator("#app .shell-screen:not([hidden]) #btn-auth-guest").click();
-    await page.waitForFunction(() => document.body.getAttribute("data-auth") === "guest", null, { timeout: 15_000 });
-    await page.locator("body > nav .shell-signout").waitFor({ state: "visible", timeout: 15_000 });
+    // Sign-in is the nav rail's alone: Sign in opens its panel in place onto Google's way in and this device's.
+    const ownSignin = await page.locator('#app [role="dialog"][aria-modal="true"], #app [data-auth-action="passkey-signin"]').count();
+    if (ownSignin !== 0) throw new Error(`expected no screen to draw its own sign-in, got ${ownSignin}`);
+    await page.locator("body > nav .shell-signin").click();
+    const ways = page.locator("body > nav .shell-signin-panel");
+    for (const way of [".shell-provider[data-provider='google']", ".shell-passkey[data-auth-action='device']"]) {
+      await ways.locator(way).waitFor({ state: "visible", timeout: 15_000 });
+    }
 
     await page.locator(".filter-drawer-btn").click();
     await page.locator("#cat-organic").click();
@@ -180,9 +178,11 @@ const camera: JourneyItem = {
     await cityInput.fill("Verify City");
     await page.locator("form[data-form='submit-scan'] button[type='submit']").click();
     await page.locator("form[data-form='submit-scan'] .saved").waitFor({ state: "visible", timeout: 15_000 });
+    await page.locator("body[data-auth='guest'] .keep-scans-offer [data-auth-action='passkey-register']")
+      .waitFor({ state: "visible", timeout: 15_000 });
 
     // Clean up the verify scan request and promoted item so the demo network stays pristine.
-    const session = await page.evaluate(() => JSON.parse(sessionStorage.getItem("pronto-token") ?? "null"));
+    const session = await page.evaluate(() => JSON.parse(localStorage.getItem("pronto-token") ?? "null"));
     if (session?.token && session?.user?.id) {
       const reqs = await (
         await fetch(
@@ -237,20 +237,27 @@ const phoneLayout: JourneyItem = {
   },
 };
 
-// Sign in with Google starts at the edge's own route, which exists only when the
-// release names the provider's broker and client: a deployment without them
-// answers "no route". The journey stops at the provider's door.
+// Google signs a person in by its own button, framed from the auth service's
+// page for the app's own client: the release offers it (`/auth/oidc` names the
+// client), and the page draws it for that client. Choosing an account is the
+// person's; the journey stops at the button.
 const googleSignIn: JourneyItem = {
   spec: { screen: "gallery", accepts: "accept-signin-google" },
   async run(page, ctx) {
     const origin = new URL(ctx?.baseUrl ?? ctx?.targetUrl ?? "").origin;
-    await page.goto(`${origin}/auth/oidc/google/start`, { waitUntil: "domcontentloaded" });
-    const landed = await page.evaluate(() => ({
-      origin: location.origin,
-      body: document.body?.textContent?.slice(0, 200) ?? "",
+    await page.goto(`${origin}/auth/oidc`, { waitUntil: "domcontentloaded" });
+    const offered = JSON.parse(await page.evaluate(() => document.body?.textContent ?? "")) as { providers?: string[]; credential?: Record<string, string> };
+    const client = offered.credential?.google;
+    if (!offered.providers?.includes("google") || typeof client !== "string" || !client.endsWith(".apps.googleusercontent.com")) {
+      throw new Error(`the release offers no Google button of its own client: ${JSON.stringify(offered)}`);
+    }
+    await page.goto(`${origin}/auth/oidc/google/button`, { waitUntil: "domcontentloaded" });
+    const drawn = await page.evaluate(() => ({
+      client: document.documentElement.dataset.client ?? "",
+      script: document.querySelector("script[type=module]")?.getAttribute("src") ?? "",
     }));
-    if (landed.origin === origin) {
-      throw new Error(`Sign in with Google stayed on ${landed.origin}: ${landed.body}`);
+    if (drawn.client !== client || !drawn.script.endsWith("/auth/oidc/google/button.js")) {
+      throw new Error(`the button page is not Google's for ${client}: ${JSON.stringify(drawn)}`);
     }
   },
 };

@@ -143,9 +143,9 @@
   "auth": {
     "required": false,
     "service": "/auth",
-    "promote": true,
     "providers": [
-      "google"
+      "google",
+      "bluesky"
     ],
     "mode": "passkey"
   },
@@ -1847,9 +1847,9 @@
     "services/database/migrations/006_policies.sql",
     "services/database/migrations/007_txid.sql",
     "services/database/migrations/008_publication.sql",
-    "services/database/migrations/010_machines.sql",
     "services/database/migrations/003_rls.sql",
     "services/database/migrations/005_create_tables.sql",
+    "services/database/migrations/010_machines.sql",
     "services/database/migrations/013_me_provision.sql",
     "services/database/migrations/014_default_privileges.sql",
     "services/database/migrations/015_classify_request.sql",

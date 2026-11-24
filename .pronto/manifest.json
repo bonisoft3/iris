@@ -42,6 +42,7 @@
     "services/database/migrations/018_me_readonly.sql",
     "services/database/migrations/020_demo_items.sql",
     "services/database/pgroll/20261114_ugc_translation.json",
+    "services/database/pgroll/20261122_machines.json",
     "shell/boot.js",
     "shell/design.css",
     "shell/index.html",

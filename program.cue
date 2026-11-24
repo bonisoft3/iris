@@ -13,6 +13,7 @@ _designMd:          _ @embed(file="DESIGN.md", type=text)
 _catalogues:        _ @embed(glob="messages/*.json")
 _pictures:          _ @embed(file="assets/manifest.json")
 _ugcTranslationSql: _ @embed(file="migrations/20261114_ugc_translation.sql", type=text)
+_machinesSql:       _ @embed(file="migrations/20261122_machines.sql", type=text)
 
 code: pronto.#App & {
 	meta: name:        "iris"
@@ -34,7 +35,7 @@ code: pronto.#App & {
 		catalogues: _catalogues
 	}
 
-	capabilities: auth: {required: false, service: "/auth", promote: true}
+	capabilities: auth: {required: false, service: "/auth"}
 	capabilities: blobs: false
 	capabilities: ai: {
 		text: ["browser", "cheap", "heavy"]
@@ -104,6 +105,8 @@ code: pronto.#App & {
 		{name: "003_rls.sql", src: "services/database/sql/003_rls.txt"},
 		// As deployed before atomic RLS DDL (#2444); live directories check its digest.
 		{name: "005_create_tables.sql", src: "services/database/baseline/005_create_tables.sql"},
+		// As production applied it (v0.1.9); 20261122_machines restates it.
+		{name: "010_machines.sql", src: "services/database/baseline/010_machines.sql"},
 		{name: "013_me_provision.sql", src: "services/database/sql/013_me_provision.sql"},
 		{name: "014_default_privileges.sql", src: "services/database/sql/014_default_privileges.sql"},
 		{name: "015_classify_request.sql", src: "services/database/sql/015_classify_request.sql"},
@@ -114,6 +117,7 @@ code: pronto.#App & {
 	]
 
 	state: migrations: "20261114_ugc_translation": {operations: [{sql: {up: _ugcTranslationSql, onComplete: true}}]}
+	state: migrations: "20261122_machines": {operations: [{sql: up: _machinesSql}]}
 
 	surface: design: (pronto.#DesignMd & {text: _designMd}).design
 
@@ -621,10 +625,10 @@ code: pronto.#App & {
 	meta: tests: {
 		"test-door-signin": {
 			of:    "gallery"
-			says:  "Iris opens directly without a blocking login wall (required: false), offers the Access & Portability modal via the nav rail with Passkey, Google OIDC, and Guest options, and updates the nav rail and modal status when committed as a guest or promoted to a user."
+			says:  "Iris opens directly without a blocking login wall (required: false); the nav rail's Sign in opens in place onto this device, the one way in a local stack turns on (Google is verify's, against a release), an empty device makes the account there, a signed-in person is named on their chip, whose panel holds sign out, and a committed guest is offered saving to this device beside their scans."
 			given: {guest: true}
 			when:  "query"
-			then:  "output.gate.has_passkey && output.gate.has_google && output.gate.has_guest && output.after_signin.route == 'gallery' && output.after_signin.strip_who.size() > 0 && output.after_signin.has_signout && output.after_signin.has_promote"
+			then:  "output.gate.has_device && !output.gate.has_google && output.after_signin.route == 'gallery' && output.after_signin.strip_who.size() > 0 && output.after_signin.has_signout && output.guest.has_keep_offer"
 		}
 		"test-demo-items": {
 			of:    "TrashItem"

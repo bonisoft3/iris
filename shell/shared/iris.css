@@ -87,7 +87,9 @@ input::placeholder, textarea::placeholder {
   color: var(--secondary);
 }
 
-button {
+/* The screens' buttons; the nav's are the terminal's (its sign-in panel is a
+   menu of rows), and the :where keeps this rule's weight. */
+button:not(:where(body > nav *)) {
   cursor: pointer;
   background: var(--accent);
   color: var(--surface);
@@ -99,7 +101,7 @@ button {
   font-weight: 600;
   transition: filter var(--motion-fast) var(--motion-ease);
 }
-button:hover {
+button:not(:where(body > nav *)):hover {
   filter: brightness(.94);
 }
 button.outline {

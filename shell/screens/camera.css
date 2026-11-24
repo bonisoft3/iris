@@ -217,6 +217,29 @@
   gap: var(--sp-sm);
 }
 
+/* A guest's scans are kept on this device alone until a passkey holds them. */
+[data-screen="camera"] .keep-scans-offer {
+  display: none;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-sm);
+  padding: var(--sp-sm) var(--sp-md);
+  border: var(--border-size-1) solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--neutral);
+}
+
+body[data-auth="guest"] [data-screen="camera"] .keep-scans-offer {
+  display: flex;
+}
+
+[data-screen="camera"] .keep-scans-copy {
+  flex: 1 1 16rem;
+  margin: 0;
+  color: var(--secondary);
+}
+
 [data-screen="camera"] .camera-queue-list,
 [data-screen="camera"] .camera-results-list {
   display: grid;

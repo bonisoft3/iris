@@ -3,9 +3,9 @@
 What "done" looks like, one check per line. Each id below is cited by the
 invariants in [ir.html](ir.html) that realize it; coverage is a lint, not a hope.
 
-- Iris opens directly with a lazy guest session and an on-demand Access & Portability modal offering Passkey, Google OIDC, and device-bound guest access. {#accept-door}
-- Sign in with Google on the deployed site leaves for the provider's door: the edge's start route exists because the release names the broker and client. {#accept-signin-google}
-- Signing in or committing a guest session names the reader in the navigation rail beside sign out and lets a guest promote their session to a Passkey or Google account in place. {#accept-signin-gallery}
+- Iris opens directly with a lazy guest session; signing in starts at the nav rail's Sign in, which opens in place onto this device and Google OIDC; an empty device is offered setting it up or a phone beside it, and no screen draws a sign-in of its own. {#accept-door}
+- Sign in with Google on the deployed site is Google's own button, for the app's own client: the release offers it and the auth service's page draws it for that client. {#accept-signin-google}
+- Signing in names the reader on their chip in the navigation rail, whose panel holds sign out; a guest is named as a guest. A guest whose scan is saved is offered, beside their scanned items, saving to this device, which keeps their identity and every scan. {#accept-signin-gallery}
 - A fresh Iris database already holds a living circular-recovery network: twelve classified waste specimens across all five categories (`recyclable`, `organic`, `eletronic`, `non_recyclable`, `trash`), four neighbourhood disposal places, and localized translations. {#accept-demo-items}
 - The gallery lists public non-flagged waste specimens newest first, each showing its specimen picture, caption, waste category badge (`recyclable`, `organic`, `eletronic`, `non_recyclable`, `trash`), material summary, and a link to its detail page (`/images/:id`). {#accept-gallery-grid}
 - The gallery offers a view switcher between "IRIS Global" (the community feed of public specimens) and "My Items" (the signed-in reader's personal scan requests and classified specimens). {#accept-gallery-tabs}

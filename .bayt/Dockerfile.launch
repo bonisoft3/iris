@@ -10,7 +10,6 @@ ARG BAYT_DIR
 WORKDIR /monorepo/${BAYT_DIR}
 COPY --parents .bayt/compose.launch.yaml .bayt/Dockerfile.launch .bayt/bayt.launch.json .bayt/Taskfile.yml .bayt/Taskfile.bayt.yml .bayt/Taskfile.launch.yaml .bayt/compose.launch.closure.yaml .bayt/process-compose.yaml .bayt/compose.*.yaml .bayt/Dockerfile.* .bayt/bayt.*.json .bayt/Taskfile.*.yaml monorepo/${MONOREPO_COMPOSE_MODE:-docker-image}.yaml compose.networks.yaml ./
 COPY --from=iris-build_bayt /monorepo /monorepo
-COPY --from=iris-identity_bayt /monorepo /monorepo
 COPY --from=iris-smollm3_bayt /monorepo /monorepo
 COPY --from=iris-caddy_bayt /monorepo /monorepo
 COPY --from=iris-database_bayt /monorepo /monorepo
@@ -21,6 +20,6 @@ COPY --from=iris-clock_bayt /monorepo /monorepo
 COPY --from=iris-airlock_bayt /monorepo /monorepo
 ARG SOURCE_DATE_EPOCH
 ARG BAYT_CLAMP=1
-RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then find /monorepo/${BAYT_DIR} -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && { d=$(dirname /monorepo/${BAYT_DIR}); while [ "$d" != / ]; do touch -hd @${SOURCE_DATE_EPOCH:-0} "$d" || exit; d=$(dirname "$d"); done; }; fi
+RUN if [ "${BAYT_CLAMP:-1}" != 0 ]; then { w=$(pwd); mkdir -p /.bayt-clamp && find "$w" -exec getfattr -dh {} + > /.bayt-clamp/x && if [ ! -s /.bayt-clamp/x ]; then cd / && cp -a "$w" /.bayt-clamp/w && rm -rf "$w" && mv /.bayt-clamp/w "$w"; fi && rm -rf /.bayt-clamp; } && find /monorepo/${BAYT_DIR} -exec touch -hd @${SOURCE_DATE_EPOCH:-0} {} + && { d=$(dirname /monorepo/${BAYT_DIR}); while [ "$d" != / ]; do touch -hd @${SOURCE_DATE_EPOCH:-0} "$d" || exit; d=$(dirname "$d"); done; }; fi
 FROM scratch AS launch_bayt
 COPY --from=launch_bayt_ctxs /monorepo /monorepo

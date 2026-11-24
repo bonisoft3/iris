@@ -42,19 +42,6 @@
   border-radius: var(--r-md);
 }
 
-.settings-account-desc {
-  margin: 0;
-  color: var(--secondary);
-}
-
-.settings-account-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-sm);
-  margin-block-start: auto;
-}
-
 .about-hero {
   display: grid;
   grid-template-columns: 1fr;
@@ -393,7 +380,7 @@
 
 @container (min-width: 720px) {
   .settings-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .about-hero {

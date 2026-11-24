@@ -131,18 +131,14 @@ Deno.test("appearance: every screen in ir.html declares a populated-dark storybo
   }
 });
 
-// Regression: Iris delegates sign-in and passkey/Google selection to its login modal
-// via `.shell-signin` -> `[data-auth-trigger]`, so `.shell-register` must never gain a
-// higher-specificity `display: inline-flex` rule in the desktop rail.
-Deno.test("appearance: nav rail hides .shell-register and .shell-provider so only .shell-signin opens the login modal", async () => {
+// Regression: the sheet once hid the rail's passkey and provider ways because a modal of
+// Iris's own drew them; the ways in are the nav's now, and nothing may hide them.
+Deno.test("appearance: nav rail leaves the ways in under Sign in visible", async () => {
   const chromeCss = (await read("shell/shared/chrome.css")).replace(/\/\*[\s\S]*?\*\//g, "");
-  assert(
-    chromeCss.includes("body > nav .shell-register:not([hidden])") &&
-      /body > nav \.shell-register:not\(\[hidden\]\)[\s\S]*?display:\s*none\s*!important/.test(chromeCss),
-    "chrome.css must hide body > nav .shell-register:not([hidden])",
-  );
-  assert(
-    !/\.shell-register[^\n{]*\{[^}]*display:\s*inline-flex/m.test(chromeCss),
-    "chrome.css must not give .shell-register display: inline-flex",
-  );
+  for (const rule of chromeCss.matchAll(/([^{}]+)\{([^}]*)\}/g)) {
+    assert(
+      !(/\.shell-(signin|passkey|provider|register)\b/.test(rule[1]) && /display:\s*none/.test(rule[2])),
+      `chrome.css hides the nav's sign-in: ${rule[1].trim()}`,
+    );
+  }
 });

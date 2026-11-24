@@ -58,7 +58,7 @@
     "preambleCopyContexts": [
       {
         "name": "bayt",
-        "image": "bonitao/bayt-runtime:1.5.2@sha256:58f21a8e78a8270e5d7a95e65665ef3b8824a75e8229a579c6316d3b07c4e838"
+        "image": "bonitao/bayt-runtime:1.5.3@sha256:9560b4a6d6e40fe15a951ef14b5d10dcd613c3efa73ef1847072add962d60760"
       },
       {
         "name": "alpine/socat:1.8.0.0@sha256:a6be4c0262b339c53ddad723cdd178a1a13271e1137c65e27f90a08c16de02b8"
@@ -501,8 +501,6 @@
         "./.bayt/compose.database.yaml",
         "./.bayt/compose.electric.yaml",
         "./.bayt/compose.generate.yaml",
-        "./.bayt/compose.identity.yaml",
-        "./.bayt/compose.identity-hydra.yaml",
         "./.bayt/compose.integrate.yaml",
         "./.bayt/compose.launch.yaml",
         "./.bayt/compose.migrate.yaml",
@@ -555,8 +553,6 @@
         "./.bayt/compose.database.yaml",
         "./.bayt/compose.electric.yaml",
         "./.bayt/compose.generate.yaml",
-        "./.bayt/compose.identity.yaml",
-        "./.bayt/compose.identity-hydra.yaml",
         "./.bayt/compose.integrate.yaml",
         "./.bayt/compose.launch.yaml",
         "./.bayt/compose.migrate.yaml",
@@ -928,9 +924,9 @@
               "services/database/migrations/006_policies.sql",
               "services/database/migrations/007_txid.sql",
               "services/database/migrations/008_publication.sql",
-              "services/database/migrations/010_machines.sql",
               "services/database/migrations/003_rls.sql",
               "services/database/migrations/005_create_tables.sql",
+              "services/database/migrations/010_machines.sql",
               "services/database/migrations/013_me_provision.sql",
               "services/database/migrations/014_default_privileges.sql",
               "services/database/migrations/015_classify_request.sql",
@@ -948,7 +944,8 @@
           "dir": ".",
           "outs": {
             "globs": [
-              "services/database/pgroll/20261114_ugc_translation.json"
+              "services/database/pgroll/20261114_ugc_translation.json",
+              "services/database/pgroll/20261122_machines.json"
             ],
             "exclude": []
           }
@@ -1026,8 +1023,6 @@
         "./.bayt/compose.database.yaml",
         "./.bayt/compose.electric.yaml",
         "./.bayt/compose.generate.yaml",
-        "./.bayt/compose.identity.yaml",
-        "./.bayt/compose.identity-hydra.yaml",
         "./.bayt/compose.integrate.yaml",
         "./.bayt/compose.launch.yaml",
         "./.bayt/compose.migrate.yaml",
@@ -1099,8 +1094,6 @@
     "./.bayt/compose.database.yaml",
     "./.bayt/compose.electric.yaml",
     "./.bayt/compose.generate.yaml",
-    "./.bayt/compose.identity.yaml",
-    "./.bayt/compose.identity-hydra.yaml",
     "./.bayt/compose.integrate.yaml",
     "./.bayt/compose.launch.yaml",
     "./.bayt/compose.migrate.yaml",
@@ -1507,9 +1500,9 @@
           "services/database/migrations/006_policies.sql",
           "services/database/migrations/007_txid.sql",
           "services/database/migrations/008_publication.sql",
-          "services/database/migrations/010_machines.sql",
           "services/database/migrations/003_rls.sql",
           "services/database/migrations/005_create_tables.sql",
+          "services/database/migrations/010_machines.sql",
           "services/database/migrations/013_me_provision.sql",
           "services/database/migrations/014_default_privileges.sql",
           "services/database/migrations/015_classify_request.sql",
@@ -1527,7 +1520,8 @@
       "dir": ".",
       "outs": {
         "globs": [
-          "services/database/pgroll/20261114_ugc_translation.json"
+          "services/database/pgroll/20261114_ugc_translation.json",
+          "services/database/pgroll/20261122_machines.json"
         ],
         "exclude": []
       }

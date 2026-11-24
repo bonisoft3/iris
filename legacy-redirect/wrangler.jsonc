@@ -4,7 +4,6 @@
 	"compatibility_date": "2026-11-01",
 	"workers_dev": false,
 	"routes": [
-		{ "pattern": "www.iris.cleaning", "custom_domain": true },
-		{ "pattern": "iris.bonisoft3.com", "custom_domain": true }
+		{ "pattern": "www.iris.cleaning", "custom_domain": true }
 	]
 }

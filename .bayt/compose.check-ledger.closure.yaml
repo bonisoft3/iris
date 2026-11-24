@@ -40,13 +40,9 @@ include:
   required: false
 - path: .././.bayt/compose.launch.yaml
   required: false
-- path: .././.bayt/compose.identity.yaml
-  required: false
 - path: .././.bayt/compose.smollm3.yaml
   required: false
 - path: .././.bayt/compose.clock.yaml
-  required: false
-- path: .././.bayt/compose.identity-hydra.yaml
   required: false
 - path: .././.bayt/compose.ticker.yaml
   required: false

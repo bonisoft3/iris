@@ -77,62 +77,6 @@ services:
     profiles:
     - ci
     scale: 1
-  served:
-    extends:
-      file: ./compose.served.yaml
-      service: iris-served
-    profiles:
-    - served
-    scale: 1
-  served-release:
-    extends:
-      file: ./compose.served-release.yaml
-      service: iris-served-release
-    profiles:
-    - served-release
-    scale: 1
-  check-ledger:
-    extends:
-      file: ./compose.check-ledger.yaml
-      service: iris-check-ledger
-    profiles:
-    - check-ledger
-    scale: 1
-  ci-ledger:
-    extends:
-      file: ./compose.ci-ledger.yaml
-      service: iris-ci-ledger
-    profiles:
-    - ci-ledger
-    scale: 1
-  database:
-    extends:
-      file: ./compose.database.yaml
-      service: iris-database
-    profiles:
-    - database
-    scale: 1
-  airlock-mesh:
-    extends:
-      file: ./compose.airlock-mesh.yaml
-      service: iris-airlock-mesh
-    profiles:
-    - airlock-mesh
-    scale: 1
-  caddy:
-    extends:
-      file: ./compose.caddy.yaml
-      service: iris-caddy
-    profiles:
-    - caddy
-    scale: 1
-  auth:
-    extends:
-      file: ./compose.auth.yaml
-      service: iris-auth
-    profiles:
-    - auth
-    scale: 1
   tsbifrost:
     extends:
       file: ./compose.tsbifrost.yaml
@@ -140,19 +84,12 @@ services:
     profiles:
     - tsbifrost
     scale: 1
-  identity-hydra:
+  database:
     extends:
-      file: ./compose.identity-hydra.yaml
-      service: iris-identity-hydra
+      file: ./compose.database.yaml
+      service: iris-database
     profiles:
-    - identity-hydra
-    scale: 1
-  identity:
-    extends:
-      file: ./compose.identity.yaml
-      service: iris-identity
-    profiles:
-    - identity
+    - database
     scale: 1
   migrate:
     extends:
@@ -168,19 +105,19 @@ services:
     profiles:
     - airlock-upgrade
     scale: 1
+  auth:
+    extends:
+      file: ./compose.auth.yaml
+      service: iris-auth
+    profiles:
+    - auth
+    scale: 1
   ticker:
     extends:
       file: ./compose.ticker.yaml
       service: iris-ticker
     profiles:
     - ticker
-    scale: 1
-  smollm3:
-    extends:
-      file: ./compose.smollm3.yaml
-      service: iris-smollm3
-    profiles:
-    - smollm3
     scale: 1
   clock:
     extends:
@@ -195,6 +132,55 @@ services:
       service: iris-airlock
     profiles:
     - airlock
+    scale: 1
+  airlock-mesh:
+    extends:
+      file: ./compose.airlock-mesh.yaml
+      service: iris-airlock-mesh
+    profiles:
+    - airlock-mesh
+    scale: 1
+  check-ledger:
+    extends:
+      file: ./compose.check-ledger.yaml
+      service: iris-check-ledger
+    profiles:
+    - check-ledger
+    scale: 1
+  ci-ledger:
+    extends:
+      file: ./compose.ci-ledger.yaml
+      service: iris-ci-ledger
+    profiles:
+    - ci-ledger
+    scale: 1
+  caddy:
+    extends:
+      file: ./compose.caddy.yaml
+      service: iris-caddy
+    profiles:
+    - caddy
+    scale: 1
+  served:
+    extends:
+      file: ./compose.served.yaml
+      service: iris-served
+    profiles:
+    - served
+    scale: 1
+  served-release:
+    extends:
+      file: ./compose.served-release.yaml
+      service: iris-served-release
+    profiles:
+    - served-release
+    scale: 1
+  smollm3:
+    extends:
+      file: ./compose.smollm3.yaml
+      service: iris-smollm3
+    profiles:
+    - smollm3
     scale: 1
   crud:
     extends:

@@ -1,5 +1,5 @@
 /* Iris navigation rail (desktop left rail on >=860px, compact top brand strip
-   on phones <860px, following guis/iris & Stitch) and Access & Portability modal.
+   on phones <860px, following guis/iris & Stitch) and its inline sign-in.
    Every colour and length resolves through shell/design.css tokens so light and
    dark appearances stay in lockstep. */
 
@@ -152,75 +152,23 @@ body > nav > a[data-route="about"]::before {
     gap: var(--sp-sm) !important;
   }
 
-  body > nav .shell-who {
-    display: flex !important;
-    align-items: center !important;
-    gap: var(--sp-sm) !important;
-    min-width: 0 !important;
-    color: var(--strip-ink) !important;
-    font-size: var(--type-label) !important;
-    text-decoration: none !important;
+  /* The panel flies out beside the rail, level with the chip at its foot:
+     the rail is narrower than a provider's button, and clips what it holds
+     until the panel opens. */
+  body > nav:has(.shell-signin-panel:not([hidden])) {
+    overflow: visible !important;
   }
 
-  body > nav .shell-who::before {
-    content: "";
-    display: inline-block;
-    width: var(--size-5);
-    height: var(--size-5);
-    border-radius: var(--r-full);
-    background-color: var(--strip-ink);
-    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E");
-    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E");
-    -webkit-mask-size: var(--size-3) var(--size-3);
-    mask-size: var(--size-3) var(--size-3);
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-position: center;
-    flex-shrink: 0;
+  body > nav .shell-signin-panel {
+    inset-block: auto 0 !important;
+    inset-inline: calc(100% + var(--sp-sm)) auto !important;
+    width: min(22rem, calc(100vw - var(--size-12) - 2 * var(--sp-md))) !important;
   }
 
-  body > nav .shell-who .name {
-    font-weight: 600 !important;
-    color: var(--strip-ink) !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-  }
-
-  body > nav .shell-who .handle {
-    font-weight: 500 !important;
-    color: var(--strip-ink) !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-  }
-
-  body > nav .shell-who[data-guest] .handle {
-    display: flex !important;
-    flex-direction: column !important;
-    line-height: var(--type-leading-title) !important;
-  }
-
-  body > nav .shell-who[data-guest] .handle::after {
-    content: "Saved on this device";
-    font-size: var(--type-label);
-    font-weight: 400;
-    color: var(--strip-ink);
-    opacity: .85;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  :lang(es) body > nav .shell-who[data-guest] .handle::after { content: "Guardado en este dispositivo"; }
-  :lang(pt) body > nav .shell-who[data-guest] .handle::after { content: "Salvo neste aparelho"; }
-  :lang(ru) body > nav .shell-who[data-guest] .handle::after { content: "Сохранено на этом устройстве"; }
-  :lang(he) body > nav .shell-who[data-guest] .handle::after { content: "שמור במכשיר זה"; }
-  :lang(kk) body > nav .shell-who[data-guest] .handle::after { content: "Осы құрылғыда сақталған"; }
-
-  body > nav .shell-signout:not([hidden]),
-  body > nav .shell-signin:not([hidden]) {
+  body > nav .shell-signin:not([hidden]),
+  body > nav .shell-passkey,
+  body > nav .shell-provider,
+  body > nav .shell-auth-choice {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -238,8 +186,10 @@ body > nav > a[data-route="about"]::before {
     cursor: pointer !important;
   }
 
-  body > nav .shell-signout:hover,
-  body > nav .shell-signin:hover {
+  body > nav .shell-signin:hover,
+  body > nav .shell-passkey:hover,
+  body > nav .shell-provider:hover,
+  body > nav .shell-auth-choice:hover {
     filter: brightness(.95) !important;
   }
 
@@ -283,30 +233,23 @@ body > nav > a[data-route="about"]::before {
     align-items: center !important;
   }
 
-  body > nav .shell-signin,
-  body > nav .shell-signout {
+  body > nav .shell-signin[aria-expanded="false"]:not([hidden]) {
     padding: var(--size-1) !important;
     font-size: 0 !important;
     gap: 0 !important;
   }
 
-  body > nav .shell-signin::before {
+  body > nav .shell-signin[aria-expanded="false"]::before {
     content: "🔑";
     font-size: var(--type-body);
   }
 
-  body > nav .shell-signout::before {
-    content: "⎋";
-    font-size: var(--type-body);
-  }
-
-  body > nav .shell-who {
+  body > nav .shell-person {
     justify-content: center !important;
     gap: 0 !important;
   }
 
-  body > nav .shell-who .name,
-  body > nav .shell-who .handle {
+  body > nav .shell-person :is(.shell-chip-who, .shell-lock) {
     display: none !important;
   }
 
@@ -314,6 +257,18 @@ body > nav > a[data-route="about"]::before {
     margin-inline-start: var(--size-9) !important;
     width: calc(100% - var(--size-9)) !important;
     max-width: calc(100% - var(--size-9)) !important;
+  }
+
+  /* The ways in are words: an open Sign in widens the rail to its wide
+     width, pushing the page rather than covering it. */
+  body > nav:has(.shell-signin[aria-expanded="true"]) {
+    width: var(--size-12) !important;
+  }
+
+  body:has(> nav .shell-signin[aria-expanded="true"]) > main#app {
+    margin-inline-start: var(--size-12) !important;
+    width: calc(100% - var(--size-12)) !important;
+    max-width: calc(100% - var(--size-12)) !important;
   }
 }
 
@@ -324,8 +279,8 @@ body > nav > a[data-route="about"]::before {
     z-index: 100 !important;
     height: auto !important;
     min-height: 0 !important;
-    display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(var(--size-8), 1fr)) !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
     gap: var(--size-1) !important;
     padding: var(--size-1) var(--sp-sm) !important;
     background: var(--header) !important;
@@ -336,12 +291,38 @@ body > nav > a[data-route="about"]::before {
   }
 
   body > nav::before,
-  body > nav::after,
-  body > nav .shell-me {
+  body > nav::after {
     display: none !important;
   }
 
+  /* The tabs share the first row equally; the person, or the way in, takes a
+     row of its own beneath them, and an open Sign in's ways wrap within it. */
+  body > nav .shell-me {
+    flex: 1 0 100% !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: var(--size-1) !important;
+  }
+
+  body > nav .shell-me > *,
+  body > nav .shell-signin-ways:not([hidden]) > * {
+    width: auto !important;
+    min-width: 0 !important;
+  }
+
+  body > nav .shell-signin-ways:not([hidden]) {
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    width: 100% !important;
+  }
+
   body > nav > a {
+    flex: 1 1 0 !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
@@ -379,24 +360,10 @@ body > nav > a[data-route="about"]::before {
   }
 }
 
-body[data-auth="user"] .login-modal-overlay {
-  display: none !important;
-}
-
-body > nav .shell-me[data-auth="guest"] .shell-signin,
-body > nav .shell-register,
-body > nav .shell-register:not([hidden]),
-body > nav .shell-provider,
-body > nav .shell-provider:not([hidden]) {
-  display: none !important;
-}
-
-body > nav .shell-me[data-auth="guest"] .shell-who {
-  cursor: pointer !important;
-}
-
 body > nav .shell-signin:not([hidden]),
-body > nav .shell-signout:not([hidden]) {
+body > nav .shell-passkey:not([hidden]),
+body > nav .shell-provider:not([hidden]),
+body > nav .shell-auth-choice:not([hidden]) {
   font-weight: 600 !important;
   font-size: var(--type-label) !important;
   color: var(--header) !important;
@@ -414,6 +381,18 @@ body > nav .shell-signout:not([hidden]) {
   box-sizing: border-box !important;
   min-height: var(--control-h-sm) !important;
   transition: filter var(--motion-fast) var(--motion-ease) !important;
+}
+
+body > nav .shell-signin-ways:not([hidden]) {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: var(--sp-sm) !important;
+  width: 100% !important;
+}
+
+body > nav .shell-signin-ways > * {
+  white-space: normal !important;
+  text-align: center !important;
 }
 
 .header-utility-actions {
@@ -562,7 +541,7 @@ html:has(.shell-screen:not([hidden]) .theme-dark-chk:checked),
   color: var(--danger);
 }
 
-.shell-auth-recover {
+.shell-auth-choice {
   font-weight: 600;
   font-size: var(--type-caption);
   color: var(--primary);
@@ -572,184 +551,6 @@ html:has(.shell-screen:not([hidden]) .theme-dark-chk:checked),
   padding: var(--sp-sm) var(--sp-md);
   min-height: var(--control-h-sm);
   cursor: pointer;
-}
-
-/* Login & Portability Modal */
-.login-modal-chk {
-  display: none !important;
-}
-
-.login-modal-overlay {
-  display: none !important;
-  position: fixed !important;
-  inset: 0 !important;
-  background: color-mix(in srgb, var(--primary) 65%, transparent) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  z-index: 9999 !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: var(--sp-lg) !important;
-}
-
-.login-modal-chk:checked ~ .login-modal-overlay,
-[data-status="login"] .login-modal-overlay,
-.login-modal-overlay[data-open="true"] {
-  display: flex !important;
-}
-
-.login-modal-card {
-  position: relative !important;
-  background: var(--surface) !important;
-  color: var(--primary) !important;
-  border-radius: var(--r-md) !important;
-  border: var(--border-size-1) solid var(--border) !important;
-  max-width: var(--size-15) !important;
-  width: 100% !important;
-  padding: var(--sp-xl) var(--sp-lg) var(--sp-lg) !important;
-  box-shadow: var(--shadow-3) !important;
-}
-
-.login-modal-close {
-  position: absolute !important;
-  top: var(--sp-md) !important;
-  inset-inline-end: var(--sp-md) !important;
-  width: var(--control-h-sm) !important;
-  height: var(--control-h-sm) !important;
-  border-radius: var(--r-full) !important;
-  border: var(--border-size-1) solid var(--border) !important;
-  padding: 0 !important;
-  background: var(--surface-muted) !important;
-  color: var(--secondary) !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  cursor: pointer !important;
-  font-size: var(--type-body) !important;
-  font-weight: 600 !important;
-  line-height: 1 !important;
-  user-select: none !important;
-}
-
-.login-modal-close:hover {
-  background: var(--border) !important;
-  color: var(--primary) !important;
-}
-
-.login-modal-header {
-  margin-block-end: var(--sp-md) !important;
-}
-
-.login-modal-brand {
-  display: inline-block !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.06em !important;
-  text-transform: uppercase !important;
-  color: var(--accent) !important;
-  margin-block-end: var(--size-1) !important;
-}
-
-.login-modal-title {
-  font-size: var(--type-subtitle) !important;
-  font-weight: 700 !important;
-  color: var(--primary) !important;
-  letter-spacing: -0.01em !important;
-  margin: 0 0 var(--size-1) !important;
-}
-
-.login-modal-desc {
-  color: var(--secondary) !important;
-  margin: 0 !important;
-}
-
-.login-status-card {
-  display: flex !important;
-  align-items: center !important;
-  gap: var(--sp-sm) !important;
-  padding: var(--sp-sm) var(--sp-md) !important;
-  background: var(--surface-muted) !important;
-  border: var(--border-size-1) solid var(--border) !important;
-  border-radius: var(--r-md) !important;
-  margin-block-end: var(--sp-md) !important;
-}
-
-.login-status-copy {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--size-1);
-}
-
-.login-status-card .status-label {
-  color: var(--secondary) !important;
-}
-
-.login-status-card .status-name {
-  color: var(--primary) !important;
-  font-weight: 600 !important;
-}
-
-.login-status-card .status-badge {
-  color: var(--accent) !important;
-  font-weight: 600 !important;
-}
-
-.login-modal-methods {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: var(--sp-sm) !important;
-}
-
-.login-method-btn {
-  display: flex !important;
-  align-items: center !important;
-  gap: var(--sp-md) !important;
-  width: 100% !important;
-  text-align: start !important;
-  padding: var(--sp-sm) var(--sp-md) !important;
-  min-height: var(--control-h) !important;
-  border-radius: var(--r-md) !important;
-  border: var(--border-size-1) solid var(--border) !important;
-  background: var(--surface) !important;
-  color: var(--primary) !important;
-  cursor: pointer !important;
-  transition: background var(--motion-fast) var(--motion-ease), border-color var(--motion-fast) var(--motion-ease) !important;
-  user-select: none !important;
-  text-decoration: none !important;
-  box-sizing: border-box !important;
-}
-
-.login-method-btn:hover {
-  background: var(--surface-muted) !important;
-  border-color: var(--accent) !important;
-}
-
-.login-method-icon {
-  width: var(--control-h) !important;
-  height: var(--control-h) !important;
-  border-radius: var(--r-sm) !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  font-size: var(--type-subtitle) !important;
-  flex-shrink: 0 !important;
-  background: var(--surface-muted) !important;
-  border: var(--border-size-1) solid var(--border) !important;
-}
-
-.login-method-info {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: var(--size-1) !important;
-}
-
-.login-method-title {
-  font-weight: 600 !important;
-  color: var(--primary) !important;
-}
-
-.login-method-hint {
-  color: var(--secondary) !important;
 }
 
 /* The Iris sign-in door: split layout pairing the Iris Teal brand panel with

@@ -6,11 +6,11 @@ pairs:
     accepts:
       - accept-door
       - accept-signin-gallery
-    says: 'Iris opens directly without a blocking login wall (required: false), offers the Access & Portability modal via the nav rail with Passkey, Google OIDC, and Guest options, and updates the nav rail and modal status when committed as a guest or promoted to a user.'
+    says: 'Iris opens directly without a blocking login wall (required: false); the nav rail''s Sign in opens in place onto this device, the one way in a local stack turns on (Google is verify''s, against a release), an empty device makes the account there, a signed-in person is named on their chip, whose panel holds sign out, and a committed guest is offered saving to this device beside their scans.'
     given:
       guest: true
     when: query
-    then: output.gate.has_passkey && output.gate.has_google && output.gate.has_guest && output.after_signin.route == 'gallery' && output.after_signin.strip_who.size() > 0 && output.after_signin.has_signout && output.after_signin.has_promote
+    then: output.gate.has_device && !output.gate.has_google && output.after_signin.route == 'gallery' && output.after_signin.strip_who.size() > 0 && output.after_signin.has_signout && output.guest.has_keep_offer
   - id: test-demo-items
     ir: test-demo-items
     of: TrashItem

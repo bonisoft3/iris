@@ -2254,6 +2254,10 @@
       "src": "services/database/baseline/005_create_tables.sql"
     },
     {
+      "name": "010_machines.sql",
+      "src": "services/database/baseline/010_machines.sql"
+    },
+    {
       "name": "013_me_provision.sql",
       "src": "services/database/sql/013_me_provision.sql"
     },
