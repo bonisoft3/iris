@@ -85,7 +85,10 @@ const gallery: JourneyItem = {
     if (ownSignin !== 0) throw new Error(`expected no screen to draw its own sign-in, got ${ownSignin}`);
     await page.locator("body > nav .shell-signin").click();
     const ways = page.locator("body > nav .shell-signin-panel");
-    for (const way of [".shell-provider[data-provider='google']", ".shell-passkey[data-auth-action='device']"]) {
+    for (const way of [
+      ".shell-provider[data-provider='google'], .shell-provider-button[data-provider='google']",
+      ".shell-passkey[data-auth-action='accounts']",
+    ]) {
       await ways.locator(way).waitFor({ state: "visible", timeout: 15_000 });
     }
 
@@ -237,16 +240,24 @@ const phoneLayout: JourneyItem = {
   },
 };
 
-// Google signs a person in by its own button, framed from the auth service's
-// page for the app's own client: the release offers it (`/auth/oidc` names the
-// client), and the page draws it for that client. Choosing an account is the
-// person's; the journey stops at the button.
+// Google signs a person in by its own button on production, framed from the
+// auth service's page for iris's own client; a deployment with OIDC_BROKER
+// (staging, .say.cue) signs in through the broker's redirect instead.
 const googleSignIn: JourneyItem = {
   spec: { screen: "gallery", accepts: "accept-signin-google" },
   async run(page, ctx) {
     const origin = new URL(ctx?.baseUrl ?? ctx?.targetUrl ?? "").origin;
     await page.goto(`${origin}/auth/oidc`, { waitUntil: "domcontentloaded" });
     const offered = JSON.parse(await page.evaluate(() => document.body?.textContent ?? "")) as { providers?: string[]; credential?: Record<string, string> };
+    if (Deno.env.get("OIDC_BROKER")) {
+      if (!offered.providers?.includes("google") || offered.credential?.google !== undefined) {
+        throw new Error(`the broker release misconfigured Google sign-in: ${JSON.stringify(offered)}`);
+      }
+      await page.goto(`${origin}/auth/oidc/google/start`, { waitUntil: "domcontentloaded" });
+      const landed = await page.evaluate(() => ({ host: location.hostname, body: document.body?.textContent?.slice(0, 200) ?? "" }));
+      if (landed.host === new URL(origin).hostname) throw new Error(`Sign in with Google stayed on ${landed.host}: ${landed.body}`);
+      return;
+    }
     const client = offered.credential?.google;
     if (!offered.providers?.includes("google") || typeof client !== "string" || !client.endsWith(".apps.googleusercontent.com")) {
       throw new Error(`the release offers no Google button of its own client: ${JSON.stringify(offered)}`);
