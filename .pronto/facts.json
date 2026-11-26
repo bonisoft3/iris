@@ -218,7 +218,7 @@
     {"path":"shell/screens/landing.css","sha256":"e3ad830402e7dfd7fdea5a4dc4edd055c6faf5b6250c735f355ee73105cca618","derived":false},
     {"path":"shell/shared/chrome.css","sha256":"6170459629efd3f25848396b27cbce5cf8d932b5d2338aee7fdf1bf7f3d33111","derived":false},
     {"path":"shell/shared/iris.css","sha256":"f354accab304d1ea756f4e80c126e79cccb78d75ed91f9ee2ef2fd39caf30f87","derived":false},
-    {"path":"shell/design.css","sha256":"35aa02f4c7358c45ceca97d852cea737ad31397f9df9630b7c06f99251670fd4","derived":true}
+    {"path":"shell/design.css","sha256":"de6cfc0452ae6016415a55c672a7b70672db73b2dc678b857e9583b52848ad23","derived":true}
   ],
   "cel_ir": [
     {"cel":"this == 'draft'"},
